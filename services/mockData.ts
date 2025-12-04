@@ -7,7 +7,9 @@ export const MOCK_TEMPLATES: Template[] = [
     thumbnail: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=500&q=80',
     tags: ['Professional', 'Simple', 'ATS Friendly'],
     popularity: 98,
-    isPremium: false
+    isPremium: false,
+    category: 'General',
+    level: 'Senior'
   },
   {
     id: 't2',
@@ -15,7 +17,9 @@ export const MOCK_TEMPLATES: Template[] = [
     thumbnail: 'https://images.unsplash.com/photo-1616628188859-7a11abb6fcc9?w=500&q=80',
     tags: ['Creative', 'Design', 'Startup'],
     popularity: 85,
-    isPremium: true
+    isPremium: true,
+    category: 'Creative',
+    level: 'Junior'
   },
   {
     id: 't3',
@@ -23,7 +27,9 @@ export const MOCK_TEMPLATES: Template[] = [
     thumbnail: 'https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=500&q=80',
     tags: ['Minimalist', 'Tech', 'Clean'],
     popularity: 92,
-    isPremium: false
+    isPremium: false,
+    category: 'IT',
+    level: 'Junior'
   },
     {
     id: 't4',
@@ -31,7 +37,9 @@ export const MOCK_TEMPLATES: Template[] = [
     thumbnail: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&q=80',
     tags: ['Professional', 'Management', 'Senior'],
     popularity: 70,
-    isPremium: true
+    isPremium: true,
+    category: 'Finance',
+    level: 'Executive'
   },
   {
     id: 't5',
@@ -39,7 +47,9 @@ export const MOCK_TEMPLATES: Template[] = [
     thumbnail: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=500&q=80',
     tags: ['Creative', 'Marketing', 'Colorful'],
     popularity: 65,
-    isPremium: true
+    isPremium: true,
+    category: 'Creative',
+    level: 'Senior'
   },
   {
     id: 't6',
@@ -47,7 +57,9 @@ export const MOCK_TEMPLATES: Template[] = [
     thumbnail: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=500&q=80',
     tags: ['Modern', 'Fresh', 'Entry Level'],
     popularity: 88,
-    isPremium: false
+    isPremium: false,
+    category: 'General',
+    level: 'Intern'
   }
 ];
 
@@ -55,7 +67,11 @@ export const INITIAL_RESUME: ResumeData = {
   id: 'new',
   title: 'Untitled Resume',
   templateId: 't1',
-  themeColor: '#2563eb',
+  themeConfig: {
+    color: '#2563eb',
+    fontFamily: 'sans',
+    spacing: 'normal'
+  },
   lastModified: Date.now(),
   personalInfo: {
     fullName: 'Alex Doe',
@@ -120,3 +136,30 @@ export const INITIAL_RESUME: ResumeData = {
     }
   ]
 };
+
+// Mock user's existing resumes
+export const MOCK_USER_RESUMES: ResumeData[] = [
+  { 
+    ...INITIAL_RESUME, 
+    id: '1', 
+    title: 'Software Engineer Resume', 
+    lastModified: Date.now() - 1000000 
+  },
+  { 
+    ...INITIAL_RESUME, 
+    id: '2', 
+    title: 'Executive Director CV', 
+    templateId: 't4',
+    themeConfig: {
+        color: '#111827',
+        fontFamily: 'serif',
+        spacing: 'spacious'
+    },
+    lastModified: Date.now() - 86400000 * 5,
+    personalInfo: {
+        ...INITIAL_RESUME.personalInfo,
+        fullName: 'Sarah Jenkins',
+        jobTitle: 'Executive Director'
+    }
+  }
+];

@@ -4,20 +4,38 @@ import { ArrowLeft, Download, Printer, Share2, Layout } from 'lucide-react';
 import { EditorForm } from './EditorForm';
 import { ResumePreview } from './ResumePreview';
 import { Button } from '../../components/ui/Button';
-import { INITIAL_RESUME, MOCK_TEMPLATES } from '../../services/mockData';
+import { INITIAL_RESUME, MOCK_TEMPLATES, MOCK_USER_RESUMES } from '../../services/mockData';
 import { ResumeData } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const Editor: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_RESUME);
   const [scale, setScale] = useState(0.8);
   const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const { t } = useLanguage();
 
-  // Initialize (mocking fetching data)
+  // Initialize data based on URL params
   useEffect(() => {
+    const resumeId = searchParams.get('id');
     const templateId = searchParams.get('template');
+
+    if (resumeId) {
+        // Mock fetching existing resume
+        const found = MOCK_USER_RESUMES.find(r => r.id === resumeId);
+        if (found) {
+            setResumeData(found);
+            return;
+        }
+    }
+
     if (templateId) {
-        setResumeData(prev => ({ ...prev, templateId }));
+        // Initialize new resume with selected template
+        setResumeData(prev => ({ 
+            ...prev, 
+            templateId,
+            id: Math.random().toString(36).substr(2, 9) // Assign new random ID
+        }));
     }
   }, [searchParams]);
 
@@ -59,18 +77,15 @@ export const Editor: React.FC = () => {
             <Button variant="outline" size="sm" icon={<Layout size={16}/>} onClick={handleChangeTemplate} className="hidden sm:flex">
                 Template
             </Button>
-             <Button variant="outline" size="sm" icon={<Share2 size={16}/>} className="hidden sm:flex">
-                Share
-            </Button>
             <Button variant="secondary" size="sm" icon={<Printer size={16}/>} onClick={handlePrint}>
-                Print / PDF
+                {t('common.download')} / PDF
             </Button>
             <Button 
                 className="md:hidden" 
                 size="sm" 
                 onClick={() => setIsMobilePreview(!isMobilePreview)}
             >
-                {isMobilePreview ? 'Edit' : 'Preview'}
+                {isMobilePreview ? t('common.edit') : t('common.preview')}
             </Button>
         </div>
       </header>

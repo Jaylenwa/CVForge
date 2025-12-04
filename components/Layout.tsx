@@ -1,18 +1,50 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { FileText, Grid, User, Menu, X, Star } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FileText, Grid, Menu, X, Star, Globe, User as UserIcon, LogOut, Settings } from 'lucide-react';
 import { Button } from './ui/Button';
 import { AppRoute } from '../types';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export const Navbar: React.FC = () => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { t, language, setLanguage } = useLanguage();
+  const { user, isAuthenticated, logout } = useAuth();
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'zh' : 'en');
+  };
+
+  const handleLogout = () => {
+      logout();
+      navigate(AppRoute.Home);
+      setIsProfileOpen(false);
+  };
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Standard nav items
   const navItems = [
-    { label: 'Templates', href: AppRoute.Templates, icon: <Grid size={18} /> },
-    { label: 'My Resumes', href: AppRoute.Dashboard, icon: <FileText size={18} /> },
-    { label: 'Pricing', href: AppRoute.Pricing, icon: <Star size={18} /> },
+    { label: t('nav.templates'), href: AppRoute.Templates, icon: <Grid size={18} /> },
+    { label: t('nav.pricing'), href: AppRoute.Pricing, icon: <Star size={18} /> },
   ];
+
+  if (!isAuthenticated) {
+     navItems.splice(1, 0, { label: t('nav.dashboard'), href: AppRoute.Dashboard, icon: <FileText size={18} /> });
+  }
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -39,13 +71,74 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-            <Link to={AppRoute.Login}>
-                <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link to={AppRoute.Templates}>
-                <Button>Get Started</Button>
-            </Link>
+             <button 
+                onClick={toggleLanguage}
+                className="p-2 text-gray-500 hover:text-gray-900 focus:outline-none"
+                title="Switch Language"
+            >
+                <div className="flex items-center space-x-1">
+                    <Globe size={18} />
+                    <span className="text-sm font-medium">{language === 'en' ? 'EN' : '中'}</span>
+                </div>
+            </button>
+
+            {isAuthenticated && user ? (
+                <div className="relative ml-3" ref={profileMenuRef}>
+                    <div>
+                        <button 
+                            onClick={() => setIsProfileOpen(!isProfileOpen)}
+                            className="flex items-center max-w-xs text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
+                            id="user-menu-button"
+                        >
+                            <span className="sr-only">Open user menu</span>
+                            <img className="h-8 w-8 rounded-full object-cover" src={user.avatarUrl} alt="" />
+                            <span className="ml-2 font-medium text-gray-700 hidden md:block">{user.name}</span>
+                        </button>
+                    </div>
+                    
+                    {isProfileOpen && (
+                        <div 
+                            className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-fadeIn" 
+                            role="menu"
+                        >
+                            <div className="px-4 py-3 border-b border-gray-100">
+                                <p className="text-sm text-gray-500">Signed in as</p>
+                                <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
+                            </div>
+                            
+                            <Link to={AppRoute.Dashboard} onClick={() => setIsProfileOpen(false)} className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+                                <FileText size={16} className="mr-3 text-gray-400 group-hover:text-gray-500"/>
+                                {t('nav.dashboard')}
+                            </Link>
+                            
+                            <Link to={AppRoute.Settings} onClick={() => setIsProfileOpen(false)} className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+                                <Settings size={16} className="mr-3 text-gray-400 group-hover:text-gray-500"/>
+                                {t('nav.settings')}
+                            </Link>
+
+                             <button 
+                                onClick={handleLogout}
+                                className="w-full group flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 border-t border-gray-100 mt-1" 
+                                role="menuitem"
+                            >
+                                <LogOut size={16} className="mr-3 text-red-400 group-hover:text-red-500"/>
+                                {t('nav.signout')}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <>
+                    <Link to={AppRoute.Login}>
+                        <Button variant="ghost">{t('nav.signin')}</Button>
+                    </Link>
+                    <Link to={AppRoute.Templates}>
+                        <Button>{t('nav.getStarted')}</Button>
+                    </Link>
+                </>
+            )}
           </div>
+          
           <div className="-mr-2 flex items-center sm:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -80,13 +173,58 @@ export const Navbar: React.FC = () => {
             ))}
              <div className="pt-4 pb-3 border-t border-gray-200">
                 <div className="mt-3 space-y-1 px-2">
-                     <Link to={AppRoute.Login} onClick={() => setIsOpen(false)}>
-                        <Button className="w-full justify-center" variant="outline">Sign In</Button>
-                     </Link>
-                     <div className="h-2"></div>
-                     <Link to={AppRoute.Templates} onClick={() => setIsOpen(false)}>
-                        <Button className="w-full justify-center">Get Started</Button>
-                     </Link>
+                     <button onClick={() => { toggleLanguage(); setIsOpen(false); }} className="w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50">
+                        {language === 'en' ? 'Switch to Chinese' : '切换为英文'}
+                     </button>
+                     
+                     {isAuthenticated ? (
+                         <>
+                            <div className="px-4 py-2 flex items-center">
+                                <img className="h-8 w-8 rounded-full object-cover mr-3" src={user?.avatarUrl} alt="" />
+                                <div>
+                                    <div className="text-base font-medium text-gray-800">{user?.name}</div>
+                                    <div className="text-sm font-medium text-gray-500">{user?.email}</div>
+                                </div>
+                            </div>
+                             
+                            <Button 
+                                className="w-full justify-start mt-2" 
+                                variant="ghost" 
+                                icon={<FileText size={16}/>}
+                                onClick={() => { navigate(AppRoute.Dashboard); setIsOpen(false); }}
+                            >
+                                {t('nav.dashboard')}
+                            </Button>
+                            
+                            <Button 
+                                className="w-full justify-start mt-2" 
+                                variant="ghost" 
+                                icon={<Settings size={16}/>}
+                                onClick={() => { navigate(AppRoute.Settings); setIsOpen(false); }}
+                            >
+                                {t('nav.settings')}
+                            </Button>
+
+                             <Button 
+                                className="w-full justify-start mt-2 text-red-600 hover:text-red-700 hover:bg-red-50" 
+                                variant="ghost" 
+                                icon={<LogOut size={16}/>} 
+                                onClick={handleLogout}
+                            >
+                                {t('nav.signout')}
+                            </Button>
+                         </>
+                     ) : (
+                         <>
+                             <Link to={AppRoute.Login} onClick={() => setIsOpen(false)}>
+                                <Button className="w-full justify-center" variant="outline">{t('nav.signin')}</Button>
+                             </Link>
+                             <div className="h-2"></div>
+                             <Link to={AppRoute.Templates} onClick={() => setIsOpen(false)}>
+                                <Button className="w-full justify-center">{t('nav.getStarted')}</Button>
+                             </Link>
+                         </>
+                     )}
                 </div>
             </div>
           </div>
@@ -97,19 +235,20 @@ export const Navbar: React.FC = () => {
 };
 
 export const Footer: React.FC = () => {
+    const { t, setLanguage } = useLanguage();
+
     return (
         <footer className="bg-slate-900 text-white py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
                     <h3 className="text-xl font-bold mb-4">CVForge</h3>
-                    <p className="text-slate-400 text-sm">Empowering careers with professional, AI-enhanced resumes.</p>
+                    <p className="text-slate-400 text-sm">{t('hero.desc')}</p>
                 </div>
                 <div>
                     <h4 className="font-semibold mb-4">Product</h4>
                     <ul className="space-y-2 text-slate-400 text-sm">
-                        <li><Link to="/templates" className="hover:text-white">Templates</Link></li>
-                        <li><Link to="/pricing" className="hover:text-white">Pricing</Link></li>
-                        <li><Link to="/features" className="hover:text-white">Features</Link></li>
+                        <li><Link to="/templates" className="hover:text-white">{t('nav.templates')}</Link></li>
+                        <li><Link to="/pricing" className="hover:text-white">{t('nav.pricing')}</Link></li>
                     </ul>
                 </div>
                 <div>
@@ -117,20 +256,19 @@ export const Footer: React.FC = () => {
                     <ul className="space-y-2 text-slate-400 text-sm">
                         <li>Privacy Policy</li>
                         <li>Terms of Service</li>
-                        <li>Cookie Policy</li>
                     </ul>
                 </div>
                 <div>
                     <h4 className="font-semibold mb-4">Language</h4>
                     <div className="flex space-x-2">
-                        <span className="text-sm text-slate-400 hover:text-white cursor-pointer">English</span>
+                        <button onClick={() => setLanguage('en')} className="text-sm text-slate-400 hover:text-white cursor-pointer">English</button>
                         <span className="text-sm text-slate-400">|</span>
-                        <span className="text-sm text-slate-400 hover:text-white cursor-pointer">中文</span>
+                        <button onClick={() => setLanguage('zh')} className="text-sm text-slate-400 hover:text-white cursor-pointer">中文</button>
                     </div>
                 </div>
             </div>
             <div className="max-w-7xl mx-auto px-4 mt-8 pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
-                &copy; {new Date().getFullYear()} CVForge. All rights reserved.
+                &copy; {new Date().getFullYear()} CVForge. {t('footer.rights')}
             </div>
         </footer>
     )

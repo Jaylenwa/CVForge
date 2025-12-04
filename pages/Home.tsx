@@ -1,10 +1,23 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle, Cpu, FileCheck, Share2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, CheckCircle, Cpu, FileCheck, Share2, Briefcase, GraduationCap, PenTool, Code } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { AppRoute } from '../types';
+import { MOCK_TEMPLATES } from '../services/mockData';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const Home: React.FC = () => {
+  const navigate = useNavigate();
+  const { t } = useLanguage();
+  const popularTemplates = MOCK_TEMPLATES.slice(0, 4);
+
+  const quickAccess = [
+    { label: 'IT / Tech', icon: <Code size={20} />, query: 'IT' },
+    { label: 'Finance', icon: <Briefcase size={20} />, query: 'Finance' },
+    { label: 'Creative', icon: <PenTool size={20} />, query: 'Creative' },
+    { label: 'Student', icon: <GraduationCap size={20} />, query: 'Intern' },
+  ];
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -14,24 +27,24 @@ export const Home: React.FC = () => {
             <main className="mt-10 mx-auto max-w-7xl sm:mt-12 md:mt-16 lg:mt-20 xl:mt-28">
               <div className="sm:text-center lg:text-left">
                 <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                  <span className="block xl:inline">Craft your perfect resume</span>{' '}
-                  <span className="block text-blue-600 xl:inline">with AI precision</span>
+                  <span className="block xl:inline">{t('hero.title')}</span>{' '}
+                  <span className="block text-blue-600 xl:inline">{t('hero.subtitle')}</span>
                 </h1>
                 <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-auto">
-                  Build professional, ATS-friendly resumes in minutes. Choose from our curated templates, use AI to polish your text, and land your dream job.
+                  {t('hero.desc')}
                 </p>
                 <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
                   <div className="rounded-md shadow">
                     <Link to={AppRoute.Templates}>
                       <Button size="lg" className="w-full">
-                        Create Resume <ArrowRight className="ml-2 h-5 w-5" />
+                        {t('hero.cta')} <ArrowRight className="ml-2 h-5 w-5" />
                       </Button>
                     </Link>
                   </div>
                   <div className="mt-3 sm:mt-0 sm:ml-3">
                      <Link to={AppRoute.Dashboard}>
                         <Button size="lg" variant="outline" className="w-full">
-                            My Resumes
+                            {t('hero.cta_secondary')}
                         </Button>
                     </Link>
                   </div>
@@ -49,8 +62,58 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Quick Access Section */}
+      <section className="py-10 bg-gray-50 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h3 className="text-lg font-semibold text-gray-700 mb-6">{t('home.quickAccess')}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {quickAccess.map((item) => (
+                      <button 
+                        key={item.label}
+                        onClick={() => navigate(`${AppRoute.Templates}?tag=${item.query}`)}
+                        className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all text-gray-700 hover:text-blue-600"
+                      >
+                          <span className="mr-3 text-blue-500">{item.icon}</span>
+                          <span className="font-medium">{item.label}</span>
+                      </button>
+                  ))}
+              </div>
+          </div>
+      </section>
+
+      {/* Popular Templates Preview */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-end mb-6">
+                 <h2 className="text-2xl font-bold text-gray-900">{t('home.popular')}</h2>
+                 <Link to={AppRoute.Templates} className="text-blue-600 font-medium hover:underline flex items-center">
+                    View All <ArrowRight size={16} className="ml-1"/>
+                 </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {popularTemplates.map(template => (
+                    <div key={template.id} className="group relative border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all">
+                        <div className="aspect-[3/4] bg-gray-100 overflow-hidden">
+                            <img src={template.thumbnail} alt={template.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                        <div className="p-3">
+                            <h3 className="font-medium text-gray-900 truncate">{template.name}</h3>
+                            <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
+                                <span className="px-2 py-0.5 bg-gray-100 rounded">{template.category}</span>
+                                {template.isPremium && <span className="text-yellow-600 font-bold">Premium</span>}
+                            </div>
+                        </div>
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                             <Button onClick={() => navigate(`${AppRoute.Editor}?template=${template.id}`)}>Use Template</Button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section className="py-12 bg-gray-50">
+      <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:text-center">
             <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Features</h2>

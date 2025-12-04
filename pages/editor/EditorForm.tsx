@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { Trash2, Plus, GripVertical, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon } from 'lucide-react';
-import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType } from '../../types';
+import { Trash2, Plus, GripVertical, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate } from 'lucide-react';
+import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType, ThemeConfig } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { polishText, generateSummary } from '../../services/geminiService';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface EditorFormProps {
   data: ResumeData;
@@ -10,6 +11,8 @@ interface EditorFormProps {
 }
 
 export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
+  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<'content' | 'design'>('content');
   const [activeSection, setActiveSection] = useState<string | null>('personal');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -18,6 +21,13 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     onChange({
       ...data,
       personalInfo: { ...data.personalInfo, [field]: value }
+    });
+  };
+
+  const updateTheme = (field: keyof ThemeConfig, value: string) => {
+    onChange({
+        ...data,
+        themeConfig: { ...data.themeConfig, [field]: value }
     });
   };
 
@@ -104,16 +114,15 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
      setIsAiLoading(false);
   }
 
-  return (
-    <div className="h-full overflow-y-auto bg-white border-r border-gray-200">
-      
+  const renderContentTab = () => (
+    <>
       {/* Personal Info */}
       <div className="border-b border-gray-200">
         <button 
-          className="w-full px-6 py-4 flex items-center justify-between font-semibold hover:bg-gray-50"
+          className="w-full px-6 py-4 flex items-center justify-between font-semibold hover:bg-gray-50 text-gray-700"
           onClick={() => setActiveSection(activeSection === 'personal' ? null : 'personal')}
         >
-            <span>Personal Information</span>
+            <span>{t('editor.personal')}</span>
             {activeSection === 'personal' ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
         </button>
         
@@ -217,7 +226,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
         <div key={section.id} className="border-b border-gray-200">
            <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50">
              <button 
-                className="flex-grow text-left font-semibold flex items-center"
+                className="flex-grow text-left font-semibold flex items-center text-gray-700"
                 onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
              >
                  <span className="mr-2 cursor-grab active:cursor-grabbing"><GripVertical size={16} className="text-gray-400"/></span>
@@ -248,7 +257,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             isLoading={isAiLoading}
                             className="mb-2"
                         >
-                            Auto-Generate Summary
+                            {t('editor.ai_polish')}
                         </Button>
                     </div>
                 )}
@@ -302,7 +311,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                                 disabled={isAiLoading}
                               >
                                   <Sparkles size={12} className="mr-1"/> 
-                                  {isAiLoading ? 'Polishing...' : 'Polish'}
+                                  {isAiLoading ? 'Polishing...' : t('editor.ai_polish')}
                               </button>
                           )}
                       </div>
@@ -316,6 +325,118 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
            )}
         </div>
       ))}
+    </>
+  );
+
+  const renderDesignTab = () => (
+    <div className="p-6 space-y-8">
+        {/* Colors */}
+        <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+                <Palette size={18} className="mr-2 text-gray-500"/> {t('editor.color')}
+            </h3>
+            <div className="flex flex-wrap gap-3">
+                {['#2563eb', '#0f172a', '#dc2626', '#16a34a', '#9333ea', '#ea580c', '#0891b2'].map(color => (
+                    <button
+                        key={color}
+                        onClick={() => updateTheme('color', color)}
+                        className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${data.themeConfig?.color === color ? 'border-gray-900 scale-110 ring-2 ring-gray-200' : 'border-transparent'}`}
+                        style={{ backgroundColor: color }}
+                    />
+                ))}
+            </div>
+        </div>
+
+        {/* Fonts */}
+        <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+                <Type size={18} className="mr-2 text-gray-500"/> {t('editor.font')}
+            </h3>
+            <div className="space-y-3">
+                <label className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <span className="font-sans">Modern Sans (Inter)</span>
+                    <input 
+                        type="radio" 
+                        name="fontFamily" 
+                        checked={data.themeConfig?.fontFamily === 'sans'}
+                        onChange={() => updateTheme('fontFamily', 'sans')}
+                        className="text-blue-600 focus:ring-blue-500"
+                    />
+                </label>
+                <label className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <span className="font-serif">Elegant Serif (Merriweather)</span>
+                    <input 
+                        type="radio" 
+                        name="fontFamily" 
+                        checked={data.themeConfig?.fontFamily === 'serif'}
+                        onChange={() => updateTheme('fontFamily', 'serif')}
+                        className="text-blue-600 focus:ring-blue-500"
+                    />
+                </label>
+                 <label className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <span className="font-mono">Technical Mono (Roboto)</span>
+                    <input 
+                        type="radio" 
+                        name="fontFamily" 
+                        checked={data.themeConfig?.fontFamily === 'mono'}
+                        onChange={() => updateTheme('fontFamily', 'mono')}
+                        className="text-blue-600 focus:ring-blue-500"
+                    />
+                </label>
+            </div>
+        </div>
+
+        {/* Spacing */}
+        <div>
+             <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+                <LayoutTemplate size={18} className="mr-2 text-gray-500"/> {t('editor.spacing')}
+            </h3>
+            <div className="space-y-3">
+                <button 
+                    onClick={() => updateTheme('spacing', 'compact')}
+                    className={`w-full p-2 text-sm border rounded-md transition-colors ${data.themeConfig?.spacing === 'compact' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
+                >
+                    Compact (More Info)
+                </button>
+                 <button 
+                    onClick={() => updateTheme('spacing', 'normal')}
+                    className={`w-full p-2 text-sm border rounded-md transition-colors ${data.themeConfig?.spacing === 'normal' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
+                >
+                    Normal (Balanced)
+                </button>
+                 <button 
+                    onClick={() => updateTheme('spacing', 'spacious')}
+                    className={`w-full p-2 text-sm border rounded-md transition-colors ${data.themeConfig?.spacing === 'spacious' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
+                >
+                    Spacious (Clean)
+                </button>
+            </div>
+        </div>
+    </div>
+  );
+
+  return (
+    <div className="h-full flex flex-col bg-white border-r border-gray-200">
+        {/* Tabs */}
+        <div className="flex border-b border-gray-200">
+            <button 
+                onClick={() => setActiveTab('content')}
+                className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'content' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            >
+                {t('editor.content')}
+            </button>
+             <button 
+                onClick={() => setActiveTab('design')}
+                className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'design' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+            >
+                {t('editor.design')}
+            </button>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto">
+            {activeTab === 'content' ? renderContentTab() : renderDesignTab()}
+        </div>
     </div>
   );
 };

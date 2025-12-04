@@ -4,7 +4,8 @@ export enum ResumeSectionType {
   Experience = 'experience',
   Education = 'education',
   Skills = 'skills',
-  Projects = 'projects'
+  Projects = 'projects',
+  Custom = 'custom'
 }
 
 export interface ResumeItem {
@@ -24,11 +25,17 @@ export interface ResumeSection {
   isVisible: boolean;
 }
 
+export interface ThemeConfig {
+  color: string;
+  fontFamily: 'sans' | 'serif' | 'mono';
+  spacing: 'compact' | 'normal' | 'spacious';
+}
+
 export interface ResumeData {
   id: string;
   title: string;
   templateId: string;
-  themeColor: string;
+  themeConfig: ThemeConfig;
   lastModified: number;
   personalInfo: {
     fullName: string;
@@ -49,6 +56,8 @@ export interface Template {
   tags: string[]; // 'Professional', 'Creative', 'ATS'
   popularity: number;
   isPremium: boolean;
+  category: 'IT' | 'Finance' | 'Creative' | 'General';
+  level: 'Intern' | 'Junior' | 'Senior' | 'Executive';
 }
 
 export enum AppRoute {
@@ -57,5 +66,9 @@ export enum AppRoute {
   Editor = '/editor',
   Dashboard = '/dashboard',
   Login = '/login',
-  Pricing = '/pricing'
+  Register = '/register',
+  Pricing = '/pricing',
+  Settings = '/settings'
 }
+
+export type Language = 'en' | 'zh';

@@ -5,18 +5,12 @@ import { Home } from './pages/Home';
 import { Templates } from './pages/Templates';
 import { Dashboard } from './pages/Dashboard';
 import { Editor } from './pages/editor/Editor';
+import { Login } from './pages/auth/Login';
+import { Register } from './pages/auth/Register';
+import { Settings } from './pages/Settings';
 import { AppRoute } from './types';
-
-// Auth Login Placeholder
-const Login = () => (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 text-center">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
-            <p className="text-gray-500">Demo Mode: No login required for this preview.</p>
-            <a href="/" className="font-medium text-blue-600 hover:text-blue-500">Return Home</a>
-        </div>
-    </div>
-);
+import { LanguageProvider } from './contexts/LanguageContext';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Pricing Placeholder
 const Pricing = () => (
@@ -53,21 +47,29 @@ const LayoutWrapper = () => (
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        {/* Routes with Main Navbar/Footer */}
-        <Route element={<LayoutWrapper />}>
-            <Route path={AppRoute.Home} element={<Home />} />
-            <Route path={AppRoute.Templates} element={<Templates />} />
-            <Route path={AppRoute.Dashboard} element={<Dashboard />} />
-            <Route path={AppRoute.Pricing} element={<Pricing />} />
-        </Route>
-        
-        {/* Standalone Routes */}
-        <Route path={AppRoute.Editor} element={<Editor />} />
-        <Route path={AppRoute.Login} element={<Login />} />
-      </Routes>
-    </Router>
+    <LanguageProvider>
+      <AuthProvider>
+        <Router>
+          <Routes>
+              {/* Routes with Main Navbar/Footer */}
+              <Route element={<LayoutWrapper />}>
+                  <Route path={AppRoute.Home} element={<Home />} />
+                  <Route path={AppRoute.Templates} element={<Templates />} />
+                  <Route path={AppRoute.Dashboard} element={<Dashboard />} />
+                  <Route path={AppRoute.Pricing} element={<Pricing />} />
+                  <Route path={AppRoute.Settings} element={<Settings />} />
+              </Route>
+              
+              {/* Auth Routes */}
+              <Route path={AppRoute.Login} element={<Login />} />
+              <Route path={AppRoute.Register} element={<Register />} />
+              
+              {/* Standalone Routes */}
+              <Route path={AppRoute.Editor} element={<Editor />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </LanguageProvider>
   );
 };
 
