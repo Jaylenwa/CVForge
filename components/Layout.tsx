@@ -42,7 +42,7 @@ export const Navbar: React.FC = () => {
     { label: t('nav.pricing'), href: AppRoute.Pricing, icon: <Star size={18} /> },
   ];
 
-  if (!isAuthenticated) {
+  if (isAuthenticated) {
      navItems.splice(1, 0, { label: t('nav.dashboard'), href: AppRoute.Dashboard, icon: <FileText size={18} /> });
   }
 

@@ -314,7 +314,7 @@ const TemplateElegant: React.FC<{ data: ResumeData; styles: any }> = ({ data, st
                  {data.personalInfo.avatarUrl && (
                      <img src={data.personalInfo.avatarUrl} alt="Profile" className="w-32 h-32 rounded-full mb-6 object-cover border-4 border-white/20 mx-auto shadow-md"/>
                  )}
-                 <h1 className="text-2xl font-serif font-bold leading-tight mb-2" style={{ fontFamily: `"${styles.fontFamily}", serif` }}>{data.personalInfo.fullName}</h1>
+                <h1 className="text-2xl font-serif font-bold leading-tight mb-2" style={{ fontFamily: styles.fontFamily }}>{data.personalInfo.fullName}</h1>
                  <p className="text-white/70 uppercase tracking-widest text-xs font-semibold">{data.personalInfo.jobTitle}</p>
             </div>
 

@@ -34,7 +34,7 @@ export const polishText = async (text: string, tone: 'professional' | 'creative'
 };
 
 export const generateSummary = async (jobTitle: string, skills: string): Promise<string> => {
-  if (!apiKey) return "API Key missing.";
+  if (!apiKey) return "";
 
   try {
     const prompt = `
