@@ -69,7 +69,7 @@ export const INITIAL_RESUME: ResumeData = {
   templateId: 't1',
   themeConfig: {
     color: '#2563eb',
-    fontFamily: 'sans',
+    fontFamily: 'inter',
     spacing: 'normal'
   },
   lastModified: Date.now(),
@@ -152,7 +152,7 @@ export const MOCK_USER_RESUMES: ResumeData[] = [
     templateId: 't4',
     themeConfig: {
         color: '#111827',
-        fontFamily: 'serif',
+        fontFamily: 'merriweather',
         spacing: 'spacious'
     },
     lastModified: Date.now() - 86400000 * 5,

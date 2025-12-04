@@ -27,7 +27,7 @@ export interface ResumeSection {
 
 export interface ThemeConfig {
   color: string;
-  fontFamily: 'sans' | 'serif' | 'mono';
+  fontFamily: string;
   spacing: 'compact' | 'normal' | 'spacious';
 }
 

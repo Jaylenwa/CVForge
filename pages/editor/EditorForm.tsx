@@ -10,6 +10,18 @@ interface EditorFormProps {
   onChange: (data: ResumeData) => void;
 }
 
+const FONT_OPTIONS = [
+  { group: 'English - Sans Serif', id: 'inter', label: 'Inter (Modern)' },
+  { group: 'English - Sans Serif', id: 'roboto', label: 'Roboto (Technical)' },
+  { group: 'English - Serif', id: 'merriweather', label: 'Merriweather (Elegant)' },
+  { group: 'English - Serif', id: 'playfair', label: 'Playfair Display (Classy)' },
+  { group: 'English - Mono', id: 'mono', label: 'Roboto Mono (Code)' },
+  { group: 'Chinese - Sans (黑体)', id: 'yahei', label: '微软雅黑 (Microsoft YaHei)' },
+  { group: 'Chinese - Sans (黑体)', id: 'notosans', label: '思源黑体 (Noto Sans SC)' },
+  { group: 'Chinese - Serif (宋体/楷体)', id: 'simsun', label: '宋体 (SimSun)' },
+  { group: 'Chinese - Serif (宋体/楷体)', id: 'kaiti', label: '楷体 (KaiTi)' },
+];
+
 export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'content' | 'design'>('content');
@@ -328,6 +340,9 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     </>
   );
 
+  const predefinedColors = ['#2563eb', '#0f172a', '#dc2626', '#16a34a', '#9333ea', '#ea580c', '#0891b2'];
+  const isCustomColor = !predefinedColors.includes(data.themeConfig?.color || '');
+
   const renderDesignTab = () => (
     <div className="p-6 space-y-8">
         {/* Colors */}
@@ -335,8 +350,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
             <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
                 <Palette size={18} className="mr-2 text-gray-500"/> {t('editor.color')}
             </h3>
-            <div className="flex flex-wrap gap-3">
-                {['#2563eb', '#0f172a', '#dc2626', '#16a34a', '#9333ea', '#ea580c', '#0891b2'].map(color => (
+            <div className="flex flex-wrap gap-3 items-center">
+                {predefinedColors.map(color => (
                     <button
                         key={color}
                         onClick={() => updateTheme('color', color)}
@@ -344,6 +359,33 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                         style={{ backgroundColor: color }}
                     />
                 ))}
+
+                {/* Custom Color Picker */}
+                <div className="relative group">
+                    <div 
+                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110 cursor-pointer ${
+                            isCustomColor 
+                            ? 'border-gray-900 scale-110 ring-2 ring-gray-200' 
+                            : 'border-gray-300'
+                        }`}
+                        style={{ 
+                            background: isCustomColor 
+                                ? data.themeConfig?.color 
+                                : 'conic-gradient(from 180deg, red, yellow, lime, aqua, blue, magenta, red)'
+                        }}
+                    >
+                         {!isCustomColor && (
+                             <Plus size={14} className="text-white drop-shadow-md" />
+                         )}
+                    </div>
+                    <input
+                        type="color"
+                        value={data.themeConfig?.color}
+                        onChange={(e) => updateTheme('color', e.target.value)}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        title="Custom Color"
+                    />
+                </div>
             </div>
         </div>
 
@@ -352,38 +394,43 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
             <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
                 <Type size={18} className="mr-2 text-gray-500"/> {t('editor.font')}
             </h3>
-            <div className="space-y-3">
-                <label className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <span className="font-sans">Modern Sans (Inter)</span>
-                    <input 
-                        type="radio" 
-                        name="fontFamily" 
-                        checked={data.themeConfig?.fontFamily === 'sans'}
-                        onChange={() => updateTheme('fontFamily', 'sans')}
-                        className="text-blue-600 focus:ring-blue-500"
-                    />
-                </label>
-                <label className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <span className="font-serif">Elegant Serif (Merriweather)</span>
-                    <input 
-                        type="radio" 
-                        name="fontFamily" 
-                        checked={data.themeConfig?.fontFamily === 'serif'}
-                        onChange={() => updateTheme('fontFamily', 'serif')}
-                        className="text-blue-600 focus:ring-blue-500"
-                    />
-                </label>
-                 <label className="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <span className="font-mono">Technical Mono (Roboto)</span>
-                    <input 
-                        type="radio" 
-                        name="fontFamily" 
-                        checked={data.themeConfig?.fontFamily === 'mono'}
-                        onChange={() => updateTheme('fontFamily', 'mono')}
-                        className="text-blue-600 focus:ring-blue-500"
-                    />
-                </label>
+            <div className="relative">
+              <select
+                value={data.themeConfig.fontFamily}
+                onChange={(e) => updateTheme('fontFamily', e.target.value)}
+                className="block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
+              >
+                {/* Grouping fonts manually since React doesn't support complex data structures in select directly easily with map inside optgroup without processing */}
+                <optgroup label="English - Sans Serif">
+                  {FONT_OPTIONS.filter(f => f.group === 'English - Sans Serif').map(f => (
+                    <option key={f.id} value={f.id}>{f.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="English - Serif">
+                  {FONT_OPTIONS.filter(f => f.group === 'English - Serif').map(f => (
+                    <option key={f.id} value={f.id}>{f.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="English - Mono">
+                  {FONT_OPTIONS.filter(f => f.group === 'English - Mono').map(f => (
+                    <option key={f.id} value={f.id}>{f.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Chinese - Sans (黑体)">
+                  {FONT_OPTIONS.filter(f => f.group === 'Chinese - Sans (黑体)').map(f => (
+                    <option key={f.id} value={f.id}>{f.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Chinese - Serif (宋体/楷体)">
+                  {FONT_OPTIONS.filter(f => f.group === 'Chinese - Serif (宋体/楷体)').map(f => (
+                    <option key={f.id} value={f.id}>{f.label}</option>
+                  ))}
+                </optgroup>
+              </select>
             </div>
+            <p className="mt-2 text-xs text-gray-500">
+              Note: Chinese fonts rely on system availability or web fonts if supported.
+            </p>
         </div>
 
         {/* Spacing */}

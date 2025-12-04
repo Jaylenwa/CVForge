@@ -6,27 +6,41 @@ interface PreviewProps {
   scale?: number;
 }
 
-// Helper to get CSS classes based on ThemeConfig
-const getThemeClasses = (config?: ThemeConfig) => {
-    const fontClass = {
-        'sans': 'font-sans',
-        'serif': 'font-serif',
-        'mono': 'font-mono'
-    }[config?.fontFamily || 'sans'];
+// Map Font IDs to CSS Font Stacks
+const getFontStack = (fontId: string): string => {
+    switch (fontId) {
+        case 'inter': return '"Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        case 'roboto': return '"Roboto", "Helvetica Neue", Arial, sans-serif';
+        case 'merriweather': return '"Merriweather", "Georgia", serif';
+        case 'playfair': return '"Playfair Display", "Times New Roman", serif';
+        case 'mono': return '"Roboto Mono", "Courier New", monospace';
+        
+        // Chinese Fonts
+        case 'yahei': return '"Microsoft YaHei", "Heiti SC", "PingFang SC", sans-serif';
+        case 'notosans': return '"Noto Sans SC", "Microsoft YaHei", sans-serif';
+        case 'simsun': return '"SimSun", "Songti SC", "Noto Serif SC", serif';
+        case 'kaiti': return '"KaiTi", "STKaiti", "Kai", serif';
+        
+        default: return '"Inter", sans-serif';
+    }
+};
+
+// Helper to get CSS styles based on ThemeConfig
+const getThemeStyles = (config?: ThemeConfig) => {
+    const fontFamily = getFontStack(config?.fontFamily || 'inter');
 
     const spacingMultiplier = {
-        'compact': '0.75',
+        'compact': '0.85',
         'normal': '1',
         'spacious': '1.25'
     }[config?.spacing || 'normal'];
 
-    // We will apply spacing via inline style or specific tailwind classes that we can modify
-    return { fontClass, spacingMultiplier };
+    return { fontFamily, spacingMultiplier };
 };
 
 // 1. Classic Professional
-const TemplateClassic: React.FC<{ data: ResumeData; theme: any }> = ({ data, theme }) => (
-  <div className={`p-8 md:p-12 bg-white text-gray-900 h-full min-h-[1123px] shadow-lg print:shadow-none print:p-0 ${theme.fontClass}`} style={{ lineHeight: parseFloat(theme.spacingMultiplier) * 1.5 }}>
+const TemplateClassic: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
+  <div className="p-8 md:p-12 bg-white text-gray-900 h-full min-h-[1123px] shadow-lg print:shadow-none print:p-0" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
     <div className="border-b-2 pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6" style={{ borderColor: data.themeConfig?.color || '#333' }}>
       <div className="flex-1 text-center md:text-left order-2 md:order-1">
           <h1 className="text-4xl font-bold uppercase tracking-wider" style={{ color: data.themeConfig?.color }}>{data.personalInfo.fullName}</h1>
@@ -50,7 +64,7 @@ const TemplateClassic: React.FC<{ data: ResumeData; theme: any }> = ({ data, the
       )}
     </div>
 
-    <div className="space-y-6" style={{ gap: `${parseFloat(theme.spacingMultiplier) * 1.5}rem` }}>
+    <div className="space-y-6" style={{ gap: `${parseFloat(styles.spacingMultiplier) * 1.5}rem` }}>
       {data.sections.filter(s => s.isVisible).map(section => (
         <div key={section.id}>
           <h3 className="text-lg font-bold uppercase border-b mb-4 pb-1 tracking-wide" style={{ borderColor: '#e5e7eb', color: '#1f2937' }}>
@@ -84,8 +98,8 @@ const TemplateClassic: React.FC<{ data: ResumeData; theme: any }> = ({ data, the
 );
 
 // 2. Modern Dark
-const TemplateModern: React.FC<{ data: ResumeData; theme: any }> = ({ data, theme }) => (
-    <div className={`grid grid-cols-12 h-full min-h-[1123px] bg-white shadow-lg print:shadow-none ${theme.fontClass}`} style={{ lineHeight: parseFloat(theme.spacingMultiplier) * 1.5 }}>
+const TemplateModern: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
+    <div className="grid grid-cols-12 h-full min-h-[1123px] bg-white shadow-lg print:shadow-none" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
         <div className="col-span-4 text-white p-8" style={{ backgroundColor: '#0f172a' }}>
             <div className="mb-8 flex flex-col items-center md:items-start">
                  {data.personalInfo.avatarUrl && (
@@ -143,8 +157,8 @@ const TemplateModern: React.FC<{ data: ResumeData; theme: any }> = ({ data, them
 )
 
 // 3. Tech Minimalist
-const TemplateMinimalist: React.FC<{ data: ResumeData; theme: any }> = ({ data, theme }) => (
-    <div className={`p-8 md:p-14 bg-white h-full min-h-[1123px] text-gray-800 shadow-lg print:shadow-none ${theme.fontClass}`} style={{ lineHeight: parseFloat(theme.spacingMultiplier) * 1.4 }}>
+const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
+    <div className="p-8 md:p-14 bg-white h-full min-h-[1123px] text-gray-800 shadow-lg print:shadow-none" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.4 }}>
         <header className="border-b-4 pb-6 mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6" style={{ borderColor: data.themeConfig?.color || 'black' }}>
             <div className="flex-1">
                 <h1 className="text-5xl font-black tracking-tight uppercase mb-4 leading-none" style={{ color: data.themeConfig?.color || 'black' }}>{data.personalInfo.fullName}</h1>
@@ -189,8 +203,8 @@ const TemplateMinimalist: React.FC<{ data: ResumeData; theme: any }> = ({ data, 
 );
 
 // 4. Executive Serif
-const TemplateExecutive: React.FC<{ data: ResumeData; theme: any }> = ({ data, theme }) => (
-    <div className={`p-10 md:p-12 bg-white h-full min-h-[1123px] text-gray-900 shadow-lg print:shadow-none ${theme.fontClass}`} style={{ lineHeight: parseFloat(theme.spacingMultiplier) * 1.6 }}>
+const TemplateExecutive: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
+    <div className="p-10 md:p-12 bg-white h-full min-h-[1123px] text-gray-900 shadow-lg print:shadow-none" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.6 }}>
         <div className="text-center border-b pb-6 mb-8 flex flex-col items-center" style={{ borderColor: data.themeConfig?.color || '#111827' }}>
             {data.personalInfo.avatarUrl && (
                  <img 
@@ -234,8 +248,8 @@ const TemplateExecutive: React.FC<{ data: ResumeData; theme: any }> = ({ data, t
 );
 
 // 5. Creative Bold
-const TemplateBold: React.FC<{ data: ResumeData; theme: any }> = ({ data, theme }) => (
-     <div className={`bg-white h-full min-h-[1123px] shadow-lg print:shadow-none flex flex-col ${theme.fontClass}`} style={{ lineHeight: parseFloat(theme.spacingMultiplier) * 1.5 }}>
+const TemplateBold: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
+     <div className="bg-white h-full min-h-[1123px] shadow-lg print:shadow-none flex flex-col" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
         <div className="text-white p-10 print:text-white flex flex-col md:flex-row justify-between items-center gap-6" style={{ backgroundColor: data.themeConfig?.color || '#1d4ed8' }}>
              <div className="order-2 md:order-1 flex-1">
                 <h1 className="text-5xl font-extrabold mb-2 tracking-tight">{data.personalInfo.fullName}</h1>
@@ -293,14 +307,14 @@ const TemplateBold: React.FC<{ data: ResumeData; theme: any }> = ({ data, theme 
 );
 
 // 6. Elegant Teal
-const TemplateElegant: React.FC<{ data: ResumeData; theme: any }> = ({ data, theme }) => (
-    <div className={`grid grid-cols-12 h-full min-h-[1123px] bg-white shadow-lg print:shadow-none ${theme.fontClass}`} style={{ lineHeight: parseFloat(theme.spacingMultiplier) * 1.6 }}>
+const TemplateElegant: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
+    <div className="grid grid-cols-12 h-full min-h-[1123px] bg-white shadow-lg print:shadow-none" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.6 }}>
         <div className="col-span-4 text-white p-8 flex flex-col" style={{ backgroundColor: data.themeConfig?.color || '#115e59' }}>
             <div className="mb-10 text-center">
                  {data.personalInfo.avatarUrl && (
                      <img src={data.personalInfo.avatarUrl} alt="Profile" className="w-32 h-32 rounded-full mb-6 object-cover border-4 border-white/20 mx-auto shadow-md"/>
                  )}
-                 <h1 className="text-2xl font-serif font-bold leading-tight mb-2">{data.personalInfo.fullName}</h1>
+                 <h1 className="text-2xl font-serif font-bold leading-tight mb-2" style={{ fontFamily: `"${styles.fontFamily}", serif` }}>{data.personalInfo.fullName}</h1>
                  <p className="text-white/70 uppercase tracking-widest text-xs font-semibold">{data.personalInfo.jobTitle}</p>
             </div>
 
@@ -353,7 +367,7 @@ const TemplateElegant: React.FC<{ data: ResumeData; theme: any }> = ({ data, the
 );
 
 export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1 }) => {
-  const theme = getThemeClasses(data.themeConfig);
+  const styles = getThemeStyles(data.themeConfig);
 
   const style = {
     transform: `scale(${scale})`,
@@ -362,13 +376,13 @@ export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1 }) => {
 
   const renderTemplate = () => {
       switch (data.templateId) {
-          case 't1': return <TemplateClassic data={data} theme={theme} />;
-          case 't2': return <TemplateModern data={data} theme={theme} />;
-          case 't3': return <TemplateMinimalist data={data} theme={theme} />;
-          case 't4': return <TemplateExecutive data={data} theme={theme} />;
-          case 't5': return <TemplateBold data={data} theme={theme} />;
-          case 't6': return <TemplateElegant data={data} theme={theme} />;
-          default: return <TemplateClassic data={data} theme={theme} />;
+          case 't1': return <TemplateClassic data={data} styles={styles} />;
+          case 't2': return <TemplateModern data={data} styles={styles} />;
+          case 't3': return <TemplateMinimalist data={data} styles={styles} />;
+          case 't4': return <TemplateExecutive data={data} styles={styles} />;
+          case 't5': return <TemplateBold data={data} styles={styles} />;
+          case 't6': return <TemplateElegant data={data} styles={styles} />;
+          default: return <TemplateClassic data={data} styles={styles} />;
       }
   };
 
