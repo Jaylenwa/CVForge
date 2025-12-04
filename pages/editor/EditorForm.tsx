@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Trash2, Plus, GripVertical, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Trash2, Plus, GripVertical, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { polishText, generateSummary } from '../../services/geminiService';
@@ -12,12 +12,29 @@ interface EditorFormProps {
 export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   const [activeSection, setActiveSection] = useState<string | null>('personal');
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const updatePersonalInfo = (field: string, value: string) => {
     onChange({
       ...data,
       personalInfo: { ...data.personalInfo, [field]: value }
     });
+  };
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+          alert("Image size too large. Please upload an image smaller than 2MB.");
+          return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updatePersonalInfo('avatarUrl', reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const updateSection = (sectionId: string, updates: Partial<ResumeSection>) => {
@@ -101,7 +118,60 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
         </button>
         
         {activeSection === 'personal' && (
-          <div className="px-6 pb-6 space-y-4 animate-fadeIn">
+          <div className="px-6 pb-6 space-y-5 animate-fadeIn">
+             
+             {/* Avatar Upload */}
+             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                 <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+                    <ImageIcon size={16} className="mr-2 text-gray-500" /> 
+                    Profile Photo
+                 </label>
+                 <div className="flex items-center space-x-4">
+                    {data.personalInfo.avatarUrl ? (
+                        <div className="relative group shrink-0">
+                            <img 
+                                src={data.personalInfo.avatarUrl} 
+                                alt="Avatar" 
+                                className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm"
+                            />
+                            <button
+                                onClick={() => updatePersonalInfo('avatarUrl', '')}
+                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition-colors"
+                                title="Remove photo"
+                            >
+                                <X size={10} />
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="w-16 h-16 shrink-0 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 border-2 border-gray-200 border-dashed">
+                            <Upload size={20} />
+                        </div>
+                    )}
+                    
+                    <div className="flex-1">
+                        <input 
+                            ref={fileInputRef}
+                            type="file" 
+                            className="hidden" 
+                            accept="image/png, image/jpeg, image/jpg" 
+                            onChange={handleAvatarUpload} 
+                        />
+                        <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full"
+                        >
+                            {data.personalInfo.avatarUrl ? 'Change Photo' : 'Upload Photo'}
+                        </Button>
+                        <p className="mt-2 text-xs text-gray-500">
+                            Square image recommended (1:1).<br/>
+                            Max size 2MB (JPG/PNG).
+                        </p>
+                    </div>
+                 </div>
+             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700">Full Name</label>
               <input 
@@ -137,10 +207,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
              <div>
                 <label className="block text-sm font-medium text-gray-700">Website / LinkedIn</label>
                 <input type="text" value={data.personalInfo.website} onChange={e => updatePersonalInfo('website', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-             </div>
-             <div>
-                 <label className="block text-sm font-medium text-gray-700">Avatar URL (Optional)</label>
-                 <input type="text" value={data.personalInfo.avatarUrl || ''} onChange={e => updatePersonalInfo('avatarUrl', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm" placeholder="https://..."/>
              </div>
           </div>
         )}
