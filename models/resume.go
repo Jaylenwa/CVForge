@@ -1,0 +1,52 @@
+package models
+
+import "gorm.io/gorm"
+
+type Resume struct {
+    gorm.Model
+    ExternalID string `gorm:"uniqueIndex;size:64"`
+    UserID     uint
+    Title      string `gorm:"size:191"`
+    TemplateID string `gorm:"size:64"`
+    ThemeColor   string `gorm:"size:32"`
+    ThemeFont    string `gorm:"size:64"`
+    ThemeSpacing string `gorm:"size:32"`
+    LastModified int64
+    FullName   string `gorm:"size:128"`
+    Email      string `gorm:"size:191"`
+    Phone      string `gorm:"size:64"`
+    Address    string `gorm:"size:191"`
+    Website    string `gorm:"size:191"`
+    AvatarURL  string `gorm:"size:512"`
+    Sections   []ResumeSection `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
+}
+
+type ResumeSection struct {
+    gorm.Model
+    ResumeID uint
+    ExternalID string `gorm:"size:64"`
+    Type     string `gorm:"size:32"`
+    Title    string `gorm:"size:128"`
+    IsVisible bool
+    OrderNum int
+    Items    []ResumeItem `gorm:"constraint:OnDelete:CASCADE;foreignKey:SectionID"`
+}
+
+type ResumeItem struct {
+    gorm.Model
+    SectionID  uint
+    ExternalID string `gorm:"size:64"`
+    Title      string `gorm:"size:128"`
+    Subtitle   string `gorm:"size:128"`
+    DateRange  string `gorm:"size:64"`
+    Location   string `gorm:"size:128"`
+    Description string `gorm:"type:text"`
+    OrderNum   int
+}
+
+type ShareLink struct {
+    gorm.Model
+    ResumeID uint
+    Slug     string `gorm:"uniqueIndex;size:64"`
+    IsPublic bool
+}
