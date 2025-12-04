@@ -38,7 +38,7 @@ func Load() Config {
 		S3Endpoint:      getenv("S3_ENDPOINT", ""),
 		S3AccessKey:     getenv("S3_ACCESS_KEY", ""),
 		S3SecretKey:     getenv("S3_SECRET_KEY", ""),
-		FrontendBaseURL: getenv("FRONTEND_BASE_URL", ""),
+		FrontendBaseURL: getenv("FRONTEND_BASE_URL", "http://localhost:3000"),
 	}
 }
 

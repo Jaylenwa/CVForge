@@ -1,16 +1,16 @@
 package handlers
 
 import (
-	"io"
-	"net/http"
-	"path/filepath"
-	"strings"
+    "io"
+    "net/http"
+    "path/filepath"
+    "strings"
 
-	"openresume/config"
-	"openresume/storage"
+    "openresume/config"
+    "openresume/storage"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+    "github.com/gin-gonic/gin"
+    "github.com/google/uuid"
 )
 
 func RegisterUploadRoutes(r *gin.RouterGroup) {
@@ -42,11 +42,23 @@ func RegisterUploadRoutes(r *gin.RouterGroup) {
 		}
 		name := uuid.NewString() + ext
 		up, _ := storage.New(config.Load())
-		url, err := up.Upload(c, name, b)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "upload error"})
-			return
-		}
-		c.JSON(http.StatusOK, gin.H{"url": url})
-	})
+        url, err := up.Upload(c, name, b)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": "upload error"})
+            return
+        }
+        proto := c.GetHeader("X-Forwarded-Proto")
+        if proto == "" {
+            proto = "http"
+        }
+        host := c.GetHeader("X-Forwarded-Host")
+        if host == "" {
+            host = c.Request.Host
+        }
+        abs := url
+        if strings.HasPrefix(url, "/") {
+            abs = proto + "://" + host + url
+        }
+        c.JSON(http.StatusOK, gin.H{"url": abs})
+    })
 }

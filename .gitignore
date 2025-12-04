@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 .trae
 openresume.db
+__debug_*
+uploads

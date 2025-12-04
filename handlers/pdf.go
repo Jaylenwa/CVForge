@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"openresume/config"
@@ -32,13 +34,23 @@ func RegisterPDFRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc) {
 		var err error
 		if cfg.FrontendBaseURL != "" {
 			dest := cfg.FrontendBaseURL + "/#/print?id=" + c.Param("id")
+			authHeader := c.GetHeader("Authorization")
+			token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 			err = chromedp.Run(ctx,
+				chromedp.Navigate(cfg.FrontendBaseURL),
+				chromedp.ActionFunc(func(ctx context.Context) error {
+					js := fmt.Sprintf("localStorage.setItem('token', %s)", strconv.Quote(token))
+					return chromedp.Evaluate(js, nil).Do(ctx)
+				}),
 				chromedp.Navigate(dest),
 				emulation.SetDeviceMetricsOverride(1200, 1800, 1, false),
-				// 仅打印目标元素
+				chromedp.WaitVisible(`#resume-export-root`, chromedp.ByID),
 				chromedp.Evaluate(`(function(){var s=document.createElement('style');s.innerHTML='@media print{body *{visibility:hidden} #resume-export-root,#resume-export-root *{visibility:visible} #resume-export-root{position:absolute;left:0;top:0}}';document.head.appendChild(s)})()`, nil),
 				chromedp.ActionFunc(func(ctx context.Context) error {
-					buf, _, err := page.PrintToPDF().WithPrintBackground(true).WithDisplayHeaderFooter(false).WithPaperWidth(8.27).WithPaperHeight(11.69).WithMarginTop(0.5).WithMarginBottom(0.5).WithMarginLeft(0.5).WithMarginRight(0.5).Do(ctx)
+					buf, _, err := page.PrintToPDF().WithPrintBackground(true).
+						WithDisplayHeaderFooter(false).WithPaperWidth(8.27).
+						WithPaperHeight(11.69).WithMarginTop(0.5).
+						WithMarginBottom(0.5).WithMarginLeft(0.5).WithMarginRight(0.5).Do(ctx)
 					if err != nil {
 						return err
 					}
@@ -46,6 +58,21 @@ func RegisterPDFRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc) {
 					return nil
 				}),
 			)
+			if err != nil {
+				html := renderResumeHTML(res)
+				url := "data:text/html," + urlEncode(html)
+				err = chromedp.Run(ctx,
+					chromedp.Navigate(url),
+					chromedp.ActionFunc(func(ctx context.Context) error {
+						buf, _, err := page.PrintToPDF().WithPrintBackground(true).WithDisplayHeaderFooter(true).WithHeaderTemplate(header).WithFooterTemplate(footer).WithPaperWidth(8.27).WithPaperHeight(11.69).WithMarginTop(0.5).WithMarginBottom(0.5).WithMarginLeft(0.5).WithMarginRight(0.5).Do(ctx)
+						if err != nil {
+							return err
+						}
+						pdf = buf
+						return nil
+					}),
+				)
+			}
 		} else {
 			html := renderResumeHTML(res)
 			url := "data:text/html," + urlEncode(html)
@@ -83,11 +110,18 @@ func RegisterPDFRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc) {
 		var err error
 		if cfg.FrontendBaseURL != "" {
 			dest := cfg.FrontendBaseURL + "/#/print?id=" + c.Param("id")
+			authHeader := c.GetHeader("Authorization")
+			token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 			err = chromedp.Run(ctx,
+				chromedp.Navigate(cfg.FrontendBaseURL),
+				chromedp.ActionFunc(func(ctx context.Context) error {
+					js := fmt.Sprintf("localStorage.setItem('token', %s)", strconv.Quote(token))
+					return chromedp.Evaluate(js, nil).Do(ctx)
+				}),
 				chromedp.Navigate(dest),
 				emulation.SetDeviceMetricsOverride(1200, 1800, 1, false),
+				chromedp.WaitVisible(`#resume-export-root`, chromedp.ByID),
 				chromedp.ActionFunc(func(ctx context.Context) error {
-					// 定位目标元素并按其边界截图
 					root, err := dom.GetDocument().Do(ctx)
 					if err != nil {
 						return err
@@ -116,6 +150,14 @@ func RegisterPDFRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc) {
 					return nil
 				}),
 			)
+			if err != nil {
+				html := renderResumeHTML(res)
+				url := "data:text/html," + urlEncode(html)
+				err = chromedp.Run(ctx,
+					chromedp.Navigate(url),
+					chromedp.FullScreenshot(&png, 100),
+				)
+			}
 		} else {
 			html := renderResumeHTML(res)
 			url := "data:text/html," + urlEncode(html)
@@ -145,6 +187,7 @@ func renderResumeHTML(r models.Resume) string {
 	b.WriteString(".header{display:flex;align-items:flex-end;justify-content:space-between;border-bottom:4px solid " + accent + ";padding-bottom:8px;margin-bottom:16px}")
 	b.WriteString(".name{font-size:26px;font-weight:800;letter-spacing:.5px;color:" + accent + "} .title{font-size:14px;color:#6b7280}")
 	b.WriteString(".contact{margin-top:6px;color:#6b7280;font-size:12px}")
+	b.WriteString(".avatar{width:96px;height:96px;border-radius:8px;object-fit:cover;border:2px solid #e5e7eb;box-shadow:0 1px 2px rgba(0,0,0,.08)}")
 	b.WriteString(".section{margin-top:16px} .sec-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#374151;margin-bottom:8px}")
 	b.WriteString(".item{margin-bottom:10px} .item-top{display:flex;justify-content:space-between;align-items:baseline} .item-title{font-weight:700;color:#111827}")
 	b.WriteString(".item-meta{font-size:12px;color:" + accent + "} .desc{margin-top:6px;font-size:12px;line-height:1.7;white-space:pre-wrap;color:#374151}")
@@ -166,6 +209,9 @@ func renderResumeHTML(r models.Resume) string {
 		b.WriteString(" • " + escape(r.Website))
 	}
 	b.WriteString("</div></div>")
+	if r.AvatarURL != "" {
+		b.WriteString("<img class=avatar src='" + escape(r.AvatarURL) + "' alt='avatar'/>")
+	}
 	b.WriteString("</div>")
 	for _, s := range r.Sections {
 		if !s.IsVisible {
