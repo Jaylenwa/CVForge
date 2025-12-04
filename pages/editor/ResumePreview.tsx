@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ResumeData, ResumeSectionType, ThemeConfig } from '../../types';
 
 interface PreviewProps {
@@ -248,7 +249,9 @@ const TemplateExecutive: React.FC<{ data: ResumeData; styles: any }> = ({ data, 
 );
 
 // 5. Creative Bold
-const TemplateBold: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
+const TemplateBold: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => {
+     const { t } = useLanguage();
+     return (
      <div className="bg-white h-full min-h-[1123px] shadow-lg print:shadow-none flex flex-col" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
         <div className="text-white p-10 print:text-white flex flex-col md:flex-row justify-between items-center gap-6" style={{ backgroundColor: data.themeConfig?.color || '#1d4ed8' }}>
              <div className="order-2 md:order-1 flex-1">
@@ -262,7 +265,7 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any }> = ({ data, style
                 </div>
              </div>
              {data.personalInfo.avatarUrl && (
-                 <img src={data.personalInfo.avatarUrl} alt="Avatar" className="order-1 md:order-2 w-32 h-32 rounded-full border-4 border-white object-cover shadow-xl flex-shrink-0" />
+                 <img src={data.personalInfo.avatarUrl} alt={t('a11y.avatarAlt')} className="order-1 md:order-2 w-32 h-32 rounded-full border-4 border-white object-cover shadow-xl flex-shrink-0" />
              )}
         </div>
 
@@ -304,7 +307,8 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any }> = ({ data, style
             </div>
         </div>
      </div>
-);
+     );
+};
 
 // 6. Elegant Teal
 const TemplateElegant: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (

@@ -47,7 +47,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-          alert("Image size too large. Please upload an image smaller than 2MB.");
+          alert(t('editor.error.imageTooLarge'));
           return;
       }
       
@@ -144,21 +144,21 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
              {/* Avatar Upload */}
              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                  <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
-                    <ImageIcon size={16} className="mr-2 text-gray-500" /> 
-                    Profile Photo
+                     <ImageIcon size={16} className="mr-2 text-gray-500" /> 
+                    {t('editor.profile.label')}
                  </label>
                  <div className="flex items-center space-x-4">
                     {data.personalInfo.avatarUrl ? (
                         <div className="relative group shrink-0">
                             <img 
                                 src={data.personalInfo.avatarUrl} 
-                                alt="Avatar" 
+                                alt={t('a11y.avatarAlt')} 
                                 className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm"
                             />
                             <button
                                 onClick={() => updatePersonalInfo('avatarUrl', '')}
                                 className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition-colors"
-                                title="Remove photo"
+                                title={t('a11y.removePhoto')}
                             >
                                 <X size={10} />
                             </button>
@@ -183,18 +183,18 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             onClick={() => fileInputRef.current?.click()}
                             className="w-full"
                         >
-                            {data.personalInfo.avatarUrl ? 'Change Photo' : 'Upload Photo'}
+                            {data.personalInfo.avatarUrl ? t('editor.profile.change') : t('editor.profile.upload')}
                         </Button>
                         <p className="mt-2 text-xs text-gray-500">
-                            Square image recommended (1:1).<br/>
-                            Max size 2MB (JPG/PNG).
+                            {t('editor.profile.tipSquare')}<br/>
+                            {t('editor.profile.tipMaxSize')}
                         </p>
                     </div>
                  </div>
              </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Full Name</label>
+              <label className="block text-sm font-medium text-gray-700">{t('editor.fields.fullName')}</label>
               <input 
                 type="text" 
                 value={data.personalInfo.fullName}
@@ -203,7 +203,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Job Title</label>
+              <label className="block text-sm font-medium text-gray-700">{t('editor.fields.jobTitle')}</label>
               <input 
                 type="text" 
                 value={data.personalInfo.jobTitle}
@@ -213,20 +213,20 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
             </div>
              <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                    <label className="block text-sm font-medium text-gray-700">{t('editor.fields.email')}</label>
                     <input type="email" value={data.personalInfo.email} onChange={e => updatePersonalInfo('email', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">Phone</label>
+                    <label className="block text-sm font-medium text-gray-700">{t('editor.fields.phone')}</label>
                     <input type="tel" value={data.personalInfo.phone} onChange={e => updatePersonalInfo('phone', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
              </div>
              <div>
-                <label className="block text-sm font-medium text-gray-700">Address / Location</label>
+                <label className="block text-sm font-medium text-gray-700">{t('editor.fields.address')}</label>
                 <input type="text" value={data.personalInfo.address} onChange={e => updatePersonalInfo('address', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
              </div>
              <div>
-                <label className="block text-sm font-medium text-gray-700">Website / LinkedIn</label>
+                <label className="block text-sm font-medium text-gray-700">{t('editor.fields.website')}</label>
                 <input type="text" value={data.personalInfo.website} onChange={e => updatePersonalInfo('website', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
              </div>
           </div>
@@ -286,20 +286,20 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                       {section.type !== ResumeSectionType.Skills && section.type !== ResumeSectionType.Summary && (
                           <div className="grid grid-cols-1 gap-4 mb-3">
                               <input 
-                                placeholder="Title (e.g. Senior Manager)" 
+                                placeholder={t('editor.placeholder.titleExample')} 
                                 className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1"
                                 value={item.title}
                                 onChange={e => updateItem(section.id, item.id, 'title', e.target.value)}
                               />
                               <div className="grid grid-cols-2 gap-4">
                                   <input 
-                                    placeholder="Subtitle (e.g. Company)" 
+                                    placeholder={t('editor.placeholder.subtitleExample')} 
                                     className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1"
                                     value={item.subtitle}
                                     onChange={e => updateItem(section.id, item.id, 'subtitle', e.target.value)}
                                   />
                                    <input 
-                                    placeholder="Date Range" 
+                                    placeholder={t('editor.placeholder.dateRange')} 
                                     className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1"
                                     value={item.dateRange}
                                     onChange={e => updateItem(section.id, item.id, 'dateRange', e.target.value)}
@@ -312,7 +312,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                           <textarea 
                             rows={section.type === ResumeSectionType.Skills ? 2 : 4}
                             className="w-full text-sm border border-gray-300 rounded p-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder={section.type === ResumeSectionType.Skills ? "List skills here..." : "Describe your achievements..."}
+                            placeholder={section.type === ResumeSectionType.Skills ? t('editor.placeholder.skills') : t('editor.placeholder.achievements')}
                             value={item.description}
                             onChange={e => updateItem(section.id, item.id, 'description', e.target.value)}
                           />
@@ -323,7 +323,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                                 disabled={isAiLoading}
                               >
                                   <Sparkles size={12} className="mr-1"/> 
-                                  {isAiLoading ? 'Polishing...' : t('editor.ai_polish')}
+                                  {isAiLoading ? t('editor.ai.polishing') : t('editor.ai_polish')}
                               </button>
                           )}
                       </div>
@@ -331,7 +331,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                 ))}
 
                 <Button variant="outline" size="sm" className="w-full border-dashed" onClick={() => addItem(section.id)}>
-                    <Plus size={16} className="mr-1"/> Add Item
+                    <Plus size={16} className="mr-1"/> {t('editor.addItem')}
                 </Button>
              </div>
            )}
@@ -383,7 +383,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                         value={data.themeConfig?.color}
                         onChange={(e) => updateTheme('color', e.target.value)}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        title="Custom Color"
+                        title={t('editor.color.customTitle')}
                     />
                 </div>
             </div>
@@ -401,27 +401,27 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                 className="block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
               >
                 {/* Grouping fonts manually since React doesn't support complex data structures in select directly easily with map inside optgroup without processing */}
-                <optgroup label="English - Sans Serif">
+                <optgroup label={t('editor.font.group.englishSans')}>
                   {FONT_OPTIONS.filter(f => f.group === 'English - Sans Serif').map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>
-                <optgroup label="English - Serif">
+                <optgroup label={t('editor.font.group.englishSerif')}>
                   {FONT_OPTIONS.filter(f => f.group === 'English - Serif').map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>
-                <optgroup label="English - Mono">
+                <optgroup label={t('editor.font.group.englishMono')}>
                   {FONT_OPTIONS.filter(f => f.group === 'English - Mono').map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>
-                <optgroup label="Chinese - Sans (黑体)">
+                <optgroup label={t('editor.font.group.chineseSans')}>
                   {FONT_OPTIONS.filter(f => f.group === 'Chinese - Sans (黑体)').map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>
-                <optgroup label="Chinese - Serif (宋体/楷体)">
+                <optgroup label={t('editor.font.group.chineseSerif')}>
                   {FONT_OPTIONS.filter(f => f.group === 'Chinese - Serif (宋体/楷体)').map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
@@ -429,7 +429,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
               </select>
             </div>
             <p className="mt-2 text-xs text-gray-500">
-              Note: Chinese fonts rely on system availability or web fonts if supported.
+              {t('editor.font.note')}
             </p>
         </div>
 
@@ -443,19 +443,19 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                     onClick={() => updateTheme('spacing', 'compact')}
                     className={`w-full p-2 text-sm border rounded-md transition-colors ${data.themeConfig?.spacing === 'compact' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
                 >
-                    Compact (More Info)
+                    {t('editor.spacing.option.compact')}
                 </button>
                  <button 
                     onClick={() => updateTheme('spacing', 'normal')}
                     className={`w-full p-2 text-sm border rounded-md transition-colors ${data.themeConfig?.spacing === 'normal' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
                 >
-                    Normal (Balanced)
+                    {t('editor.spacing.option.normal')}
                 </button>
                  <button 
                     onClick={() => updateTheme('spacing', 'spacious')}
                     className={`w-full p-2 text-sm border rounded-md transition-colors ${data.themeConfig?.spacing === 'spacious' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
                 >
-                    Spacious (Clean)
+                    {t('editor.spacing.option.spacious')}
                 </button>
             </div>
         </div>

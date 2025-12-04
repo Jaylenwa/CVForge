@@ -49,7 +49,7 @@ export const Register: React.FC = () => {
         setStep(2);
         setCountdown(60); // 60s cooldown
     } catch (e) {
-        setError('Failed to send code.');
+        setError(t('auth.error.sendCodeFailed'));
     } finally {
         setLoading(false);
     }
@@ -65,7 +65,7 @@ export const Register: React.FC = () => {
     }
 
     if (formData.password.length < 6) {
-        setError('Password must be at least 6 characters.');
+        setError(t('auth.error.passwordTooShort'));
         return;
     }
 
@@ -81,7 +81,7 @@ export const Register: React.FC = () => {
             setError(t('auth.error.invalidCode'));
         }
     } catch (e) {
-        setError('Registration failed.');
+        setError(t('auth.error.registrationFailed'));
     } finally {
         setLoading(false);
     }
@@ -114,7 +114,7 @@ export const Register: React.FC = () => {
                     required
                     disabled={step === 2 && countdown > 0}
                     className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none sm:text-sm ${step === 2 ? 'bg-gray-100 text-gray-500 border-gray-200' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
-                    placeholder="you@example.com"
+                    placeholder={t('auth.placeholder.email')}
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                 />
@@ -147,7 +147,7 @@ export const Register: React.FC = () => {
                                 type="text"
                                 required
                                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="123456"
+                                placeholder={t('auth.placeholder.code')}
                                 value={formData.code}
                                 onChange={(e) => setFormData({...formData, code: e.target.value})}
                             />
@@ -177,7 +177,7 @@ export const Register: React.FC = () => {
                             type="password"
                             required
                             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            placeholder="Min 6 characters"
+                            placeholder={t('auth.placeholder.passwordMin')}
                             value={formData.password}
                             onChange={(e) => setFormData({...formData, password: e.target.value})}
                         />
@@ -197,7 +197,7 @@ export const Register: React.FC = () => {
                             type="password"
                             required
                             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            placeholder="Re-enter password"
+                            placeholder={t('auth.placeholder.reenterPassword')}
                             value={formData.confirmPassword}
                             onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                         />

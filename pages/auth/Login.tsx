@@ -25,7 +25,7 @@ export const Login: React.FC = () => {
     setError('');
     
     if (!formData.email || !formData.password) {
-        setError('Please fill in all fields');
+        setError(t('auth.error.fillAll'));
         return;
     }
 
@@ -36,10 +36,10 @@ export const Login: React.FC = () => {
             login(formData.email); // Update global auth state
             navigate(AppRoute.Dashboard);
         } else {
-            setError('Invalid email or password');
+            setError(t('auth.error.invalidCredentials'));
         }
     } catch (err) {
-        setError('An error occurred. Please try again.');
+        setError(t('auth.error.general'));
     } finally {
         setLoading(false);
     }
@@ -73,7 +73,7 @@ export const Login: React.FC = () => {
                         autoComplete="email"
                         required
                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="you@example.com"
+                        placeholder={t('auth.placeholder.email')}
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                     />

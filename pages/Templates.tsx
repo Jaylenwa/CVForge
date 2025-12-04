@@ -68,7 +68,7 @@ export const Templates: React.FC = () => {
       <div className="flex flex-wrap items-center gap-4 mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
         <div className="flex items-center space-x-2">
             <Filter size={18} className="text-gray-500" />
-            <span className="font-medium text-gray-700 text-sm">Filters:</span>
+            <span className="font-medium text-gray-700 text-sm">{t('templates.filters.label')}</span>
         </div>
         
         {/* Category Dropdown */}
@@ -79,7 +79,7 @@ export const Templates: React.FC = () => {
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 className="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
             >
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                {categories.map(c => <option key={c} value={c}>{t(`templates.category.${c}`)}</option>)}
             </select>
         </div>
 
@@ -91,7 +91,7 @@ export const Templates: React.FC = () => {
                 onChange={(e) => setSelectedLevel(e.target.value)}
                 className="block w-full pl-3 pr-10 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
             >
-                {levels.map(l => <option key={l} value={l}>{l}</option>)}
+                {levels.map(l => <option key={l} value={l}>{t(`templates.level.${l}`)}</option>)}
             </select>
         </div>
 
@@ -100,7 +100,7 @@ export const Templates: React.FC = () => {
                 onClick={() => { setSelectedCategory('All'); setSelectedLevel('All'); setFilter(''); }}
                 className="text-sm text-blue-600 hover:text-blue-800"
             >
-                Clear all
+                {t('templates.actions.clearAll')}
             </button>
          </div>
       </div>
@@ -116,18 +116,18 @@ export const Templates: React.FC = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <Button onClick={() => handleUseTemplate(template.id)}>Use Template</Button>
+                    <Button onClick={() => handleUseTemplate(template.id)}>{t('templates.actions.useTemplate')}</Button>
                 </div>
                 {template.isPremium && (
                     <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded flex items-center">
-                        <Star size={12} className="mr-1 fill-current" /> Premium
+                        <Star size={12} className="mr-1 fill-current" /> {t('templates.badge.premium')}
                     </div>
                 )}
              </div>
              <div className="p-4">
                 <h3 className="text-lg font-medium text-gray-900">{template.name}</h3>
                 <div className="mt-2 flex items-center justify-between text-sm text-gray-500">
-                    <span>{template.popularity}% Popularity</span>
+                    <span>{template.popularity}% {t('templates.meta.popularity')}</span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1">
                     <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded border border-blue-100">{template.category}</span>
@@ -140,8 +140,8 @@ export const Templates: React.FC = () => {
       
       {filteredTemplates.length === 0 && (
           <div className="text-center py-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-              <p className="text-gray-500 text-lg">No templates found matching your criteria.</p>
-              <Button variant="ghost" onClick={() => {setFilter(''); setSelectedCategory('All'); setSelectedLevel('All')}} className="mt-4">Clear Filters</Button>
+              <p className="text-gray-500 text-lg">{t('templates.empty')}</p>
+              <Button variant="ghost" onClick={() => {setFilter(''); setSelectedCategory('All'); setSelectedLevel('All')}} className="mt-4">{t('templates.actions.clearFilters')}</Button>
           </div>
       )}
     </div>

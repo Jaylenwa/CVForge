@@ -45,7 +45,7 @@ export const Settings: React.FC = () => {
     // In a real app, useAuth would have an updateProfile function
     // For now, we simulate success
     setIsLoading(false);
-    setSuccessMsg('Profile updated successfully.');
+    setSuccessMsg(t('settings.success.profileUpdated'));
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
@@ -55,7 +55,7 @@ export const Settings: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 800));
     setIsLoading(false);
     setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
-    setSuccessMsg('Password updated successfully.');
+    setSuccessMsg(t('settings.success.passwordUpdated'));
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
@@ -87,7 +87,7 @@ export const Settings: React.FC = () => {
               }`}
             >
               <Lock size={18} className="mr-3" />
-              Security
+              {t('settings.security')}
             </button>
           </nav>
         </div>
@@ -103,7 +103,7 @@ export const Settings: React.FC = () => {
           {activeTab === 'profile' && (
             <form onSubmit={handleSaveProfile} className="space-y-6 max-w-lg">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Profile Photo</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.profile.photoLabel')}</label>
                 <div className="flex items-center space-x-6">
                   <div className="relative">
                      <img 
@@ -120,7 +120,7 @@ export const Settings: React.FC = () => {
                      </button>
                   </div>
                   <div>
-                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>Change Photo</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>{t('settings.profile.changePhoto')}</Button>
                     <input 
                         ref={fileInputRef}
                         type="file" 
@@ -128,13 +128,13 @@ export const Settings: React.FC = () => {
                         accept="image/*" 
                         onChange={handleAvatarUpload}
                     />
-                    <p className="text-xs text-gray-500 mt-2">JPG, GIF or PNG. Max size of 800K</p>
+                    <p className="text-xs text-gray-500 mt-2">{t('settings.profile.photoTip')}</p>
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Display Name</label>
+                <label className="block text-sm font-medium text-gray-700">{t('settings.displayName')}</label>
                 <input 
                   type="text" 
                   value={formData.name}
@@ -144,38 +144,38 @@ export const Settings: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                <label className="block text-sm font-medium text-gray-700">{t('settings.emailAddress')}</label>
                 <input 
                   type="email" 
                   value={formData.email}
                   disabled
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 bg-gray-50 text-gray-500 sm:text-sm cursor-not-allowed"
                 />
-                <p className="mt-1 text-xs text-gray-500">Contact support to change email.</p>
+                <p className="mt-1 text-xs text-gray-500">{t('settings.emailChangeTip')}</p>
               </div>
               
               <div className="pt-4 border-t border-gray-200">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Language Preference</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">{t('settings.languagePreference')}</label>
                   <div className="flex items-center space-x-4">
                       <button 
                         type="button"
                         onClick={() => setLanguage('en')}
                         className={`px-4 py-2 border rounded-md text-sm flex items-center ${language === 'en' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-300 hover:bg-gray-50'}`}
                       >
-                          <span className="mr-2">🇺🇸</span> English
+                          <span className="mr-2">🇺🇸</span> {t('lang.en')}
                       </button>
                       <button 
                         type="button"
                         onClick={() => setLanguage('zh')}
                         className={`px-4 py-2 border rounded-md text-sm flex items-center ${language === 'zh' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-300 hover:bg-gray-50'}`}
                       >
-                          <span className="mr-2">🇨🇳</span> 中文
+                          <span className="mr-2">🇨🇳</span> {t('lang.zh')}
                       </button>
                   </div>
               </div>
 
               <div className="pt-4">
-                <Button type="submit" isLoading={isLoading} icon={<Save size={16}/>}>Save Changes</Button>
+                <Button type="submit" isLoading={isLoading} icon={<Save size={16}/>}>{t('settings.saveChanges')}</Button>
               </div>
             </form>
           )}
@@ -183,7 +183,7 @@ export const Settings: React.FC = () => {
           {activeTab === 'security' && (
             <form onSubmit={handleSavePassword} className="space-y-6 max-w-lg">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Current Password</label>
+                <label className="block text-sm font-medium text-gray-700">{t('settings.currentPassword')}</label>
                 <input 
                   type="password" 
                   value={formData.currentPassword}
@@ -193,7 +193,7 @@ export const Settings: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">New Password</label>
+                <label className="block text-sm font-medium text-gray-700">{t('settings.newPassword')}</label>
                 <input 
                   type="password" 
                   value={formData.newPassword}
@@ -203,7 +203,7 @@ export const Settings: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                <label className="block text-sm font-medium text-gray-700">{t('settings.confirmNewPassword')}</label>
                 <input 
                   type="password" 
                   value={formData.confirmPassword}
@@ -213,7 +213,7 @@ export const Settings: React.FC = () => {
               </div>
 
               <div className="pt-4">
-                <Button type="submit" isLoading={isLoading} icon={<Save size={16}/>}>Update Password</Button>
+                <Button type="submit" isLoading={isLoading} icon={<Save size={16}/>}>{t('settings.updatePassword')}</Button>
               </div>
             </form>
           )}

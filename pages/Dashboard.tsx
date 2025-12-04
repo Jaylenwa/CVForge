@@ -22,7 +22,7 @@ export const Dashboard: React.FC = () => {
 
   const handleDelete = (id: string, e: React.MouseEvent) => {
       e.stopPropagation(); // Prevent navigation when clicking delete
-      if (window.confirm('Are you sure you want to delete this resume?')) {
+      if (window.confirm(t('dashboard.confirm.delete'))) {
           setResumes(prev => prev.filter(r => r.id !== id));
       }
       setActiveMenu(null);
@@ -33,7 +33,7 @@ export const Dashboard: React.FC = () => {
       const newResume = {
           ...resume,
           id: Math.random().toString(36).substr(2, 9),
-          title: `${resume.title} (Copy)`,
+          title: `${resume.title}${t('dashboard.copySuffix')}`,
           lastModified: Date.now()
       };
       setResumes(prev => [newResume, ...prev]);

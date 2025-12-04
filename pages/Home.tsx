@@ -12,10 +12,10 @@ export const Home: React.FC = () => {
   const popularTemplates = MOCK_TEMPLATES.slice(0, 4);
 
   const quickAccess = [
-    { label: 'IT / Tech', icon: <Code size={20} />, query: 'IT' },
-    { label: 'Finance', icon: <Briefcase size={20} />, query: 'Finance' },
-    { label: 'Creative', icon: <PenTool size={20} />, query: 'Creative' },
-    { label: 'Student', icon: <GraduationCap size={20} />, query: 'Intern' },
+    { key: 'home.quick.it', icon: <Code size={20} />, query: 'IT' },
+    { key: 'home.quick.finance', icon: <Briefcase size={20} />, query: 'Finance' },
+    { key: 'home.quick.creative', icon: <PenTool size={20} />, query: 'Creative' },
+    { key: 'home.quick.student', icon: <GraduationCap size={20} />, query: 'Intern' },
   ];
 
   return (
@@ -57,7 +57,7 @@ export const Home: React.FC = () => {
           <img
             className="h-56 w-full object-cover sm:h-72 md:h-96 lg:w-full lg:h-full opacity-90"
             src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
-            alt="Resume planning"
+            alt={t('home.hero.alt')}
           />
         </div>
       </section>
@@ -69,12 +69,12 @@ export const Home: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {quickAccess.map((item) => (
                       <button 
-                        key={item.label}
+                        key={item.key}
                         onClick={() => navigate(`${AppRoute.Templates}?tag=${item.query}`)}
                         className="flex items-center justify-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all text-gray-700 hover:text-blue-600"
                       >
                           <span className="mr-3 text-blue-500">{item.icon}</span>
-                          <span className="font-medium">{item.label}</span>
+                          <span className="font-medium">{t(item.key)}</span>
                       </button>
                   ))}
               </div>
@@ -87,7 +87,7 @@ export const Home: React.FC = () => {
             <div className="flex justify-between items-end mb-6">
                  <h2 className="text-2xl font-bold text-gray-900">{t('home.popular')}</h2>
                  <Link to={AppRoute.Templates} className="text-blue-600 font-medium hover:underline flex items-center">
-                    View All <ArrowRight size={16} className="ml-1"/>
+                    {t('home.actions.viewAll')} <ArrowRight size={16} className="ml-1"/>
                  </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -100,11 +100,11 @@ export const Home: React.FC = () => {
                             <h3 className="font-medium text-gray-900 truncate">{template.name}</h3>
                             <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
                                 <span className="px-2 py-0.5 bg-gray-100 rounded">{template.category}</span>
-                                {template.isPremium && <span className="text-yellow-600 font-bold">Premium</span>}
+                                {template.isPremium && <span className="text-yellow-600 font-bold">{t('home.badge.premium')}</span>}
                             </div>
                         </div>
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                             <Button onClick={() => navigate(`${AppRoute.Editor}?template=${template.id}`)}>Use Template</Button>
+                             <Button onClick={() => navigate(`${AppRoute.Editor}?template=${template.id}`)}>{t('home.actions.useTemplate')}</Button>
                         </div>
                     </div>
                 ))}
@@ -116,9 +116,9 @@ export const Home: React.FC = () => {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:text-center">
-            <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">Features</h2>
+            <h2 className="text-base text-blue-600 font-semibold tracking-wide uppercase">{t('features.title')}</h2>
             <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              Everything you need to get hired
+              {t('features.subtitle')}
             </p>
           </div>
 
@@ -129,10 +129,10 @@ export const Home: React.FC = () => {
                   <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
                     <Cpu size={24} />
                   </div>
-                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">AI Writer & Polisher</p>
+                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">{t('features.ai.title')}</p>
                 </dt>
                 <dd className="mt-2 ml-16 text-base text-gray-500">
-                  Stuck on words? Use our Gemini-powered AI to generate summaries and improve your bullet points instantly.
+                  {t('features.ai.desc')}
                 </dd>
               </div>
 
@@ -141,10 +141,10 @@ export const Home: React.FC = () => {
                   <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
                     <FileCheck size={24} />
                   </div>
-                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">ATS Friendly Templates</p>
+                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">{t('features.ats.title')}</p>
                 </dt>
                 <dd className="mt-2 ml-16 text-base text-gray-500">
-                  Our templates are designed to pass through Applicant Tracking Systems, ensuring your resume reaches human eyes.
+                  {t('features.ats.desc')}
                 </dd>
               </div>
 
@@ -153,10 +153,10 @@ export const Home: React.FC = () => {
                   <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
                     <Share2 size={24} />
                   </div>
-                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Share Online</p>
+                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">{t('features.share.title')}</p>
                 </dt>
                 <dd className="mt-2 ml-16 text-base text-gray-500">
-                  Publish your resume with a unique link. Track views and share directly to LinkedIn or via QR code.
+                  {t('features.share.desc')}
                 </dd>
               </div>
 
@@ -165,10 +165,10 @@ export const Home: React.FC = () => {
                   <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
                     <CheckCircle size={24} />
                   </div>
-                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">Real-time Preview</p>
+                  <p className="ml-16 text-lg leading-6 font-medium text-gray-900">{t('features.preview.title')}</p>
                 </dt>
                 <dd className="mt-2 ml-16 text-base text-gray-500">
-                  See changes instantly as you type. Drag and drop sections to reorganize your story effortlessly.
+                  {t('features.preview.desc')}
                 </dd>
               </div>
             </dl>

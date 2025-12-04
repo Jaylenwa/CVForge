@@ -71,14 +71,14 @@ export const Navbar: React.FC = () => {
             </div>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-             <button 
-                onClick={toggleLanguage}
-                className="p-2 text-gray-500 hover:text-gray-900 focus:outline-none"
-                title="Switch Language"
-            >
+            <button 
+               onClick={toggleLanguage}
+               className="p-2 text-gray-500 hover:text-gray-900 focus:outline-none"
+               title={t('lang.switchTitle')}
+           >
                 <div className="flex items-center space-x-1">
                     <Globe size={18} />
-                    <span className="text-sm font-medium">{language === 'en' ? 'EN' : '中'}</span>
+                    <span className="text-sm font-medium">{language === 'en' ? t('lang.en_short') : t('lang.zh_short')}</span>
                 </div>
             </button>
 
@@ -90,7 +90,7 @@ export const Navbar: React.FC = () => {
                             className="flex items-center max-w-xs text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
                             id="user-menu-button"
                         >
-                            <span className="sr-only">Open user menu</span>
+                            <span className="sr-only">{t('a11y.openUserMenu')}</span>
                             <img className="h-8 w-8 rounded-full object-cover" src={user.avatarUrl} alt="" />
                             <span className="ml-2 font-medium text-gray-700 hidden md:block">{user.name}</span>
                         </button>
@@ -102,7 +102,7 @@ export const Navbar: React.FC = () => {
                             role="menu"
                         >
                             <div className="px-4 py-3 border-b border-gray-100">
-                                <p className="text-sm text-gray-500">Signed in as</p>
+                                <p className="text-sm text-gray-500">{t('a11y.signedInAs')}</p>
                                 <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
                             </div>
                             
@@ -174,7 +174,7 @@ export const Navbar: React.FC = () => {
              <div className="pt-4 pb-3 border-t border-gray-200">
                 <div className="mt-3 space-y-1 px-2">
                      <button onClick={() => { toggleLanguage(); setIsOpen(false); }} className="w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50">
-                        {language === 'en' ? 'Switch to Chinese' : '切换为英文'}
+                        {language === 'en' ? t('lang.switchToZh') : t('lang.switchToEn')}
                      </button>
                      
                      {isAuthenticated ? (
@@ -245,25 +245,25 @@ export const Footer: React.FC = () => {
                     <p className="text-slate-400 text-sm">{t('hero.desc')}</p>
                 </div>
                 <div>
-                    <h4 className="font-semibold mb-4">Product</h4>
+                    <h4 className="font-semibold mb-4">{t('footer.product')}</h4>
                     <ul className="space-y-2 text-slate-400 text-sm">
                         <li><Link to="/templates" className="hover:text-white">{t('nav.templates')}</Link></li>
                         <li><Link to="/pricing" className="hover:text-white">{t('nav.pricing')}</Link></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 className="font-semibold mb-4">Legal</h4>
+                    <h4 className="font-semibold mb-4">{t('footer.legal')}</h4>
                     <ul className="space-y-2 text-slate-400 text-sm">
-                        <li>Privacy Policy</li>
-                        <li>Terms of Service</li>
+                        <li>{t('footer.privacy')}</li>
+                        <li>{t('footer.terms')}</li>
                     </ul>
                 </div>
                 <div>
-                    <h4 className="font-semibold mb-4">Language</h4>
+                    <h4 className="font-semibold mb-4">{t('footer.language')}</h4>
                     <div className="flex space-x-2">
-                        <button onClick={() => setLanguage('en')} className="text-sm text-slate-400 hover:text-white cursor-pointer">English</button>
+                        <button onClick={() => setLanguage('en')} className="text-sm text-slate-400 hover:text-white cursor-pointer">{t('lang.en')}</button>
                         <span className="text-sm text-slate-400">|</span>
-                        <button onClick={() => setLanguage('zh')} className="text-sm text-slate-400 hover:text-white cursor-pointer">中文</button>
+                        <button onClick={() => setLanguage('zh')} className="text-sm text-slate-400 hover:text-white cursor-pointer">{t('lang.zh')}</button>
                     </div>
                 </div>
             </div>
