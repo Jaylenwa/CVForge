@@ -1,18 +1,36 @@
 import React, { useState, useRef } from 'react';
-import { Trash2, Plus, GripVertical, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate } from 'lucide-react';
+import { Trash2, Plus, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType, ThemeConfig } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { polishText, generateSummary } from '../../services/geminiService';
 import { API_BASE } from '../../config';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { SortableSection } from './SortableSection';
 
 interface EditorFormProps {
   data: ResumeData;
   onChange: (data: ResumeData) => void;
 }
 
+const generateUUID = () => {
+    const c: any = (globalThis as any).crypto;
+    if (c?.randomUUID) return c.randomUUID();
+    const arr = new Uint32Array(4);
+    if (c?.getRandomValues) {
+      c.getRandomValues(arr);
+      return Array.from(arr).map(n => n.toString(16)).join('');
+    }
+    return Math.random().toString(36).substr(2, 9);
+};
+
 export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   const { t } = useLanguage();
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor)
+  );
 
   const fontOptions = [
     { group: t('editor.font.group.englishSans'), id: 'inter', label: t('font.inter') },
@@ -86,18 +104,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   };
 
   const addItem = (sectionId: string) => {
-    const safeUUID = (() => {
-      const c: any = (globalThis as any).crypto;
-      if (c?.randomUUID) return c.randomUUID();
-      const arr = new Uint32Array(4);
-      if (c?.getRandomValues) {
-        c.getRandomValues(arr);
-        return Array.from(arr).map(n => n.toString(16)).join('');
-      }
-      return Math.random().toString(36).substr(2, 9);
-    })();
     const newItem: ResumeItem = {
-      id: safeUUID,
+      id: generateUUID(),
       title: '',
       description: ''
     };
@@ -116,6 +124,42 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
         s.id === sectionId ? { ...s, items: s.items.filter(i => i.id !== itemId) } : s
       )
     });
+  };
+
+  const addSection = () => {
+      const newSection: ResumeSection = {
+          id: generateUUID(),
+          type: ResumeSectionType.Custom,
+          title: t('section.custom'),
+          items: [],
+          isVisible: true
+      };
+      onChange({
+          ...data,
+          sections: [...data.sections, newSection]
+      });
+      setActiveSection(newSection.id);
+  };
+
+  const removeSection = (sectionId: string) => {
+      if (confirm(t('dashboard.confirm.delete'))) { // Reusing delete confirmation
+          onChange({
+              ...data,
+              sections: data.sections.filter(s => s.id !== sectionId)
+          });
+      }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+        const oldIndex = data.sections.findIndex((s) => s.id === active.id);
+        const newIndex = data.sections.findIndex((s) => s.id === over?.id);
+        onChange({
+            ...data,
+            sections: arrayMove(data.sections, oldIndex, newIndex),
+        });
+    }
   };
 
   const handleAiPolish = async (sectionId: string, itemId: string, text: string) => {
@@ -141,16 +185,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
      }
      setIsAiLoading(false);
   }
-
-  const getSectionTitle = (section: ResumeSection) => {
-    // If the title matches one of the default English titles, we translate it based on type.
-    // Otherwise we assume it's a custom user title and display as is.
-    const defaultTitles = ['Professional Summary', 'Work Experience', 'Education', 'Skills', 'Projects'];
-    if (defaultTitles.includes(section.title) || !section.title) {
-        return t(`section.${section.type}`);
-    }
-    return section.title;
-  };
 
   const renderContentTab = () => (
     <>
@@ -260,109 +294,114 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       </div>
 
       {/* Dynamic Sections */}
-      {data.sections.map((section) => (
-        <div key={section.id} className="border-b border-gray-200">
-           <div className="flex items-center justify-between px-6 py-4 hover:bg-gray-50">
-             <button 
-                className="flex-grow text-left font-semibold flex items-center text-gray-700"
-                onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
-             >
-                 <span className="mr-2 cursor-grab active:cursor-grabbing"><GripVertical size={16} className="text-gray-400"/></span>
-                 {getSectionTitle(section)}
-             </button>
-             <div className="flex items-center space-x-2">
-                 {/* Toggle Visibility */}
-                 <input 
-                    type="checkbox" 
-                    checked={section.isVisible} 
-                    onChange={(e) => updateSection(section.id, { isVisible: e.target.checked })}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                 />
-                  {activeSection === section.id ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
-             </div>
-           </div>
+      <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+          <SortableContext 
+            items={data.sections.map(s => s.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {data.sections.map((section) => (
+                <SortableSection
+                    key={section.id}
+                    section={section}
+                    isActive={activeSection === section.id}
+                    onToggle={() => setActiveSection(activeSection === section.id ? null : section.id)}
+                    onUpdate={(updates) => updateSection(section.id, updates)}
+                    onRemove={() => removeSection(section.id)}
+                >
+                    {/* AI Summary Generator specific to Summary Section */}
+                    {section.type === ResumeSectionType.Summary && (
+                        <div className="flex justify-end">
+                            <Button 
+                                size="sm" 
+                                variant="secondary" 
+                                icon={<Sparkles size={14}/>} 
+                                onClick={handleAiSummary}
+                                isLoading={isAiLoading}
+                                className="mb-2"
+                            >
+                                {t('editor.ai_polish')}
+                            </Button>
+                        </div>
+                    )}
 
-           {activeSection === section.id && (
-             <div className="px-6 pb-6 space-y-6 bg-gray-50/50">
-                {/* AI Summary Generator specific to Summary Section */}
-                {section.type === ResumeSectionType.Summary && (
-                    <div className="flex justify-end">
-                         <Button 
-                            size="sm" 
-                            variant="secondary" 
-                            icon={<Sparkles size={14}/>} 
-                            onClick={handleAiSummary}
-                            isLoading={isAiLoading}
-                            className="mb-2"
+                    {section.items.map((item) => (
+                    <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group transition-all hover:shadow-md">
+                        <button 
+                            onClick={() => removeItem(section.id, item.id)}
+                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                            {t('editor.ai_polish')}
-                        </Button>
+                            <Trash2 size={16} />
+                        </button>
+                        
+                        {section.type !== ResumeSectionType.Skills && section.type !== ResumeSectionType.Summary && (
+                            <div className="grid grid-cols-1 gap-4 mb-3">
+                                <input 
+                                    placeholder={t('editor.placeholder.titleExample')} 
+                                    className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
+                                    value={item.title}
+                                    onChange={e => updateItem(section.id, item.id, 'title', e.target.value)}
+                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <input 
+                                        placeholder={t('editor.placeholder.subtitleExample')} 
+                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                        value={item.subtitle}
+                                        onChange={e => updateItem(section.id, item.id, 'subtitle', e.target.value)}
+                                    />
+                                    <input 
+                                        placeholder={t('editor.placeholder.dateRange')} 
+                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                        value={item.dateRange}
+                                        onChange={e => updateItem(section.id, item.id, 'dateRange', e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="relative">
+                            <textarea 
+                                rows={section.type === ResumeSectionType.Skills ? 2 : 4}
+                                className="w-full text-sm border border-gray-300 rounded p-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder={section.type === ResumeSectionType.Skills ? t('editor.placeholder.skills') : t('editor.placeholder.achievements')}
+                                value={item.description}
+                                onChange={e => updateItem(section.id, item.id, 'description', e.target.value)}
+                            />
+                            {section.type === ResumeSectionType.Experience && (
+                                <button 
+                                    onClick={() => handleAiPolish(section.id, item.id, item.description)}
+                                    className="absolute bottom-2 right-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center hover:bg-blue-200 transition-colors"
+                                    disabled={isAiLoading}
+                                >
+                                    <Sparkles size={12} className="mr-1"/> 
+                                    {isAiLoading ? t('editor.ai.polishing') : t('editor.ai_polish')}
+                                </button>
+                            )}
+                        </div>
                     </div>
-                )}
+                    ))}
 
-                {section.items.map((item, index) => (
-                   <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group">
-                      <button 
-                        onClick={() => removeItem(section.id, item.id)}
-                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                          <Trash2 size={16} />
-                      </button>
-                      
-                      {section.type !== ResumeSectionType.Skills && section.type !== ResumeSectionType.Summary && (
-                          <div className="grid grid-cols-1 gap-4 mb-3">
-                              <input 
-                                placeholder={t('editor.placeholder.titleExample')} 
-                                className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1"
-                                value={item.title}
-                                onChange={e => updateItem(section.id, item.id, 'title', e.target.value)}
-                              />
-                              <div className="grid grid-cols-2 gap-4">
-                                  <input 
-                                    placeholder={t('editor.placeholder.subtitleExample')} 
-                                    className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1"
-                                    value={item.subtitle}
-                                    onChange={e => updateItem(section.id, item.id, 'subtitle', e.target.value)}
-                                  />
-                                   <input 
-                                    placeholder={t('editor.placeholder.dateRange')} 
-                                    className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1"
-                                    value={item.dateRange}
-                                    onChange={e => updateItem(section.id, item.id, 'dateRange', e.target.value)}
-                                  />
-                              </div>
-                          </div>
-                      )}
+                    <Button variant="outline" size="sm" className="w-full border-dashed" onClick={() => addItem(section.id)}>
+                        <Plus size={16} className="mr-1"/> {t('editor.addItem')}
+                    </Button>
+                </SortableSection>
+            ))}
+          </SortableContext>
+      </DndContext>
 
-                      <div className="relative">
-                          <textarea 
-                            rows={section.type === ResumeSectionType.Skills ? 2 : 4}
-                            className="w-full text-sm border border-gray-300 rounded p-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder={section.type === ResumeSectionType.Skills ? t('editor.placeholder.skills') : t('editor.placeholder.achievements')}
-                            value={item.description}
-                            onChange={e => updateItem(section.id, item.id, 'description', e.target.value)}
-                          />
-                          {section.type === ResumeSectionType.Experience && (
-                              <button 
-                                onClick={() => handleAiPolish(section.id, item.id, item.description)}
-                                className="absolute bottom-2 right-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center hover:bg-blue-200 transition-colors"
-                                disabled={isAiLoading}
-                              >
-                                  <Sparkles size={12} className="mr-1"/> 
-                                  {isAiLoading ? t('editor.ai.polishing') : t('editor.ai_polish')}
-                              </button>
-                          )}
-                      </div>
-                   </div>
-                ))}
-
-                <Button variant="outline" size="sm" className="w-full border-dashed" onClick={() => addItem(section.id)}>
-                    <Plus size={16} className="mr-1"/> {t('editor.addItem')}
-                </Button>
-             </div>
-           )}
-        </div>
-      ))}
+      {/* Add Custom Section Button */}
+      <div className="p-4 border-t border-gray-200">
+          <Button 
+            variant="ghost" 
+            className="w-full text-blue-600 hover:bg-blue-50" 
+            onClick={addSection}
+          >
+              <Plus size={16} className="mr-2"/> {t('editor.addSection')}
+          </Button>
+      </div>
     </>
   );
 
