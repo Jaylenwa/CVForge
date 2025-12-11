@@ -5,12 +5,12 @@ import { Button } from '../components/ui/Button';
 import { INITIAL_RESUME } from '../services/mockData';
 import { AppRoute, ResumeData } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { API_BASE } from '../config';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   
-  const API = 'http://localhost:8080/api/v1';
   const [resumes, setResumes] = useState<ResumeData[]>([]);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export const Dashboard: React.FC = () => {
     (async () => {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch(`${API}/resumes`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_BASE}/resumes`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       const items = (data.items || []).map((r: any) => ({
         id: r.id || r.ExternalID,
@@ -30,7 +30,7 @@ export const Dashboard: React.FC = () => {
         lastModified: r.lastModified || r.LastModified || Date.now(),
         personalInfo: r.personalInfo || {
           fullName: r.FullName,
-          jobTitle: '',
+          jobTitle: (r.personalInfo && r.personalInfo.jobTitle) || (r.JobTitle || ''),
           email: r.Email,
           phone: r.Phone,
           address: r.Address,
@@ -64,7 +64,7 @@ export const Dashboard: React.FC = () => {
       e.stopPropagation(); // Prevent navigation when clicking delete
       if (window.confirm(t('dashboard.confirm.delete'))) {
           const token = localStorage.getItem('token');
-          fetch(`${API}/resumes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API_BASE}/resumes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
             .then(() => setResumes(prev => prev.filter(r => r.id !== id)));
       }
       setActiveMenu(null);
@@ -74,7 +74,7 @@ export const Dashboard: React.FC = () => {
       e.stopPropagation();
       const token = localStorage.getItem('token');
       const clone = { ...INITIAL_RESUME, title: `${resume.title}${t('dashboard.copySuffix')}`, templateId: resume.templateId };
-      fetch(`${API}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(clone) })
+      fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(clone) })
         .then(r => r.json())
         .then(({ id }) => setResumes(prev => [{ ...clone, id, lastModified: Date.now() }, ...prev]));
       setActiveMenu(null);

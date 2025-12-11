@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button';
 import { AppRoute } from '../types';
 // 后端数据来源
 import { useLanguage } from '../contexts/LanguageContext';
+import { API_BASE } from '../config';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export const Home: React.FC = () => {
   React.useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/v1/templates');
+        const res = await fetch(`${API_BASE}/templates`);
         const data = await res.json();
         const items = (data.items || []).slice(0, 4).map((t: any) => ({
           id: t.ExternalID || t.id,

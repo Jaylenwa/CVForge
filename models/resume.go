@@ -18,6 +18,7 @@ type Resume struct {
     Address    string `gorm:"size:191"`
     Website    string `gorm:"size:191"`
     AvatarURL  string `gorm:"size:512"`
+    JobTitle   string `gorm:"size:128"`
     Sections   []ResumeSection `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
 }
 

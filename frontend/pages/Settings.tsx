@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { User, Lock, Bell, Globe, Camera, Save } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { API_BASE } from '../config';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Button } from '../components/ui/Button';
 
@@ -29,7 +30,7 @@ export const Settings: React.FC = () => {
     const form = new FormData();
     form.append('file', file);
     try {
-      const res = await fetch('http://localhost:8080/api/v1/upload/avatar', { method: 'POST', body: form });
+      const res = await fetch(`${API_BASE}/upload/avatar`, { method: 'POST', body: form });
       if (res.ok) {
         const data = await res.json();
         setFormData(prev => ({ ...prev, avatarUrl: data.url }));
@@ -42,7 +43,7 @@ export const Settings: React.FC = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8080/api/v1/users/profile', {
+      const res = await fetch(`${API_BASE}/users/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name: formData.name, avatarURL: formData.avatarUrl, language })
@@ -62,7 +63,7 @@ export const Settings: React.FC = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:8080/api/v1/users/password', {
+      const res = await fetch(`${API_BASE}/users/password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ currentPassword: formData.currentPassword, newPassword: formData.newPassword })

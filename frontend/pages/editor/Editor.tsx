@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Download, Printer, Share2, Layout } from 'lucide-react';
 import { EditorForm } from './EditorForm';
 import { ResumePreview } from './ResumePreview';
+import { API_BASE } from '../../config';
 import { Button } from '../../components/ui/Button';
 import { INITIAL_RESUME } from '../../services/mockData';
 import { ResumeData } from '../../types';
@@ -21,7 +22,7 @@ export const Editor: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/v1/templates');
+        const res = await fetch(`${API_BASE}/templates`);
         const data = await res.json();
         const items = (data.items || []).map((t: any) => ({ id: t.ExternalID || t.id }));
         setTemplates(items);
@@ -31,9 +32,8 @@ export const Editor: React.FC = () => {
     const templateId = searchParams.get('template');
 
     if (resumeId) {
-        const API = 'http://localhost:8080/api/v1';
         const token = localStorage.getItem('token');
-        fetch(`${API}/resumes/${resumeId}`, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_BASE}/resumes/${resumeId}`, { headers: { Authorization: `Bearer ${token}` } })
           .then(r => r.json())
           .then((res: any) => {
               const mapped: ResumeData = {
@@ -44,7 +44,7 @@ export const Editor: React.FC = () => {
                 lastModified: res.LastModified,
                 personalInfo: {
                   fullName: res.FullName,
-                  jobTitle: '',
+                  jobTitle: res.JobTitle || '',
                   email: res.Email,
                   phone: res.Phone,
                   address: res.Address,
@@ -72,10 +72,9 @@ export const Editor: React.FC = () => {
     }
 
     if (templateId) {
-        const API = 'http://localhost:8080/api/v1';
         const token = localStorage.getItem('token');
         const payload = { ...INITIAL_RESUME, templateId };
-        fetch(`${API}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+        fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
           .then(r => r.json())
           .then(({ id }) => {
             setResumeData(prev => ({ ...prev, templateId, id }));
@@ -96,7 +95,6 @@ export const Editor: React.FC = () => {
   };
 
   const handleSave = () => {
-    const API = 'http://localhost:8080/api/v1';
     const token = localStorage.getItem('token');
     const payload = {
       title: resumeData.title,
@@ -111,17 +109,16 @@ export const Editor: React.FC = () => {
         items: s.items.map(i => ({ id: i.id, title: i.title, subtitle: i.subtitle, dateRange: i.dateRange, location: i.location, description: i.description }))
       }))
     };
-    fetch(`${API}/resumes/${resumeData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+    fetch(`${API_BASE}/resumes/${resumeData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
       .then(() => {
         // no-op; could show a toast
       });
   };
 
   const handleExportPDF = () => {
-    const API = 'http://localhost:8080/api/v1';
     const token = localStorage.getItem('token');
     if (!resumeData.id) return;
-    fetch(`${API}/resumes/${resumeData.id}/pdf`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_BASE}/resumes/${resumeData.id}/pdf`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
       .then(async r => {
         if (!r.ok) throw new Error('export failed');
         const blob = await r.blob();
@@ -140,10 +137,9 @@ export const Editor: React.FC = () => {
   };
 
   const handleExportImage = () => {
-    const API = 'http://localhost:8080/api/v1';
     const token = localStorage.getItem('token');
     if (!resumeData.id) return;
-    fetch(`${API}/resumes/${resumeData.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_BASE}/resumes/${resumeData.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
       .then(async r => {
         if (!r.ok) throw new Error('export failed');
         const blob = await r.blob();

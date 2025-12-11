@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
+import { API_BASE } from '../config';
 
 export interface User {
   email: string;
@@ -17,14 +18,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const API = 'http://localhost:8080/api/v1';
   const refreshTimer = useRef<number | null>(null);
 
   const loadUser = async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const res = await fetch(`${API}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_BASE}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
         const data = await res.json();
         setUser({ email: data.email, name: data.name || data.email.split('@')[0], avatarUrl: data.avatarUrl });
@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (res.status === 401) {
         const ok = await refreshTokens();
         if (ok) {
-          const res2 = await fetch(`${API}/users/me`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
+          const res2 = await fetch(`${API_BASE}/users/me`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
           if (res2.ok) {
             const data2 = await res2.json();
             setUser({ email: data2.email, name: data2.name || data2.email.split('@')[0], avatarUrl: data2.avatarUrl });
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const refresh = localStorage.getItem('refreshToken');
     if (!refresh) return false;
     try {
-      const res = await fetch(`${API}/auth/refresh`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken: refresh }) });
+      const res = await fetch(`${API_BASE}/auth/refresh`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken: refresh }) });
       if (!res.ok) return false;
       const data = await res.json();
       const at = data.accessToken as string;

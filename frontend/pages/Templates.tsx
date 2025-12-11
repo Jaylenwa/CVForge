@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Star, Filter } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 // 后端数据来源
-const API = 'http://localhost:8080/api/v1';
+import { API_BASE } from '../config';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -35,7 +35,7 @@ export const Templates: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`${API}/templates`);
+      const res = await fetch(`${API_BASE}/templates`);
       const data = await res.json();
       const items = (data.items || []).map((t: any) => ({
         id: t.ExternalID || t.id,

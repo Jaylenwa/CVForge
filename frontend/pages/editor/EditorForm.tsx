@@ -3,6 +3,7 @@ import { Trash2, Plus, GripVertical, Sparkles, ChevronDown, ChevronUp, Upload, X
 import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType, ThemeConfig } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { polishText, generateSummary } from '../../services/geminiService';
+import { API_BASE } from '../../config';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 interface EditorFormProps {
@@ -53,7 +54,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     const form = new FormData();
     form.append('file', file);
     try {
-      const res = await fetch('http://localhost:8080/api/v1/upload/avatar', {
+      const res = await fetch(`${API_BASE}/upload/avatar`, {
         method: 'POST',
         body: form
       });
@@ -85,8 +86,18 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   };
 
   const addItem = (sectionId: string) => {
+    const safeUUID = (() => {
+      const c: any = (globalThis as any).crypto;
+      if (c?.randomUUID) return c.randomUUID();
+      const arr = new Uint32Array(4);
+      if (c?.getRandomValues) {
+        c.getRandomValues(arr);
+        return Array.from(arr).map(n => n.toString(16)).join('');
+      }
+      return Math.random().toString(36).substr(2, 9);
+    })();
     const newItem: ResumeItem = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: safeUUID,
       title: '',
       description: ''
     };

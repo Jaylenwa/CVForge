@@ -103,7 +103,7 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 				"templateId":   r.TemplateID,
 				"themeConfig":  gin.H{"color": r.ThemeColor, "fontFamily": r.ThemeFont, "spacing": r.ThemeSpacing},
 				"lastModified": r.LastModified,
-				"personalInfo": gin.H{"fullName": r.FullName, "email": r.Email, "phone": r.Phone, "address": r.Address, "website": r.Website, "avatarUrl": r.AvatarURL},
+				"personalInfo": gin.H{"fullName": r.FullName, "jobTitle": r.JobTitle, "email": r.Email, "phone": r.Phone, "address": r.Address, "website": r.Website, "avatarUrl": r.AvatarURL},
 				"sections":     sections,
 			})
 		}
@@ -117,7 +117,19 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 			return
 		}
-		res := toResumeModel(uidVal.(uint), req)
+		var uid uint
+		switch v := uidVal.(type) {
+		case uint:
+			uid = v
+		case int:
+			uid = uint(v)
+		case float64:
+			uid = uint(v)
+		default:
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		res := toResumeModel(uid, req)
 		if err := db.Create(&res).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 			return
@@ -149,14 +161,25 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 		// keep ExternalID
 		updated.ExternalID = res.ExternalID
 		updated.Model.ID = res.Model.ID
-		// replace sections/items (items reference section_id)
-		var secIDs []uint
-		_ = db.Model(&models.ResumeSection{}).Where("resume_id = ?", res.ID).Pluck("id", &secIDs).Error
-		if len(secIDs) > 0 {
-			_ = db.Where("section_id IN ?", secIDs).Delete(&models.ResumeItem{}).Error
-		}
-		_ = db.Where("resume_id = ?", res.ID).Delete(&models.ResumeSection{}).Error
-		if err := db.Session(&gorm.Session{FullSaveAssociations: true}).Save(&updated).Error; err != nil {
+		// transactional replace sections/items
+		if err := db.Transaction(func(tx *gorm.DB) error {
+			var secIDs []uint
+			if err := tx.Model(&models.ResumeSection{}).Where("resume_id = ?", res.ID).Pluck("id", &secIDs).Error; err != nil {
+				return err
+			}
+			if len(secIDs) > 0 {
+				if err := tx.Where("section_id IN ?", secIDs).Delete(&models.ResumeItem{}).Error; err != nil {
+					return err
+				}
+			}
+			if err := tx.Where("resume_id = ?", res.ID).Delete(&models.ResumeSection{}).Error; err != nil {
+				return err
+			}
+			if err := tx.Session(&gorm.Session{FullSaveAssociations: true}).Save(&updated).Error; err != nil {
+				return err
+			}
+			return nil
+		}); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 			return
 		}
@@ -188,6 +211,7 @@ func toResumeModel(uid uint, req resumeReq) models.Resume {
 		ThemeSpacing: req.ThemeConfig.Spacing,
 		LastModified: time.Now().UnixMilli(),
 		FullName:     req.PersonalInfo.FullName,
+		JobTitle:     req.PersonalInfo.JobTitle,
 		Email:        req.PersonalInfo.Email,
 		Phone:        req.PersonalInfo.Phone,
 		Address:      req.PersonalInfo.Address,

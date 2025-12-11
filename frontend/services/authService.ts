@@ -1,7 +1,7 @@
-const API = 'http://localhost:8080/api/v1';
+import { API_BASE } from '../config';
 
 export const sendVerificationCode = async (email: string): Promise<boolean> => {
-  const res = await fetch(`${API}/auth/send-code`, {
+  const res = await fetch(`${API_BASE}/auth/send-code`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email })
@@ -15,7 +15,7 @@ export const verifyCode = async (_email: string, code: string): Promise<boolean>
 };
 
 export const loginUser = async (email: string, password: string): Promise<{ success: boolean; token?: string }> => {
-  const res = await fetch(`${API}/auth/login`, {
+  const res = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
@@ -30,7 +30,7 @@ export const loginUser = async (email: string, password: string): Promise<{ succ
 };
 
 export const registerUser = async (email: string, code: string, password: string, name?: string): Promise<{ success: boolean; token?: string }> => {
-  const res = await fetch(`${API}/auth/register`, {
+  const res = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, code, password, name: name || email.split('@')[0] })

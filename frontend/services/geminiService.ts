@@ -1,8 +1,8 @@
-const API = 'http://localhost:8080/api/v1';
+import { API_BASE } from '../config';
 
 export const polishText = async (text: string, tone: 'professional' | 'creative' = 'professional'): Promise<string> => {
   try {
-    const res = await fetch(`${API}/ai/polish`, {
+    const res = await fetch(`${API_BASE}/ai/polish`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, tone })
@@ -16,7 +16,7 @@ export const polishText = async (text: string, tone: 'professional' | 'creative'
 
 export const generateSummary = async (jobTitle: string, skills: string): Promise<string> => {
   try {
-    const res = await fetch(`${API}/ai/summary`, {
+    const res = await fetch(`${API_BASE}/ai/summary`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ jobTitle, skills })

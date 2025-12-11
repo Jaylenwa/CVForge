@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ResumeData } from '../../types';
+import { API_BASE } from '../../config';
 import { ResumePreview } from '../editor/ResumePreview';
 
 export const PrintResume: React.FC = () => {
@@ -11,7 +12,7 @@ export const PrintResume: React.FC = () => {
     const id = searchParams.get('id');
     if (!id) return;
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:8080/api/v1/resumes/${id}`, {
+    fetch(`${API_BASE}/resumes/${id}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
       .then(r => r.json())
@@ -24,7 +25,7 @@ export const PrintResume: React.FC = () => {
           lastModified: res.LastModified,
           personalInfo: {
             fullName: res.FullName,
-            jobTitle: '',
+            jobTitle: res.JobTitle || '',
             email: res.Email,
             phone: res.Phone,
             address: res.Address,

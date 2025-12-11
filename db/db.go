@@ -28,7 +28,7 @@ func InitMySQL(cfg config.Config) (*sql.DB, error) {
 		return nil, err
 	}
 	g = db
-	if err := autoMigrate(); err != nil {
+	if err = autoMigrate(); err != nil {
 		return nil, err
 	}
 	sqlDB, err := db.DB()

@@ -194,7 +194,11 @@ func renderResumeHTML(r models.Resume) string {
 	b.WriteString(".badge{display:inline-block;margin:2px 6px 6px 0;padding:4px 8px;border:1px solid #e5e7eb;border-radius:10px;font-size:12px;color:#374151;background:#fff}")
 	b.WriteString("</style></head><body><div class=container>")
 	b.WriteString("<div class=header>")
-	b.WriteString("<div><div class=name>" + escape(r.FullName) + "</div><div class=title>" + escape(r.TemplateID) + "</div>")
+	subtitle := r.JobTitle
+	if subtitle == "" {
+		subtitle = r.Title
+	}
+	b.WriteString("<div><div class=name>" + escape(r.FullName) + "</div><div class=title>" + escape(subtitle) + "</div>")
 	b.WriteString("<div class=contact>")
 	if r.Email != "" {
 		b.WriteString(escape(r.Email))

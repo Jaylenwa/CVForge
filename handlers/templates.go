@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"openresume/models"
 
@@ -32,7 +33,7 @@ func RegisterTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, rdb *redis.Client) 
 		}
 		payload, _ := json.Marshal(gin.H{"items": list})
 		if rdb != nil {
-			_ = rdb.Set(context.Background(), "templates:list:all", string(payload), 3600_000_000_000).Err()
+			_ = rdb.Set(context.Background(), "templates:list:all", string(payload), time.Hour).Err()
 		}
 		c.Data(http.StatusOK, "application/json", payload)
 	})
