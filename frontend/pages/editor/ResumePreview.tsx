@@ -251,7 +251,7 @@ const TemplateExecutive: React.FC<{ data: ResumeData; styles: any; disableShadow
 );
 
 // 5. Creative Bold
-const TemplateBold: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => {
+const TemplateBold: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
      const { t } = useLanguage();
      return (
      <div className={`w-full bg-white h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto flex flex-col`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
@@ -394,7 +394,7 @@ export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1, disable
   };
 
   return (
-    <div className="w-full flex justify-center bg-white p-8 overflow-auto print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300">
+    <div className={`w-full flex justify-center bg-white p-8 overflow-auto print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
       <div 
         id="resume-export-root"
         className={`w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto transition-transform duration-200 ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none`}
