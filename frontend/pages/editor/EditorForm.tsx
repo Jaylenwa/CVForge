@@ -11,20 +11,20 @@ interface EditorFormProps {
   onChange: (data: ResumeData) => void;
 }
 
-const FONT_OPTIONS = [
-  { group: 'English - Sans Serif', id: 'inter', label: 'Inter (Modern)' },
-  { group: 'English - Sans Serif', id: 'roboto', label: 'Roboto (Technical)' },
-  { group: 'English - Serif', id: 'merriweather', label: 'Merriweather (Elegant)' },
-  { group: 'English - Serif', id: 'playfair', label: 'Playfair Display (Classy)' },
-  { group: 'English - Mono', id: 'mono', label: 'Roboto Mono (Code)' },
-  { group: 'Chinese - Sans (黑体)', id: 'yahei', label: '微软雅黑 (Microsoft YaHei)' },
-  { group: 'Chinese - Sans (黑体)', id: 'notosans', label: '思源黑体 (Noto Sans SC)' },
-  { group: 'Chinese - Serif (宋体/楷体)', id: 'simsun', label: '宋体 (SimSun)' },
-  { group: 'Chinese - Serif (宋体/楷体)', id: 'kaiti', label: '楷体 (KaiTi)' },
-];
-
 export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   const { t } = useLanguage();
+
+  const fontOptions = [
+    { group: t('editor.font.group.englishSans'), id: 'inter', label: t('font.inter') },
+    { group: t('editor.font.group.englishSans'), id: 'roboto', label: t('font.roboto') },
+    { group: t('editor.font.group.englishSerif'), id: 'merriweather', label: t('font.merriweather') },
+    { group: t('editor.font.group.englishSerif'), id: 'playfair', label: t('font.playfair') },
+    { group: t('editor.font.group.englishMono'), id: 'mono', label: t('font.mono') },
+    { group: t('editor.font.group.chineseSans'), id: 'yahei', label: t('font.yahei') },
+    { group: t('editor.font.group.chineseSans'), id: 'notosans', label: t('font.notosans') },
+    { group: t('editor.font.group.chineseSerif'), id: 'simsun', label: t('font.simsun') },
+    { group: t('editor.font.group.chineseSerif'), id: 'kaiti', label: t('font.kaiti') },
+  ];
   const [activeTab, setActiveTab] = useState<'content' | 'design'>('content');
   const [activeSection, setActiveSection] = useState<string | null>('personal');
   const [isAiLoading, setIsAiLoading] = useState(false);
@@ -142,6 +142,16 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
      setIsAiLoading(false);
   }
 
+  const getSectionTitle = (section: ResumeSection) => {
+    // If the title matches one of the default English titles, we translate it based on type.
+    // Otherwise we assume it's a custom user title and display as is.
+    const defaultTitles = ['Professional Summary', 'Work Experience', 'Education', 'Skills', 'Projects'];
+    if (defaultTitles.includes(section.title) || !section.title) {
+        return t(`section.${section.type}`);
+    }
+    return section.title;
+  };
+
   const renderContentTab = () => (
     <>
       {/* Personal Info */}
@@ -258,7 +268,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                 onClick={() => setActiveSection(activeSection === section.id ? null : section.id)}
              >
                  <span className="mr-2 cursor-grab active:cursor-grabbing"><GripVertical size={16} className="text-gray-400"/></span>
-                 {section.title}
+                 {getSectionTitle(section)}
              </button>
              <div className="flex items-center space-x-2">
                  {/* Toggle Visibility */}
@@ -416,29 +426,28 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                 onChange={(e) => updateTheme('fontFamily', e.target.value)}
                 className="block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
               >
-                {/* Grouping fonts manually since React doesn't support complex data structures in select directly easily with map inside optgroup without processing */}
                 <optgroup label={t('editor.font.group.englishSans')}>
-                  {FONT_OPTIONS.filter(f => f.group === 'English - Sans Serif').map(f => (
+                  {fontOptions.filter(f => f.group === t('editor.font.group.englishSans')).map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>
                 <optgroup label={t('editor.font.group.englishSerif')}>
-                  {FONT_OPTIONS.filter(f => f.group === 'English - Serif').map(f => (
+                  {fontOptions.filter(f => f.group === t('editor.font.group.englishSerif')).map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>
                 <optgroup label={t('editor.font.group.englishMono')}>
-                  {FONT_OPTIONS.filter(f => f.group === 'English - Mono').map(f => (
+                  {fontOptions.filter(f => f.group === t('editor.font.group.englishMono')).map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>
                 <optgroup label={t('editor.font.group.chineseSans')}>
-                  {FONT_OPTIONS.filter(f => f.group === 'Chinese - Sans (黑体)').map(f => (
+                  {fontOptions.filter(f => f.group === t('editor.font.group.chineseSans')).map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>
                 <optgroup label={t('editor.font.group.chineseSerif')}>
-                  {FONT_OPTIONS.filter(f => f.group === 'Chinese - Serif (宋体/楷体)').map(f => (
+                  {fontOptions.filter(f => f.group === t('editor.font.group.chineseSerif')).map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>

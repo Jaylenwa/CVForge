@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Download, Printer, Share2, Layout } from 'lucide-react';
+import { ArrowLeft, Download, Printer, Share2, Layout, Globe } from 'lucide-react';
 import { EditorForm } from './EditorForm';
 import { ResumePreview } from './ResumePreview';
 import { API_BASE } from '../../config';
@@ -14,9 +14,10 @@ export const Editor: React.FC = () => {
   const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_RESUME);
   const [scale, setScale] = useState(0.8);
   const [isMobilePreview, setIsMobilePreview] = useState(false);
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [templates, setTemplates] = useState<Array<{ id: string }>>([]);
   const [exportOpen, setExportOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   // Initialize data based on URL params
   useEffect(() => {
@@ -120,7 +121,7 @@ export const Editor: React.FC = () => {
     if (!resumeData.id) return;
     fetch(`${API_BASE}/resumes/${resumeData.id}/pdf`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
       .then(async r => {
-        if (!r.ok) throw new Error('export failed');
+        if (!r.ok) throw new Error(t('editor.export.failed'));
         const blob = await r.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -141,7 +142,7 @@ export const Editor: React.FC = () => {
     if (!resumeData.id) return;
     fetch(`${API_BASE}/resumes/${resumeData.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
       .then(async r => {
-        if (!r.ok) throw new Error('export failed');
+        if (!r.ok) throw new Error(t('editor.export.failed'));
         const blob = await r.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -163,7 +164,7 @@ export const Editor: React.FC = () => {
       <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 z-20 print:hidden">
         <div className="flex items-center">
             <Button variant="ghost" size="sm" className="mr-4" onClick={() => window.history.back()}>
-                <ArrowLeft size={18} className="mr-2"/> Back
+                <ArrowLeft size={18} className="mr-2"/> {t('editor.back')}
             </Button>
             <div className="hidden md:block h-6 w-px bg-gray-300 mx-2"></div>
             <input 
@@ -182,10 +183,27 @@ export const Editor: React.FC = () => {
             </div>
             
             <Button variant="outline" size="sm" icon={<Layout size={16}/>} onClick={handleChangeTemplate} className="hidden sm:flex">
-                Template
+                {t('editor.template')}
             </Button>
+
+            <div className="relative">
+                <Button variant="ghost" size="sm" icon={<Globe size={16}/>} onClick={() => setLangMenuOpen(!langMenuOpen)}>
+                    {language === 'zh' ? '中文' : 'EN'}
+                </Button>
+                {langMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-30">
+                        <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => { setLangMenuOpen(false); setLanguage('zh'); }}>
+                            中文
+                        </button>
+                        <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => { setLangMenuOpen(false); setLanguage('en'); }}>
+                            English
+                        </button>
+                    </div>
+                )}
+            </div>
+
             <Button variant="primary" size="sm" onClick={handleSave}>
-                Save
+                {t('editor.save')}
             </Button>
             <div className="relative">
               <Button variant="secondary" size="sm" icon={<Printer size={16}/>} onClick={() => setExportOpen(!exportOpen)}>
@@ -194,10 +212,10 @@ export const Editor: React.FC = () => {
               {exportOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-30">
                   <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => { setExportOpen(false); handleExportPDF(); }}>
-                    PDF
+                    {t('editor.export.pdf')}
                   </button>
                   <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => { setExportOpen(false); handleExportImage(); }}>
-                    PNG
+                    {t('editor.export.png')}
                   </button>
                 </div>
               )}
