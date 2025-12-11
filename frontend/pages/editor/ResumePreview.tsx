@@ -5,6 +5,7 @@ import { ResumeData, ResumeSectionType, ThemeConfig } from '../../types';
 interface PreviewProps {
   data: ResumeData;
   scale?: number;
+  disableShadow?: boolean;
 }
 
 // Map Font IDs to CSS Font Stacks
@@ -40,8 +41,8 @@ const getThemeStyles = (config?: ThemeConfig) => {
 };
 
 // 1. Classic Professional
-const TemplateClassic: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
-  <div className="p-8 md:p-12 bg-white text-gray-900 h-full min-h-[1123px] shadow-lg print:shadow-none print:p-0" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => (
+  <div className={`w-full p-8 md:p-12 bg-white text-gray-900 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:p-0 print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
     <div className="border-b-2 pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6" style={{ borderColor: data.themeConfig?.color || '#333' }}>
       <div className="flex-1 text-center md:text-left order-2 md:order-1">
           <h1 className="text-4xl font-bold uppercase tracking-wider" style={{ color: data.themeConfig?.color }}>{data.personalInfo.fullName}</h1>
@@ -73,7 +74,7 @@ const TemplateClassic: React.FC<{ data: ResumeData; styles: any }> = ({ data, st
           </h3>
           <div className="space-y-4">
             {section.items.map(item => (
-              <div key={item.id} className="relative">
+              <div key={item.id} className="relative" style={{ pageBreakInside: 'avoid' }}>
                 {section.type !== ResumeSectionType.Skills && (
                   <div className="flex justify-between items-baseline mb-1">
                     <h4 className="font-bold text-gray-900">{item.title}</h4>
@@ -99,8 +100,9 @@ const TemplateClassic: React.FC<{ data: ResumeData; styles: any }> = ({ data, st
 );
 
 // 2. Modern Dark
-const TemplateModern: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
-    <div className="grid grid-cols-12 h-full min-h-[1123px] bg-white shadow-lg print:shadow-none" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+const TemplateModern: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => (
+    <div className={`w-full grid grid-cols-12 h-full min-h-[1123px] bg-white ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto print:bg-transparent`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+        <div className="hidden print:block fixed left-0 top-0 bottom-0 w-[70mm] -z-10" style={{ backgroundColor: '#0f172a' }}></div>
         <div className="col-span-4 text-white p-8" style={{ backgroundColor: '#0f172a' }}>
             <div className="mb-8 flex flex-col items-center md:items-start">
                  {data.personalInfo.avatarUrl && (
@@ -135,7 +137,7 @@ const TemplateModern: React.FC<{ data: ResumeData; styles: any }> = ({ data, sty
                       <h3 className="text-slate-900 font-bold uppercase tracking-wider mb-4 text-sm border-b-2 inline-block pb-1" style={{ borderColor: data.themeConfig?.color || '#3b82f6' }}>{section.title}</h3>
                       <div className="space-y-5">
                           {section.items.map(item => (
-                              <div key={item.id}>
+                              <div key={item.id} style={{ pageBreakInside: 'avoid' }}>
                                   <div className="flex justify-between items-start">
                                       <div>
                                           {item.title && <h4 className="font-bold text-gray-800">{item.title}</h4>}
@@ -158,8 +160,8 @@ const TemplateModern: React.FC<{ data: ResumeData; styles: any }> = ({ data, sty
 )
 
 // 3. Tech Minimalist
-const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
-    <div className="p-8 md:p-14 bg-white h-full min-h-[1123px] text-gray-800 shadow-lg print:shadow-none" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.4 }}>
+const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => (
+    <div className={`w-full p-8 md:p-14 bg-white h-full min-h-[1123px] text-gray-800 ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.4 }}>
         <header className="border-b-4 pb-6 mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6" style={{ borderColor: data.themeConfig?.color || 'black' }}>
             <div className="flex-1">
                 <h1 className="text-5xl font-black tracking-tight uppercase mb-4 leading-none" style={{ color: data.themeConfig?.color || 'black' }}>{data.personalInfo.fullName}</h1>
@@ -185,7 +187,7 @@ const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any }> = ({ data,
                      <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 mb-6">{section.title}</h3>
                      <div className="space-y-8">
                          {section.items.map(item => (
-                             <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                             <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-4" style={{ pageBreakInside: 'avoid' }}>
                                  <div className="md:col-span-3 text-xs font-bold text-gray-400 pt-1 uppercase tracking-wide">
                                     {item.dateRange}
                                  </div>
@@ -204,8 +206,8 @@ const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any }> = ({ data,
 );
 
 // 4. Executive Serif
-const TemplateExecutive: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
-    <div className="p-10 md:p-12 bg-white h-full min-h-[1123px] text-gray-900 shadow-lg print:shadow-none" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.6 }}>
+const TemplateExecutive: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => (
+    <div className={`w-full p-10 md:p-12 bg-white h-full min-h-[1123px] text-gray-900 ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.6 }}>
         <div className="text-center border-b pb-6 mb-8 flex flex-col items-center" style={{ borderColor: data.themeConfig?.color || '#111827' }}>
             {data.personalInfo.avatarUrl && (
                  <img 
@@ -228,7 +230,7 @@ const TemplateExecutive: React.FC<{ data: ResumeData; styles: any }> = ({ data, 
                 </h3>
                 <div className="space-y-5">
                     {section.items.map(item => (
-                        <div key={item.id}>
+                        <div key={item.id} style={{ pageBreakInside: 'avoid' }}>
                             <div className="flex justify-between items-baseline mb-1">
                                 <h4 className="font-bold text-gray-900 text-lg">{item.title}</h4>
                                 <span className="text-sm font-bold font-sans text-gray-700">{item.dateRange}</span>
@@ -252,7 +254,7 @@ const TemplateExecutive: React.FC<{ data: ResumeData; styles: any }> = ({ data, 
 const TemplateBold: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => {
      const { t } = useLanguage();
      return (
-     <div className="bg-white h-full min-h-[1123px] shadow-lg print:shadow-none flex flex-col" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+     <div className={`w-full bg-white h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto flex flex-col`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
         <div className="text-white p-10 print:text-white flex flex-col md:flex-row justify-between items-center gap-6" style={{ backgroundColor: data.themeConfig?.color || '#1d4ed8' }}>
              <div className="order-2 md:order-1 flex-1">
                 <h1 className="text-5xl font-extrabold mb-2 tracking-tight">{data.personalInfo.fullName}</h1>
@@ -279,7 +281,7 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any }> = ({ data, style
                          </h3>
                           <div className="space-y-8">
                             {section.items.map(item => (
-                                <div key={item.id} className="relative">
+                                <div key={item.id} className="relative" style={{ pageBreakInside: 'avoid' }}>
                                     <div className="flex justify-between items-center mb-1">
                                         <h4 className="font-bold text-gray-900 text-lg">{item.title}</h4>
                                         {item.dateRange && <span className="text-xs font-bold bg-gray-100 text-gray-700 px-3 py-1 rounded-full whitespace-nowrap ml-4">{item.dateRange}</span>}
@@ -311,8 +313,9 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any }> = ({ data, style
 };
 
 // 6. Elegant Teal
-const TemplateElegant: React.FC<{ data: ResumeData; styles: any }> = ({ data, styles }) => (
-    <div className="grid grid-cols-12 h-full min-h-[1123px] bg-white shadow-lg print:shadow-none" style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.6 }}>
+const TemplateElegant: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => (
+    <div className={`w-full grid grid-cols-12 h-full min-h-[1123px] bg-white ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto print:bg-transparent`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.6 }}>
+        <div className="hidden print:block fixed left-0 top-0 bottom-0 w-[70mm] -z-10" style={{ backgroundColor: data.themeConfig?.color || '#115e59' }}></div>
         <div className="col-span-4 text-white p-8 flex flex-col" style={{ backgroundColor: data.themeConfig?.color || '#115e59' }}>
             <div className="mb-10 text-center">
                  {data.personalInfo.avatarUrl && (
@@ -352,7 +355,7 @@ const TemplateElegant: React.FC<{ data: ResumeData; styles: any }> = ({ data, st
                       <h3 className="font-serif font-bold uppercase tracking-widest text-lg border-b pb-2 mb-6" style={{ borderColor: '#f3f4f6', color: data.themeConfig?.color || '#134e4a' }}>{section.title}</h3>
                       <div className="space-y-6">
                           {section.items.map(item => (
-                              <div key={item.id}>
+                              <div key={item.id} style={{ pageBreakInside: 'avoid' }}>
                                   <div className="flex justify-between items-baseline mb-1">
                                       <h4 className="font-bold text-gray-900 text-lg">{item.title}</h4>
                                       <span className="text-sm font-medium" style={{ color: data.themeConfig?.color || '#115e59' }}>{item.dateRange}</span>
@@ -370,31 +373,31 @@ const TemplateElegant: React.FC<{ data: ResumeData; styles: any }> = ({ data, st
     </div>
 );
 
-export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1 }) => {
+export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1, disableShadow = false }) => {
   const styles = getThemeStyles(data.themeConfig);
 
   const style = {
     transform: `scale(${scale})`,
-    transformOrigin: 'top center',
+    transformOrigin: 'top left',
   };
 
   const renderTemplate = () => {
       switch (data.templateId) {
-          case 't1': return <TemplateClassic data={data} styles={styles} />;
-          case 't2': return <TemplateModern data={data} styles={styles} />;
-          case 't3': return <TemplateMinimalist data={data} styles={styles} />;
-          case 't4': return <TemplateExecutive data={data} styles={styles} />;
-          case 't5': return <TemplateBold data={data} styles={styles} />;
-          case 't6': return <TemplateElegant data={data} styles={styles} />;
+          case 't1': return <TemplateClassic data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't2': return <TemplateModern data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't3': return <TemplateMinimalist data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't4': return <TemplateExecutive data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't5': return <TemplateBold data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't6': return <TemplateElegant data={data} styles={styles} disableShadow={disableShadow} />;
           default: return <TemplateClassic data={data} styles={styles} />;
       }
   };
 
   return (
-    <div className="w-full flex justify-center bg-gray-100 p-8 overflow-auto print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300">
+    <div className="w-full flex justify-center bg-white p-8 overflow-auto print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300">
       <div 
         id="resume-export-root"
-        className="w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto transition-transform duration-200 shadow-2xl print:shadow-none"
+        className={`w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto transition-transform duration-200 ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none`}
         style={style}
       >
         {renderTemplate()}
