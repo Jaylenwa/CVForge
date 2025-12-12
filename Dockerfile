@@ -1,18 +1,21 @@
-# syntax=docker/dockerfile:1
-FROM golang:1.24-alpine AS build
+FROM golang:1.24 AS build
 WORKDIR /app
-RUN apk add --no-cache git build-base
+RUN apt-get update && apt-get install -y --no-install-recommends git build-essential ca-certificates && rm -rf /var/lib/apt/lists/*
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GOSUMDB=sum.golang.org
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o openresume ./main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /app/openresume ./main.go
 
-FROM alpine:3.20
-RUN apk add --no-cache ca-certificates tzdata chromium nss freetype ttf-dejavu font-noto font-noto-cjk
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates tzdata chromium \
+    fonts-dejavu fonts-noto fonts-noto-cjk \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/openresume /usr/local/bin/openresume
 RUN mkdir -p /app/uploads
 ENV PORT=8080
 EXPOSE 8080
 CMD ["openresume"]
-
