@@ -161,6 +161,8 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 		// keep ExternalID
 		updated.ExternalID = res.ExternalID
 		updated.Model.ID = res.Model.ID
+		// preserve original CreatedAt to avoid zero-value overwrite
+		updated.Model.CreatedAt = res.Model.CreatedAt
 		// transactional replace sections/items
 		if err := db.Transaction(func(tx *gorm.DB) error {
 			var secIDs []uint
@@ -175,7 +177,7 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 			if err := tx.Where("resume_id = ?", res.ID).Delete(&models.ResumeSection{}).Error; err != nil {
 				return err
 			}
-			if err := tx.Session(&gorm.Session{FullSaveAssociations: true}).Save(&updated).Error; err != nil {
+			if err := tx.Session(&gorm.Session{FullSaveAssociations: true}).Omit("CreatedAt").Save(&updated).Error; err != nil {
 				return err
 			}
 			return nil
