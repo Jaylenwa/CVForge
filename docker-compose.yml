@@ -14,7 +14,7 @@ services:
       UPLOAD_BACKEND: "local"
       FRONTEND_BASE_URL: "http://frontend"
     volumes:
-      - uploads:/app/uploads
+      - /var/lib/openresume/upload:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -46,7 +46,7 @@ services:
       MYSQL_PASSWORD: openresume
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
-      - mysql_data:/var/lib/mysql
+      - /var/lib/openresume/mysql:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
@@ -58,11 +58,6 @@ services:
   redis:
     image: redis:7-alpine
     volumes:
-      - redis_data:/data
+      - /var/lib/openresume/redis:/data
     ports:
       - "6379:6379"
-
-volumes:
-  uploads:
-  mysql_data:
-  redis_data:
