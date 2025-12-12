@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Globe } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 interface AuthLayoutProps {
@@ -16,7 +16,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   quote = "The future belongs to those who believe in the beauty of their dreams.",
   author = "Eleanor Roosevelt"
 }) => {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   return (
     <div className="min-h-screen flex bg-white">
       {/* Left Column - Image (Hidden on mobile) */}
@@ -42,7 +42,21 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
       </div>
 
       {/* Right Column - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-16 overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-16 overflow-y-auto relative">
+        <div className="absolute top-6 right-6">
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
+            className="p-2 text-gray-500 hover:text-gray-900 focus:outline-none"
+            title={t('lang.switchTitle')}
+          >
+            <div className="flex items-center space-x-1">
+              <Globe size={18} />
+              <span className="text-sm font-medium">
+                {language === 'en' ? t('lang.en_short') : t('lang.zh_short')}
+              </span>
+            </div>
+          </button>
+        </div>
         <div className="w-full max-w-md space-y-8">
             <div className="lg:hidden mb-8">
                  <Link to="/" className="flex items-center text-gray-500 hover:text-gray-900">

@@ -203,7 +203,21 @@ const translations: Translations = {
     'section.education': 'Education',
     'section.skills': 'Skills',
     'section.projects': 'Projects',
-    'section.custom': 'Custom Section'
+    'section.custom': 'Custom Section',
+    // Pricing
+    'pricing.title': 'Pricing Plans',
+    'pricing.subtitle': 'Simple, transparent pricing for everyone.',
+    'pricing.basic': 'Basic',
+    'pricing.pro': 'Pro',
+    'pricing.basicDesc': 'Best for individuals.',
+    'pricing.proDesc': 'Best for power users.',
+    'pricing.price.free': '$0',
+    'pricing.price.pro': '$12',
+    'pricing.month': '/mo',
+    'pricing.buy': 'Buy',
+    'pricing.modal.title': 'Notice',
+    'pricing.modal.planning': 'Planning in progress...',
+    'pricing.modal.close': 'Close'
   },
   zh: {
     'nav.templates': '模板库',
@@ -399,7 +413,21 @@ const translations: Translations = {
     'section.education': '教育背景',
     'section.skills': '技能特长',
     'section.projects': '项目经历',
-    'section.custom': '自定义模块'
+    'section.custom': '自定义模块',
+    // Pricing
+    'pricing.title': '订阅方案',
+    'pricing.subtitle': '简单透明的定价方案。',
+    'pricing.basic': '基础版',
+    'pricing.pro': '专业版',
+    'pricing.basicDesc': '适合个人使用。',
+    'pricing.proDesc': '适合资深用户。',
+    'pricing.price.free': '¥0',
+    'pricing.price.pro': '¥88',
+    'pricing.month': '/月',
+    'pricing.buy': '购买',
+    'pricing.modal.title': '提示',
+    'pricing.modal.planning': '正在规划中...',
+    'pricing.modal.close': '关闭'
   }
 };
 
@@ -414,7 +442,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [languageState, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('lang') as Language | null;
-    return saved || 'zh';
+    return saved || 'en';
   });
 
   const setLanguage = (lang: Language) => {

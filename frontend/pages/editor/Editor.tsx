@@ -17,7 +17,6 @@ export const Editor: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
   const [templates, setTemplates] = useState<Array<{ id: string }>>([]);
   const [exportOpen, setExportOpen] = useState(false);
-  const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   // Initialize data based on URL params
   useEffect(() => {
@@ -186,21 +185,15 @@ export const Editor: React.FC = () => {
                 {t('editor.template')}
             </Button>
 
-            <div className="relative">
-                <Button variant="ghost" size="sm" icon={<Globe size={16}/>} onClick={() => setLangMenuOpen(!langMenuOpen)}>
-                    {language === 'zh' ? '中文' : 'EN'}
-                </Button>
-                {langMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border border-gray-200 z-30">
-                        <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => { setLangMenuOpen(false); setLanguage('zh'); }}>
-                            中文
-                        </button>
-                        <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => { setLangMenuOpen(false); setLanguage('en'); }}>
-                            English
-                        </button>
-                    </div>
-                )}
-            </div>
+            <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
+                title={t('lang.switchTitle')}
+            >
+                <Globe size={16} className="mr-2"/>
+                {language === 'en' ? t('lang.en_short') : t('lang.zh_short')}
+            </Button>
 
             <Button variant="primary" size="sm" onClick={handleSave}>
                 {t('editor.save')}
