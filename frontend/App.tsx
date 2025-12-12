@@ -13,6 +13,8 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { PrintResume } from './pages/print/PrintResume';
 
+import { ProtectedRoute } from './components/ProtectedRoute';
+
 // Pricing Placeholder
 const Pricing = () => (
      <div className="py-12 bg-white">
@@ -52,21 +54,31 @@ const App: React.FC = () => {
       <AuthProvider>
         <Router>
           <Routes>
-              {/* Routes with Main Navbar/Footer */}
+              {/* Public Routes with Main Navbar/Footer */}
               <Route element={<LayoutWrapper />}>
                   <Route path={AppRoute.Home} element={<Home />} />
                   <Route path={AppRoute.Templates} element={<Templates />} />
-                  <Route path={AppRoute.Dashboard} element={<Dashboard />} />
                   <Route path={AppRoute.Pricing} element={<Pricing />} />
-                  <Route path={AppRoute.Settings} element={<Settings />} />
+              </Route>
+
+              {/* Protected Routes with Main Navbar/Footer */}
+              <Route element={<ProtectedRoute />}>
+                  <Route element={<LayoutWrapper />}>
+                      <Route path={AppRoute.Dashboard} element={<Dashboard />} />
+                      <Route path={AppRoute.Settings} element={<Settings />} />
+                  </Route>
               </Route>
               
               {/* Auth Routes */}
               <Route path={AppRoute.Login} element={<Login />} />
               <Route path={AppRoute.Register} element={<Register />} />
               
+              {/* Protected Standalone Routes */}
+              <Route element={<ProtectedRoute />}>
+                  <Route path={AppRoute.Editor} element={<Editor />} />
+              </Route>
+              
               {/* Standalone Routes */}
-              <Route path={AppRoute.Editor} element={<Editor />} />
               <Route path={AppRoute.Print} element={<PrintResume />} />
           </Routes>
         </Router>
