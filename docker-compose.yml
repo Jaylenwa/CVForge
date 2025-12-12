@@ -3,20 +3,23 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: unless-stopped
     environment:
       PORT: "8080"
       DB_DSN: "root:password@tcp(mysql:3306)/openresume?charset=utf8mb4&parseTime=True&loc=Local"
       REDIS_ADDR: "redis:6379"
       REDIS_PASSWORD: ""
       JWT_SECRET: "change-me"
-      CORS_ORIGINS: "http://localhost"
+      CORS_ORIGINS: "http://www.vfoy.cn,https://www.vfoy.cn"
       UPLOAD_BACKEND: "local"
       FRONTEND_BASE_URL: "http://frontend"
     volumes:
       - uploads:/app/uploads
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - "8080:8080"
 
@@ -26,8 +29,10 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_BASE: "/api/v1"
+    restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_started
     ports:
       - "80:80"
 
@@ -42,6 +47,11 @@ services:
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-ppassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   redis:
     image: redis:7-alpine
@@ -52,4 +62,3 @@ volumes:
   uploads:
   mysql_data:
   redis_data:
-
