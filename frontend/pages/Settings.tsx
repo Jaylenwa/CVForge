@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { API_BASE } from '../config';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Button } from '../components/ui/Button';
+import { Avatar } from '../components/ui/Avatar';
 
 export const Settings: React.FC = () => {
   const { user, login } = useAuth();
@@ -125,10 +126,10 @@ export const Settings: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">{t('settings.profile.photoLabel')}</label>
                 <div className="flex items-center space-x-6">
                   <div className="relative">
-                     <img 
+                     <Avatar 
                         src={formData.avatarUrl || user?.avatarUrl} 
-                        alt="Profile" 
-                        className="h-24 w-24 rounded-full object-cover border-4 border-white shadow-sm"
+                        name={formData.name || user?.name}
+                        className="h-24 w-24 rounded-full border-4 border-white shadow-sm text-4xl"
                      />
                      <button
                         type="button" 

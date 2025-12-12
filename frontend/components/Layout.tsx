@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FileText, Grid, Menu, X, Star, Globe, User as UserIcon, LogOut, Settings } from 'lucide-react';
 import { Button } from './ui/Button';
+import { Avatar } from './ui/Avatar';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -91,7 +92,7 @@ export const Navbar: React.FC = () => {
                             id="user-menu-button"
                         >
                             <span className="sr-only">{t('a11y.openUserMenu')}</span>
-                            <img className="h-8 w-8 rounded-full object-cover" src={user.avatarUrl} alt="" />
+                            <Avatar className="h-8 w-8 rounded-full text-sm" src={user.avatarUrl} name={user.name} />
                             <span className="ml-2 font-medium text-gray-700 hidden md:block">{user.name}</span>
                         </button>
                     </div>
@@ -180,7 +181,7 @@ export const Navbar: React.FC = () => {
                      {isAuthenticated ? (
                          <>
                             <div className="px-4 py-2 flex items-center">
-                                <img className="h-8 w-8 rounded-full object-cover mr-3" src={user?.avatarUrl} alt="" />
+                                <Avatar className="h-8 w-8 rounded-full mr-3 text-sm" src={user?.avatarUrl} name={user?.name} />
                                 <div>
                                     <div className="text-base font-medium text-gray-800">{user?.name}</div>
                                     <div className="text-sm font-medium text-gray-500">{user?.email}</div>
