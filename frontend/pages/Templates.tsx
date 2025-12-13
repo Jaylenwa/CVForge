@@ -77,7 +77,7 @@ export const Templates: React.FC = () => {
         if (!el) return;
         const w = el.clientWidth;
         const h = el.clientHeight;
-        const s = w / a4w;
+        const s = Math.min(w / a4w, h / a4h);
         setScale(s);
       };
       update();
@@ -94,7 +94,7 @@ export const Templates: React.FC = () => {
     const a4h = 297 * mmToPx;
     return (
       <div className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
-        <div ref={containerRef} className="aspect-[3/4] w-full bg-gray-200 overflow-hidden relative">
+        <div ref={containerRef} className="aspect-[210/297] w-full bg-gray-200 overflow-hidden relative">
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               style={{ width: a4w * scale, height: a4h * scale }}
