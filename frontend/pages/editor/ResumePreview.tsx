@@ -435,7 +435,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   return (
       <div 
         id="resume-export-root"
-        className={`w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto transition-transform duration-200 ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none ${className}`}
+        className={`w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none ${className}`}
         style={containerStyle}
       >
         {renderTemplate()}

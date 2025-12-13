@@ -6,6 +6,8 @@ import { AppRoute } from '../types';
 // 后端数据来源
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../config';
+import { ResumeArtboard } from './editor/ResumePreview';
+import { INITIAL_RESUME } from '../services/mockData';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +36,100 @@ export const Home: React.FC = () => {
     { key: 'home.quick.creative', icon: <PenTool size={20} />, query: 'Creative' },
     { key: 'home.quick.student', icon: <GraduationCap size={20} />, query: 'Intern' },
   ];
+
+  const HomeTemplateCard: React.FC<{ template: any; onUse: () => void }> = ({ template, onUse }) => {
+    const containerRef = React.useRef<HTMLDivElement | null>(null);
+    const rafRef = React.useRef<number | null>(null);
+    const roRef = React.useRef<ResizeObserver | null>(null);
+    const stableTimerRef = React.useRef<number | null>(null);
+    const lastWidthRef = React.useRef<number>(0);
+    const initializedRef = React.useRef(false);
+    const [scale, setScale] = React.useState<number | null>(null);
+    const [ready, setReady] = React.useState(false);
+    React.useLayoutEffect(() => {
+      const mmToPx = 96 / 25.4;
+      const a4w = 210 * mmToPx;
+      const scheduleUpdate = () => {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(() => {
+          const el = containerRef.current;
+          if (!el) return;
+          lastWidthRef.current = el.clientWidth;
+          if (stableTimerRef.current) {
+            clearTimeout(stableTimerRef.current);
+          }
+          stableTimerRef.current = window.setTimeout(() => {
+            const s = lastWidthRef.current / a4w;
+            setScale(prev => (prev === null || Math.abs(prev - s) > 0.002) ? s : prev);
+            setReady(true);
+          }, 120);
+        });
+      };
+      if (!initializedRef.current) {
+        const el = containerRef.current;
+        if (el) {
+          const s = el.clientWidth / a4w;
+          setScale(s);
+          setReady(true);
+          initializedRef.current = true;
+        }
+      } else {
+        scheduleUpdate();
+      }
+      const onResize = () => scheduleUpdate();
+      window.addEventListener('resize', onResize);
+      if (containerRef.current) {
+        roRef.current = new ResizeObserver(onResize);
+        roRef.current.observe(containerRef.current);
+      }
+      return () => {
+        window.removeEventListener('resize', onResize);
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        if (stableTimerRef.current) {
+          clearTimeout(stableTimerRef.current);
+        }
+        if (roRef.current) {
+          roRef.current.disconnect();
+        }
+      };
+    }, []);
+    const mmToPx = 96 / 25.4;
+    const a4w = 210 * mmToPx;
+    const a4h = 297 * mmToPx;
+    return (
+      <div className="group relative border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-lg">
+        <div ref={containerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            {ready && scale !== null ? (
+              <div
+                style={{ width: a4w * scale, height: a4h * scale }}
+                className="relative select-none pointer-events-none shadow-sm bg-white"
+              >
+                <ResumeArtboard
+                  data={{ ...INITIAL_RESUME, templateId: template.id }}
+                  scale={scale}
+                  disableShadow={true}
+                  style={{ margin: 0 }}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full bg-white" />
+            )}
+          </div>
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <Button onClick={onUse}>{t('home.actions.useTemplate')}</Button>
+          </div>
+        </div>
+        <div className="p-3">
+          <h3 className="font-medium text-gray-900 truncate">{template.name}</h3>
+          <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
+            <span className="px-2 py-0.5 bg-gray-100 rounded">{template.category}</span>
+            {template.isPremium && <span className="text-yellow-600 font-bold">{t('home.badge.premium')}</span>}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col">
@@ -109,21 +205,11 @@ export const Home: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {popularTemplates.map(template => (
-                    <div key={template.id} className="group relative border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all">
-                        <div className="aspect-[3/4] bg-gray-100 overflow-hidden">
-                            <img src={template.thumbnail} alt={template.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        </div>
-                        <div className="p-3">
-                            <h3 className="font-medium text-gray-900 truncate">{template.name}</h3>
-                            <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
-                                <span className="px-2 py-0.5 bg-gray-100 rounded">{template.category}</span>
-                                {template.isPremium && <span className="text-yellow-600 font-bold">{t('home.badge.premium')}</span>}
-                            </div>
-                        </div>
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                             <Button onClick={() => navigate(`${AppRoute.Editor}?template=${template.id}`)}>{t('home.actions.useTemplate')}</Button>
-                        </div>
-                    </div>
+                    <HomeTemplateCard
+                      key={template.id}
+                      template={template}
+                      onUse={() => navigate(`${AppRoute.Editor}?template=${template.id}`)}
+                    />
                 ))}
             </div>
         </div>

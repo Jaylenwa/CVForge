@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Star, Filter } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -8,7 +8,6 @@ import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ResumeArtboard } from './editor/ResumePreview';
 import { INITIAL_RESUME } from '../services/mockData';
-import { useRef } from 'react';
 
 export const Templates: React.FC = () => {
   const navigate = useNavigate();
@@ -67,48 +66,84 @@ export const Templates: React.FC = () => {
 
   const TemplateGridItem: React.FC<{ template: any }> = ({ template }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const [scale, setScale] = useState(0.2);
-    useEffect(() => {
+    const rafRef = useRef<number | null>(null);
+    const roRef = useRef<ResizeObserver | null>(null);
+    const stableTimerRef = useRef<number | null>(null);
+    const lastWidthRef = useRef<number>(0);
+    const initializedRef = useRef(false);
+    const [scale, setScale] = useState<number | null>(null);
+    const [ready, setReady] = useState(false);
+    useLayoutEffect(() => {
       const mmToPx = 96 / 25.4;
       const a4w = 210 * mmToPx;
-      const a4h = 297 * mmToPx;
-      const update = () => {
-        const el = containerRef.current;
-        if (!el) return;
-        const w = el.clientWidth;
-        const h = el.clientHeight;
-        const s = Math.min(w / a4w, h / a4h);
-        setScale(s);
+      const scheduleUpdate = () => {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = requestAnimationFrame(() => {
+          const el = containerRef.current;
+          if (!el) return;
+          lastWidthRef.current = el.clientWidth;
+          if (stableTimerRef.current) {
+            clearTimeout(stableTimerRef.current);
+          }
+          stableTimerRef.current = window.setTimeout(() => {
+            const s = lastWidthRef.current / a4w;
+            setScale(prev => (prev === null || Math.abs(prev - s) > 0.002) ? s : prev);
+            setReady(true);
+          }, 120);
+        });
       };
-      update();
-      const ro = new ResizeObserver(update);
-      if (containerRef.current) ro.observe(containerRef.current);
-      window.addEventListener('resize', update);
+      if (!initializedRef.current) {
+        const el = containerRef.current;
+        if (el) {
+          const s = el.clientWidth / a4w;
+          setScale(s);
+          setReady(true);
+          initializedRef.current = true;
+        }
+      } else {
+        scheduleUpdate();
+      }
+      const onResize = () => scheduleUpdate();
+      window.addEventListener('resize', onResize);
+      if (containerRef.current) {
+        roRef.current = new ResizeObserver(onResize);
+        roRef.current.observe(containerRef.current);
+      }
       return () => {
-        ro.disconnect();
-        window.removeEventListener('resize', update);
+        window.removeEventListener('resize', onResize);
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        if (stableTimerRef.current) {
+          clearTimeout(stableTimerRef.current);
+        }
+        if (roRef.current) {
+          roRef.current.disconnect();
+        }
       };
     }, []);
     const mmToPx = 96 / 25.4;
     const a4w = 210 * mmToPx;
     const a4h = 297 * mmToPx;
     return (
-      <div className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
+      <div className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg">
         <div ref={containerRef} className="aspect-[210/297] w-full bg-gray-200 overflow-hidden relative">
           <div className="absolute inset-0 flex items-center justify-center">
-            <div
-              style={{ width: a4w * scale, height: a4h * scale }}
-              className="relative select-none pointer-events-none shadow-sm bg-white"
-            >
-              <ResumeArtboard
-                data={{ ...INITIAL_RESUME, templateId: template.id }}
-                scale={scale}
-                disableShadow={true}
-                style={{ margin: 0 }}
-              />
-            </div>
+            {ready && scale !== null ? (
+              <div
+                style={{ width: a4w * scale, height: a4h * scale }}
+                className="relative select-none pointer-events-none shadow-sm bg-white"
+              >
+                <ResumeArtboard
+                  data={{ ...INITIAL_RESUME, templateId: template.id }}
+                  scale={scale}
+                  disableShadow={true}
+                  style={{ margin: 0 }}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full bg-white" />
+            )}
           </div>
-          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100">
             <Button onClick={() => handleUseTemplate(template.id)}>{t('templates.actions.useTemplate')}</Button>
           </div>
           {template.isPremium && (
