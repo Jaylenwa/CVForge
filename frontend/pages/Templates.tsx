@@ -6,6 +6,9 @@ import { Button } from '../components/ui/Button';
 import { API_BASE } from '../config';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { ResumeArtboard } from './editor/ResumePreview';
+import { INITIAL_RESUME } from '../services/mockData';
+import { useRef } from 'react';
 
 export const Templates: React.FC = () => {
   const navigate = useNavigate();
@@ -60,6 +63,72 @@ export const Templates: React.FC = () => {
 
   const handleUseTemplate = (templateId: string) => {
     navigate(`${AppRoute.Editor}?template=${templateId}`);
+  };
+
+  const TemplateGridItem: React.FC<{ template: any }> = ({ template }) => {
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const [scale, setScale] = useState(0.2);
+    useEffect(() => {
+      const mmToPx = 96 / 25.4;
+      const a4w = 210 * mmToPx;
+      const a4h = 297 * mmToPx;
+      const update = () => {
+        const el = containerRef.current;
+        if (!el) return;
+        const w = el.clientWidth;
+        const h = el.clientHeight;
+        const s = w / a4w;
+        setScale(s);
+      };
+      update();
+      const ro = new ResizeObserver(update);
+      if (containerRef.current) ro.observe(containerRef.current);
+      window.addEventListener('resize', update);
+      return () => {
+        ro.disconnect();
+        window.removeEventListener('resize', update);
+      };
+    }, []);
+    const mmToPx = 96 / 25.4;
+    const a4w = 210 * mmToPx;
+    const a4h = 297 * mmToPx;
+    return (
+      <div className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
+        <div ref={containerRef} className="aspect-[3/4] w-full bg-gray-200 overflow-hidden relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              style={{ width: a4w * scale, height: a4h * scale }}
+              className="relative select-none pointer-events-none shadow-sm bg-white"
+            >
+              <ResumeArtboard
+                data={{ ...INITIAL_RESUME, templateId: template.id }}
+                scale={scale}
+                disableShadow={true}
+                style={{ margin: 0 }}
+              />
+            </div>
+          </div>
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <Button onClick={() => handleUseTemplate(template.id)}>{t('templates.actions.useTemplate')}</Button>
+          </div>
+          {template.isPremium && (
+            <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded flex items-center">
+              <Star size={12} className="mr-1 fill-current" /> {t('templates.badge.premium')}
+            </div>
+          )}
+        </div>
+        <div className="p-4">
+          <h3 className="text-lg font-medium text-gray-900">{template.name}</h3>
+          <div className="mt-2 flex items-center justify-between text-sm text-gray-500">
+            <span>{template.popularity}% {t('templates.meta.popularity')}</span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-1">
+            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded border border-blue-100">{template.category}</span>
+            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{template.level}</span>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -149,33 +218,7 @@ export const Templates: React.FC = () => {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {filteredTemplates.map((template: any) => (
-          <div key={template.id} className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300">
-             <div className="aspect-[3/4] w-full bg-gray-200 overflow-hidden relative">
-                <img 
-                  src={template.thumbnail} 
-                  alt={template.name} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <Button onClick={() => handleUseTemplate(template.id)}>{t('templates.actions.useTemplate')}</Button>
-                </div>
-                {template.isPremium && (
-                    <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded flex items-center">
-                        <Star size={12} className="mr-1 fill-current" /> {t('templates.badge.premium')}
-                    </div>
-                )}
-             </div>
-             <div className="p-4">
-                <h3 className="text-lg font-medium text-gray-900">{template.name}</h3>
-                <div className="mt-2 flex items-center justify-between text-sm text-gray-500">
-                    <span>{template.popularity}% {t('templates.meta.popularity')}</span>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-1">
-                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded border border-blue-100">{template.category}</span>
-                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{template.level}</span>
-                </div>
-             </div>
-          </div>
+          <TemplateGridItem key={template.id} template={template} />
         ))}
       </div>
       
