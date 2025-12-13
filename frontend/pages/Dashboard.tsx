@@ -6,10 +6,13 @@ import { INITIAL_RESUME } from '../services/mockData';
 import { AppRoute, ResumeData } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../config';
+import { ResumeArtboard } from './editor/ResumePreview';
+ 
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  
   
   const [resumes, setResumes] = useState<ResumeData[]>([]);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -60,13 +63,11 @@ export const Dashboard: React.FC = () => {
     navigate(`${AppRoute.Editor}?id=${id}`);
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
-      e.stopPropagation(); // Prevent navigation when clicking delete
-      if (window.confirm(t('dashboard.confirm.delete'))) {
-          const token = localStorage.getItem('token');
-          fetch(`${API_BASE}/resumes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
-            .then(() => setResumes(prev => prev.filter(r => r.id !== id)));
-      }
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      const token = localStorage.getItem('token');
+      fetch(`${API_BASE}/resumes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+        .then(() => setResumes(prev => prev.filter(r => r.id !== id)));
       setActiveMenu(null);
   };
 
@@ -108,12 +109,20 @@ export const Dashboard: React.FC = () => {
                 className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all relative cursor-pointer group"
                 onClick={() => handleEdit(resume.id)}
             >
-                <div className="h-40 bg-gray-100 rounded-t-lg flex items-center justify-center border-b border-gray-100 relative overflow-hidden">
-                     {/* Preview Mockup */}
-                     <div className="absolute inset-0 bg-white opacity-50"></div>
-                     <FileText size={48} className="text-gray-300 relative z-10" />
+                <div className="h-40 bg-gray-50 rounded-t-lg flex justify-center items-start border-b border-gray-100 relative overflow-hidden pt-4">
+                     {/* Resume Thumbnail */}
+                     <div style={{ width: 'calc(210mm * 0.25)', height: 'calc(297mm * 0.25)' }} className="relative select-none pointer-events-none shadow-sm bg-white">
+                        <ResumeArtboard 
+                            data={resume} 
+                            scale={0.25} 
+                            disableShadow={true} 
+                            style={{ margin: 0 }}
+                        />
+                     </div>
                      
-                     <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center space-x-3 transition-all">
+                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-10" />
+
+                     <div className="absolute inset-0 hidden group-hover:flex items-center justify-center z-20">
                         <Button size="sm">
                             {t('common.edit')}
                         </Button>

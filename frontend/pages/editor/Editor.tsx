@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { INITIAL_RESUME } from '../../services/mockData';
 import { ResumeData } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useToast } from '../../components/ui/Toast';
 
 export const Editor: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -15,6 +16,7 @@ export const Editor: React.FC = () => {
   const [scale, setScale] = useState(0.8);
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const { t, language, setLanguage } = useLanguage();
+  const { showToast } = useToast();
   const [templates, setTemplates] = useState<Array<{ id: string }>>([]);
   const [exportOpen, setExportOpen] = useState(false);
 
@@ -111,7 +113,7 @@ export const Editor: React.FC = () => {
     };
     fetch(`${API_BASE}/resumes/${resumeData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
       .then(() => {
-        // no-op; could show a toast
+        showToast(t('editor.success.saved'), 'success');
       });
   };
 

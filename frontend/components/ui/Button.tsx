@@ -1,6 +1,6 @@
 import React from 'react';
 
-type Variant = 'primary' | 'secondary' | 'outline' | 'ghost';
+type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -8,13 +8,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
   isLoading?: boolean;
   icon?: React.ReactNode;
+  noFocusRing?: boolean;
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700',
-  secondary: 'bg-gray-900 text-white hover:bg-gray-800',
-  outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+  primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm',
+  secondary: 'bg-gray-900 text-white hover:bg-gray-800 shadow-sm',
+  outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shadow-sm',
   ghost: 'bg-transparent text-gray-700 hover:bg-gray-100',
+  danger: 'bg-red-600 text-white hover:bg-red-700 shadow-sm',
 };
 
 const sizeClasses: Record<Size, string> = {
@@ -28,12 +30,13 @@ export const Button: React.FC<ButtonProps> = ({
   size = 'md',
   isLoading = false,
   icon,
+  noFocusRing = true,
   className = '',
   children,
   disabled,
   ...props
 }) => {
-  const base = 'inline-flex items-center justify-center rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500';
+  const base = `inline-flex items-center justify-center rounded-md transition-colors focus:outline-none ${noFocusRing ? '' : 'focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'}`;
   const classes = [base, variantClasses[variant], sizeClasses[size], disabled || isLoading ? 'opacity-60 cursor-not-allowed' : '', className]
     .filter(Boolean)
     .join(' ');

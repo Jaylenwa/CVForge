@@ -403,12 +403,21 @@ const TemplateElegant: React.FC<{ data: ResumeData; styles: any; disableShadow?:
 );
 };
 
-export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1, disableShadow = false }) => {
+export interface ArtboardProps {
+  data: ResumeData;
+  scale?: number;
+  disableShadow?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disableShadow = false, className = '', style = {} }) => {
   const styles = getThemeStyles(data.themeConfig);
 
-  const style = {
+  const containerStyle = {
     transform: `scale(${scale})`,
     transformOrigin: 'top left',
+    ...style,
   };
 
   const renderTemplate = () => {
@@ -424,14 +433,20 @@ export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1, disable
   };
 
   return (
-    <div className={`w-full flex justify-center bg-white p-8 overflow-auto print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
       <div 
         id="resume-export-root"
-        className={`w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto transition-transform duration-200 ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none`}
-        style={style}
+        className={`w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto transition-transform duration-200 ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none ${className}`}
+        style={containerStyle}
       >
         {renderTemplate()}
       </div>
+  );
+};
+
+export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1, disableShadow = false }) => {
+  return (
+    <div className={`w-full flex justify-center bg-white p-8 overflow-auto print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
+      <ResumeArtboard data={data} scale={scale} disableShadow={disableShadow} />
     </div>
   );
 };
