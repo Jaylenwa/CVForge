@@ -407,6 +407,13 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
 
                     {section.items.map((item) => (
                     <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group transition-all hover:shadow-md">
+                        <button 
+                            onClick={() => removeItem(section.id, item.id)}
+                            className="absolute -top-3 -right-3 p-1.5 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-600 hover:border-red-300 shadow-sm"
+                            title={t('dashboard.confirm.delete')}
+                        >
+                            <Trash2 size={14} />
+                        </button>
                         
                         {section.type !== ResumeSectionType.Skills && section.type !== ResumeSectionType.Summary && (
                             <div className="mt-2 grid grid-cols-1 gap-4 mb-3">
@@ -434,13 +441,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                         )}
 
                         <div className="relative mt-2">
-                            <button 
-                                onClick={() => removeItem(section.id, item.id)}
-                                className="absolute -top-2 -right-2 p-1.5 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-600 hover:border-red-300 shadow-sm"
-                                title={t('dashboard.confirm.delete')}
-                            >
-                                <Trash2 size={14} />
-                            </button>
                             {section.type === ResumeSectionType.Skills ? (
                                 <textarea
                                     rows={2}

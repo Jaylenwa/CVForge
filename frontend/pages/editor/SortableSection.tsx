@@ -174,7 +174,7 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
         </div>
       </div>
       {isActive && (
-        <div className="px-6 pb-6 space-y-6 bg-gray-50/50 border-t border-gray-100">
+        <div className="px-6 pt-4 pb-6 space-y-6 bg-gray-50/50 border-t border-gray-100">
           {children}
         </div>
       )}
