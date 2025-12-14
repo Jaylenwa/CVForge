@@ -40,6 +40,11 @@ const getThemeStyles = (config?: ThemeConfig) => {
     return { fontFamily, spacingMultiplier };
 };
 
+const hasExtraPersonalInfo = (data: ResumeData) => {
+    const p = data.personalInfo || ({} as ResumeData['personalInfo']);
+    return !!(p.gender || p.age || p.maritalStatus || p.politicalStatus || p.birthplace || p.ethnicity || p.height || p.weight || (p.customInfo && p.customInfo.length > 0));
+};
+
 // Helper hook for section title translation
 const useSectionTitle = () => {
     const { t } = useLanguage();
@@ -67,19 +72,21 @@ const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?:
             {data.personalInfo.email && <span>{data.personalInfo.email}</span>}
             {data.personalInfo.phone && <span>• {data.personalInfo.phone}</span>}
           </div>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
-            {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
-            {data.personalInfo.age && <span>{t('editor.fields.age')}: {data.personalInfo.age}</span>}
-            {data.personalInfo.maritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</span>}
-            {data.personalInfo.politicalStatus && <span>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</span>}
-            {data.personalInfo.birthplace && <span>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</span>}
-            {data.personalInfo.ethnicity && <span>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</span>}
-            {data.personalInfo.height && <span>{t('editor.fields.height')}: {data.personalInfo.height}</span>}
-            {data.personalInfo.weight && <span>{t('editor.fields.weight')}: {data.personalInfo.weight}</span>}
-            {(data.personalInfo.customInfo || []).map((ci, idx) => (
-              <span key={idx}>{ci.label}: {ci.value}</span>
-            ))}
-          </div>
+          {hasExtraPersonalInfo(data) && (
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+              {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
+              {data.personalInfo.age && <span>{t('editor.fields.age')}: {data.personalInfo.age}</span>}
+              {data.personalInfo.maritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</span>}
+              {data.personalInfo.politicalStatus && <span>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</span>}
+              {data.personalInfo.birthplace && <span>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</span>}
+              {data.personalInfo.ethnicity && <span>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</span>}
+              {data.personalInfo.height && <span>{t('editor.fields.height')}: {data.personalInfo.height}</span>}
+              {data.personalInfo.weight && <span>{t('editor.fields.weight')}: {data.personalInfo.weight}</span>}
+              {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                <span key={idx}>{ci.label}: {ci.value}</span>
+              ))}
+            </div>
+          )}
       </div>
       {data.personalInfo.avatarUrl && (
           <div className="order-1 md:order-2 flex-shrink-0">
@@ -199,12 +206,17 @@ const TemplateCNBlue: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
           <div key={section.id} className="mb-6">
             <SectionHeader title={getSectionTitle(section)} />
             <div className="pt-4 space-y-4">
-              {section.type === ResumeSectionType.Skills ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {section.items.map(it => <SkillBar key={it.id} text={it.description} />)}
-                </div>
-              ) : (
-                section.items.map(item => (
+              {section.type === ResumeSectionType.Skills
+                ? (
+                  <div className="space-y-2">
+                    {section.items.map(it => (
+                      <div key={it.id} className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                        {it.description}
+                      </div>
+                    ))}
+                  </div>
+                )
+                : section.items.map(item => (
                   <div key={item.id} className="border-b border-gray-200 pb-3">
                     <div className="flex justify-between items-baseline">
                       <h4 className="font-bold text-gray-900">{item.title}</h4>
@@ -219,8 +231,7 @@ const TemplateCNBlue: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
                       {item.description}
                     </div>
                   </div>
-                ))
-              )}
+                ))}
             </div>
           </div>
         ))}
@@ -317,19 +328,21 @@ const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any; disableShado
                     {data.personalInfo.email && <span>{data.personalInfo.email}</span>}
                     {data.personalInfo.phone && <span>{data.personalInfo.phone}</span>}
                 </div>
-                <div className="mt-2 flex flex-wrap text-xs gap-x-6 gap-y-2 text-gray-600">
-                    {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
-                    {data.personalInfo.age && <span>{t('editor.fields.age')}: {data.personalInfo.age}</span>}
-                    {data.personalInfo.maritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</span>}
-                    {data.personalInfo.politicalStatus && <span>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</span>}
-                    {data.personalInfo.birthplace && <span>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</span>}
-                    {data.personalInfo.ethnicity && <span>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</span>}
-                    {data.personalInfo.height && <span>{t('editor.fields.height')}: {data.personalInfo.height}</span>}
-                    {data.personalInfo.weight && <span>{t('editor.fields.weight')}: {data.personalInfo.weight}</span>}
-                    {(data.personalInfo.customInfo || []).map((ci, idx) => (
-                      <span key={idx}>{ci.label}: {ci.value}</span>
-                    ))}
-                </div>
+                {hasExtraPersonalInfo(data) && (
+                  <div className="mt-2 flex flex-wrap text-xs gap-x-6 gap-y-2 text-gray-600">
+                      {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
+                      {data.personalInfo.age && <span>{t('editor.fields.age')}: {data.personalInfo.age}</span>}
+                      {data.personalInfo.maritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</span>}
+                      {data.personalInfo.politicalStatus && <span>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</span>}
+                      {data.personalInfo.birthplace && <span>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</span>}
+                      {data.personalInfo.ethnicity && <span>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</span>}
+                      {data.personalInfo.height && <span>{t('editor.fields.height')}: {data.personalInfo.height}</span>}
+                      {data.personalInfo.weight && <span>{t('editor.fields.weight')}: {data.personalInfo.weight}</span>}
+                      {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                        <span key={idx}>{ci.label}: {ci.value}</span>
+                      ))}
+                  </div>
+                )}
             </div>
              {data.personalInfo.avatarUrl && (
                 <img 
@@ -382,22 +395,24 @@ const TemplateExecutive: React.FC<{ data: ResumeData; styles: any; disableShadow
             )}
             <h1 className="text-3xl font-bold uppercase mb-2 tracking-widest" style={{ color: data.themeConfig?.color }}>{data.personalInfo.fullName}</h1>
             <p className="italic text-lg text-gray-700 mb-3">{data.personalInfo.jobTitle}</p>
-            <div className="text-sm text-gray-600 space-x-3 font-sans flex flex-wrap justify-center">
+                <div className="text-sm text-gray-600 space-x-3 font-sans flex flex-wrap justify-center">
                  <span>{data.personalInfo.phone}</span> <span className="text-gray-300">•</span> <span>{data.personalInfo.email}</span>
             </div>
-            <div className="mt-2 text-xs text-gray-600 space-x-3 font-sans flex flex-wrap justify-center">
-                {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
-                {data.personalInfo.age && <span>{t('editor.fields.age')}: {data.personalInfo.age}</span>}
-                {data.personalInfo.maritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</span>}
-                {data.personalInfo.politicalStatus && <span>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</span>}
-                {data.personalInfo.birthplace && <span>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</span>}
-                {data.personalInfo.ethnicity && <span>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</span>}
-                {data.personalInfo.height && <span>{t('editor.fields.height')}: {data.personalInfo.height}</span>}
-                {data.personalInfo.weight && <span>{t('editor.fields.weight')}: {data.personalInfo.weight}</span>}
-                {(data.personalInfo.customInfo || []).map((ci, idx) => (
-                  <span key={idx}>{ci.label}: {ci.value}</span>
-                ))}
-            </div>
+            {hasExtraPersonalInfo(data) && (
+              <div className="mt-2 text-xs text-gray-600 space-x-3 font-sans flex flex-wrap justify-center">
+                  {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
+                  {data.personalInfo.age && <span>{t('editor.fields.age')}: {data.personalInfo.age}</span>}
+                  {data.personalInfo.maritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</span>}
+                  {data.personalInfo.politicalStatus && <span>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</span>}
+                  {data.personalInfo.birthplace && <span>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</span>}
+                  {data.personalInfo.ethnicity && <span>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</span>}
+                  {data.personalInfo.height && <span>{t('editor.fields.height')}: {data.personalInfo.height}</span>}
+                  {data.personalInfo.weight && <span>{t('editor.fields.weight')}: {data.personalInfo.weight}</span>}
+                  {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                    <span key={idx}>{ci.label}: {ci.value}</span>
+                  ))}
+              </div>
+            )}
         </div>
 
         {data.sections.filter(s => s.isVisible).map(section => (
@@ -442,17 +457,21 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any; disableShadow?: bo
                     {data.personalInfo.phone && <div className="flex items-center gap-2">• {data.personalInfo.phone}</div>}
                 </div>
                 <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/80">
-                    {data.personalInfo.gender && <div>{t('editor.fields.gender')}: {data.personalInfo.gender}</div>}
-                    {data.personalInfo.age && <div>{t('editor.fields.age')}: {data.personalInfo.age}</div>}
-                    {data.personalInfo.maritalStatus && <div>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</div>}
-                    {data.personalInfo.politicalStatus && <div>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</div>}
-                    {data.personalInfo.birthplace && <div>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</div>}
-                    {data.personalInfo.ethnicity && <div>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</div>}
-                    {data.personalInfo.height && <div>{t('editor.fields.height')}: {data.personalInfo.height}</div>}
-                    {data.personalInfo.weight && <div>{t('editor.fields.weight')}: {data.personalInfo.weight}</div>}
-                    {(data.personalInfo.customInfo || []).map((ci, idx) => (
-                      <div key={idx}>{ci.label}: {ci.value}</div>
-                    ))}
+                    {hasExtraPersonalInfo(data) && (
+                      <>
+                        {data.personalInfo.gender && <div>{t('editor.fields.gender')}: {data.personalInfo.gender}</div>}
+                        {data.personalInfo.age && <div>{t('editor.fields.age')}: {data.personalInfo.age}</div>}
+                        {data.personalInfo.maritalStatus && <div>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</div>}
+                        {data.personalInfo.politicalStatus && <div>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</div>}
+                        {data.personalInfo.birthplace && <div>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</div>}
+                        {data.personalInfo.ethnicity && <div>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</div>}
+                        {data.personalInfo.height && <div>{t('editor.fields.height')}: {data.personalInfo.height}</div>}
+                        {data.personalInfo.weight && <div>{t('editor.fields.weight')}: {data.personalInfo.weight}</div>}
+                        {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                          <div key={idx}>{ci.label}: {ci.value}</div>
+                        ))}
+                      </>
+                    )}
                 </div>
              </div>
              {data.personalInfo.avatarUrl && (

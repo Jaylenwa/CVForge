@@ -407,15 +407,9 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
 
                     {section.items.map((item) => (
                     <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group transition-all hover:shadow-md">
-                        <button 
-                            onClick={() => removeItem(section.id, item.id)}
-                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            <Trash2 size={16} />
-                        </button>
                         
                         {section.type !== ResumeSectionType.Skills && section.type !== ResumeSectionType.Summary && (
-                            <div className="grid grid-cols-1 gap-4 mb-3">
+                            <div className="mt-2 grid grid-cols-1 gap-4 mb-3">
                                 <input 
                                     placeholder={t('editor.placeholder.titleExample')} 
                                     className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
@@ -439,7 +433,14 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             </div>
                         )}
 
-                        <div className="relative">
+                        <div className="relative mt-2">
+                            <button 
+                                onClick={() => removeItem(section.id, item.id)}
+                                className="absolute -top-2 -right-2 p-1.5 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-600 hover:border-red-300 shadow-sm"
+                                title={t('dashboard.confirm.delete')}
+                            >
+                                <Trash2 size={14} />
+                            </button>
                             {section.type === ResumeSectionType.Skills ? (
                                 <textarea
                                     rows={2}
