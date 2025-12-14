@@ -56,6 +56,7 @@ const useSectionTitle = () => {
 // 1. Classic Professional
 const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
+  const { t } = useLanguage();
   return (
   <div className={`w-full p-8 md:p-12 bg-white text-gray-900 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:p-0 print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
     <div className="border-b-2 pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6" style={{ borderColor: data.themeConfig?.color || '#333' }}>
@@ -66,6 +67,19 @@ const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?:
             {data.personalInfo.email && <span>{data.personalInfo.email}</span>}
             {data.personalInfo.phone && <span>• {data.personalInfo.phone}</span>}
             {data.personalInfo.website && <span>• {data.personalInfo.website}</span>}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+            {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
+            {data.personalInfo.age && <span>{t('editor.fields.age')}: {data.personalInfo.age}</span>}
+            {data.personalInfo.maritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</span>}
+            {data.personalInfo.politicalStatus && <span>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</span>}
+            {data.personalInfo.birthplace && <span>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</span>}
+            {data.personalInfo.ethnicity && <span>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</span>}
+            {data.personalInfo.height && <span>{t('editor.fields.height')}: {data.personalInfo.height}</span>}
+            {data.personalInfo.weight && <span>{t('editor.fields.weight')}: {data.personalInfo.weight}</span>}
+            {(data.personalInfo.customInfo || []).map((ci, idx) => (
+              <span key={idx}>{ci.label}: {ci.value}</span>
+            ))}
           </div>
       </div>
       {data.personalInfo.avatarUrl && (
@@ -219,6 +233,7 @@ const TemplateCNBlue: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
 // 2. Modern Dark
 const TemplateModern: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
     const getSectionTitle = useSectionTitle();
+    const { t } = useLanguage();
     return (
     <div className={`w-full grid grid-cols-12 h-full min-h-[1123px] bg-white ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto print:bg-transparent`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
         <div className="hidden print:block fixed left-0 top-0 bottom-0 w-[70mm] -z-10" style={{ backgroundColor: '#0f172a' }}></div>
@@ -235,6 +250,17 @@ const TemplateModern: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
                  <div className="block">{data.personalInfo.email}</div>
                  <div className="block">{data.personalInfo.phone}</div>
                  <div className="block">{data.personalInfo.website}</div>
+                 {data.personalInfo.gender && <div className="block">{t('editor.fields.gender')}: {data.personalInfo.gender}</div>}
+                 {data.personalInfo.age && <div className="block">{t('editor.fields.age')}: {data.personalInfo.age}</div>}
+                 {data.personalInfo.maritalStatus && <div className="block">{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</div>}
+                 {data.personalInfo.politicalStatus && <div className="block">{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</div>}
+                 {data.personalInfo.birthplace && <div className="block">{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</div>}
+                 {data.personalInfo.ethnicity && <div className="block">{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</div>}
+                 {data.personalInfo.height && <div className="block">{t('editor.fields.height')}: {data.personalInfo.height}</div>}
+                 {data.personalInfo.weight && <div className="block">{t('editor.fields.weight')}: {data.personalInfo.weight}</div>}
+                 {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                   <div key={idx} className="block">{ci.label}: {ci.value}</div>
+                 ))}
             </div>
 
             {data.sections.filter(s => s.type === ResumeSectionType.Skills && s.isVisible).map(section => (
@@ -281,6 +307,7 @@ const TemplateModern: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
 // 3. Tech Minimalist
 const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
     const getSectionTitle = useSectionTitle();
+    const { t } = useLanguage();
     return (
     <div className={`w-full p-8 md:p-14 bg-white h-full min-h-[1123px] text-gray-800 ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.4 }}>
         <header className="border-b-4 pb-6 mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6" style={{ borderColor: data.themeConfig?.color || 'black' }}>
@@ -291,6 +318,19 @@ const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any; disableShado
                     {data.personalInfo.email && <span>{data.personalInfo.email}</span>}
                     {data.personalInfo.phone && <span>{data.personalInfo.phone}</span>}
                     {data.personalInfo.website && <span>{data.personalInfo.website}</span>}
+                </div>
+                <div className="mt-2 flex flex-wrap text-xs gap-x-6 gap-y-2 text-gray-600">
+                    {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
+                    {data.personalInfo.age && <span>{t('editor.fields.age')}: {data.personalInfo.age}</span>}
+                    {data.personalInfo.maritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</span>}
+                    {data.personalInfo.politicalStatus && <span>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</span>}
+                    {data.personalInfo.birthplace && <span>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</span>}
+                    {data.personalInfo.ethnicity && <span>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</span>}
+                    {data.personalInfo.height && <span>{t('editor.fields.height')}: {data.personalInfo.height}</span>}
+                    {data.personalInfo.weight && <span>{t('editor.fields.weight')}: {data.personalInfo.weight}</span>}
+                    {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                      <span key={idx}>{ci.label}: {ci.value}</span>
+                    ))}
                 </div>
             </div>
              {data.personalInfo.avatarUrl && (
@@ -330,6 +370,7 @@ const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any; disableShado
 // 4. Executive Serif
 const TemplateExecutive: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
     const getSectionTitle = useSectionTitle();
+    const { t } = useLanguage();
     return (
     <div className={`w-full p-10 md:p-12 bg-white h-full min-h-[1123px] text-gray-900 ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.6 }}>
         <div className="text-center border-b pb-6 mb-8 flex flex-col items-center" style={{ borderColor: data.themeConfig?.color || '#111827' }}>
@@ -345,6 +386,19 @@ const TemplateExecutive: React.FC<{ data: ResumeData; styles: any; disableShadow
             <p className="italic text-lg text-gray-700 mb-3">{data.personalInfo.jobTitle}</p>
             <div className="text-sm text-gray-600 space-x-3 font-sans flex flex-wrap justify-center">
                  <span>{data.personalInfo.phone}</span> <span className="text-gray-300">•</span> <span>{data.personalInfo.email}</span>
+            </div>
+            <div className="mt-2 text-xs text-gray-600 space-x-3 font-sans flex flex-wrap justify-center">
+                {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
+                {data.personalInfo.age && <span>{t('editor.fields.age')}: {data.personalInfo.age}</span>}
+                {data.personalInfo.maritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</span>}
+                {data.personalInfo.politicalStatus && <span>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</span>}
+                {data.personalInfo.birthplace && <span>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</span>}
+                {data.personalInfo.ethnicity && <span>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</span>}
+                {data.personalInfo.height && <span>{t('editor.fields.height')}: {data.personalInfo.height}</span>}
+                {data.personalInfo.weight && <span>{t('editor.fields.weight')}: {data.personalInfo.weight}</span>}
+                {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                  <span key={idx}>{ci.label}: {ci.value}</span>
+                ))}
             </div>
         </div>
 
@@ -389,6 +443,19 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any; disableShadow?: bo
                     {data.personalInfo.email && <div className="flex items-center gap-2">{data.personalInfo.email}</div>}
                     {data.personalInfo.phone && <div className="flex items-center gap-2">• {data.personalInfo.phone}</div>}
                     {data.personalInfo.website && <div className="flex items-center gap-2">• {data.personalInfo.website}</div>}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/80">
+                    {data.personalInfo.gender && <div>{t('editor.fields.gender')}: {data.personalInfo.gender}</div>}
+                    {data.personalInfo.age && <div>{t('editor.fields.age')}: {data.personalInfo.age}</div>}
+                    {data.personalInfo.maritalStatus && <div>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</div>}
+                    {data.personalInfo.politicalStatus && <div>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</div>}
+                    {data.personalInfo.birthplace && <div>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</div>}
+                    {data.personalInfo.ethnicity && <div>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</div>}
+                    {data.personalInfo.height && <div>{t('editor.fields.height')}: {data.personalInfo.height}</div>}
+                    {data.personalInfo.weight && <div>{t('editor.fields.weight')}: {data.personalInfo.weight}</div>}
+                    {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                      <div key={idx}>{ci.label}: {ci.value}</div>
+                    ))}
                 </div>
              </div>
              {data.personalInfo.avatarUrl && (
@@ -440,6 +507,7 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any; disableShadow?: bo
 // 6. Elegant Teal
 const TemplateElegant: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
     const getSectionTitle = useSectionTitle();
+    const { t } = useLanguage();
     return (
     <div className={`w-full grid grid-cols-12 h-full min-h-[1123px] bg-white ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto print:bg-transparent`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.6 }}>
         <div className="hidden print:block fixed left-0 top-0 bottom-0 w-[70mm] -z-10" style={{ backgroundColor: data.themeConfig?.color || '#115e59' }}></div>
@@ -459,6 +527,17 @@ const TemplateElegant: React.FC<{ data: ResumeData; styles: any; disableShadow?:
                         <div className="break-all">{data.personalInfo.email}</div>
                         <div>{data.personalInfo.phone}</div>
                         <div className="break-all">{data.personalInfo.website}</div>
+                        {data.personalInfo.gender && <div>{t('editor.fields.gender')}: {data.personalInfo.gender}</div>}
+                        {data.personalInfo.age && <div>{t('editor.fields.age')}: {data.personalInfo.age}</div>}
+                        {data.personalInfo.maritalStatus && <div>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</div>}
+                        {data.personalInfo.politicalStatus && <div>{t('editor.fields.politicalStatus')}: {data.personalInfo.politicalStatus}</div>}
+                        {data.personalInfo.birthplace && <div>{t('editor.fields.birthplace')}: {data.personalInfo.birthplace}</div>}
+                        {data.personalInfo.ethnicity && <div>{t('editor.fields.ethnicity')}: {data.personalInfo.ethnicity}</div>}
+                        {data.personalInfo.height && <div>{t('editor.fields.height')}: {data.personalInfo.height}</div>}
+                        {data.personalInfo.weight && <div>{t('editor.fields.weight')}: {data.personalInfo.weight}</div>}
+                        {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                          <div key={idx}>{ci.label}: {ci.value}</div>
+                        ))}
                     </div>
                  </div>
 
