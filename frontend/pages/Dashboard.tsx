@@ -36,7 +36,6 @@ export const Dashboard: React.FC = () => {
           jobTitle: (r.personalInfo && r.personalInfo.jobTitle) || (r.JobTitle || ''),
           email: r.Email,
           phone: r.Phone,
-          website: r.Website,
           avatarUrl: r.AvatarURL,
         },
         sections: (r.sections || []).map((s: any) => ({

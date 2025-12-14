@@ -24,7 +24,6 @@ type resumeReq struct {
 		FullName        string `json:"fullName"`
 		Email           string `json:"email"`
 		Phone           string `json:"phone"`
-		Website         string `json:"website"`
 		AvatarURL       string `json:"avatarUrl"`
 		JobTitle        string `json:"jobTitle"`
 		Gender          string `json:"gender"`
@@ -148,7 +147,6 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 					"jobTitle":        r.JobTitle,
 					"email":           r.Email,
 					"phone":           r.Phone,
-					"website":         r.Website,
 					"avatarUrl":       r.AvatarURL,
 					"gender":          r.Gender,
 					"age":             r.Age,
@@ -282,7 +280,6 @@ func toResumeModel(uid uint, req resumeReq) models.Resume {
 		JobTitle:        req.PersonalInfo.JobTitle,
 		Email:           req.PersonalInfo.Email,
 		Phone:           req.PersonalInfo.Phone,
-		Website:         req.PersonalInfo.Website,
 		AvatarURL:       req.PersonalInfo.AvatarURL,
 		Gender:          req.PersonalInfo.Gender,
 		Age:             req.PersonalInfo.Age,

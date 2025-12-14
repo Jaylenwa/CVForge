@@ -66,7 +66,6 @@ const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?:
           <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-600">
             {data.personalInfo.email && <span>{data.personalInfo.email}</span>}
             {data.personalInfo.phone && <span>• {data.personalInfo.phone}</span>}
-            {data.personalInfo.website && <span>• {data.personalInfo.website}</span>}
           </div>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
             {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
@@ -169,7 +168,7 @@ const TemplateCNBlue: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
               <div><span className="text-gray-500 mr-2">姓名：</span><span className="text-gray-900 font-medium">{data.personalInfo.fullName}</span></div>
               <div><span className="text-gray-500 mr-2">电话：</span><span className="text-gray-900">{data.personalInfo.phone}</span></div>
               <div className="col-span-2"><span className="text-gray-500 mr-2">邮箱：</span><span className="text-gray-900 break-all">{data.personalInfo.email}</span></div>
-              {data.personalInfo.website && <div className="col-span-2"><span className="text-gray-500 mr-2">网站：</span><span className="text-gray-900 break-all">{data.personalInfo.website}</span></div>}
+              {/* website removed */}
               {data.personalInfo.gender && <div><span className="text-gray-500 mr-2">性别：</span><span className="text-gray-900">{data.personalInfo.gender}</span></div>}
               {data.personalInfo.age && <div><span className="text-gray-500 mr-2">年龄：</span><span className="text-gray-900">{data.personalInfo.age}</span></div>}
               {data.personalInfo.maritalStatus && <div><span className="text-gray-500 mr-2">婚姻：</span><span className="text-gray-900">{data.personalInfo.maritalStatus}</span></div>}
@@ -246,10 +245,10 @@ const TemplateModern: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
                  <p className="text-slate-300 mt-1 font-medium">{data.personalInfo.jobTitle}</p>
             </div>
 
-            <div className="space-y-4 text-sm text-slate-300 mb-8 break-all">
-                 <div className="block">{data.personalInfo.email}</div>
-                 <div className="block">{data.personalInfo.phone}</div>
-                 <div className="block">{data.personalInfo.website}</div>
+                 <div className="space-y-4 text-sm text-slate-300 mb-8 break-all">
+                     <div className="block">{data.personalInfo.email}</div>
+                     <div className="block">{data.personalInfo.phone}</div>
+                     {/* website removed */}
                  {data.personalInfo.gender && <div className="block">{t('editor.fields.gender')}: {data.personalInfo.gender}</div>}
                  {data.personalInfo.age && <div className="block">{t('editor.fields.age')}: {data.personalInfo.age}</div>}
                  {data.personalInfo.maritalStatus && <div className="block">{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</div>}
@@ -317,7 +316,6 @@ const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any; disableShado
                     <span>{data.personalInfo.jobTitle}</span>
                     {data.personalInfo.email && <span>{data.personalInfo.email}</span>}
                     {data.personalInfo.phone && <span>{data.personalInfo.phone}</span>}
-                    {data.personalInfo.website && <span>{data.personalInfo.website}</span>}
                 </div>
                 <div className="mt-2 flex flex-wrap text-xs gap-x-6 gap-y-2 text-gray-600">
                     {data.personalInfo.gender && <span>{t('editor.fields.gender')}: {data.personalInfo.gender}</span>}
@@ -442,7 +440,6 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any; disableShadow?: bo
                 <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/90 font-medium">
                     {data.personalInfo.email && <div className="flex items-center gap-2">{data.personalInfo.email}</div>}
                     {data.personalInfo.phone && <div className="flex items-center gap-2">• {data.personalInfo.phone}</div>}
-                    {data.personalInfo.website && <div className="flex items-center gap-2">• {data.personalInfo.website}</div>}
                 </div>
                 <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-white/80">
                     {data.personalInfo.gender && <div>{t('editor.fields.gender')}: {data.personalInfo.gender}</div>}
@@ -526,7 +523,7 @@ const TemplateElegant: React.FC<{ data: ResumeData; styles: any; disableShadow?:
                     <div className="space-y-1">
                         <div className="break-all">{data.personalInfo.email}</div>
                         <div>{data.personalInfo.phone}</div>
-                        <div className="break-all">{data.personalInfo.website}</div>
+                        {/* website removed */}
                         {data.personalInfo.gender && <div>{t('editor.fields.gender')}: {data.personalInfo.gender}</div>}
                         {data.personalInfo.age && <div>{t('editor.fields.age')}: {data.personalInfo.age}</div>}
                         {data.personalInfo.maritalStatus && <div>{t('editor.fields.maritalStatus')}: {data.personalInfo.maritalStatus}</div>}

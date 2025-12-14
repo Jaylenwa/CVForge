@@ -49,7 +49,6 @@ export const Editor: React.FC = () => {
                   jobTitle: res.JobTitle || '',
                   email: res.Email,
                   phone: res.Phone,
-                  website: res.Website,
                   avatarUrl: res.AvatarURL,
                   gender: res.Gender,
                   age: res.Age,

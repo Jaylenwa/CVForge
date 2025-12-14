@@ -28,7 +28,6 @@ export const PrintResume: React.FC = () => {
             jobTitle: res.JobTitle || '',
             email: res.Email,
             phone: res.Phone,
-            website: res.Website,
             avatarUrl: res.AvatarURL,
             gender: res.Gender,
             age: res.Age,

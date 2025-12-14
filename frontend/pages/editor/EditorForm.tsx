@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Trash2, Plus, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate } from 'lucide-react';
+import { Trash2, Plus, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate, Briefcase, GraduationCap, Wrench, User } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType, ThemeConfig } from '../../types';
@@ -8,6 +8,7 @@ import { polishText, generateSummary } from '../../services/geminiService';
 import { API_BASE } from '../../config';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { SortableSection } from './SortableSection';
+import { RichTextEditor } from '../../components/ui/RichTextEditor';
 
 interface EditorFormProps {
   data: ResumeData;
@@ -212,18 +213,24 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
 
   const renderContentTab = () => (
     <>
-      {/* Personal Info */}
-      <div className="border-b border-gray-200">
-        <button 
-          className="w-full px-6 py-4 flex items-center justify-between font-semibold hover:bg-gray-50 text-gray-700"
+      <div className="group rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm mb-4">
+        <div 
+          className="w-full px-5 py-4 flex items-center justify-between text-gray-800"
           onClick={() => setActiveSection(activeSection === 'personal' ? null : 'personal')}
         >
-            <span className="pl-9">{t('editor.personal')}</span>
-            {activeSection === 'personal' ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
-        </button>
-        
+            <div className="flex items-center">
+              <div className="mr-3 w-6 h-6"></div>
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mr-3">
+                <User size={18}/>
+              </div>
+              <span className="font-semibold">{t('editor.personal')}</span>
+            </div>
+            <button className="p-1 text-gray-500 hover:text-gray-700 transition-colors">
+              {activeSection === 'personal' ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+            </button>
+        </div>
         {activeSection === 'personal' && (
-          <div className="px-6 pb-6 space-y-5 animate-fadeIn">
+          <div className="px-6 pb-6 space-y-5">
              
              {/* Avatar Upload */}
              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -305,10 +312,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                     <input type="tel" value={data.personalInfo.phone} onChange={e => updatePersonalInfo('phone', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
              </div>
-             <div>
-                <label className="block text-sm font-medium text-gray-700">{t('editor.fields.website')}</label>
-                <input type="text" value={data.personalInfo.website} onChange={e => updatePersonalInfo('website', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-             </div>
+             {/* removed website/linkedin fields */}
 
              <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -390,22 +394,16 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                     onToggle={() => setActiveSection(activeSection === section.id ? null : section.id)}
                     onUpdate={(updates) => updateSection(section.id, updates)}
                     onRemove={() => removeSection(section.id)}
+                    icon={
+                      section.type === ResumeSectionType.Experience ? <Briefcase size={18}/> :
+                      section.type === ResumeSectionType.Education ? <GraduationCap size={18}/> :
+                      section.type === ResumeSectionType.Skills ? <Wrench size={18}/> :
+                      section.type === ResumeSectionType.Summary ? <Sparkles size={18}/> :
+                      <Type size={18}/>
+                    }
+                    onAddItem={section.type !== ResumeSectionType.Summary ? () => addItem(section.id) : undefined}
                 >
-                    {/* AI Summary Generator specific to Summary Section */}
-                    {section.type === ResumeSectionType.Summary && (
-                        <div className="flex justify-end">
-                            <Button 
-                                size="sm" 
-                                variant="secondary" 
-                                icon={<Sparkles size={14}/>} 
-                                onClick={handleAiSummary}
-                                isLoading={isAiLoading}
-                                className="mb-2"
-                            >
-                                {t('editor.ai_polish')}
-                            </Button>
-                        </div>
-                    )}
+                    
 
                     {section.items.map((item) => (
                     <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group transition-all hover:shadow-md">
@@ -442,20 +440,30 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                         )}
 
                         <div className="relative">
-                            <textarea 
-                                rows={section.type === ResumeSectionType.Skills ? 2 : 4}
-                                className="w-full text-sm border border-gray-300 rounded p-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder={section.type === ResumeSectionType.Skills ? t('editor.placeholder.skills') : t('editor.placeholder.achievements')}
-                                value={item.description}
-                                onChange={e => updateItem(section.id, item.id, 'description', e.target.value)}
-                            />
+                            {section.type === ResumeSectionType.Skills ? (
+                                <textarea
+                                    rows={2}
+                                    className="w-full text-sm border border-gray-300 rounded p-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder={t('editor.placeholder.skills')}
+                                    value={item.description}
+                                    onChange={e => updateItem(section.id, item.id, 'description', e.target.value)}
+                                />
+                            ) : (
+                                <RichTextEditor
+                                    value={item.description}
+                                    onChange={(val) => updateItem(section.id, item.id, 'description', val)}
+                                    aiContext={section.type === ResumeSectionType.Experience ? 'Work Experience' : (section.type === ResumeSectionType.Summary ? 'Resume Summary' : undefined)}
+                                    minRows={4}
+                                    maxHeight={300}
+                                />
+                            )}
                             {section.type === ResumeSectionType.Experience && (
-                                <button 
+                                <button
                                     onClick={() => handleAiPolish(section.id, item.id, item.description)}
                                     className="absolute bottom-2 right-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded flex items-center hover:bg-blue-200 transition-colors"
                                     disabled={isAiLoading}
                                 >
-                                    <Sparkles size={12} className="mr-1"/> 
+                                    <Sparkles size={12} className="mr-1"/>
                                     {isAiLoading ? t('editor.ai.polishing') : t('editor.ai_polish')}
                                 </button>
                             )}
@@ -463,9 +471,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                     </div>
                     ))}
 
-                    <Button variant="outline" size="sm" className="w-full border-dashed" onClick={() => addItem(section.id)}>
-                        <Plus size={16} className="mr-1"/> {t('editor.addItem')}
-                    </Button>
                 </SortableSection>
             ))}
           </SortableContext>
@@ -606,7 +611,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   );
 
   return (
-    <div className="h-full flex flex-col bg-white border-r border-gray-200">
+    <div className="h-full flex flex-col bg-white">
         {/* Tabs */}
         <div className="flex border-b border-gray-200">
             <button 
@@ -624,7 +629,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 pt-4 pb-4">
             {activeTab === 'content' ? renderContentTab() : renderDesignTab()}
         </div>
     </div>

@@ -15,7 +15,6 @@ type Resume struct {
 	FullName        string          `gorm:"size:128"`
 	Email           string          `gorm:"size:191"`
 	Phone           string          `gorm:"size:64"`
-	Website         string          `gorm:"size:191"`
 	AvatarURL       string          `gorm:"size:512"`
 	JobTitle        string          `gorm:"size:128"`
 	Gender          string          `gorm:"size:32"`
