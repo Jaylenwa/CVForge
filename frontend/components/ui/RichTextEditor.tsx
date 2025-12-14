@@ -11,6 +11,8 @@ interface RichTextEditorProps {
   className?: string;
   minRows?: number;
   maxHeight?: number;
+  valueFormat?: 'text' | 'html';
+  outputFormat?: 'text' | 'html';
 }
 
 const textToHtml = (text: string) => {
@@ -46,26 +48,85 @@ const htmlToText = (html: string) => {
   return out.join('').replace(/\n{3,}/g, '\n\n').trim();
 };
 
-export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, label, aiContext, className = '', minRows = 4, maxHeight = 300 }) => {
+export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, label, aiContext, className = '', minRows = 4, maxHeight = 300, valueFormat = 'text', outputFormat = 'text' }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
-  const [htmlContent, setHtmlContent] = useState(textToHtml(value || ''));
+  const [isComposing, setIsComposing] = useState(false);
   const { t } = useLanguage();
 
   useEffect(() => {
-    const nextHtml = textToHtml(value || '');
+    const nextHtml = valueFormat === 'html' ? (value || '') : textToHtml(value || '');
     if (editorRef.current && editorRef.current.innerHTML !== nextHtml) {
       editorRef.current.innerHTML = nextHtml;
-      setHtmlContent(nextHtml);
     }
-  }, [value]);
+  }, [value, valueFormat]);
 
   const handleInput = () => {
     if (editorRef.current) {
       const nextHtml = editorRef.current.innerHTML;
-      setHtmlContent(nextHtml);
-      onChange(htmlToText(nextHtml));
+      if (isComposing) return;
+      onChange(outputFormat === 'html' ? nextHtml : htmlToText(nextHtml));
     }
+  };
+
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
+    if (editorRef.current) {
+      const nextHtml = editorRef.current.innerHTML;
+      onChange(outputFormat === 'html' ? nextHtml : htmlToText(nextHtml));
+    }
+  };
+
+  const sanitizeHtml = (html: string) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html || '', 'text/html');
+    const allowedTags = new Set(['b','strong','i','em','u','br','p','div','ul','ol','li','span','a']);
+    const escapeText = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const sanitizeNode = (node: Node): string => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return escapeText(node.textContent || '');
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return '';
+      const el = node as HTMLElement;
+      const tag = el.tagName.toLowerCase();
+      if (!allowedTags.has(tag)) {
+        let s = '';
+        el.childNodes.forEach(child => { s += sanitizeNode(child); });
+        return s;
+      }
+      let attrs = '';
+      if (tag === 'a') {
+        const raw = el.getAttribute('href') || '';
+        try {
+          const u = new URL(raw, window.location.origin);
+          const proto = u.protocol.replace(':','');
+          if (['http','https','mailto'].includes(proto)) {
+            attrs = ` href="${escapeText(raw)}" rel="noopener noreferrer nofollow"`;
+          }
+        } catch {}
+      }
+      if (tag === 'br') return '<br/>';
+      let content = '';
+      el.childNodes.forEach(child => { content += sanitizeNode(child); });
+      return `<${tag}${attrs}>${content}</${tag}>`;
+    };
+    let out = '';
+    doc.body.childNodes.forEach(n => { out += sanitizeNode(n); });
+    return out;
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const html = e.clipboardData.getData('text/html');
+    const text = e.clipboardData.getData('text/plain');
+    const source = html || (text ? text.replace(/\r?\n/g, '<br/>') : '');
+    const safe = sanitizeHtml(source);
+    document.execCommand('insertHTML', false, safe);
+    handleInput();
   };
 
   const execCommand = (command: string) => {
@@ -78,7 +139,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
     if (!aiContext) return;
     setIsEnhancing(true);
     try {
-      const improved = await polishText(htmlToText(htmlContent));
+      const currentHtml = editorRef.current?.innerHTML ?? (valueFormat === 'html' ? (value || '') : textToHtml(value || ''));
+      const improved = await polishText(htmlToText(currentHtml));
       const nextHtml = textToHtml(improved);
       if (editorRef.current) {
         editorRef.current.innerHTML = nextHtml;
@@ -131,8 +193,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
           style={{ minHeight: `${minRows * 24}px`, maxHeight }}
           contentEditable
           onInput={handleInput}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
+          onPaste={handlePaste}
           suppressContentEditableWarning
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
       </div>
     </div>

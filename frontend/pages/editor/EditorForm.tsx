@@ -452,6 +452,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             ) : (
                                 <RichTextEditor
                                     value={item.description}
+                                    valueFormat={/(<\/?[a-z][\s\S]*>)/i.test(item.description || '') ? 'html' : 'text'}
+                                    outputFormat="html"
                                     onChange={(val) => updateItem(section.id, item.id, 'description', val)}
                                     aiContext={section.type === ResumeSectionType.Experience ? 'Work Experience' : (section.type === ResumeSectionType.Summary ? 'Resume Summary' : undefined)}
                                     minRows={4}

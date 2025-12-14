@@ -37,12 +37,50 @@ const getThemeStyles = (config?: ThemeConfig) => {
         'spacious': '1.25'
     }[config?.spacing || 'normal'];
 
-    return { fontFamily, spacingMultiplier };
+  return { fontFamily, spacingMultiplier };
 };
 
 const hasExtraPersonalInfo = (data: ResumeData) => {
     const p = data.personalInfo || ({} as ResumeData['personalInfo']);
     return !!(p.gender || p.age || p.maritalStatus || p.politicalStatus || p.birthplace || p.ethnicity || p.height || p.weight || (p.customInfo && p.customInfo.length > 0));
+};
+
+const sanitizeHtml = (html: string) => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html || '', 'text/html');
+  const allowedTags = new Set(['b','strong','i','em','u','br','p','div','ul','ol','li','span','a']);
+  const escapeText = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const sanitizeNode = (node: Node): string => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return escapeText(node.textContent || '');
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return '';
+    const el = node as HTMLElement;
+    const tag = el.tagName.toLowerCase();
+    if (!allowedTags.has(tag)) {
+      let s = '';
+      el.childNodes.forEach(child => { s += sanitizeNode(child); });
+      return s;
+    }
+    let attrs = '';
+    if (tag === 'a') {
+      const raw = el.getAttribute('href') || '';
+      try {
+        const u = new URL(raw, window.location.origin);
+        const proto = u.protocol.replace(':','');
+        if (['http','https','mailto'].includes(proto)) {
+          attrs = ` href="${escapeText(raw)}" rel="noopener noreferrer nofollow"`;
+        }
+      } catch {}
+    }
+    if (tag === 'br') return '<br/>';
+    let content = '';
+    el.childNodes.forEach(child => { content += sanitizeNode(child); });
+    return `<${tag}${attrs}>${content}</${tag}>`;
+  };
+  let out = '';
+  doc.body.childNodes.forEach(n => { out += sanitizeNode(n); });
+  return out;
 };
 
 // Helper hook for section title translation
@@ -120,9 +158,7 @@ const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?:
                     <span className="font-semibold text-gray-700">{item.subtitle}</span>
                    </div>
                 )}
-                <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {item.description}
-                </div>
+                <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description || '') }} />
               </div>
             ))}
           </div>
@@ -227,9 +263,7 @@ const TemplateCNBlue: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
                         {item.subtitle}
                       </div>
                     )}
-                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap mt-1">
-                      {item.description}
-                    </div>
+                    <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap mt-1" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description || '') }} />
                   </div>
                 ))}
             </div>
@@ -301,9 +335,7 @@ const TemplateModern: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
                                            {item.dateRange && <p className="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded inline-block">{item.dateRange}</p>}
                                       </div>
                                   </div>
-                                  <div className="mt-2 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
-                                      {item.description}
-                                  </div>
+                                  <div className="mt-2 text-sm text-gray-600 leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description || '') }} />
                               </div>
                           ))}
                       </div>
@@ -366,7 +398,7 @@ const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any; disableShado
                                  <div className="md:col-span-9">
                                      <h4 className="font-bold text-gray-900 text-lg leading-none mb-1">{item.title}</h4>
                                      {item.subtitle && <p className="text-sm font-semibold text-gray-600 mb-3">{item.subtitle}</p>}
-                                     <div className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap">{item.description}</div>
+                                     <div className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description || '') }} />
                                  </div>
                              </div>
                          ))}
@@ -432,7 +464,7 @@ const TemplateExecutive: React.FC<{ data: ResumeData; styles: any; disableShadow
                                     <span className="italic text-gray-800">{item.subtitle}</span>
                                 </div>
                             )}
-                             <div className="text-sm leading-normal text-gray-800 whitespace-pre-wrap">{item.description}</div>
+                             <div className="text-sm leading-normal text-gray-800 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description || '') }} />
                         </div>
                     ))}
                 </div>
@@ -495,7 +527,7 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any; disableShadow?: bo
                                         {item.dateRange && <span className="text-xs font-bold bg-gray-100 text-gray-700 px-3 py-1 rounded-full whitespace-nowrap ml-4">{item.dateRange}</span>}
                                     </div>
                                     {item.subtitle && <p className="text-sm text-gray-600 font-medium mb-3">{item.subtitle}</p>}
-                                    <div className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">{item.description}</div>
+                                    <div className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description || '') }} />
                                 </div>
                             ))}
                         </div>
@@ -582,9 +614,7 @@ const TemplateElegant: React.FC<{ data: ResumeData; styles: any; disableShadow?:
                                       <span className="text-sm font-medium" style={{ color: data.themeConfig?.color || '#115e59' }}>{item.dateRange}</span>
                                   </div>
                                   {item.subtitle && <p className="text-gray-600 italic mb-2">{item.subtitle}</p>}
-                                  <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap font-light">
-                                      {item.description}
-                                  </div>
+                                  <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap font-light" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description || '') }} />
                               </div>
                           ))}
                       </div>
