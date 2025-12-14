@@ -635,12 +635,41 @@ export interface ArtboardProps {
 
 export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disableShadow = false, className = '', style = {} }) => {
   const styles = getThemeStyles(data.themeConfig);
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });
 
   const containerStyle = {
     transform: `scale(${scale})`,
     transformOrigin: 'top left',
+    minHeight: `${Math.max(1, pageInfo.count) * (pageInfo.pageHeight || 1123)}px`,
     ...style,
   };
+
+  const measure = React.useCallback(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const mmProbe = document.createElement('div');
+    mmProbe.style.position = 'absolute';
+    mmProbe.style.visibility = 'hidden';
+    mmProbe.style.height = '297mm';
+    mmProbe.style.width = '0';
+    document.body.appendChild(mmProbe);
+    const pxHeight = mmProbe.offsetHeight || 1123;
+    document.body.removeChild(mmProbe);
+    const contentHeight = el.scrollHeight;
+    const count = Math.max(1, Math.ceil(contentHeight / pxHeight));
+    setPageInfo({ pageHeight: pxHeight, contentHeight, count });
+  }, []);
+
+  React.useEffect(() => {
+    measure();
+  }, [measure, data, scale]);
+
+  React.useEffect(() => {
+    const onResize = () => measure();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [measure]);
 
   const renderTemplate = () => {
       switch (data.templateId) {
@@ -658,9 +687,23 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   return (
       <div 
         id="resume-export-root"
-        className={`w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none ${className}`}
+        ref={rootRef}
+        className={`relative w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none ${className}`}
         style={containerStyle}
       >
+        <div className="absolute left-2 top-2 px-2 py-1 text-xs rounded bg-amber-100 text-amber-800 shadow-sm print:hidden">
+          预计分页：共 {pageInfo.count} 页
+        </div>
+        {Array.from({ length: Math.max(0, pageInfo.count - 1) }).map((_, i) => {
+          const top = (i + 1) * pageInfo.pageHeight;
+          return (
+            <div
+              key={i}
+              className="absolute left-0 right-0 h-px bg-emerald-500/50 print:hidden pointer-events-none"
+              style={{ top }}
+            />
+          );
+        })}
         {renderTemplate()}
       </div>
   );
