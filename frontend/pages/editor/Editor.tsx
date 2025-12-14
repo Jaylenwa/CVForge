@@ -49,9 +49,25 @@ export const Editor: React.FC = () => {
                   jobTitle: res.JobTitle || '',
                   email: res.Email,
                   phone: res.Phone,
-                  address: res.Address,
                   website: res.Website,
-                  avatarUrl: res.AvatarURL
+                  avatarUrl: res.AvatarURL,
+                  gender: res.Gender,
+                  age: res.Age,
+                  maritalStatus: res.MaritalStatus,
+                  politicalStatus: res.PoliticalStatus,
+                  birthplace: res.Birthplace,
+                  ethnicity: res.Ethnicity,
+                  height: res.Height,
+                  weight: res.Weight,
+                  customInfo: (() => {
+                    try {
+                      if (res.CustomInfo) {
+                        const parsed = JSON.parse(res.CustomInfo);
+                        if (Array.isArray(parsed)) return parsed;
+                      }
+                    } catch {}
+                    return [];
+                  })()
                 },
                 sections: (res.Sections || []).map((s: any) => ({
                   id: s.ExternalID || s.ID,
@@ -63,7 +79,6 @@ export const Editor: React.FC = () => {
                     title: i.Title,
                     subtitle: i.Subtitle,
                     dateRange: i.DateRange,
-                    location: i.Location,
                     description: i.Description
                   }))
                 }))
@@ -108,7 +123,7 @@ export const Editor: React.FC = () => {
         type: s.type,
         title: s.title,
         isVisible: s.isVisible,
-        items: s.items.map(i => ({ id: i.id, title: i.title, subtitle: i.subtitle, dateRange: i.dateRange, location: i.location, description: i.description }))
+        items: s.items.map(i => ({ id: i.id, title: i.title, subtitle: i.subtitle, dateRange: i.dateRange, description: i.description }))
       }))
     };
     fetch(`${API_BASE}/resumes/${resumeData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })

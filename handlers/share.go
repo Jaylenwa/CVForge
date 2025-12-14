@@ -59,7 +59,6 @@ func RegisterShareRoutes(r *gin.RouterGroup, db *gorm.DB, rdb *redis.Client, aut
 			"FullName":     res.FullName,
 			"Email":        res.Email,
 			"Phone":        res.Phone,
-			"Address":      res.Address,
 			"Website":      res.Website,
 			"AvatarURL":    res.AvatarURL,
 			"Sections":     res.Sections,

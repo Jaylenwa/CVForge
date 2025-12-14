@@ -55,6 +55,7 @@ func seedTemplates(db *gorm.DB) {
 		{ExternalID: "t4", Name: "Executive Serif", Thumbnail: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&q=80", Tags: "Professional,Management,Senior", Popularity: 70, IsPremium: true, Category: "Finance", Level: "Executive"},
 		{ExternalID: "t5", Name: "Creative Bold", Thumbnail: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=500&q=80", Tags: "Creative,Marketing,Colorful", Popularity: 65, IsPremium: true, Category: "Creative", Level: "Senior"},
 		{ExternalID: "t6", Name: "Elegant Teal", Thumbnail: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=500&q=80", Tags: "Modern,Fresh,Entry Level", Popularity: 88, IsPremium: false, Category: "General", Level: "Intern"},
+		{ExternalID: "t7", Name: "Chinese Blue", Thumbnail: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=500&q=80", Tags: "General,Chinese,ATS Friendly", Popularity: 75, IsPremium: false, Category: "General", Level: "Junior"},
 	}
 	for _, m := range mocks {
 		_ = db.Create(&m).Error

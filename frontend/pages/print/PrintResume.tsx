@@ -28,9 +28,25 @@ export const PrintResume: React.FC = () => {
             jobTitle: res.JobTitle || '',
             email: res.Email,
             phone: res.Phone,
-            address: res.Address,
             website: res.Website,
-            avatarUrl: res.AvatarURL
+            avatarUrl: res.AvatarURL,
+            gender: res.Gender,
+            age: res.Age,
+            maritalStatus: res.MaritalStatus,
+            politicalStatus: res.PoliticalStatus,
+            birthplace: res.Birthplace,
+            ethnicity: res.Ethnicity,
+            height: res.Height,
+            weight: res.Weight,
+            customInfo: (() => {
+              try {
+                if (res.CustomInfo) {
+                  const parsed = JSON.parse(res.CustomInfo);
+                  if (Array.isArray(parsed)) return parsed;
+                }
+              } catch {}
+              return [];
+            })()
           },
           sections: (res.Sections || []).map((s: any) => ({
             id: s.ExternalID || s.ID,
@@ -42,7 +58,6 @@ export const PrintResume: React.FC = () => {
               title: i.Title,
               subtitle: i.Subtitle,
               dateRange: i.DateRange,
-              location: i.Location,
               description: i.Description
             }))
           }))

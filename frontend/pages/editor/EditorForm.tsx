@@ -55,6 +55,30 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     });
   };
 
+  const addCustomInfo = () => {
+    const list = data.personalInfo.customInfo || [];
+    onChange({
+      ...data,
+      personalInfo: { ...data.personalInfo, customInfo: [...list, { label: '', value: '' }] }
+    });
+  };
+
+  const updateCustomInfo = (idx: number, key: 'label' | 'value', value: string) => {
+    const list = (data.personalInfo.customInfo || []).map((item, i) => i === idx ? { ...item, [key]: value } : item);
+    onChange({
+      ...data,
+      personalInfo: { ...data.personalInfo, customInfo: list }
+    });
+  };
+
+  const removeCustomInfo = (idx: number) => {
+    const list = (data.personalInfo.customInfo || []).filter((_, i) => i !== idx);
+    onChange({
+      ...data,
+      personalInfo: { ...data.personalInfo, customInfo: list }
+    });
+  };
+
   const updateTheme = (field: keyof ThemeConfig, value: string) => {
     onChange({
         ...data,
@@ -194,7 +218,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
           className="w-full px-6 py-4 flex items-center justify-between font-semibold hover:bg-gray-50 text-gray-700"
           onClick={() => setActiveSection(activeSection === 'personal' ? null : 'personal')}
         >
-            <span>{t('editor.personal')}</span>
+            <span className="pl-9">{t('editor.personal')}</span>
             {activeSection === 'personal' ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
         </button>
         
@@ -203,12 +227,12 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
              
              {/* Avatar Upload */}
              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                 <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
-                     <ImageIcon size={16} className="mr-2 text-gray-500" /> 
-                    {t('editor.profile.label')}
-                 </label>
-                 <div className="flex items-center space-x-4">
-                    {data.personalInfo.avatarUrl ? (
+                <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+                    <ImageIcon size={16} className="mr-2 text-gray-500" /> 
+                   {t('editor.profile.label')}
+                </label>
+                <div className="flex items-center space-x-4">
+                   {data.personalInfo.avatarUrl ? (
                         <div className="relative group shrink-0">
                             <img 
                                 src={data.personalInfo.avatarUrl} 
@@ -282,12 +306,67 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                 </div>
              </div>
              <div>
-                <label className="block text-sm font-medium text-gray-700">{t('editor.fields.address')}</label>
-                <input type="text" value={data.personalInfo.address} onChange={e => updatePersonalInfo('address', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-             </div>
-             <div>
                 <label className="block text-sm font-medium text-gray-700">{t('editor.fields.website')}</label>
                 <input type="text" value={data.personalInfo.website} onChange={e => updatePersonalInfo('website', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+             </div>
+
+             <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.gender')}</label>
+                  <input type="text" value={data.personalInfo.gender || ''} onChange={e => updatePersonalInfo('gender', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.age')}</label>
+                  <input type="text" value={data.personalInfo.age || ''} onChange={e => updatePersonalInfo('age', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.maritalStatus')}</label>
+                  <input type="text" value={data.personalInfo.maritalStatus || ''} onChange={e => updatePersonalInfo('maritalStatus', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.politicalStatus')}</label>
+                  <input type="text" value={data.personalInfo.politicalStatus || ''} onChange={e => updatePersonalInfo('politicalStatus', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.birthplace')}</label>
+                  <input type="text" value={data.personalInfo.birthplace || ''} onChange={e => updatePersonalInfo('birthplace', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.ethnicity')}</label>
+                  <input type="text" value={data.personalInfo.ethnicity || ''} onChange={e => updatePersonalInfo('ethnicity', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.height')}</label>
+                  <input type="text" value={data.personalInfo.height || ''} onChange={e => updatePersonalInfo('height', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.weight')}</label>
+                  <input type="text" value={data.personalInfo.weight || ''} onChange={e => updatePersonalInfo('weight', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                </div>
+             </div>
+
+             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+               <div className="flex items-center justify-between mb-3">
+                 <span className="text-sm font-medium text-gray-700">{t('editor.customInfo.title')}</span>
+                 <Button size="sm" variant="outline" icon={<Plus size={14}/>} onClick={addCustomInfo}>{t('editor.customInfo.add')}</Button>
+               </div>
+               <div className="space-y-3">
+                 {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                   <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                     <div className="col-span-5">
+                       <input placeholder={t('editor.customInfo.label')} value={ci.label} onChange={e => updateCustomInfo(idx, 'label', e.target.value)} className="block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                     </div>
+                     <div className="col-span-6">
+                       <input placeholder={t('editor.customInfo.value')} value={ci.value} onChange={e => updateCustomInfo(idx, 'value', e.target.value)} className="block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                     </div>
+                     <div className="col-span-1 flex justify-end">
+                       <button onClick={() => removeCustomInfo(idx)} className="p-2 text-gray-400 hover:text-red-500 rounded hover:bg-red-50">
+                         <Trash2 size={16}/>
+                       </button>
+                     </div>
+                   </div>
+                 ))}
+               </div>
              </div>
           </div>
         )}

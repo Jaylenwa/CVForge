@@ -72,13 +72,18 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
 
   return (
     <div ref={setNodeRef} style={style} className="border-b border-gray-200 bg-white">
-       <div className={`flex items-center justify-between px-6 py-4 hover:bg-gray-50 ${isActive ? 'bg-gray-50' : ''}`}>
+       <div 
+         className={`flex items-center justify-between px-6 py-4 hover:bg-gray-50 ${isActive ? 'bg-gray-50' : ''}`}
+         onClick={onToggle}
+       >
          <div className="flex items-center flex-grow mr-4">
              {/* Drag Handle */}
              <button 
                 className="mr-3 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-200 transition-colors"
                 {...attributes} 
                 {...listeners}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
              >
                  <GripVertical size={16} />
              </button>
@@ -99,10 +104,10 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
                          />
                      </form>
                  ) : (
-                     <button 
-                        onClick={onToggle}
-                        className="font-semibold text-gray-700 hover:text-blue-600 transition-colors text-left flex items-center group"
-                     >
+                    <button 
+                       onClick={(e) => { e.stopPropagation(); onToggle(); }}
+                       className="font-semibold text-gray-700 hover:text-blue-600 transition-colors text-left flex items-center group w-full"
+                    >
                         {getDisplayTitle()}
                         <span 
                             onClick={(e) => {
@@ -137,10 +142,11 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
                 onChange={(e) => onUpdate({ isVisible: e.target.checked })}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
                 title={t('editor.toggleVisibility')}
+                onClick={(e) => e.stopPropagation()}
              />
              
              <button 
-                onClick={onToggle}
+                onClick={(e) => { e.stopPropagation(); onToggle(); }}
                 className="p-1 ml-2 text-gray-500 hover:text-gray-700 transition-colors"
              >
                 {isActive ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}

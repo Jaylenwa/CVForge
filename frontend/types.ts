@@ -13,7 +13,6 @@ export interface ResumeItem {
   title?: string;
   subtitle?: string; // Company or Degree
   dateRange?: string;
-  location?: string;
   description: string; // HTML or Markdown allowed
 }
 
@@ -41,10 +40,18 @@ export interface ResumeData {
     fullName: string;
     email: string;
     phone: string;
-    address: string;
     website: string;
     avatarUrl?: string;
     jobTitle: string;
+    gender?: string;
+    age?: string;
+    maritalStatus?: string;
+    politicalStatus?: string;
+    birthplace?: string;
+    ethnicity?: string;
+    height?: string;
+    weight?: string;
+    customInfo?: Array<{ label: string; value: string }>;
   };
   sections: ResumeSection[];
 }

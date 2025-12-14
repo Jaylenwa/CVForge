@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -20,13 +21,24 @@ type resumeReq struct {
 		Spacing    string `json:"spacing"`
 	} `json:"themeConfig"`
 	PersonalInfo struct {
-		FullName  string `json:"fullName"`
-		Email     string `json:"email"`
-		Phone     string `json:"phone"`
-		Address   string `json:"address"`
-		Website   string `json:"website"`
-		AvatarURL string `json:"avatarUrl"`
-		JobTitle  string `json:"jobTitle"`
+		FullName        string `json:"fullName"`
+		Email           string `json:"email"`
+		Phone           string `json:"phone"`
+		Website         string `json:"website"`
+		AvatarURL       string `json:"avatarUrl"`
+		JobTitle        string `json:"jobTitle"`
+		Gender          string `json:"gender"`
+		Age             string `json:"age"`
+		MaritalStatus   string `json:"maritalStatus"`
+		PoliticalStatus string `json:"politicalStatus"`
+		Birthplace      string `json:"birthplace"`
+		Ethnicity       string `json:"ethnicity"`
+		Height          string `json:"height"`
+		Weight          string `json:"weight"`
+		CustomInfo      []struct {
+			Label string `json:"label"`
+			Value string `json:"value"`
+		} `json:"customInfo"`
 	} `json:"personalInfo"`
 	Sections []struct {
 		Id        string `json:"id"`
@@ -38,10 +50,39 @@ type resumeReq struct {
 			Title       string `json:"title"`
 			Subtitle    string `json:"subtitle"`
 			DateRange   string `json:"dateRange"`
-			Location    string `json:"location"`
 			Description string `json:"description"`
 		} `json:"items"`
 	} `json:"sections"`
+}
+
+type customKV struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+}
+
+func parseCustomInfo(s string) ([]customKV, bool) {
+	if s == "" {
+		return nil, false
+	}
+	var arr []customKV
+	if err := json.Unmarshal([]byte(s), &arr); err != nil {
+		return nil, false
+	}
+	return arr, true
+}
+
+func formatCustomInfo(items []struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+}) string {
+	if len(items) == 0 {
+		return ""
+	}
+	b, err := json.Marshal(items)
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }
 
 func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc) {
@@ -85,7 +126,6 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 						"title":       it.Title,
 						"subtitle":    it.Subtitle,
 						"dateRange":   it.DateRange,
-						"location":    it.Location,
 						"description": it.Description,
 					})
 				}
@@ -103,8 +143,34 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 				"templateId":   r.TemplateID,
 				"themeConfig":  gin.H{"color": r.ThemeColor, "fontFamily": r.ThemeFont, "spacing": r.ThemeSpacing},
 				"lastModified": r.LastModified,
-				"personalInfo": gin.H{"fullName": r.FullName, "jobTitle": r.JobTitle, "email": r.Email, "phone": r.Phone, "address": r.Address, "website": r.Website, "avatarUrl": r.AvatarURL},
-				"sections":     sections,
+				"personalInfo": gin.H{
+					"fullName":        r.FullName,
+					"jobTitle":        r.JobTitle,
+					"email":           r.Email,
+					"phone":           r.Phone,
+					"website":         r.Website,
+					"avatarUrl":       r.AvatarURL,
+					"gender":          r.Gender,
+					"age":             r.Age,
+					"maritalStatus":   r.MaritalStatus,
+					"politicalStatus": r.PoliticalStatus,
+					"birthplace":      r.Birthplace,
+					"ethnicity":       r.Ethnicity,
+					"height":          r.Height,
+					"weight":          r.Weight,
+					"customInfo": func() []gin.H {
+						var items []gin.H
+						if r.CustomInfo != "" {
+							if arr, ok := parseCustomInfo(r.CustomInfo); ok {
+								for _, it := range arr {
+									items = append(items, gin.H{"label": it.Label, "value": it.Value})
+								}
+							}
+						}
+						return items
+					}(),
+				},
+				"sections": sections,
 			})
 		}
 		c.JSON(http.StatusOK, gin.H{"items": items})
@@ -204,21 +270,29 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 
 func toResumeModel(uid uint, req resumeReq) models.Resume {
 	r := models.Resume{
-		ExternalID:   uuid.NewString(),
-		UserID:       uid,
-		Title:        req.Title,
-		TemplateID:   req.TemplateId,
-		ThemeColor:   req.ThemeConfig.Color,
-		ThemeFont:    req.ThemeConfig.FontFamily,
-		ThemeSpacing: req.ThemeConfig.Spacing,
-		LastModified: time.Now().UnixMilli(),
-		FullName:     req.PersonalInfo.FullName,
-		JobTitle:     req.PersonalInfo.JobTitle,
-		Email:        req.PersonalInfo.Email,
-		Phone:        req.PersonalInfo.Phone,
-		Address:      req.PersonalInfo.Address,
-		Website:      req.PersonalInfo.Website,
-		AvatarURL:    req.PersonalInfo.AvatarURL,
+		ExternalID:      uuid.NewString(),
+		UserID:          uid,
+		Title:           req.Title,
+		TemplateID:      req.TemplateId,
+		ThemeColor:      req.ThemeConfig.Color,
+		ThemeFont:       req.ThemeConfig.FontFamily,
+		ThemeSpacing:    req.ThemeConfig.Spacing,
+		LastModified:    time.Now().UnixMilli(),
+		FullName:        req.PersonalInfo.FullName,
+		JobTitle:        req.PersonalInfo.JobTitle,
+		Email:           req.PersonalInfo.Email,
+		Phone:           req.PersonalInfo.Phone,
+		Website:         req.PersonalInfo.Website,
+		AvatarURL:       req.PersonalInfo.AvatarURL,
+		Gender:          req.PersonalInfo.Gender,
+		Age:             req.PersonalInfo.Age,
+		MaritalStatus:   req.PersonalInfo.MaritalStatus,
+		PoliticalStatus: req.PersonalInfo.PoliticalStatus,
+		Birthplace:      req.PersonalInfo.Birthplace,
+		Ethnicity:       req.PersonalInfo.Ethnicity,
+		Height:          req.PersonalInfo.Height,
+		Weight:          req.PersonalInfo.Weight,
+		CustomInfo:      formatCustomInfo(req.PersonalInfo.CustomInfo),
 	}
 	for si, s := range req.Sections {
 		sec := models.ResumeSection{
@@ -234,7 +308,6 @@ func toResumeModel(uid uint, req resumeReq) models.Resume {
 				Title:       it.Title,
 				Subtitle:    it.Subtitle,
 				DateRange:   it.DateRange,
-				Location:    it.Location,
 				Description: it.Description,
 				OrderNum:    ii,
 			})

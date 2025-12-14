@@ -42,12 +42,26 @@ func InitMySQL(cfg config.Config) (*sql.DB, error) {
 func Gorm() *gorm.DB { return g }
 
 func autoMigrate() error {
-	return g.AutoMigrate(
+	if err := g.AutoMigrate(
 		&models.User{},
 		&models.Template{},
 		&models.Resume{},
 		&models.ResumeSection{},
 		&models.ResumeItem{},
 		&models.ShareLink{},
-	)
+	); err != nil {
+		return err
+	}
+	// Drop deprecated columns
+	if g.Migrator().HasColumn(&models.ResumeItem{}, "location") {
+		if err := g.Migrator().DropColumn(&models.ResumeItem{}, "location"); err != nil {
+			return err
+		}
+	}
+	if g.Migrator().HasColumn(&models.Resume{}, "address") {
+		if err := g.Migrator().DropColumn(&models.Resume{}, "address"); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -60,6 +60,16 @@ export const MOCK_TEMPLATES: Template[] = [
     isPremium: false,
     category: 'General',
     level: 'Intern'
+  },
+  {
+    id: 't7',
+    name: 'Chinese Blue',
+    thumbnail: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=500&q=80',
+    tags: ['General', 'Chinese', 'ATS Friendly'],
+    popularity: 75,
+    isPremium: false,
+    category: 'General',
+    level: 'Junior'
   }
 ];
 
@@ -78,7 +88,6 @@ export const INITIAL_RESUME: ResumeData = {
     jobTitle: 'Software Engineer',
     email: 'alex.doe@example.com',
     phone: '+1 (555) 123-4567',
-    address: 'San Francisco, CA',
     website: 'linkedin.com/in/alexdoe',
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
   },
@@ -104,7 +113,6 @@ export const INITIAL_RESUME: ResumeData = {
           title: 'Senior Frontend Developer',
           subtitle: 'Tech Corp Inc.',
           dateRange: '2020 - Present',
-          location: 'Remote',
           description: 'Led a team of 5 developers to rebuild the main dashboard using React and TypeScript. Improved load times by 40%.'
         }
       ]
@@ -120,7 +128,6 @@ export const INITIAL_RESUME: ResumeData = {
           title: 'B.S. Computer Science',
           subtitle: 'University of Technology',
           dateRange: '2016 - 2020',
-          location: 'New York, NY',
           description: 'Graduated with Honors. Member of the ACM chapter.'
         }
       ]
