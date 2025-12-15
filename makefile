@@ -1,0 +1,66 @@
+# ===== 可配置变量 =====
+IMAGE_NAME := openresume-backend:latest
+TAR_NAME := openresume-backend.tar
+DOCKERFILE := Dockerfile_Local
+FRONTEND_IMAGE_NAME := openresume-frontend:latest
+FRONTEND_TAR_NAME := openresume-frontend.tar
+FRONTEND_DOCKERFILE := frontend/Dockerfile_Local
+
+REMOTE_USER := root
+REMOTE_HOST := 182.254.166.74
+REMOTE_PORT := 22
+REMOTE_DIR := /root/docker
+
+# ===== 默认目标 =====
+.PHONY: all
+all: backend frontend
+
+.PHONY: backend
+backend: build save upload load
+
+# ===== 构建镜像 =====
+.PHONY: build
+build:
+	docker build -f $(DOCKERFILE) -t $(IMAGE_NAME) .
+
+.PHONY: build-frontend
+build-frontend:
+	docker build -f $(FRONTEND_DOCKERFILE) -t $(FRONTEND_IMAGE_NAME) frontend
+
+# ===== 导出镜像 =====
+.PHONY: save
+save:
+	docker save -o $(TAR_NAME) $(IMAGE_NAME)
+
+.PHONY: save-frontend
+save-frontend:
+	docker save -o $(FRONTEND_TAR_NAME) $(FRONTEND_IMAGE_NAME)
+
+# ===== 上传镜像（远端存在则删除）=====
+.PHONY: upload
+upload:
+	ssh -p $(REMOTE_PORT) $(REMOTE_USER)@$(REMOTE_HOST) "mkdir -p $(REMOTE_DIR) && rm -f $(REMOTE_DIR)/$(TAR_NAME)"
+	scp -P $(REMOTE_PORT) $(TAR_NAME) $(REMOTE_USER)@$(REMOTE_HOST):$(REMOTE_DIR)/
+
+.PHONY: upload-frontend
+upload-frontend:
+	ssh -p $(REMOTE_PORT) $(REMOTE_USER)@$(REMOTE_HOST) "mkdir -p $(REMOTE_DIR) && rm -f $(REMOTE_DIR)/$(FRONTEND_TAR_NAME)"
+	scp -P $(REMOTE_PORT) $(FRONTEND_TAR_NAME) $(REMOTE_USER)@$(REMOTE_HOST):$(REMOTE_DIR)/
+
+# ===== 远端加载镜像 =====
+.PHONY: load
+load:
+	ssh -p $(REMOTE_PORT) $(REMOTE_USER)@$(REMOTE_HOST) "docker load -i $(REMOTE_DIR)/$(TAR_NAME)"
+
+.PHONY: load-frontend
+load-frontend:
+	ssh -p $(REMOTE_PORT) $(REMOTE_USER)@$(REMOTE_HOST) "docker load -i $(REMOTE_DIR)/$(FRONTEND_TAR_NAME)"
+
+.PHONY: frontend
+frontend: build-frontend save-frontend upload-frontend load-frontend
+
+# ===== 清理本地 tar =====
+.PHONY: clean
+clean:
+	rm -f $(TAR_NAME)
+	rm -f $(FRONTEND_TAR_NAME)
