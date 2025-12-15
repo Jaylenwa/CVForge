@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -26,14 +27,29 @@ func RegisterPDFRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc) {
 			return
 		}
 		cfg := config.Load()
-		ctx, cancel := chromedp.NewContext(context.Background())
+		type verInfo struct {
+			WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
+		}
+		var v verInfo
+		resp, err := http.Get(cfg.ChromeJSONURL)
+		if err != nil {
+			c.JSON(http.StatusNotImplemented, gin.H{"error": "pdf service unavailable"})
+			return
+		}
+		defer resp.Body.Close()
+		if err := json.NewDecoder(resp.Body).Decode(&v); err != nil || v.WebSocketDebuggerUrl == "" {
+			c.JSON(http.StatusNotImplemented, gin.H{"error": "pdf service unavailable"})
+			return
+		}
+		allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(context.Background(), v.WebSocketDebuggerUrl)
+		defer cancelAlloc()
+		ctx, cancel := chromedp.NewContext(allocCtx)
 		defer cancel()
 		if cfg.FrontendBaseURL == "" {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "pdf service unavailable"})
 			return
 		}
 		var pdf []byte
-		var err error
 		dest := cfg.FrontendBaseURL + "/#/print?id=" + c.Param("id")
 		authHeader := c.GetHeader("Authorization")
 		token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
@@ -75,14 +91,29 @@ func RegisterPDFRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc) {
 			return
 		}
 		cfg := config.Load()
-		ctx, cancel := chromedp.NewContext(context.Background())
+		type verInfo struct {
+			WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
+		}
+		var v verInfo
+		resp, err := http.Get(cfg.ChromeJSONURL)
+		if err != nil {
+			c.JSON(http.StatusNotImplemented, gin.H{"error": "image service unavailable"})
+			return
+		}
+		defer resp.Body.Close()
+		if err := json.NewDecoder(resp.Body).Decode(&v); err != nil || v.WebSocketDebuggerUrl == "" {
+			c.JSON(http.StatusNotImplemented, gin.H{"error": "image service unavailable"})
+			return
+		}
+		allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(context.Background(), v.WebSocketDebuggerUrl)
+		defer cancelAlloc()
+		ctx, cancel := chromedp.NewContext(allocCtx)
 		defer cancel()
 		if cfg.FrontendBaseURL == "" {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "image service unavailable"})
 			return
 		}
 		var png []byte
-		var err error
 		dest := cfg.FrontendBaseURL + "/#/print?id=" + c.Param("id")
 		authHeader := c.GetHeader("Authorization")
 		token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))

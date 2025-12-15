@@ -13,12 +13,15 @@ services:
       CORS_ORIGINS: "http://www.vfoy.cn,https://www.vfoy.cn"
       UPLOAD_BACKEND: "local"
       FRONTEND_BASE_URL: "http://frontend"
+      CHROME_JSON_URL: "http://chrome:3000/json/version"
     volumes:
       - /var/lib/openresume/upload:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
       redis:
+        condition: service_started
+      chrome:
         condition: service_started
     ports:
       - "8080:8080"
@@ -61,3 +64,11 @@ services:
       - /var/lib/openresume/redis:/data
     ports:
       - "6379:6379"
+
+  chrome:
+    build:
+      context: .
+      dockerfile: Dockerfile_Chrome
+    restart: unless-stopped
+    ports:
+      - "3000:3000"

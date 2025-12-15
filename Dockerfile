@@ -9,10 +9,7 @@ COPY . .
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /app/openresume ./main.go
 
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates tzdata chromium \
-    fonts-dejavu fonts-noto fonts-noto-cjk \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/openresume /usr/local/bin/openresume
 RUN mkdir -p /app/uploads

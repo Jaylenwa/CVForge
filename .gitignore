@@ -27,3 +27,4 @@ openresume.db
 __debug_*
 uploads
 Dockerfile_Local
+Dockerfile_Chrome_local

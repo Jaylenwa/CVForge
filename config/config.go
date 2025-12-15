@@ -20,6 +20,7 @@ type Config struct {
 	S3AccessKey     string
 	S3SecretKey     string
 	FrontendBaseURL string
+	ChromeJSONURL   string
 }
 
 func Load() Config {
@@ -39,6 +40,7 @@ func Load() Config {
 		S3AccessKey:     getenv("S3_ACCESS_KEY", ""),
 		S3SecretKey:     getenv("S3_SECRET_KEY", ""),
 		FrontendBaseURL: getenv("FRONTEND_BASE_URL", "http://localhost:3000"),
+		ChromeJSONURL:   getenv("CHROME_JSON_URL", "http://localhost:9222/json/version"),
 	}
 }
 
