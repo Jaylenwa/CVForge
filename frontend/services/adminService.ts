@@ -57,6 +57,7 @@ export const unbanUser = async (id: number) => {
 export interface AdminResume {
   id: string;
   userId: number;
+  userName?: string;
   title: string;
   templateId: string;
   themeConfig: { color: string; fontFamily: string; spacing: string };
@@ -130,4 +131,3 @@ export const deleteShare = async (slug: string) => {
   const res = await fetch(`${API_BASE}/admin/share-links/${slug}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
-

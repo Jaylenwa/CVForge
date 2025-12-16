@@ -47,7 +47,7 @@ export const ResumesPage: React.FC = () => {
             {items.map(r => (
               <tr key={r.id}>
                 <td className="px-4 py-2 text-sm text-gray-700">{r.id}</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{r.userId}</td>
+                <td className="px-4 py-2 text-sm text-gray-700">{r.userName || r.userId}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">{r.title}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">{r.templateId}</td>
                 <td className="px-4 py-2 text-sm text-right space-x-2">

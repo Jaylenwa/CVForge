@@ -40,11 +40,36 @@ func RegisterAdminResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handler
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 			return
 		}
+		// collect user ids to fetch names
+		uidSet := make(map[uint]struct{})
+		for _, r := range list {
+			if r.UserID != 0 {
+				uidSet[r.UserID] = struct{}{}
+			}
+		}
+		uids := make([]uint, 0, len(uidSet))
+		for id := range uidSet {
+			uids = append(uids, id)
+		}
+		nameMap := make(map[uint]string, len(uids))
+		if len(uids) > 0 {
+			var users []models.User
+			if err := db.Where("id IN ?", uids).Find(&users).Error; err == nil {
+				for _, u := range users {
+					if u.Name != "" {
+						nameMap[u.ID] = u.Name
+					} else {
+						nameMap[u.ID] = u.Email
+					}
+				}
+			}
+		}
 		items := make([]gin.H, 0, len(list))
 		for _, r := range list {
 			items = append(items, gin.H{
 				"id":           r.ExternalID,
 				"userId":       r.UserID,
+				"userName":     nameMap[r.UserID],
 				"title":        r.Title,
 				"templateId":   r.TemplateID,
 				"themeConfig":  gin.H{"color": r.ThemeColor, "fontFamily": r.ThemeFont, "spacing": r.ThemeSpacing},

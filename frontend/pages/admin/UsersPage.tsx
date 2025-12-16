@@ -57,7 +57,6 @@ export const UsersPage: React.FC = () => {
                     catch { showToast(t('admin.msg.roleUpdateFailed'), 'error'); } 
                   }}>
                     <option value="user">user</option>
-                    <option value="moderator">moderator</option>
                     <option value="admin">admin</option>
                   </select>
                 </td>
