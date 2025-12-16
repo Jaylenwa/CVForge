@@ -56,6 +56,14 @@ export const MOCK_TEMPLATES: Template[] = [
     popularity: 75,
     isPremium: false,
     category: 'General'
+  },
+  {
+    id: 't8',
+    name: 'Chinese Rounded Blue',
+    tags: ['General', 'Chinese', 'Classic', 'ATS Friendly'],
+    popularity: 80,
+    isPremium: false,
+    category: 'General'
   }
 ];
 

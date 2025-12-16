@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Download, Printer, Share2, Layout, Globe } from 'lucide-react';
+import { ArrowLeft, Download, Printer, Share2, Layout, Globe, Eye } from 'lucide-react';
 import { EditorForm } from './EditorForm';
 import { ResumePreview } from './ResumePreview';
 import { API_BASE } from '../../config';
 import { Button } from '../../components/ui/Button';
+import { Modal } from '../../components/ui/Modal';
 import { INITIAL_RESUME } from '../../services/mockData';
-import { ResumeData } from '../../types';
+import { ResumeData, AppRoute } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useToast } from '../../components/ui/Toast';
 
@@ -19,6 +20,7 @@ export const Editor: React.FC = () => {
   const { showToast } = useToast();
   const [templates, setTemplates] = useState<Array<{ id: string }>>([]);
   const [exportOpen, setExportOpen] = useState(false);
+  const [exportError, setExportError] = useState<{ open: boolean; title: string; details: string }>({ open: false, title: '', details: '' });
 
   // Initialize data based on URL params
   useEffect(() => {
@@ -103,6 +105,11 @@ export const Editor: React.FC = () => {
     window.print();
   };
 
+  const handlePreview = () => {
+    if (!resumeData.id) return;
+    window.open(`#${AppRoute.Print}?id=${resumeData.id}`, '_blank');
+  };
+
   const handleChangeTemplate = () => {
       if (!templates.length) return;
       const currentIdx = templates.findIndex(t => t.id === resumeData.templateId);
@@ -136,7 +143,11 @@ export const Editor: React.FC = () => {
     if (!resumeData.id) return;
     fetch(`${API_BASE}/resumes/${resumeData.id}/pdf`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
       .then(async r => {
-        if (!r.ok) throw new Error(t('editor.export.failed'));
+        if (!r.ok) {
+          let txt = '';
+          try { txt = await r.text(); } catch {}
+          throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
+        }
         const blob = await r.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -147,8 +158,8 @@ export const Editor: React.FC = () => {
         a.remove();
         URL.revokeObjectURL(url);
       })
-      .catch(() => {
-        window.open(`#${window.location.pathname}?id=${resumeData.id}`.replace('editor', 'print'), '_blank');
+      .catch((err) => {
+        setExportError({ open: true, title: t('editor.export.failed'), details: err?.message ? String(err.message) : String(err) });
       });
   };
 
@@ -157,7 +168,11 @@ export const Editor: React.FC = () => {
     if (!resumeData.id) return;
     fetch(`${API_BASE}/resumes/${resumeData.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
       .then(async r => {
-        if (!r.ok) throw new Error(t('editor.export.failed'));
+        if (!r.ok) {
+          let txt = '';
+          try { txt = await r.text(); } catch {}
+          throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
+        }
         const blob = await r.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -168,8 +183,8 @@ export const Editor: React.FC = () => {
         a.remove();
         URL.revokeObjectURL(url);
       })
-      .catch(() => {
-        window.open(`#${window.location.pathname}?id=${resumeData.id}`.replace('editor', 'print'), '_blank');
+      .catch((err) => {
+        setExportError({ open: true, title: t('editor.export.failed'), details: err?.message ? String(err.message) : String(err) });
       });
   };
 
@@ -211,7 +226,10 @@ export const Editor: React.FC = () => {
                 {language === 'en' ? t('lang.en_short') : t('lang.zh_short')}
             </Button>
 
-            <Button variant="primary" size="sm" onClick={handleSave}>
+            <Button variant="outline" size="sm" icon={<Eye size={16}/>} onClick={handlePreview}>
+                {t('common.preview')}
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleSave} className="ml-2">
                 {t('editor.save')}
             </Button>
             <div className="relative">
@@ -251,6 +269,17 @@ export const Editor: React.FC = () => {
              <ResumePreview data={resumeData} scale={scale} disableShadow />
         </div>
       </div>
+      
+      <Modal isOpen={exportError.open} onClose={() => setExportError(prev => ({ ...prev, open: false }))} title={exportError.title || t('editor.export.failed')}>
+        <div className="space-y-4">
+          <div className="text-sm text-gray-700 break-words whitespace-pre-wrap">{exportError.details}</div>
+          <div className="flex justify-end">
+            <Button variant="primary" onClick={() => setExportError(prev => ({ ...prev, open: false }))}>
+              {t('common.close')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
