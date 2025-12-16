@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, KeyRound, CheckCircle } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
 import { Button } from '../../components/ui/Button';
@@ -12,6 +12,7 @@ export const Register: React.FC = () => {
   const { t } = useLanguage();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [step, setStep] = useState<1 | 2>(1); // 1: Email, 2: Code & Password
   const [loading, setLoading] = useState(false);
@@ -81,7 +82,8 @@ export const Register: React.FC = () => {
         const res = await registerUser(formData.email, formData.code, formData.password);
         if (res.success) {
             login(formData.email);
-            navigate(AppRoute.Dashboard);
+            const from = (location.state as any)?.from?.pathname || AppRoute.Home;
+            navigate(from);
         } else {
             setError(t('auth.error.registrationFailed'));
         }
@@ -135,7 +137,7 @@ export const Register: React.FC = () => {
         {step === 2 && (
             <div className="space-y-4 animate-fadeIn">
                 <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm text-center">
-                    {t('auth.success.codeSent')} <strong>123456</strong>
+                    {t('auth.success.codeSent')}
                 </div>
 
                 <div>

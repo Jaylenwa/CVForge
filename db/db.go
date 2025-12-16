@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"log"
+	"os"
 
 	"openresume/config"
 	"openresume/models"
@@ -28,12 +29,19 @@ func InitMySQL(cfg config.Config) (*sql.DB, error) {
 		return nil, err
 	}
 	g = db
-	if err = autoMigrate(); err != nil {
-		return nil, err
-	}
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, err
+	}
+	// prefer versioned migrations if present; otherwise fall back to AutoMigrate for initial schema
+	if _, e := os.Stat("db/migrations"); e == nil {
+		if err = RunMigrations(cfg, sqlDB); err != nil {
+			return nil, err
+		}
+	} else {
+		if err = autoMigrate(); err != nil {
+			return nil, err
+		}
 	}
 	log.Println("mysql connected")
 	return sqlDB, nil
@@ -52,17 +60,6 @@ func autoMigrate() error {
 		&models.AuditLog{},
 	); err != nil {
 		return err
-	}
-	// Drop deprecated columns
-	if g.Migrator().HasColumn(&models.ResumeItem{}, "location") {
-		if err := g.Migrator().DropColumn(&models.ResumeItem{}, "location"); err != nil {
-			return err
-		}
-	}
-	if g.Migrator().HasColumn(&models.Resume{}, "address") {
-		if err := g.Migrator().DropColumn(&models.Resume{}, "address"); err != nil {
-			return err
-		}
 	}
 	return nil
 }

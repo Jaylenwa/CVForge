@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"crypto/rand"
+	"math/big"
 	"net/http"
 	"time"
 
@@ -34,23 +36,29 @@ func RegisterAuthRoutes(r *gin.RouterGroup, cfg config.Config, rdb *redis.Client
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email"})
 			return
 		}
-		code := "123456"
+		code := func() string {
+			n := 6
+			out := make([]byte, n)
+			for i := 0; i < n; i++ {
+				v, _ := rand.Int(rand.Reader, big.NewInt(10))
+				out[i] = byte('0' + v.Int64())
+			}
+			return string(out)
+		}()
 		_ = rdb.Set(context.Background(), "verify:"+req.Email, code, 10*time.Minute).Err()
 		c.JSON(http.StatusOK, gin.H{"success": true})
 	})
 
-	auth.POST("/register", func(c *gin.Context) {
+	auth.POST("/register", middleware.RateLimit(rdb, 5, time.Minute), func(c *gin.Context) {
 		var req registerReq
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 			return
 		}
-		if req.Code != "123456" {
-			val, err := rdb.Get(context.Background(), "verify:"+req.Email).Result()
-			if err != nil || val != req.Code {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid code"})
-				return
-			}
+		val, err := rdb.Get(context.Background(), "verify:"+req.Email).Result()
+		if err != nil || val != req.Code {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid code"})
+			return
 		}
 		hash, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		u := models.User{Email: req.Email, PasswordHash: string(hash), Name: req.Name}
@@ -62,7 +70,7 @@ func RegisterAuthRoutes(r *gin.RouterGroup, cfg config.Config, rdb *redis.Client
 		c.JSON(http.StatusOK, gin.H{"accessToken": access, "refreshToken": refresh})
 	})
 
-	auth.POST("/login", func(c *gin.Context) {
+	auth.POST("/login", middleware.RateLimit(rdb, 5, time.Minute), func(c *gin.Context) {
 		var req loginReq
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})

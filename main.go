@@ -39,7 +39,7 @@ func main() {
 	handlers.RegisterTemplateRoutes(api, db.Gorm(), rdb)
 	api.Use(middleware.RateLimitUser(rdb, 120, time.Minute))
 	handlers.RegisterResumeRoutes(api, db.Gorm(), middleware.Auth(cfg))
-	handlers.RegisterUploadRoutes(api)
+	handlers.RegisterUploadRoutes(api, middleware.Auth(cfg))
 	handlers.RegisterShareRoutes(api, db.Gorm(), rdb, middleware.Auth(cfg))
 	admin := api.Group("/admin")
 	admin.Use(middleware.Auth(cfg), middleware.RequireRole("admin"))
@@ -52,7 +52,7 @@ func main() {
 	handlers.RegisterAIRoutes(air)
 	handlers.RegisterHealthRoutes(api)
 	api.GET("/metrics", metrics.Handler())
-	handlers.RegisterPDFRoutes(api, db.Gorm(), middleware.Auth(cfg))
+	handlers.RegisterPDFRoutes(api, db.Gorm(), rdb, middleware.Auth(cfg))
 
 	router.Static("/public/uploads", "./uploads")
 

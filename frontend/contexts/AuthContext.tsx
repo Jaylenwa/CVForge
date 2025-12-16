@@ -36,6 +36,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (res.ok) {
         const data = await res.json();
         setUser({ email: data.email, name: data.name || data.email.split('@')[0], avatarUrl: data.avatarUrl });
+        setIsAdmin(String(data.role || '').toLowerCase() === 'admin');
       }
       if (res.status === 401) {
         const ok = await refreshTokens();
@@ -44,6 +45,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           if (res2.ok) {
             const data2 = await res2.json();
             setUser({ email: data2.email, name: data2.name || data2.email.split('@')[0], avatarUrl: data2.avatarUrl });
+            setIsAdmin(String(data2.role || '').toLowerCase() === 'admin');
           }
         } else {
           localStorage.removeItem('token');
@@ -52,13 +54,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setIsAdmin(false);
           window.location.hash = '#/login';
         }
-      }
-      // admin probing
-      try {
-        const probe = await fetch(`${API_BASE}/admin/users?page=1&pageSize=1`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
-        setIsAdmin(probe.ok);
-      } catch {
-        setIsAdmin(false);
       }
     } catch {}
     setLoading(false);

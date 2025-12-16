@@ -1,10 +1,11 @@
 import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AppRoute } from '../types';
 
 export const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -15,7 +16,7 @@ export const ProtectedRoute: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={AppRoute.Login} replace />;
+    return <Navigate to={AppRoute.Login} replace state={{ from: location }} />;
   }
 
   return <Outlet />;

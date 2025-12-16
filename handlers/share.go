@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"openresume/middleware"
 	"openresume/models"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,15 @@ func RegisterShareRoutes(r *gin.RouterGroup, db *gorm.DB, rdb *redis.Client, aut
 		var res models.Resume
 		if err := db.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "resume not found"})
+			return
+		}
+		uid, ok := middleware.UID(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		if res.UserID != uid {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 			return
 		}
 		var sl models.ShareLink

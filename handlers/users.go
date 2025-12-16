@@ -23,6 +23,7 @@ func RegisterUserRoutesReal(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFun
 			"name":      u.Name,
 			"avatarUrl": u.AvatarURL,
 			"language":  u.Language,
+			"role":      u.Role,
 		})
 	})
 

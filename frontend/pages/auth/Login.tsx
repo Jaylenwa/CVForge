@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
 import { AuthLayout } from './AuthLayout';
 import { Button } from '../../components/ui/Button';
@@ -12,6 +12,7 @@ export const Login: React.FC = () => {
   const { t } = useLanguage();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -34,7 +35,8 @@ export const Login: React.FC = () => {
         const result = await loginUser(formData.email, formData.password);
         if (result.success) {
             login(formData.email); // Update global auth state
-            navigate(AppRoute.Dashboard);
+            const from = (location.state as any)?.from?.pathname || AppRoute.Home;
+            navigate(from);
         } else {
             setError(t('auth.error.invalidCredentials'));
         }

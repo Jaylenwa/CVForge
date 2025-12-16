@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awscfg "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -16,7 +17,17 @@ type S3Uploader struct {
 }
 
 func NewS3(cfgApp config.Config) (Uploader, error) {
-	cfg, err := awscfg.LoadDefaultConfig(context.Background(), awscfg.WithRegion(cfgApp.S3Region))
+	opts := []func(*awscfg.LoadOptions) error{awscfg.WithRegion(cfgApp.S3Region)}
+	if cfgApp.S3AccessKey != "" && cfgApp.S3SecretKey != "" {
+		opts = append(opts, awscfg.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(cfgApp.S3AccessKey, cfgApp.S3SecretKey, "")))
+	}
+	if cfgApp.S3Endpoint != "" {
+		resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+			return aws.Endpoint{URL: cfgApp.S3Endpoint, HostnameImmutable: true}, nil
+		})
+		opts = append(opts, awscfg.WithEndpointResolverWithOptions(resolver))
+	}
+	cfg, err := awscfg.LoadDefaultConfig(context.Background(), opts...)
 	if err != nil {
 		return nil, err
 	}

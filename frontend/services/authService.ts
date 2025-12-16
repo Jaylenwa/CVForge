@@ -9,9 +9,8 @@ export const sendVerificationCode = async (email: string): Promise<boolean> => {
   return res.ok;
 };
 
-export const verifyCode = async (_email: string, code: string): Promise<boolean> => {
-  // 后端已支持注册时核验，这里保持“123456”为有效以兼容现有前端流程
-  return code === '123456';
+export const verifyCode = async (_email: string, _code: string): Promise<boolean> => {
+  return true;
 };
 
 export const loginUser = async (email: string, password: string): Promise<{ success: boolean; token?: string }> => {

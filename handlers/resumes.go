@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"openresume/middleware"
 	"openresume/models"
 
 	"github.com/gin-gonic/gin"
@@ -87,16 +88,8 @@ func formatCustomInfo(items []struct {
 func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc) {
 
 	r.GET("/resumes", auth, func(c *gin.Context) {
-		uidVal, _ := c.Get("uid")
-		var uid uint
-		switch v := uidVal.(type) {
-		case uint:
-			uid = v
-		case int:
-			uid = uint(v)
-		case float64:
-			uid = uint(v)
-		default:
+		uid, ok := middleware.UID(c)
+		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}
@@ -175,21 +168,13 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 	})
 
 	r.POST("/resumes", auth, func(c *gin.Context) {
-		uidVal, _ := c.Get("uid")
 		var req resumeReq
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 			return
 		}
-		var uid uint
-		switch v := uidVal.(type) {
-		case uint:
-			uid = v
-		case int:
-			uid = uint(v)
-		case float64:
-			uid = uint(v)
-		default:
+		uid, ok := middleware.UID(c)
+		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}
@@ -207,6 +192,15 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 			return
 		}
+		uid, ok := middleware.UID(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		if res.UserID != uid {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
 		c.JSON(http.StatusOK, res)
 	})
 
@@ -219,6 +213,15 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 		var res models.Resume
 		if err := db.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			return
+		}
+		uid, ok := middleware.UID(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		if res.UserID != uid {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 			return
 		}
 		updated := toResumeModel(res.UserID, req)
@@ -256,6 +259,15 @@ func RegisterResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.HandlerFunc)
 		var res models.Resume
 		if err := db.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			return
+		}
+		uid, ok := middleware.UID(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		if res.UserID != uid {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 			return
 		}
 		if err := db.Delete(&res).Error; err != nil {

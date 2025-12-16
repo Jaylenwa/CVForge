@@ -1,20 +1,21 @@
 package handlers
 
 import (
-    "io"
-    "net/http"
-    "path/filepath"
-    "strings"
+	"io"
+	"net/http"
+	"path/filepath"
+	"strings"
 
-    "openresume/config"
-    "openresume/storage"
+	"openresume/config"
+	"openresume/storage"
 
-    "github.com/gin-gonic/gin"
-    "github.com/google/uuid"
+	"github.com/gabriel-vasile/mimetype"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
-func RegisterUploadRoutes(r *gin.RouterGroup) {
-	r.POST("/upload/avatar", func(c *gin.Context) {
+func RegisterUploadRoutes(r *gin.RouterGroup, auth gin.HandlerFunc) {
+	r.POST("/upload/avatar", auth, func(c *gin.Context) {
 		file, err := c.FormFile("file")
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "no file"})
@@ -40,25 +41,39 @@ func RegisterUploadRoutes(r *gin.RouterGroup) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "read error"})
 			return
 		}
+		mt := mimetype.Detect(b)
+		if mt == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid content"})
+			return
+		}
+		mts := mt.String()
+		if mts != "image/jpeg" && mts != "image/png" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid mime"})
+			return
+		}
 		name := uuid.NewString() + ext
-		up, _ := storage.New(config.Load())
-        url, err := up.Upload(c, name, b)
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "upload error"})
-            return
-        }
-        proto := c.GetHeader("X-Forwarded-Proto")
-        if proto == "" {
-            proto = "http"
-        }
-        host := c.GetHeader("X-Forwarded-Host")
-        if host == "" {
-            host = c.Request.Host
-        }
-        abs := url
-        if strings.HasPrefix(url, "/") {
-            abs = proto + "://" + host + url
-        }
-        c.JSON(http.StatusOK, gin.H{"url": abs})
-    })
+		up, e := storage.New(config.Load())
+		if e != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "upload init error"})
+			return
+		}
+		url, err := up.Upload(c, name, b)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "upload error"})
+			return
+		}
+		proto := c.GetHeader("X-Forwarded-Proto")
+		if proto == "" {
+			proto = "http"
+		}
+		host := c.GetHeader("X-Forwarded-Host")
+		if host == "" {
+			host = c.Request.Host
+		}
+		abs := url
+		if strings.HasPrefix(url, "/") {
+			abs = proto + "://" + host + url
+		}
+		c.JSON(http.StatusOK, gin.H{"url": abs})
+	})
 }
