@@ -12,7 +12,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   isAdmin: boolean;
-  login: (email: string) => void;
+  login: (email: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -61,7 +61,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => { loadUser(); }, []);
 
-  const login = (_email: string) => { loadUser(); };
+  const login = async (_email: string) => { await loadUser(); };
 
   const logout = () => {
     localStorage.removeItem('token');

@@ -14,6 +14,11 @@ services:
       UPLOAD_BACKEND: "local"
       FRONTEND_BASE_URL: "http://frontend"
       CHROME_JSON_URL: "http://chrome:3000/json/version"
+      SMTP_HOST: "smtp.qq.com"
+      SMTP_PORT: "465"
+      SMTP_USERNAME: "1318248167@qq.com"
+      SMTP_PASSWORD: "pfyqdiadwwvfbadj"
+      SMTP_FROM_NAME: "OpenResume"
     volumes:
       - /var/lib/openresume/upload:/app/uploads
     depends_on:

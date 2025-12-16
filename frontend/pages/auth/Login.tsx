@@ -34,9 +34,9 @@ export const Login: React.FC = () => {
     try {
         const result = await loginUser(formData.email, formData.password);
         if (result.success) {
-            login(formData.email); // Update global auth state
+            await login(formData.email);
             const from = (location.state as any)?.from?.pathname || AppRoute.Home;
-            navigate(from);
+            navigate(from, { replace: true });
         } else {
             setError(t('auth.error.invalidCredentials'));
         }

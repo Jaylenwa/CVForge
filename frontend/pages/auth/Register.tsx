@@ -81,9 +81,9 @@ export const Register: React.FC = () => {
         }
         const res = await registerUser(formData.email, formData.code, formData.password);
         if (res.success) {
-            login(formData.email);
+            await login(formData.email);
             const from = (location.state as any)?.from?.pathname || AppRoute.Home;
-            navigate(from);
+            navigate(from, { replace: true });
         } else {
             setError(t('auth.error.registrationFailed'));
         }
