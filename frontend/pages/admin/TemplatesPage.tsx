@@ -191,9 +191,9 @@ export const TemplatesPage: React.FC = () => {
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.name')}</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('templates.filter.industry')}</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('templates.filter.level')}</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Popularity</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Premium</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Tags</th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.popularity')}</th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.isPremium')}</th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.tags')}</th>
               <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">{t('admin.columns.actions')}</th>
             </tr>
           </thead>
@@ -205,7 +205,7 @@ export const TemplatesPage: React.FC = () => {
                 <td className="px-4 py-2 text-sm text-gray-700">{r.category}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">{r.level}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">{r.popularity}</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{r.isPremium ? 'Yes' : 'No'}</td>
+                <td className="px-4 py-2 text-sm text-gray-700">{r.isPremium ? t('admin.value.yes') : t('admin.value.no')}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">
                   <div className="flex flex-wrap gap-1">
                     {(r.tags || []).slice(0, 4).map(tag => (
@@ -215,7 +215,7 @@ export const TemplatesPage: React.FC = () => {
                 </td>
                 <td className="px-4 py-2 text-sm text-right space-x-2">
                   <Button variant="outline" onClick={() => openEdit(r)}>{t('admin.actions.update')}</Button>
-                  <Button variant="ghost" onClick={() => openPreview(r.id)}>{t('templates.actions.useTemplate')}</Button>
+                  <Button variant="ghost" onClick={() => openPreview(r.id)}>{t('admin.actions.preview')}</Button>
                   <Button variant="danger" onClick={() => remove(r.id)}>{t('admin.actions.delete')}</Button>
                 </td>
               </tr>
@@ -262,16 +262,25 @@ export const TemplatesPage: React.FC = () => {
         </div>
       </Modal>
 
-      <Modal isOpen={showPreview} onClose={() => setShowPreview(false)} title={t('templates.title')}>
-        <div ref={previewContainerRef} className="w-full">
-          {previewId && previewScale !== null && (
-            <ResumeArtboard
-              data={{ ...INITIAL_RESUME, templateId: previewId }}
-              scale={previewScale}
-              disableShadow
-              style={{ margin: 0 }}
-            />
-          )}
+      <Modal isOpen={showPreview} onClose={() => setShowPreview(false)} title={t('admin.actions.preview')}>
+        <div ref={previewContainerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            {previewId && previewScale !== null ? (
+              <div
+                style={{ width: (96 / 25.4) * 210 * previewScale, height: (96 / 25.4) * 297 * previewScale }}
+                className="relative select-none pointer-events-none shadow-sm bg-white"
+              >
+                <ResumeArtboard
+                  data={{ ...INITIAL_RESUME, templateId: previewId }}
+                  scale={previewScale}
+                  disableShadow
+                  style={{ margin: 0 }}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full bg-white" />
+            )}
+          </div>
         </div>
       </Modal>
     </div>
