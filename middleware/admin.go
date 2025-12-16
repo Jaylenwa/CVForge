@@ -1,0 +1,41 @@
+package middleware
+
+import (
+	"net/http"
+
+	"openresume/db"
+	"openresume/models"
+
+	"github.com/gin-gonic/gin"
+)
+
+func RequireRole(roles ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uidVal, ok := c.Get("uid")
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		var u models.User
+		if err := db.Gorm().First(&u, uidVal).Error; err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+		if !u.IsActive {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+		match := false
+		for _, r := range roles {
+			if u.Role == r {
+				match = true
+				break
+			}
+		}
+		if !match {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+		c.Next()
+	}
+}

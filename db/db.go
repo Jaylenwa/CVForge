@@ -49,6 +49,7 @@ func autoMigrate() error {
 		&models.ResumeSection{},
 		&models.ResumeItem{},
 		&models.ShareLink{},
+		&models.AuditLog{},
 	); err != nil {
 		return err
 	}
