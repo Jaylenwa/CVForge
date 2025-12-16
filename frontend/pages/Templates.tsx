@@ -42,7 +42,6 @@ export const Templates: React.FC = () => {
       const items = (data.items || []).map((t: any) => ({
         id: t.ExternalID || t.id,
         name: t.Name || t.name,
-        thumbnail: t.Thumbnail || t.thumbnail,
         tags: typeof t.Tags === 'string' ? (t.Tags as string).split(',') : (t.tags || []),
         popularity: t.Popularity || t.popularity,
         isPremium: t.IsPremium ?? t.isPremium,

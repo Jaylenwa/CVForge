@@ -21,7 +21,6 @@ export const Home: React.FC = () => {
         const items = (data.items || []).slice(0, 4).map((t: any) => ({
           id: t.ExternalID || t.id,
           name: t.Name || t.name,
-          thumbnail: t.Thumbnail || t.thumbnail,
           category: t.Category || t.category,
           isPremium: t.IsPremium ?? t.isPremium,
         }));

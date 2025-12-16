@@ -37,7 +37,7 @@ export const TemplatesPage: React.FC = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ externalId: '', name: '', thumbnail: '', tags: '', category: '', level: '', popularity: 0, isPremium: false });
+  const [form, setForm] = useState({ externalId: '', name: '', tags: '', category: '', level: '', popularity: 0, isPremium: false });
 
   const [showPreview, setShowPreview] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -87,7 +87,6 @@ export const TemplatesPage: React.FC = () => {
     setForm({
       externalId: row.id,
       name: row.name,
-      thumbnail: row.thumbnail || '',
       tags: (row.tags || []).join(','),
       category: row.category || '',
       level: row.level || '',
@@ -99,10 +98,10 @@ export const TemplatesPage: React.FC = () => {
   const submitForm = async () => {
     try {
       if (editingId) {
-        await updateTemplate(editingId, { name: form.name, thumbnail: form.thumbnail, tags: form.tags, category: form.category, level: form.level, popularity: form.popularity, isPremium: form.isPremium });
+        await updateTemplate(editingId, { name: form.name, tags: form.tags, category: form.category, level: form.level, popularity: form.popularity, isPremium: form.isPremium });
         showToast(t('admin.msg.templateUpdated'), 'success');
       } else {
-        await createTemplate({ externalId: form.externalId, name: form.name, thumbnail: form.thumbnail, tags: form.tags, category: form.category, level: form.level, popularity: form.popularity, isPremium: form.isPremium });
+        await createTemplate({ externalId: form.externalId, name: form.name, tags: form.tags, category: form.category, level: form.level, popularity: form.popularity, isPremium: form.isPremium });
         showToast(t('admin.msg.templateCreated'), 'success');
       }
       setShowForm(false);
@@ -243,7 +242,6 @@ export const TemplatesPage: React.FC = () => {
             <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.externalId')} value={form.externalId} onChange={e => setForm({ ...form, externalId: e.target.value })} />
           )}
           <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.name')} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-          <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.thumbnail')} value={form.thumbnail} onChange={e => setForm({ ...form, thumbnail: e.target.value })} />
           <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.tags')} value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} />
           <div className="grid grid-cols-2 gap-3">
             <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('templates.filter.industry')} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} />
