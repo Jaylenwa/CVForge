@@ -58,12 +58,10 @@ export interface ResumeData {
 export interface Template {
   id: string;
   name: string;
-  thumbnail: string;
   tags: string[]; // 'Professional', 'Creative', 'ATS'
   popularity: number;
   isPremium: boolean;
   category: 'IT' | 'Finance' | 'Creative' | 'General';
-  level: 'Intern' | 'Junior' | 'Senior' | 'Executive';
 }
 
 export enum AppRoute {

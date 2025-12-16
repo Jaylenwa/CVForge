@@ -33,7 +33,6 @@ export const Home: React.FC = () => {
     { key: 'home.quick.it', icon: <Code size={20} />, query: 'IT' },
     { key: 'home.quick.finance', icon: <Briefcase size={20} />, query: 'Finance' },
     { key: 'home.quick.creative', icon: <PenTool size={20} />, query: 'Creative' },
-    { key: 'home.quick.student', icon: <GraduationCap size={20} />, query: 'Intern' },
   ];
 
   const HomeTemplateCard: React.FC<{ template: any; onUse: () => void }> = ({ template, onUse }) => {
@@ -178,7 +177,7 @@ export const Home: React.FC = () => {
       <section className="py-10 bg-gray-50 border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <h3 className="text-lg font-semibold text-gray-700 mb-6">{t('home.quickAccess')}</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {quickAccess.map((item) => (
                       <button 
                         key={item.key}

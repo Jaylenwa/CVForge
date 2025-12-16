@@ -4,72 +4,58 @@ export const MOCK_TEMPLATES: Template[] = [
   {
     id: 't1',
     name: 'Classic Professional',
-    thumbnail: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=500&q=80',
     tags: ['Professional', 'Simple', 'ATS Friendly'],
     popularity: 98,
     isPremium: false,
-    category: 'General',
-    level: 'Senior'
+    category: 'General'
   },
   {
     id: 't2',
     name: 'Modern Dark',
-    thumbnail: 'https://images.unsplash.com/photo-1616628188859-7a11abb6fcc9?w=500&q=80',
     tags: ['Creative', 'Design', 'Startup'],
     popularity: 85,
     isPremium: true,
-    category: 'Creative',
-    level: 'Junior'
+    category: 'Creative'
   },
   {
     id: 't3',
     name: 'Tech Minimalist',
-    thumbnail: 'https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=500&q=80',
     tags: ['Minimalist', 'Tech', 'Clean'],
     popularity: 92,
     isPremium: false,
-    category: 'IT',
-    level: 'Junior'
+    category: 'IT'
   },
-    {
+  {
     id: 't4',
     name: 'Executive Serif',
-    thumbnail: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&q=80',
     tags: ['Professional', 'Management', 'Senior'],
     popularity: 70,
     isPremium: true,
-    category: 'Finance',
-    level: 'Executive'
+    category: 'Finance'
   },
   {
     id: 't5',
     name: 'Creative Bold',
-    thumbnail: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=500&q=80',
     tags: ['Creative', 'Marketing', 'Colorful'],
     popularity: 65,
     isPremium: true,
-    category: 'Creative',
-    level: 'Senior'
+    category: 'Creative'
   },
   {
     id: 't6',
     name: 'Elegant Teal',
-    thumbnail: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=500&q=80',
     tags: ['Modern', 'Fresh', 'Entry Level'],
     popularity: 88,
     isPremium: false,
-    category: 'General',
-    level: 'Intern'
+    category: 'General'
   },
   {
     id: 't7',
     name: 'Chinese Blue',
-    thumbnail: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=500&q=80',
     tags: ['General', 'Chinese', 'ATS Friendly'],
     popularity: 75,
     isPremium: false,
-    category: 'General',
-    level: 'Junior'
+    category: 'General'
   }
 ];
 

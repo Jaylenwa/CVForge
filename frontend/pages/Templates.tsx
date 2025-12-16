@@ -16,7 +16,7 @@ export const Templates: React.FC = () => {
   
   const [filter, setFilter] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedLevel, setSelectedLevel] = useState<string>('All');
+  
 
   useEffect(() => {
     const tag = searchParams.get('tag');
@@ -24,16 +24,13 @@ export const Templates: React.FC = () => {
         // Simple mapping for demo purposes
         if (['IT', 'Finance', 'Creative', 'General'].includes(tag)) {
             setSelectedCategory(tag);
-        } else if (['Intern', 'Junior', 'Senior', 'Executive'].includes(tag)) {
-            setSelectedLevel(tag);
         }
     }
   }, [searchParams]);
 
   const categories = ['All', 'IT', 'Finance', 'Creative', 'General'];
-  const levels = ['All', 'Intern', 'Junior', 'Senior', 'Executive'];
 
-  const [templates, setTemplates] = useState(Array<{id?:string; ExternalID?:string; name?:string; Name?:string; thumbnail?:string; Thumbnail?:string; tags?:string[]; Tags?:string; popularity?:number; Popularity?:number; isPremium?:boolean; IsPremium?:boolean; category?:string; Category?:string; level?:string; Level?:string}>());
+  const [templates, setTemplates] = useState(Array<{id?:string; ExternalID?:string; name?:string; Name?:string; tags?:string[]; Tags?:string; popularity?:number; Popularity?:number; isPremium?:boolean; IsPremium?:boolean; category?:string; Category?:string}>());
 
   useEffect(() => {
     (async () => {
@@ -46,7 +43,6 @@ export const Templates: React.FC = () => {
         popularity: t.Popularity || t.popularity,
         isPremium: t.IsPremium ?? t.isPremium,
         category: t.Category || t.category,
-        level: t.Level || t.level,
       }));
       setTemplates(items);
     })();
@@ -55,8 +51,7 @@ export const Templates: React.FC = () => {
   const filteredTemplates = templates.filter((t: any) => {
     const matchesSearch = t.name.toLowerCase().includes(filter.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
-    const matchesLevel = selectedLevel === 'All' || t.level === selectedLevel;
-    return matchesSearch && matchesCategory && matchesLevel;
+    return matchesSearch && matchesCategory;
   });
 
   const handleUseTemplate = (templateId: string) => {
@@ -158,7 +153,6 @@ export const Templates: React.FC = () => {
           </div>
           <div className="mt-3 flex flex-wrap gap-1">
             <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded border border-blue-100">{template.category}</span>
-            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{template.level}</span>
           </div>
         </div>
       </div>
@@ -217,31 +211,9 @@ export const Templates: React.FC = () => {
             </div>
         </div>
 
-        {/* Level Dropdown */}
-        <div className="flex items-center space-x-2">
-            <label className="text-sm text-gray-500">{t('templates.filter.level')}:</label>
-            <div className="relative">
-              <select 
-                  value={selectedLevel} 
-                  onChange={(e) => setSelectedLevel(e.target.value)}
-                  className="appearance-none block w-full pl-3 pr-8 py-1.5 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
-              >
-                  {levels.map(l => {
-                      const key = l === 'All' ? 'all' : l;
-                      return <option key={l} value={l}>{t(`templates.level.${key}`)}</option>
-                  })}
-              </select>
-              <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-500">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </span>
-            </div>
-        </div>
-
          <div className="ml-auto">
             <button 
-                onClick={() => { setSelectedCategory('All'); setSelectedLevel('All'); setFilter(''); }}
+                onClick={() => { setSelectedCategory('All'); setFilter(''); }}
                 className="text-sm text-blue-600 hover:text-blue-800"
             >
                 {t('templates.actions.clearAll')}
@@ -259,7 +231,7 @@ export const Templates: React.FC = () => {
       {filteredTemplates.length === 0 && (
           <div className="text-center py-20 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
               <p className="text-gray-500 text-lg">{t('templates.empty')}</p>
-              <Button variant="ghost" onClick={() => {setFilter(''); setSelectedCategory('All'); setSelectedLevel('All')}} className="mt-4">{t('templates.actions.clearFilters')}</Button>
+              <Button variant="ghost" onClick={() => {setFilter(''); setSelectedCategory('All')}} className="mt-4">{t('templates.actions.clearFilters')}</Button>
           </div>
       )}
     </div>

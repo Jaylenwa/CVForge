@@ -17,13 +17,12 @@ func RegisterAdminTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handl
 
 	adm.POST("/templates", func(c *gin.Context) {
 		var body struct {
-			ExternalID string  `json:"externalId"`
-			Name       string  `json:"name"`
-			Tags       string  `json:"tags"`
-			Popularity *int    `json:"popularity"`
-			IsPremium  *bool   `json:"isPremium"`
-			Category   string  `json:"category"`
-			Level      string  `json:"level"`
+			ExternalID string `json:"externalId"`
+			Name       string `json:"name"`
+			Tags       string `json:"tags"`
+			Popularity *int   `json:"popularity"`
+			IsPremium  *bool  `json:"isPremium"`
+			Category   string `json:"category"`
 		}
 		if err := c.ShouldBindJSON(&body); err != nil || body.ExternalID == "" || body.Name == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
@@ -34,7 +33,6 @@ func RegisterAdminTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handl
 			Name:       body.Name,
 			Tags:       body.Tags,
 			Category:   body.Category,
-			Level:      body.Level,
 		}
 		if body.Popularity != nil {
 			t.Popularity = *body.Popularity
@@ -59,7 +57,6 @@ func RegisterAdminTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handl
 			Popularity *int    `json:"popularity"`
 			IsPremium  *bool   `json:"isPremium"`
 			Category   *string `json:"category"`
-			Level      *string `json:"level"`
 		}
 		if err := c.ShouldBindJSON(&body); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
@@ -84,9 +81,6 @@ func RegisterAdminTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handl
 		}
 		if body.Category != nil {
 			t.Category = strings.TrimSpace(*body.Category)
-		}
-		if body.Level != nil {
-			t.Level = strings.TrimSpace(*body.Level)
 		}
 		if err := db.Save(&t).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})

@@ -16,7 +16,6 @@ type Row = {
   popularity: number;
   isPremium: boolean;
   category: string;
-  level: string;
 };
 
 export const TemplatesPage: React.FC = () => {
@@ -27,16 +26,14 @@ export const TemplatesPage: React.FC = () => {
   const [items, setItems] = useState<Row[]>([]);
   const [keyword, setKeyword] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedLevel, setSelectedLevel] = useState('All');
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const categories = ['All', 'IT', 'Finance', 'Creative', 'General'];
-  const levels = ['All', 'Intern', 'Junior', 'Senior', 'Executive'];
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ externalId: '', name: '', tags: '', category: '', level: '', popularity: 0, isPremium: false });
+  const [form, setForm] = useState({ externalId: '', name: '', tags: '', category: '', popularity: 0, isPremium: false });
 
   const [showPreview, setShowPreview] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -56,7 +53,6 @@ export const TemplatesPage: React.FC = () => {
         popularity: t.Popularity ?? t.popularity ?? 0,
         isPremium: t.IsPremium ?? t.isPremium ?? false,
         category: t.Category || t.category || '',
-        level: t.Level || t.level || '',
       }));
       setItems(mapped);
     } catch {
@@ -69,15 +65,14 @@ export const TemplatesPage: React.FC = () => {
     const s = keyword.trim().toLowerCase();
     const m1 = !s || i.name.toLowerCase().includes(s) || i.id.toLowerCase().includes(s);
     const m2 = selectedCategory === 'All' || i.category === selectedCategory;
-    const m3 = selectedLevel === 'All' || i.level === selectedLevel;
-    return m1 && m2 && m3;
+    return m1 && m2;
   });
   const total = filtered.length;
   const pageItems = filtered.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ externalId: '', name: '', thumbnail: '', tags: '', category: '', level: '', popularity: 0, isPremium: false });
+    setForm({ externalId: '', name: '', tags: '', category: '', popularity: 0, isPremium: false });
     setShowForm(true);
   };
   const openEdit = (row: Row) => {
@@ -87,7 +82,6 @@ export const TemplatesPage: React.FC = () => {
       name: row.name,
       tags: (row.tags || []).join(','),
       category: row.category || '',
-      level: row.level || '',
       popularity: row.popularity || 0,
       isPremium: !!row.isPremium,
     });
@@ -96,10 +90,10 @@ export const TemplatesPage: React.FC = () => {
   const submitForm = async () => {
     try {
       if (editingId) {
-        await updateTemplate(editingId, { name: form.name, tags: form.tags, category: form.category, level: form.level, popularity: form.popularity, isPremium: form.isPremium });
+        await updateTemplate(editingId, { name: form.name, tags: form.tags, category: form.category, popularity: form.popularity, isPremium: form.isPremium });
         showToast(t('admin.msg.templateUpdated'), 'success');
       } else {
-        await createTemplate({ externalId: form.externalId, name: form.name, tags: form.tags, category: form.category, level: form.level, popularity: form.popularity, isPremium: form.isPremium });
+        await createTemplate({ externalId: form.externalId, name: form.name, tags: form.tags, category: form.category, popularity: form.popularity, isPremium: form.isPremium });
         showToast(t('admin.msg.templateCreated'), 'success');
       }
       setShowForm(false);
@@ -158,21 +152,12 @@ export const TemplatesPage: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
           <input value={keyword} onChange={e => { setKeyword(e.target.value); setPage(1); }} placeholder={t('admin.keyword')} className="border rounded-md px-3 py-2 text-sm" />
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2">
             <label className="text-sm text-gray-500">{t('templates.filter.industry')}:</label>
             <select className="border rounded-md px-2 py-1 text-sm" value={selectedCategory} onChange={e => { setSelectedCategory(e.target.value); setPage(1); }}>
               {categories.map(c => {
                 const key = c === 'All' ? 'all' : c;
                 return <option key={c} value={c}>{t(`templates.category.${key}`)}</option>;
-              })}
-            </select>
-          </div>
-          <div className="flex items-center space-x-2">
-            <label className="text-sm text-gray-500">{t('templates.filter.level')}:</label>
-            <select className="border rounded-md px-2 py-1 text-sm" value={selectedLevel} onChange={e => { setSelectedLevel(e.target.value); setPage(1); }}>
-              {levels.map(l => {
-                const key = l === 'All' ? 'all' : l;
-                return <option key={l} value={l}>{t(`templates.level.${key}`)}</option>;
               })}
             </select>
           </div>
@@ -187,7 +172,6 @@ export const TemplatesPage: React.FC = () => {
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">ID</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.name')}</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('templates.filter.industry')}</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('templates.filter.level')}</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.popularity')}</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.isPremium')}</th>
               <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.tags')}</th>
@@ -200,7 +184,6 @@ export const TemplatesPage: React.FC = () => {
                 <td className="px-4 py-2 text-sm text-gray-700">{r.id}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">{r.name}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">{r.category}</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{r.level}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">{r.popularity}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">{r.isPremium ? t('admin.value.yes') : t('admin.value.no')}</td>
                 <td className="px-4 py-2 text-sm text-gray-700">
@@ -243,7 +226,6 @@ export const TemplatesPage: React.FC = () => {
           <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.tags')} value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} />
           <div className="grid grid-cols-2 gap-3">
             <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('templates.filter.industry')} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} />
-            <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('templates.filter.level')} value={form.level} onChange={e => setForm({ ...form, level: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-3 items-center">
             <input className="border rounded-md px-3 py-2 text-sm w-full" type="number" placeholder={t('admin.form.popularity')} value={form.popularity} onChange={e => setForm({ ...form, popularity: parseInt(e.target.value || '0') })} />

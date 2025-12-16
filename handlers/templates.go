@@ -49,13 +49,13 @@ func RegisterTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, rdb *redis.Client) 
 
 func seedTemplates(db *gorm.DB) {
 	mocks := []models.Template{
-		{ExternalID: "t1", Name: "Classic Professional", Tags: "Professional,Simple,ATS Friendly", Popularity: 98, IsPremium: false, Category: "General", Level: "Senior"},
-		{ExternalID: "t2", Name: "Modern Dark", Tags: "Creative,Design,Startup", Popularity: 85, IsPremium: true, Category: "Creative", Level: "Junior"},
-		{ExternalID: "t3", Name: "Tech Minimalist", Tags: "Minimalist,Tech,Clean", Popularity: 92, IsPremium: false, Category: "IT", Level: "Junior"},
-		{ExternalID: "t4", Name: "Executive Serif", Tags: "Professional,Management,Senior", Popularity: 70, IsPremium: true, Category: "Finance", Level: "Executive"},
-		{ExternalID: "t5", Name: "Creative Bold", Tags: "Creative,Marketing,Colorful", Popularity: 65, IsPremium: true, Category: "Creative", Level: "Senior"},
-		{ExternalID: "t6", Name: "Elegant Teal", Tags: "Modern,Fresh,Entry Level", Popularity: 88, IsPremium: false, Category: "General", Level: "Intern"},
-		{ExternalID: "t7", Name: "Chinese Blue", Tags: "General,Chinese,ATS Friendly", Popularity: 75, IsPremium: false, Category: "General", Level: "Junior"},
+		{ExternalID: "t1", Name: "Classic Professional", Tags: "Professional,Simple,ATS Friendly", Popularity: 98, IsPremium: false, Category: "General"},
+		{ExternalID: "t2", Name: "Modern Dark", Tags: "Creative,Design,Startup", Popularity: 85, IsPremium: true, Category: "Creative"},
+		{ExternalID: "t3", Name: "Tech Minimalist", Tags: "Minimalist,Tech,Clean", Popularity: 92, IsPremium: false, Category: "IT"},
+		{ExternalID: "t4", Name: "Executive Serif", Tags: "Professional,Management,Senior", Popularity: 70, IsPremium: true, Category: "Finance"},
+		{ExternalID: "t5", Name: "Creative Bold", Tags: "Creative,Marketing,Colorful", Popularity: 65, IsPremium: true, Category: "Creative"},
+		{ExternalID: "t6", Name: "Elegant Teal", Tags: "Modern,Fresh,Entry Level", Popularity: 88, IsPremium: false, Category: "General"},
+		{ExternalID: "t7", Name: "Chinese Blue", Tags: "General,Chinese,ATS Friendly", Popularity: 75, IsPremium: false, Category: "General"},
 	}
 	for _, m := range mocks {
 		_ = db.Create(&m).Error

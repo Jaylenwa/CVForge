@@ -94,7 +94,6 @@ export interface AdminTemplateReq {
   popularity?: number;
   isPremium?: boolean;
   category?: string;
-  level?: string;
 }
 export const createTemplate = async (body: AdminTemplateReq) => {
   const res = await fetch(`${API_BASE}/admin/templates`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
