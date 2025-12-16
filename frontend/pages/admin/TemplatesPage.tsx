@@ -220,18 +220,39 @@ export const TemplatesPage: React.FC = () => {
       <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingId ? t('admin.actions.update') : t('admin.actions.create')}>
         <div className="space-y-3">
           {!editingId && (
-            <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.externalId')} value={form.externalId} onChange={e => setForm({ ...form, externalId: e.target.value })} />
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">{t('admin.form.externalId')}</label>
+              <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.externalId')} value={form.externalId} onChange={e => setForm({ ...form, externalId: e.target.value })} />
+            </div>
           )}
-          <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.name')} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-          <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.tags')} value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} />
-          <div className="grid grid-cols-2 gap-3">
-            <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('templates.filter.industry')} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} />
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">{t('admin.form.name')}</label>
+            <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.name')} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-3 items-center">
-            <input className="border rounded-md px-3 py-2 text-sm w-full" type="number" placeholder={t('admin.form.popularity')} value={form.popularity} onChange={e => setForm({ ...form, popularity: parseInt(e.target.value || '0') })} />
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">{t('admin.form.tags')}</label>
+            <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.tags')} value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">{t('admin.form.category')}</label>
+              <input
+                className="border rounded-md px-3 py-2 text-sm w-full"
+                placeholder={t('admin.form.category')}
+                value={form.category}
+                onChange={e => setForm({ ...form, category: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-sm font-medium text-gray-700">{t('admin.form.popularity')}</label>
+              <input className="border rounded-md px-3 py-2 text-sm w-full" type="number" min={0} max={100} placeholder={t('admin.form.popularity')} value={form.popularity} onChange={e => setForm({ ...form, popularity: parseInt(e.target.value || '0') })} />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">{t('admin.form.isPremium')}</label>
             <label className="inline-flex items-center space-x-2 text-sm">
               <input type="checkbox" checked={form.isPremium} onChange={e => setForm({ ...form, isPremium: e.target.checked })} />
-              <span>{t('admin.form.isPremium')}</span>
+              <span>{form.isPremium ? t('admin.value.yes') : t('admin.value.no')}</span>
             </label>
           </div>
           <div className="pt-2 flex justify-end space-x-2">
