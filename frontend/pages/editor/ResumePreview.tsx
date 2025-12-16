@@ -311,9 +311,9 @@ const TemplateModern: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
             {data.sections.filter(s => s.type === ResumeSectionType.Skills && s.isVisible).map(section => (
                 <div key={section.id} className="mb-6">
                     <h3 className="text-white font-bold uppercase tracking-wider mb-4 text-sm border-b border-slate-700 pb-2">{getSectionTitle(section)}</h3>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="space-y-1 text-slate-200">
                         {section.items.map(item => (
-                             <span key={item.id} className="text-xs bg-slate-800 px-2 py-1 rounded text-slate-200 border border-slate-700">{item.description}</span>
+                            <div key={item.id} className="text-sm">{item.description}</div>
                         ))}
                     </div>
                 </div>
@@ -540,9 +540,9 @@ const TemplateBold: React.FC<{ data: ResumeData; styles: any; disableShadow?: bo
                  {data.sections.filter(s => s.type === ResumeSectionType.Skills && s.isVisible).map(section => (
                      <div key={section.id} className="mb-8">
                          <h3 className="text-gray-900 font-bold uppercase mb-4 text-sm tracking-wider">{getSectionTitle(section)}</h3>
-                         <div className="flex flex-wrap gap-2">
+                         <div className="space-y-1 text-gray-700">
                              {section.items.map(item => (
-                                 <span key={item.id} className="bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-sm shadow-sm font-semibold text-gray-700">{item.description}</span>
+                                 <div key={item.id} className="text-sm">{item.description}</div>
                              ))}
                          </div>
                      </div>
@@ -593,11 +593,11 @@ const TemplateElegant: React.FC<{ data: ResumeData; styles: any; disableShadow?:
                  {data.sections.filter(s => s.type === ResumeSectionType.Skills && s.isVisible).map(section => (
                     <div key={section.id}>
                         <span className="block text-white/60 text-xs font-bold uppercase mb-2">{getSectionTitle(section)}</span>
-                        <ul className="list-disc list-inside space-y-1 text-white/80">
+                        <div className="space-y-1 text-white/80">
                             {section.items.map(item => (
-                                <li key={item.id}>{item.description}</li>
+                                <div key={item.id}>{item.description}</div>
                             ))}
-                        </ul>
+                        </div>
                     </div>
                  ))}
             </div>
