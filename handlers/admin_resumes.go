@@ -104,28 +104,6 @@ func RegisterAdminResumeRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handler
 		c.JSON(http.StatusOK, gin.H{"success": true})
 	})
 
-	adm.PATCH("/resumes/:id/transfer", func(c *gin.Context) {
-		var body struct {
-			UserID uint `json:"userId"`
-		}
-		if err := c.ShouldBindJSON(&body); err != nil || body.UserID == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
-			return
-		}
-		var res models.Resume
-		if err := db.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
-			return
-		}
-		res.UserID = body.UserID
-		if err := db.Save(&res).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
-			return
-		}
-		writeAudit(c, "resume.transfer", "resume", c.Param("id"), strconv.FormatUint(uint64(body.UserID), 10))
-		c.JSON(http.StatusOK, gin.H{"success": true})
-	})
-
 	adm.PATCH("/resumes/:id/visibility", func(c *gin.Context) {
 		var body struct {
 			IsPublic bool `json:"isPublic"`

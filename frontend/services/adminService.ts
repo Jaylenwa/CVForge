@@ -76,11 +76,6 @@ export const deleteResume = async (id: string) => {
   if (!res.ok) throw new Error('failed');
 };
 
-export const transferResume = async (id: string, userId: number) => {
-  const res = await fetch(`${API_BASE}/admin/resumes/${id}/transfer`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify({ userId }) });
-  if (!res.ok) throw new Error('failed');
-};
-
 export const setResumeVisibility = async (id: string, isPublic: boolean) => {
   const res = await fetch(`${API_BASE}/admin/resumes/${id}/visibility`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify({ isPublic }) });
   if (!res.ok) throw new Error('failed');

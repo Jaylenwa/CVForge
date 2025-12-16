@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { listResumes, AdminResume, deleteResume, transferResume, setResumeVisibility } from '../../services/adminService';
+import { listResumes, AdminResume, deleteResume, setResumeVisibility } from '../../services/adminService';
 import { Button } from '../../components/ui/Button';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
@@ -57,14 +57,6 @@ export const ResumesPage: React.FC = () => {
                     try { await deleteResume(r.id); showToast(t('admin.msg.deleted'), 'success'); load(); }
                     catch { showToast(t('admin.msg.deleteFailed'), 'error'); }
                   }}>{t('admin.actions.delete')}</Button>
-                  <Button variant="ghost" onClick={async () => {
-                    const input = prompt(t('admin.input.newOwnerId'));
-                    if (!input) return;
-                    const uid = parseInt(input);
-                    if (!uid) return;
-                    try { await transferResume(r.id, uid); showToast(t('admin.msg.transferred'), 'success'); load(); }
-                    catch { showToast(t('admin.msg.transferFailed'), 'error'); }
-                  }}>{t('admin.actions.transferOwner')}</Button>
                   <Button variant="ghost" onClick={async () => {
                     const ok = await confirm({ title: t('common.confirmAction'), message: t('admin.confirm.setPublic') });
                     if (!ok) return;
