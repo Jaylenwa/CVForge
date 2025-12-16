@@ -21,6 +21,11 @@ type Config struct {
 	S3SecretKey     string
 	FrontendBaseURL string
 	ChromeJSONURL   string
+	SMTPHost        string
+	SMTPPort        string
+	SMTPUsername    string
+	SMTPPassword    string
+	SMTPFromName    string
 }
 
 func Load() Config {
@@ -41,6 +46,11 @@ func Load() Config {
 		S3SecretKey:     getenv("S3_SECRET_KEY", ""),
 		FrontendBaseURL: getenv("FRONTEND_BASE_URL", "http://localhost:3000"),
 		ChromeJSONURL:   getenv("CHROME_JSON_URL", "http://localhost:9222/json/version"),
+		SMTPHost:        getenv("SMTP_HOST", ""),
+		SMTPPort:        getenv("SMTP_PORT", ""),
+		SMTPUsername:    getenv("SMTP_USERNAME", ""),
+		SMTPPassword:    getenv("SMTP_PASSWORD", ""),
+		SMTPFromName:    getenv("SMTP_FROM_NAME", "OpenResume"),
 	}
 }
 

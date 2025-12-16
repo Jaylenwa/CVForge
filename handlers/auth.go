@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"openresume/config"
+	"openresume/mailer"
 	"openresume/middleware"
 	"openresume/models"
 
@@ -46,6 +47,10 @@ func RegisterAuthRoutes(r *gin.RouterGroup, cfg config.Config, rdb *redis.Client
 			return string(out)
 		}()
 		_ = rdb.Set(context.Background(), "verify:"+req.Email, code, 10*time.Minute).Err()
+		if err := mailer.SendVerificationCode(cfg, req.Email, code); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "send failed"})
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{"success": true})
 	})
 
