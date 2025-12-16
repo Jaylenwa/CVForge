@@ -49,13 +49,13 @@ func RegisterTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, rdb *redis.Client) 
 
 func seedTemplates(db *gorm.DB) {
 	mocks := []models.Template{
-		{ExternalID: "t1", Name: "Classic Professional", Thumbnail: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=500&q=80", Tags: "Professional,Simple,ATS Friendly", Popularity: 98, IsPremium: false, Category: "General", Level: "Senior"},
-		{ExternalID: "t2", Name: "Modern Dark", Thumbnail: "https://images.unsplash.com/photo-1616628188859-7a11abb6fcc9?w=500&q=80", Tags: "Creative,Design,Startup", Popularity: 85, IsPremium: true, Category: "Creative", Level: "Junior"},
-		{ExternalID: "t3", Name: "Tech Minimalist", Thumbnail: "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?w=500&q=80", Tags: "Minimalist,Tech,Clean", Popularity: 92, IsPremium: false, Category: "IT", Level: "Junior"},
-		{ExternalID: "t4", Name: "Executive Serif", Thumbnail: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&q=80", Tags: "Professional,Management,Senior", Popularity: 70, IsPremium: true, Category: "Finance", Level: "Executive"},
-		{ExternalID: "t5", Name: "Creative Bold", Thumbnail: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=500&q=80", Tags: "Creative,Marketing,Colorful", Popularity: 65, IsPremium: true, Category: "Creative", Level: "Senior"},
-		{ExternalID: "t6", Name: "Elegant Teal", Thumbnail: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=500&q=80", Tags: "Modern,Fresh,Entry Level", Popularity: 88, IsPremium: false, Category: "General", Level: "Intern"},
-		{ExternalID: "t7", Name: "Chinese Blue", Thumbnail: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=500&q=80", Tags: "General,Chinese,ATS Friendly", Popularity: 75, IsPremium: false, Category: "General", Level: "Junior"},
+		{ExternalID: "t1", Name: "Classic Professional", Tags: "Professional,Simple,ATS Friendly", Popularity: 98, IsPremium: false, Category: "General", Level: "Senior"},
+		{ExternalID: "t2", Name: "Modern Dark", Tags: "Creative,Design,Startup", Popularity: 85, IsPremium: true, Category: "Creative", Level: "Junior"},
+		{ExternalID: "t3", Name: "Tech Minimalist", Tags: "Minimalist,Tech,Clean", Popularity: 92, IsPremium: false, Category: "IT", Level: "Junior"},
+		{ExternalID: "t4", Name: "Executive Serif", Tags: "Professional,Management,Senior", Popularity: 70, IsPremium: true, Category: "Finance", Level: "Executive"},
+		{ExternalID: "t5", Name: "Creative Bold", Tags: "Creative,Marketing,Colorful", Popularity: 65, IsPremium: true, Category: "Creative", Level: "Senior"},
+		{ExternalID: "t6", Name: "Elegant Teal", Tags: "Modern,Fresh,Entry Level", Popularity: 88, IsPremium: false, Category: "General", Level: "Intern"},
+		{ExternalID: "t7", Name: "Chinese Blue", Tags: "General,Chinese,ATS Friendly", Popularity: 75, IsPremium: false, Category: "General", Level: "Junior"},
 	}
 	for _, m := range mocks {
 		_ = db.Create(&m).Error

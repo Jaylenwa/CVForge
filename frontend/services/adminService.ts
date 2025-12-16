@@ -90,7 +90,6 @@ export const setResumeVisibility = async (id: string, isPublic: boolean) => {
 export interface AdminTemplateReq {
   externalId: string;
   name: string;
-  thumbnail?: string;
   tags?: string;
   popularity?: number;
   isPremium?: boolean;

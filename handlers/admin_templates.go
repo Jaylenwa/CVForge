@@ -19,7 +19,6 @@ func RegisterAdminTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handl
 		var body struct {
 			ExternalID string  `json:"externalId"`
 			Name       string  `json:"name"`
-			Thumbnail  string  `json:"thumbnail"`
 			Tags       string  `json:"tags"`
 			Popularity *int    `json:"popularity"`
 			IsPremium  *bool   `json:"isPremium"`
@@ -33,7 +32,6 @@ func RegisterAdminTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handl
 		t := models.Template{
 			ExternalID: body.ExternalID,
 			Name:       body.Name,
-			Thumbnail:  body.Thumbnail,
 			Tags:       body.Tags,
 			Category:   body.Category,
 			Level:      body.Level,
@@ -57,7 +55,6 @@ func RegisterAdminTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handl
 	adm.PATCH("/templates/:id", func(c *gin.Context) {
 		var body struct {
 			Name       *string `json:"name"`
-			Thumbnail  *string `json:"thumbnail"`
 			Tags       *string `json:"tags"`
 			Popularity *int    `json:"popularity"`
 			IsPremium  *bool   `json:"isPremium"`
@@ -75,9 +72,6 @@ func RegisterAdminTemplateRoutes(r *gin.RouterGroup, db *gorm.DB, auth gin.Handl
 		}
 		if body.Name != nil {
 			t.Name = strings.TrimSpace(*body.Name)
-		}
-		if body.Thumbnail != nil {
-			t.Thumbnail = strings.TrimSpace(*body.Thumbnail)
 		}
 		if body.Tags != nil {
 			t.Tags = strings.TrimSpace(*body.Tags)

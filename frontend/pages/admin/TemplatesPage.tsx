@@ -12,7 +12,6 @@ import { INITIAL_RESUME } from '../../services/mockData';
 type Row = {
   id: string;
   name: string;
-  thumbnail?: string;
   tags: string[];
   popularity: number;
   isPremium: boolean;
@@ -53,7 +52,6 @@ export const TemplatesPage: React.FC = () => {
       const mapped = (data.items || []).map((t: any) => ({
         id: t.ExternalID || t.id,
         name: t.Name || t.name,
-        thumbnail: t.Thumbnail || t.thumbnail,
         tags: typeof t.Tags === 'string' ? (t.Tags as string).split(',').map((x: string) => x.trim()).filter(Boolean) : (t.tags || []),
         popularity: t.Popularity ?? t.popularity ?? 0,
         isPremium: t.IsPremium ?? t.isPremium ?? false,
