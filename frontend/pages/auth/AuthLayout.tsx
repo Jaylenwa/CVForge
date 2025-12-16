@@ -13,10 +13,12 @@ interface AuthLayoutProps {
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ 
   children, 
   image = "https://images.unsplash.com/photo-1586281380349-632531db7ed4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
-  quote = "The future belongs to those who believe in the beauty of their dreams.",
-  author = "Eleanor Roosevelt"
+  quote,
+  author
 }) => {
   const { t, language, setLanguage } = useLanguage();
+  const quoteText = quote ?? t('auth.quote');
+  const authorText = author ?? t('auth.quoteAuthor');
   return (
     <div className="min-h-screen flex bg-white">
       {/* Left Column - Image (Hidden on mobile) */}
@@ -34,9 +36,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
             </div>
             <div className="mb-10">
                 <blockquote className="text-2xl font-light italic mb-4">
-                    "{quote}"
+                    "{quoteText}"
                 </blockquote>
-                <p className="font-semibold text-lg">— {author}</p>
+                <p className="font-semibold text-lg">— {authorText}</p>
             </div>
         </div>
       </div>

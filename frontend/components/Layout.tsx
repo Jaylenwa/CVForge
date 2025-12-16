@@ -13,7 +13,7 @@ export const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const toggleLanguage = () => {
@@ -43,9 +43,7 @@ export const Navbar: React.FC = () => {
     { label: t('nav.pricing'), href: AppRoute.Pricing, icon: <Star size={18} /> },
   ];
 
-  if (isAuthenticated) {
-     navItems.splice(1, 0, { label: t('nav.dashboard'), href: AppRoute.Dashboard, icon: <FileText size={18} /> });
-  }
+  // Dashboard 入口仅保留在头像下拉菜单，不在顶部主导航显示
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -116,6 +114,13 @@ export const Navbar: React.FC = () => {
                                 <Settings size={16} className="mr-3 text-gray-400 group-hover:text-gray-500"/>
                                 {t('nav.settings')}
                             </Link>
+                            
+                            {isAdmin && (
+                              <Link to={AppRoute.AdminUsers} onClick={() => setIsProfileOpen(false)} className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+                                  <Grid size={16} className="mr-3 text-gray-400 group-hover:text-gray-500"/>
+                                  {t('nav.admin')}
+                              </Link>
+                            )}
 
                              <button 
                                 onClick={handleLogout}
@@ -205,6 +210,17 @@ export const Navbar: React.FC = () => {
                             >
                                 {t('nav.settings')}
                             </Button>
+                            
+                            {isAdmin && (
+                              <Button 
+                                  className="w-full justify-start mt-2" 
+                                  variant="ghost" 
+                                  icon={<Grid size={16}/>}
+                                  onClick={() => { navigate(AppRoute.AdminUsers); setIsOpen(false); }}
+                              >
+                                  {t('nav.admin')}
+                              </Button>
+                            )}
 
                              <Button 
                                 className="w-full justify-start mt-2 text-red-600 hover:text-red-700 hover:bg-red-50" 

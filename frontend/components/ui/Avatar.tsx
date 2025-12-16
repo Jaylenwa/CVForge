@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface AvatarProps {
   src?: string;
@@ -7,8 +8,10 @@ interface AvatarProps {
   alt?: string;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ src, name, className = '', alt = 'Avatar' }) => {
+export const Avatar: React.FC<AvatarProps> = ({ src, name, className = '', alt }) => {
   const [imgError, setImgError] = useState(false);
+  const { t } = useLanguage();
+  const computedAlt = alt || t('a11y.avatarAlt');
 
   // Reset error state when src changes
   useEffect(() => {
@@ -20,7 +23,7 @@ export const Avatar: React.FC<AvatarProps> = ({ src, name, className = '', alt =
     return (
       <img 
         src={src} 
-        alt={alt} 
+        alt={computedAlt} 
         className={`object-cover ${className}`}
         onError={() => setImgError(true)}
       />

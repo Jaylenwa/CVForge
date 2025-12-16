@@ -87,7 +87,7 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
             {...listeners}
             onMouseDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
-            aria-label="Drag"
+            aria-label={t('a11y.drag')}
           >
             <GripVertical size={16} />
           </button>
@@ -141,7 +141,7 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
               }}
               className="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg hover:bg-indigo-100 transition-colors"
             >
-              + Add
+              {t('editor.addItem')}
             </button>
           )}
           <button

@@ -75,7 +75,12 @@ export enum AppRoute {
   Register = '/register',
   Pricing = '/pricing',
   Settings = '/settings',
-  Print = '/print'
+  Print = '/print',
+  Admin = '/admin',
+  AdminUsers = '/admin/users',
+  AdminResumes = '/admin/resumes',
+  AdminTemplates = '/admin/templates',
+  AdminShares = '/admin/shares'
 }
 
 export type Language = 'en' | 'zh';

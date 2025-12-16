@@ -170,20 +170,20 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
       </div>
       <div className="border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all bg-white">
         <div className="flex items-center space-x-1 border-b border-slate-200 bg-slate-50 p-1">
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('bold'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title="加粗">
+          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('bold'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.bold')}>
             <Bold className="w-4 h-4" />
           </button>
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('italic'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title="斜体">
+          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('italic'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.italic')}>
             <Italic className="w-4 h-4" />
           </button>
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('insertUnorderedList'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title="项目符号">
+          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('insertUnorderedList'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.bullets')}>
             <List className="w-4 h-4" />
           </button>
           <div className="w-px h-4 bg-slate-300 mx-2" />
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('undo'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title="撤销">
+          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('undo'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.undo')}>
             <Undo className="w-4 h-4" />
           </button>
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('redo'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title="重做">
+          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('redo'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.redo')}>
             <Redo className="w-4 h-4" />
           </button>
         </div>

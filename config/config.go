@@ -31,7 +31,7 @@ func Load() Config {
 		RedisAddr:       getenv("REDIS_ADDR", "127.0.0.1:6379"),
 		RedisPassword:   getenv("REDIS_PASSWORD", ""),
 		JWTSecret:       getenv("JWT_SECRET", "devsecret"),
-		CORSOrigins:     getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173"),
+		CORSOrigins:     getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173"),
 		GeminiAPIKey:    getenv("GEMINI_API_KEY", ""),
 		UploadBackend:   getenv("UPLOAD_BACKEND", "local"),
 		S3Bucket:        getenv("S3_BUCKET", ""),

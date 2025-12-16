@@ -48,8 +48,8 @@ export const Login: React.FC = () => {
   return (
     <AuthLayout 
         image="https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
-        quote="Success is not final, failure is not fatal: it is the courage to continue that counts."
-        author="Winston Churchill"
+        quote={t('auth.quote')}
+        author={t('auth.quoteAuthor')}
     >
       <div className="text-center">
         <h2 className="text-3xl font-extrabold text-gray-900">{t('auth.welcome')}</h2>
@@ -95,7 +95,7 @@ export const Login: React.FC = () => {
                         autoComplete="current-password"
                         required
                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="••••••••"
+                        placeholder={t('auth.placeholder.password')}
                         value={formData.password}
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
                     />

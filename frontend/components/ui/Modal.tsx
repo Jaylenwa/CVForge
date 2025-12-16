@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import ReactDOM from 'react-dom';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface ModalProps {
 
 export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -47,7 +49,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none"
-            aria-label="Close"
+            aria-label={t('common.close')}
           >
             <X size={20} />
           </button>

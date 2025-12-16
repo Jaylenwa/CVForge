@@ -102,7 +102,7 @@ const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?:
   const { t } = useLanguage();
   return (
   <div className={`w-full p-8 md:p-12 bg-white text-gray-900 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:p-0 print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
-    <div className="border-b-2 pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6" style={{ borderColor: data.themeConfig?.color || '#333' }}>
+  <div className="border-b-2 pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6" style={{ borderColor: data.themeConfig?.color || '#333' }}>
       <div className="flex-1 text-center md:text-left order-2 md:order-1">
           <h1 className="text-4xl font-bold uppercase tracking-wider" style={{ color: data.themeConfig?.color }}>{data.personalInfo.fullName}</h1>
           <p className="text-xl mt-2 text-gray-600">{data.personalInfo.jobTitle}</p>
@@ -130,7 +130,7 @@ const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?:
           <div className="order-1 md:order-2 flex-shrink-0">
              <img 
                src={data.personalInfo.avatarUrl} 
-               alt="Profile" 
+               alt={t('a11y.avatarAlt')} 
                className="w-32 h-32 rounded-lg object-cover border-2 shadow-sm"
                style={{ borderColor: data.themeConfig?.color || '#e5e7eb' }}
              />
@@ -170,6 +170,7 @@ const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?:
 };
 
 const TemplateCNBlue: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
+  const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const SectionHeader: React.FC<{ title: string }> = ({ title }) => (
     <div className="bg-blue-100 text-blue-900 font-bold px-4 py-2 rounded">{title}</div>
@@ -230,7 +231,7 @@ const TemplateCNBlue: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
               <div className="md:col-span-3 flex md:justify-end">
                 <img
                   src={data.personalInfo.avatarUrl}
-                  alt="Profile"
+                  alt={t('a11y.avatarAlt')}
                   className="w-28 h-28 rounded-md object-cover border-2 shadow-sm"
                   style={{ borderColor: data.themeConfig?.color || '#93c5fd' }}
                 />
@@ -284,7 +285,7 @@ const TemplateModern: React.FC<{ data: ResumeData; styles: any; disableShadow?: 
         <div className="col-span-4 text-white p-8" style={{ backgroundColor: '#0f172a' }}>
             <div className="mb-8 flex flex-col items-center md:items-start">
                  {data.personalInfo.avatarUrl && (
-                     <img src={data.personalInfo.avatarUrl} alt="Profile" className="w-32 h-32 rounded-full mb-6 object-cover border-4 border-slate-700 shadow-lg" style={{ borderRadius: '50%' }}/>
+                     <img src={data.personalInfo.avatarUrl} alt={t('a11y.avatarAlt')} className="w-32 h-32 rounded-full mb-6 object-cover border-4 border-slate-700 shadow-lg" style={{ borderRadius: '50%' }}/>
                  )}
                  <h1 className="text-2xl font-bold leading-tight break-words" style={{ color: data.themeConfig?.color || 'white' }}>{data.personalInfo.fullName}</h1>
                  <p className="text-slate-300 mt-1 font-medium">{data.personalInfo.jobTitle}</p>
@@ -634,6 +635,7 @@ export interface ArtboardProps {
 }
 
 export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disableShadow = false, className = '', style = {} }) => {
+  const { t } = useLanguage();
   const styles = getThemeStyles(data.themeConfig);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });
@@ -692,7 +694,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
         style={containerStyle}
       >
         <div className="absolute left-2 top-2 px-2 py-1 text-xs rounded bg-amber-100 text-amber-800 shadow-sm print:hidden">
-          预计分页：共 {pageInfo.count} 页
+          {t('preview.pagesHint').replace('{count}', String(pageInfo.count))}
         </div>
         {Array.from({ length: Math.max(0, pageInfo.count - 1) }).map((_, i) => {
           const top = (i + 1) * pageInfo.pageHeight;

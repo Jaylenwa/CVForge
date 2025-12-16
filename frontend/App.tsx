@@ -17,6 +17,12 @@ import { PrintResume } from './pages/print/PrintResume';
 import { Pricing } from './pages/Pricing';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedAdminRoute } from './components/ProtectedAdminRoute';
+import { AdminLayout } from './pages/admin/AdminLayout';
+import { UsersPage } from './pages/admin/UsersPage';
+import { ResumesPage } from './pages/admin/ResumesPage';
+import { TemplatesPage } from './pages/admin/TemplatesPage';
+import { SharesPage } from './pages/admin/SharesPage';
 
 const LayoutWrapper = () => (
     <MainLayout>
@@ -54,6 +60,16 @@ const App: React.FC = () => {
               {/* Protected Standalone Routes */}
               <Route element={<ProtectedRoute />}>
                   <Route path={AppRoute.Editor} element={<Editor />} />
+              </Route>
+              
+              {/* Admin Routes */}
+              <Route element={<ProtectedAdminRoute />}>
+                <Route element={<AdminLayout />}>
+                  <Route path={AppRoute.AdminUsers} element={<UsersPage />} />
+                  <Route path={AppRoute.AdminResumes} element={<ResumesPage />} />
+                  <Route path={AppRoute.AdminTemplates} element={<TemplatesPage />} />
+                  <Route path={AppRoute.AdminShares} element={<SharesPage />} />
+                </Route>
               </Route>
               
               {/* Standalone Routes */}

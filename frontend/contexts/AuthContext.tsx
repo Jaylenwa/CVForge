@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
+  isAdmin: boolean;
   login: (email: string) => void;
   logout: () => void;
 }
@@ -20,12 +21,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const refreshTimer = useRef<number | null>(null);
 
   const loadUser = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
       setLoading(false);
+      setIsAdmin(false);
       return;
     }
     try {
@@ -46,8 +49,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
           setUser(null);
+          setIsAdmin(false);
           window.location.hash = '#/login';
         }
+      }
+      // admin probing
+      try {
+        const probe = await fetch(`${API_BASE}/admin/users?page=1&pageSize=1`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
+        setIsAdmin(probe.ok);
+      } catch {
+        setIsAdmin(false);
       }
     } catch {}
     setLoading(false);
@@ -62,6 +73,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('refreshToken');
     if (refreshTimer.current) { window.clearTimeout(refreshTimer.current); refreshTimer.current = null; }
     setUser(null);
+    setIsAdmin(false);
   };
 
   const decodeExp = (token: string) => {
@@ -105,7 +117,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => { scheduleRefresh(); }, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, isAdmin, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -95,8 +95,8 @@ export const Register: React.FC = () => {
   return (
     <AuthLayout
         image="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
-        quote="The best way to predict the future is to create it."
-        author="Peter Drucker"
+        quote={t('auth.quote')}
+        author={t('auth.quoteAuthor')}
     >
       <div className="text-center">
         <h2 className="text-3xl font-extrabold text-gray-900">{t('auth.createAccount')}</h2>
