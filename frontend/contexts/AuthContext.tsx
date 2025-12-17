@@ -14,6 +14,7 @@ interface AuthContextType {
   isAdmin: boolean;
   login: (email: string) => Promise<void>;
   logout: () => void;
+  loginWithWeChat: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +24,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const refreshTimer = useRef<number | null>(null);
+  const wechatListenerAdded = useRef(false);
 
   const loadUser = async () => {
     const token = localStorage.getItem('token');
@@ -111,8 +113,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => { scheduleRefresh(); }, [user]);
 
+  const loginWithWeChat = async () => {
+    return new Promise<boolean>((resolve) => {
+      const popup = window.open(`${API_BASE}/auth/wechat/redirect?client=popup&origin=${encodeURIComponent(window.location.origin)}`, 'wechat_oauth', 'width=480,height=640');
+      if (!popup) return resolve(false);
+      if (!wechatListenerAdded.current) {
+        window.addEventListener('message', async (event) => {
+          const allowedEnv = (import.meta as any).env?.VITE_OAUTH_ALLOWED_ORIGINS || '';
+          const allowed = String(allowedEnv).split(',').filter(Boolean);
+          if (allowed.length === 0) allowed.push(window.location.origin);
+          if (!allowed.includes(event.origin)) return;
+          const data = event.data || {};
+          if (data.status === 'ok' && data.accessToken && data.refreshToken) {
+            localStorage.setItem('token', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+            scheduleRefresh();
+            await loadUser();
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        }, { once: true });
+        wechatListenerAdded.current = true;
+      }
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, isAdmin, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, isAdmin, login, logout, loginWithWeChat }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,10 +7,11 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { loginUser } from '../../services/authService';
 import { AppRoute } from '../../types';
+import { QrCode } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const { t } = useLanguage();
-  const { login } = useAuth();
+  const { login, loginWithWeChat } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
@@ -124,6 +125,28 @@ export const Login: React.FC = () => {
             {t('auth.login')}
           </Button>
         </div>
+
+        {/*
+        <div className="mt-3">
+          <Button type="button" className="w-full" variant="outline" onClick={async () => {
+            setError('');
+            setLoading(true);
+            try {
+              const ok = await loginWithWeChat();
+              if (ok) {
+                const from = (location.state as any)?.from?.pathname || AppRoute.Home;
+                navigate(from, { replace: true });
+              } else {
+                setError(t('auth.error.general'));
+              }
+            } finally {
+              setLoading(false);
+            }
+          }}>
+            <QrCode className="mr-2 h-4 w-4" /> {t('auth.loginWithWeChat') || '微信登录'}
+          </Button>
+        </div>
+        */}
 
         <div className="text-center mt-4">
             <span className="text-gray-600 text-sm">{t('auth.noAccount')} </span>

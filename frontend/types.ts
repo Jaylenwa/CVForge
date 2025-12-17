@@ -74,6 +74,7 @@ export enum AppRoute {
   Pricing = '/pricing',
   Settings = '/settings',
   Print = '/print',
+  OAuthCallback = '/oauth/callback',
   Admin = '/admin',
   AdminUsers = '/admin/users',
   AdminResumes = '/admin/resumes',

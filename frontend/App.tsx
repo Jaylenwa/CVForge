@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Editor } from './pages/editor/Editor';
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
+import { OAuthCallback } from './pages/auth/OAuthCallback';
 import { Settings } from './pages/Settings';
 import { AppRoute } from './types';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -56,6 +57,7 @@ const App: React.FC = () => {
               {/* Auth Routes */}
               <Route path={AppRoute.Login} element={<Login />} />
               <Route path={AppRoute.Register} element={<Register />} />
+              <Route path={AppRoute.OAuthCallback} element={<OAuthCallback />} />
               
               {/* Protected Standalone Routes */}
               <Route element={<ProtectedRoute />}>
