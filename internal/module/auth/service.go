@@ -1,0 +1,286 @@
+package auth
+
+import (
+	"context"
+	"crypto/rand"
+	"encoding/json"
+	"math/big"
+	"net/http"
+	"net/url"
+	"time"
+
+	"openresume/internal/infra/config"
+	"openresume/internal/pkg/mailer"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
+
+type Service struct {
+	cfg config.Config
+	rdb *redis.Client
+	db  *gorm.DB
+}
+
+func NewService(cfg config.Config, rdb *redis.Client, db *gorm.DB) *Service {
+	return &Service{cfg: cfg, rdb: rdb, db: db}
+}
+
+func (s *Service) IssueTokens(uid uint) (string, string) {
+	mk := func(exp time.Duration) string {
+		t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"uid": uid, "exp": time.Now().Add(exp).Unix(), "jti": uuid.NewString()})
+		signed, _ := t.SignedString([]byte(s.cfg.JWTSecret))
+		return signed
+	}
+	return mk(2 * time.Hour), mk(7 * 24 * time.Hour)
+}
+
+func (s *Service) GenerateVerifyCode() string {
+	n := 6
+	out := make([]byte, n)
+	for i := 0; i < n; i++ {
+		v, _ := rand.Int(rand.Reader, big.NewInt(10))
+		out[i] = byte('0' + v.Int64())
+	}
+	return string(out)
+}
+
+func (s *Service) SaveVerifyCode(email, code string) error {
+	return s.rdb.Set(context.Background(), "verify:"+email, code, 10*time.Minute).Err()
+}
+
+func (s *Service) ValidateVerifyCode(email, code string) bool {
+	val, err := s.rdb.Get(context.Background(), "verify:"+email).Result()
+	return err == nil && val == code
+}
+
+func (s *Service) SendCode(email string, code string) error {
+	return mailer.SendVerificationCode(s.cfg, email, code)
+}
+
+func (s *Service) Register(email, code, password, name string) (string, string, error) {
+	if !s.ValidateVerifyCode(email, code) {
+		return "", "", http.ErrBodyNotAllowed
+	}
+	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	u := User{Email: email, PasswordHash: string(hash), Name: name}
+	if err := s.db.Create(&u).Error; err != nil {
+		return "", "", gorm.ErrDuplicatedKey
+	}
+	access, refresh := s.IssueTokens(u.ID)
+	return access, refresh, nil
+}
+
+func (s *Service) Login(email, password string) (string, string, error) {
+	var u User
+	if err := s.db.Where("email = ?", email).First(&u).Error; err != nil {
+		return "", "", gorm.ErrRecordNotFound
+	}
+	if bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) != nil {
+		return "", "", gorm.ErrInvalidData
+	}
+	access, refresh := s.IssueTokens(u.ID)
+	return access, refresh, nil
+}
+
+func (s *Service) Refresh(refreshToken string) (string, string, error) {
+	t, err := jwt.Parse(refreshToken, func(t *jwt.Token) (interface{}, error) { return []byte(s.cfg.JWTSecret), nil })
+	if err != nil || !t.Valid {
+		return "", "", gorm.ErrInvalidData
+	}
+	claims, _ := t.Claims.(jwt.MapClaims)
+	jti, _ := claims["jti"].(string)
+	if jti != "" {
+		if s.rdb.Get(context.Background(), "jwt:blacklist:"+jti).Val() == "1" {
+			return "", "", gorm.ErrInvalidTransaction
+		}
+	}
+	uid := uint(claims["uid"].(float64))
+	access, refresh := s.IssueTokens(uid)
+	return access, refresh, nil
+}
+
+func (s *Service) Logout(refreshToken string) error {
+	t, err := jwt.Parse(refreshToken, func(t *jwt.Token) (interface{}, error) { return []byte(s.cfg.JWTSecret), nil })
+	if err != nil || !t.Valid {
+		return gorm.ErrInvalidData
+	}
+	claims, _ := t.Claims.(jwt.MapClaims)
+	jti, _ := claims["jti"].(string)
+	if jti != "" {
+		return s.rdb.Set(context.Background(), "jwt:blacklist:"+jti, "1", time.Hour*24*7).Err()
+	}
+	return nil
+}
+
+type WechatTokenResponse struct {
+	AccessToken  string `json:"access_token"`
+	ExpiresIn    int    `json:"expires_in"`
+	RefreshToken string `json:"refresh_token"`
+	OpenID       string `json:"openid"`
+	Scope        string `json:"scope"`
+	UnionID      string `json:"unionid"`
+	ErrCode      int    `json:"errcode"`
+	ErrMsg       string `json:"errmsg"`
+}
+type WechatUserInfo struct {
+	OpenID     string `json:"openid"`
+	Nickname   string `json:"nickname"`
+	HeadImgURL string `json:"headimgurl"`
+	UnionID    string `json:"unionid"`
+}
+
+func (s *Service) MakeWeChatLoginURL(state string) string {
+	if s.cfg.WeChatAppID == "" || s.cfg.WeChatRedirectURI == "" {
+		return ""
+	}
+	params := url.Values{}
+	params.Set("appid", s.cfg.WeChatAppID)
+	params.Set("redirect_uri", s.cfg.WeChatRedirectURI)
+	params.Set("response_type", "code")
+	params.Set("scope", "snsapi_login")
+	params.Set("state", state)
+	return "https://open.weixin.qq.com/connect/qrconnect?" + params.Encode() + "#wechat_redirect"
+}
+
+func (s *Service) ExchangeCode(code string) (WechatTokenResponse, error) {
+	var out WechatTokenResponse
+	if s.cfg.WeChatAppID == "" || s.cfg.WeChatAppSecret == "" {
+		return out, http.ErrNotSupported
+	}
+	u := "https://api.weixin.qq.com/sns/oauth2/access_token?appid=" + url.QueryEscape(s.cfg.WeChatAppID) +
+		"&secret=" + url.QueryEscape(s.cfg.WeChatAppSecret) +
+		"&code=" + url.QueryEscape(code) +
+		"&grant_type=authorization_code"
+	resp, err := http.Get(u)
+	if err != nil {
+		return out, err
+	}
+	defer resp.Body.Close()
+	_ = json.NewDecoder(resp.Body).Decode(&out)
+	if out.ErrCode != 0 || out.OpenID == "" || out.AccessToken == "" {
+		return out, http.ErrHandlerTimeout
+	}
+	return out, nil
+}
+
+func (s *Service) FetchUserInfo(accessToken, openid string) (WechatUserInfo, error) {
+	var out WechatUserInfo
+	if accessToken == "" || openid == "" {
+		return out, http.ErrNotSupported
+	}
+	u := "https://api.weixin.qq.com/sns/userinfo?access_token=" + url.QueryEscape(accessToken) + "&openid=" + url.QueryEscape(openid)
+	resp, err := http.Get(u)
+	if err != nil {
+		return out, err
+	}
+	defer resp.Body.Close()
+	_ = json.NewDecoder(resp.Body).Decode(&out)
+	if out.OpenID == "" {
+		return out, http.ErrHandlerTimeout
+	}
+	return out, nil
+}
+
+func (s *Service) FindOrCreateWeChatUser(ui WechatUserInfo, tr WechatTokenResponse) (User, error) {
+	var user User
+	var oa OAuthAccount
+	q := s.db.Where("provider = ? AND provider_union_id <> '' AND provider_union_id = ?", "wechat", ui.UnionID).First(&oa)
+	if ui.UnionID != "" && q.Error == nil {
+		if err := s.db.First(&user, oa.UserID).Error; err == nil {
+			return user, nil
+		}
+	}
+	if err := s.db.Where("provider = ? AND provider_open_id = ?", "wechat", tr.OpenID).First(&oa).Error; err == nil {
+		if err := s.db.First(&user, oa.UserID).Error; err == nil {
+			return user, nil
+		}
+	}
+	user = User{
+		Name:      ui.Nickname,
+		AvatarURL: ui.HeadImgURL,
+		IsActive:  true,
+		Role:      "user",
+	}
+	if err := s.db.Create(&user).Error; err != nil {
+		return User{}, err
+	}
+	record := OAuthAccount{
+		UserID:          user.ID,
+		Provider:        "wechat",
+		ProviderOpenID:  tr.OpenID,
+		ProviderUnionID: ui.UnionID,
+	}
+	if b, e := json.Marshal(ui); e == nil {
+		record.RawProfileJSON = string(b)
+	}
+	_ = s.db.Create(&record).Error
+	return user, nil
+}
+
+func (s *Service) SaveOAuthState(state string, data map[string]any) error {
+	b, _ := json.Marshal(data)
+	return s.rdb.Set(context.Background(), "oauth:state:"+state, string(b), 10*time.Minute).Err()
+}
+
+func (s *Service) GetOAuthState(state string) (string, error) {
+	return s.rdb.Get(context.Background(), "oauth:state:"+state).Result()
+}
+
+func (s *Service) DelOAuthState(state string) {
+	_ = s.rdb.Del(context.Background(), "oauth:state:"+state).Err()
+}
+
+func (s *Service) SaveOTT(ott string, payload map[string]any) error {
+	b, _ := json.Marshal(payload)
+	return s.rdb.Set(context.Background(), "oauth:ott:"+ott, string(b), time.Minute).Err()
+}
+
+func (s *Service) GetOTT(ott string) (string, error) {
+	return s.rdb.Get(context.Background(), "oauth:ott:"+ott).Result()
+}
+
+func (s *Service) DelOTT(ott string) {
+	_ = s.rdb.Set(context.Background(), "oauth:ott:"+ott, "", time.Second).Err()
+	_ = s.rdb.Del(context.Background(), "oauth:ott:"+ott).Err()
+}
+
+func (s *Service) SanitizeUser(u User) map[string]any {
+	return map[string]any{
+		"id":        u.ID,
+		"email":     u.Email,
+		"name":      u.Name,
+		"avatarUrl": u.AvatarURL,
+		"language":  u.Language,
+		"role":      u.Role,
+	}
+}
+
+func (s *Service) IsAllowedOrigin(origins string, origin string) bool {
+	if origin == "" {
+		return false
+	}
+	for _, o := range splitCSV(origins) {
+		if o == origin {
+			return true
+		}
+	}
+	return false
+}
+
+func splitCSV(s string) []string {
+	var out []string
+	start := 0
+	for i := 0; i <= len(s); i++ {
+		if i == len(s) || s[i] == ',' {
+			if start < i {
+				out = append(out, s[start:i])
+			}
+			start = i + 1
+		}
+	}
+	return out
+}

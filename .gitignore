@@ -28,3 +28,4 @@ __debug_*
 uploads
 Dockerfile_Local
 Dockerfile_Chrome_local
+.vscode

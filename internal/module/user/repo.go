@@ -1,0 +1,23 @@
+package user
+
+import (
+	"gorm.io/gorm"
+)
+
+type Repo struct {
+	db *gorm.DB
+}
+
+func NewRepo(db *gorm.DB) *Repo {
+	return &Repo{db: db}
+}
+
+func (r *Repo) FindByID(id any) (User, error) {
+	var u User
+	err := r.db.First(&u, id).Error
+	return u, err
+}
+
+func (r *Repo) Save(u *User) error {
+	return r.db.Save(u).Error
+}
