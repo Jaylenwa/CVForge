@@ -54,6 +54,9 @@ const translations: Translations = {
     // Auth
     'auth.welcome': 'Welcome back',
     'auth.welcomeDesc': 'Enter your details to access your account.',
+    'auth.orContinueWith': 'Or continue with',
+    'auth.provider.github': 'GitHub',
+    'auth.provider.wechat': 'WeChat',
     'auth.createAccount': 'Create an account',
     'auth.createDesc': 'Enter your email to get started.',
     'auth.email': 'Email Address',
@@ -370,6 +373,9 @@ const translations: Translations = {
     // Auth
     'auth.welcome': '欢迎回来',
     'auth.welcomeDesc': '输入您的账号信息以登录。',
+    'auth.orContinueWith': '或使用以下方式继续',
+    'auth.provider.github': 'GitHub',
+    'auth.provider.wechat': '微信',
     'auth.createAccount': '创建新账号',
     'auth.createDesc': '输入邮箱以开始注册流程。',
     'auth.email': '电子邮箱',

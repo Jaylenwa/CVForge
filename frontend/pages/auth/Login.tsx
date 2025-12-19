@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Github, ArrowLeft, Globe } from 'lucide-react';
+import { WeChatIcon } from '../../components/ui/WeChatIcon';
 import { Button } from '../../components/ui/Button';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -9,7 +10,7 @@ import { AppRoute } from '../../types';
 
 export const Login: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
-  const { login, loginWithGithub } = useAuth();
+  const { login, loginWithGithub, loginWithWeChat } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
@@ -51,6 +52,24 @@ export const Login: React.FC = () => {
     setLoading(true);
     try {
         const success = await loginWithGithub();
+        if (success) {
+            const from = (location.state as any)?.from?.pathname || AppRoute.Home;
+            navigate(from, { replace: true });
+        } else {
+            setError(t('auth.error.general'));
+        }
+    } catch (err) {
+        setError(t('auth.error.general'));
+    } finally {
+        setLoading(false);
+    }
+  };
+  
+  const handleWeChatLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+        const success = await loginWithWeChat();
         if (success) {
             const from = (location.state as any)?.from?.pathname || AppRoute.Home;
             navigate(from, { replace: true });
@@ -171,12 +190,12 @@ export const Login: React.FC = () => {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-2 bg-white text-gray-500">
-                  {t('auth.orContinueWith') || 'Or continue with'}
+                  {t('auth.orContinueWith')}
                 </span>
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-3">
+            <div className="mt-6 grid grid-cols-2 gap-3">
               <div>
                 <Button
                   variant="outline"
@@ -185,7 +204,18 @@ export const Login: React.FC = () => {
                   isLoading={loading}
                 >
                   <Github className="h-5 w-5 mr-2" />
-                  GitHub
+                  {t('auth.provider.github')}
+                </Button>
+              </div>
+              <div>
+                <Button
+                  variant="outline"
+                  className="w-full flex justify-center items-center text-green-600 border-green-200 hover:bg-green-50"
+                  onClick={handleWeChatLogin}
+                  isLoading={loading}
+                >
+                  <WeChatIcon className="h-5 w-5 mr-2" />
+                  {t('auth.provider.wechat')}
                 </Button>
               </div>
             </div>
