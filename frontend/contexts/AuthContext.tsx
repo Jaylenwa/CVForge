@@ -15,6 +15,7 @@ interface AuthContextType {
   login: (email: string) => Promise<void>;
   logout: () => void;
   loginWithWeChat: () => Promise<boolean>;
+  loginWithGithub: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,7 +25,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const refreshTimer = useRef<number | null>(null);
-  const wechatListenerAdded = useRef(false);
 
   const loadUser = async () => {
     const token = localStorage.getItem('token');
@@ -113,34 +113,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => { scheduleRefresh(); }, [user]);
 
-  const loginWithWeChat = async () => {
+  const loginWithOAuth = async (url: string, name: string, width: number, height: number) => {
     return new Promise<boolean>((resolve) => {
-      const popup = window.open(`${API_BASE}/auth/wechat/redirect?client=popup&origin=${encodeURIComponent(window.location.origin)}`, 'wechat_oauth', 'width=480,height=640');
+      const popup = window.open(url, name, `width=${width},height=${height}`);
       if (!popup) return resolve(false);
-      if (!wechatListenerAdded.current) {
-        window.addEventListener('message', async (event) => {
-          const allowedEnv = (import.meta as any).env?.VITE_OAUTH_ALLOWED_ORIGINS || '';
-          const allowed = String(allowedEnv).split(',').filter(Boolean);
-          if (allowed.length === 0) allowed.push(window.location.origin);
-          if (!allowed.includes(event.origin)) return;
-          const data = event.data || {};
-          if (data.status === 'ok' && data.accessToken && data.refreshToken) {
-            localStorage.setItem('token', data.accessToken);
-            localStorage.setItem('refreshToken', data.refreshToken);
-            scheduleRefresh();
-            await loadUser();
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-        }, { once: true });
-        wechatListenerAdded.current = true;
-      }
+
+      const listener = async (event: MessageEvent) => {
+        const allowedEnv = (import.meta as any).env?.VITE_OAUTH_ALLOWED_ORIGINS || '';
+        const allowed = String(allowedEnv).split(',').filter(Boolean);
+        if (allowed.length === 0) allowed.push(window.location.origin);
+        if (!allowed.includes(event.origin)) return;
+        
+        const data = event.data || {};
+        if (data.status === 'ok' && data.accessToken && data.refreshToken) {
+          localStorage.setItem('token', data.accessToken);
+          localStorage.setItem('refreshToken', data.refreshToken);
+          scheduleRefresh();
+          await loadUser();
+          resolve(true);
+        }
+        // We don't resolve(false) on mismatching messages as they might be from other sources
+      };
+      
+      window.addEventListener('message', listener, { once: true });
     });
   };
 
+  const loginWithWeChat = async () => {
+    return loginWithOAuth(
+      `${API_BASE}/auth/wechat/redirect?client=popup&origin=${encodeURIComponent(window.location.origin)}`,
+      'wechat_oauth',
+      480,
+      640
+    );
+  };
+
+  const loginWithGithub = async () => {
+    return loginWithOAuth(
+      `${API_BASE}/auth/github/redirect?client=popup&origin=${encodeURIComponent(window.location.origin)}`,
+      'github_oauth',
+      600,
+      700
+    );
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, isAdmin, login, logout, loginWithWeChat }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, isAdmin, login, logout, loginWithWeChat, loginWithGithub }}>
       {children}
     </AuthContext.Provider>
   );

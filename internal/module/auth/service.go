@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"openresume/internal/infra/config"
@@ -283,4 +284,120 @@ func splitCSV(s string) []string {
 		}
 	}
 	return out
+}
+
+type GithubTokenResponse struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	Scope       string `json:"scope"`
+}
+
+type GithubUserInfo struct {
+	ID        int    `json:"id"`
+	Login     string `json:"login"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	AvatarURL string `json:"avatar_url"`
+}
+
+func (s *Service) MakeGithubLoginURL(state string) string {
+	if s.cfg.GithubClientID == "" || s.cfg.GithubRedirectURI == "" {
+		return ""
+	}
+	params := url.Values{}
+	params.Set("client_id", s.cfg.GithubClientID)
+	params.Set("redirect_uri", s.cfg.GithubRedirectURI)
+	params.Set("scope", "user:email")
+	params.Set("state", state)
+	return "https://github.com/login/oauth/authorize?" + params.Encode()
+}
+
+func (s *Service) ExchangeGithubCode(code string) (GithubTokenResponse, error) {
+	var out GithubTokenResponse
+	if s.cfg.GithubClientID == "" || s.cfg.GithubClientSecret == "" {
+		return out, http.ErrNotSupported
+	}
+	u := "https://github.com/login/oauth/access_token"
+	params := url.Values{}
+	params.Set("client_id", s.cfg.GithubClientID)
+	params.Set("client_secret", s.cfg.GithubClientSecret)
+	params.Set("code", code)
+	params.Set("redirect_uri", s.cfg.GithubRedirectURI)
+
+	req, _ := http.NewRequest("POST", u, nil)
+	req.URL.RawQuery = params.Encode()
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return out, err
+	}
+	defer resp.Body.Close()
+	_ = json.NewDecoder(resp.Body).Decode(&out)
+	if out.AccessToken == "" {
+		return out, http.ErrHandlerTimeout
+	}
+	return out, nil
+}
+
+func (s *Service) FetchGithubUserInfo(accessToken string) (GithubUserInfo, error) {
+	var out GithubUserInfo
+	if accessToken == "" {
+		return out, http.ErrNotSupported
+	}
+	u := "https://api.github.com/user"
+	req, _ := http.NewRequest("GET", u, nil)
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return out, err
+	}
+	defer resp.Body.Close()
+	_ = json.NewDecoder(resp.Body).Decode(&out)
+	if out.ID == 0 {
+		return out, http.ErrHandlerTimeout
+	}
+	return out, nil
+}
+
+func (s *Service) FindOrCreateGithubUser(ui GithubUserInfo) (User, error) {
+	var user User
+	var oa OAuthAccount
+	providerOpenID := strconv.Itoa(ui.ID)
+
+	// Try to find by oauth account
+	if err := s.db.Where("provider = ? AND provider_open_id = ?", "github", providerOpenID).First(&oa).Error; err == nil {
+		if err := s.db.First(&user, oa.UserID).Error; err == nil {
+			return user, nil
+		}
+	}
+
+	// Create new user
+	user = User{
+		Name:      ui.Name,
+		Email:     ui.Email, // GitHub might return empty email if private, but we try
+		AvatarURL: ui.AvatarURL,
+		IsActive:  true,
+		Role:      "user",
+	}
+	if user.Name == "" {
+		user.Name = ui.Login
+	}
+
+	if err := s.db.Create(&user).Error; err != nil {
+		return User{}, err
+	}
+
+	record := OAuthAccount{
+		UserID:         user.ID,
+		Provider:       "github",
+		ProviderOpenID: providerOpenID,
+	}
+	if b, e := json.Marshal(ui); e == nil {
+		record.RawProfileJSON = string(b)
+	}
+	_ = s.db.Create(&record).Error
+	return user, nil
 }

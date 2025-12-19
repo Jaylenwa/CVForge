@@ -39,6 +39,8 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 	authR := api.Group("/auth")
 	authR.GET("/wechat/redirect", middleware.RateLimit(rdb, 10, time.Minute), authH.WeChatRedirect(cfg))
 	authR.GET("/wechat/callback", middleware.RateLimit(rdb, 30, time.Minute), authH.WeChatCallback(cfg))
+	authR.GET("/github/redirect", middleware.RateLimit(rdb, 10, time.Minute), authH.GithubRedirect(cfg))
+	authR.GET("/github/callback", middleware.RateLimit(rdb, 30, time.Minute), authH.GithubCallback(cfg))
 	authR.POST("/wechat/consume-ott", authH.ConsumeOTT)
 	authR.POST("/send-code", middleware.RateLimit(rdb, 3, time.Minute), authH.SendCode)
 	authR.POST("/register", middleware.RateLimit(rdb, 5, time.Minute), authH.Register)

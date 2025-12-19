@@ -29,8 +29,12 @@ type Config struct {
 	WeChatAppID         string
 	WeChatAppSecret     string
 	WeChatRedirectURI   string
+	GithubClientID      string
+	GithubClientSecret  string
+	GithubRedirectURI   string
 	OAuthAllowedOrigins string
 	FeatureWeChatLogin  string
+	FeatureGithubLogin  string
 }
 
 func Load() Config {
@@ -41,7 +45,7 @@ func Load() Config {
 		RedisAddr:           getenv("REDIS_ADDR", "127.0.0.1:6379"),
 		RedisPassword:       getenv("REDIS_PASSWORD", ""),
 		JWTSecret:           getenv("JWT_SECRET", "devsecret"),
-		CORSOrigins:         getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173"),
+		CORSOrigins:         getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://182.254.166.74:8889/api/v1/auth/github/callback"),
 		GeminiAPIKey:        getenv("GEMINI_API_KEY", ""),
 		UploadBackend:       getenv("UPLOAD_BACKEND", "local"),
 		S3Bucket:            getenv("S3_BUCKET", ""),
@@ -59,8 +63,12 @@ func Load() Config {
 		WeChatAppID:         getenv("WECHAT_APP_ID", ""),
 		WeChatAppSecret:     getenv("WECHAT_APP_SECRET", ""),
 		WeChatRedirectURI:   getenv("WECHAT_REDIRECT_URI", ""),
-		OAuthAllowedOrigins: getenv("OAUTH_ALLOWED_ORIGINS", getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173")),
+		GithubClientID:      getenv("GITHUB_CLIENT_ID", ""),
+		GithubClientSecret:  getenv("GITHUB_CLIENT_SECRET", ""),
+		GithubRedirectURI:   getenv("GITHUB_REDIRECT_URI", "http://182.254.166.74:8889/api/v1/auth/github/callback"),
+		OAuthAllowedOrigins: getenv("OAUTH_ALLOWED_ORIGINS", getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://182.254.166.74:8889")),
 		FeatureWeChatLogin:  getenv("FEATURE_WECHAT_LOGIN", "on"),
+		FeatureGithubLogin:  getenv("FEATURE_GITHUB_LOGIN", "on"),
 	}
 }
 
