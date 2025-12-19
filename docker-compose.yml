@@ -10,10 +10,10 @@ services:
       REDIS_ADDR: "redis:6379"
       REDIS_PASSWORD: ""
       JWT_SECRET: "change-me"
-      CORS_ORIGINS: "http://www.vfoy.cn,https://www.vfoy.cn"
+      CORS_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn"
       UPLOAD_BACKEND: "local"
       FRONTEND_BASE_URL: "http://www.vfoy.cn"
-      OAUTH_ALLOWED_ORIGINS: "http://www.vfoy.cn,https://www.vfoy.cn"
+      OAUTH_ALLOWED_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn"
       WECHAT_APP_ID: "${WECHAT_APP_ID:-}"
       WECHAT_APP_SECRET: "${WECHAT_APP_SECRET:-}"
       WECHAT_REDIRECT_URI: "http://vfoy.cn/api/v1/auth/wechat/callback"
@@ -45,7 +45,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_BASE: "/api/v1"
-        VITE_OAUTH_ALLOWED_ORIGINS: "http://www.vfoy.cn,https://www.vfoy.cn"
+        VITE_OAUTH_ALLOWED_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn"
     restart: unless-stopped
     depends_on:
       backend:
