@@ -67,7 +67,12 @@ clean:
 	rm -f $(FRONTEND_TAR_NAME)
 
 # ===== 远端部署（加载镜像并重启 compose）=====
-.PHONY: deploy
-deploy: build build-frontend save save-frontend upload upload-frontend
+.PHONY: deploy-all
+deploy-all: build build-frontend save save-frontend upload upload-frontend
 	ssh -p $(REMOTE_PORT) $(REMOTE_USER)@$(REMOTE_HOST) "cd $(REMOTE_DIR) && docker load -i $(TAR_NAME) && docker load -i $(FRONTEND_TAR_NAME)"
+	ssh -p $(REMOTE_PORT) $(REMOTE_USER)@$(REMOTE_HOST) "cd $(REMOTE_COMPOSE_DIR) && docker compose down && docker compose up -d"
+
+# ===== 远端部署（加载镜像并重启 compose）=====
+.PHONY: deploy
+deploy:
 	ssh -p $(REMOTE_PORT) $(REMOTE_USER)@$(REMOTE_HOST) "cd $(REMOTE_COMPOSE_DIR) && docker compose down && docker compose up -d"
