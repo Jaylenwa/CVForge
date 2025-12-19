@@ -22,6 +22,13 @@ export const TemplateCNTimeline: React.FC<{ data: ResumeData; styles: any; disab
                 <p className="text-slate-400 uppercase tracking-widest text-sm">{data.personalInfo.jobTitle}</p>
              </div>
              <div className="text-right text-sm text-slate-400 space-y-1">
+                {data.personalInfo.avatarUrl && (
+                  <img
+                    src={data.personalInfo.avatarUrl}
+                    alt="Avatar"
+                    className="w-20 h-20 object-cover rounded-md border border-slate-500 ml-auto mb-2"
+                  />
+                )}
                 <div>{data.personalInfo.phone}</div>
                 <div>{data.personalInfo.email}</div>
              </div>

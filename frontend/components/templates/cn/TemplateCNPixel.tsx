@@ -31,6 +31,14 @@ export const TemplateCNPixel: React.FC<{ data: ResumeData; styles: any; disableS
                 <span>☎ {data.personalInfo.phone}</span>
                 <span>✉ {data.personalInfo.email}</span>
             </div>
+            
+            {data.personalInfo.avatarUrl && (
+              <img
+                src={data.personalInfo.avatarUrl}
+                alt={t('a11y.avatarAlt')}
+                className="w-24 h-24 object-cover mx-auto rounded border-2 border-[#8b7355] mt-4"
+              />
+            )}
         </div>
 
         <div className="grid grid-cols-12 gap-8">

@@ -25,7 +25,7 @@ export const TemplateCNGeometric: React.FC<{ data: ResumeData; styles: any; disa
         </div>
         <div className="col-span-4 bg-red-600 p-8 flex flex-col justify-center text-white border-black">
              {data.personalInfo.avatarUrl && (
-                 <img src={data.personalInfo.avatarUrl} className="w-24 h-24 border-4 border-black bg-white object-cover mb-4 filter grayscale" alt="Avatar" />
+                 <img src={data.personalInfo.avatarUrl} className="w-24 h-24 border-4 border-black bg-white object-cover mb-4" alt="Avatar" />
              )}
              <div className="text-xs font-bold space-y-1">
                  <div className="bg-black px-2 py-1 inline-block">{data.personalInfo.phone}</div>
@@ -110,4 +110,3 @@ export const TemplateCNGeometric: React.FC<{ data: ResumeData; styles: any; disa
     </div>
   );
 };
-

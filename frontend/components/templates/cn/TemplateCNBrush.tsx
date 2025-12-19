@@ -34,6 +34,15 @@ export const TemplateCNBrush: React.FC<{ data: ResumeData; styles: any; disableS
         <div className="mr-32"> {/* 为右侧竖排留空 */}
             <div className="mb-16 pt-8">
                 <div className="text-2xl font-bold text-gray-600 mb-6">{data.personalInfo.jobTitle}</div>
+                {data.personalInfo.avatarUrl && (
+                  <div className="mb-4">
+                    <img
+                      src={data.personalInfo.avatarUrl}
+                      alt={t('a11y.avatarAlt')}
+                      className="w-24 h-24 rounded-md object-cover border-2 border-red-800 shadow-sm"
+                    />
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-6 text-sm text-gray-500 font-sans border-t border-b border-gray-300 py-3">
                     <span>{data.personalInfo.phone}</span>
                     <span>{data.personalInfo.email}</span>

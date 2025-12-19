@@ -24,6 +24,13 @@ export const TemplateCNWave: React.FC<{ data: ResumeData; styles: any; disableSh
                   <p className="text-xl opacity-90">{data.personalInfo.jobTitle}</p>
               </div>
               <div className="text-right text-sm opacity-90">
+                  {data.personalInfo.avatarUrl && (
+                    <img
+                      src={data.personalInfo.avatarUrl}
+                      alt={t('a11y.avatarAlt')}
+                      className="w-20 h-20 object-cover rounded-md border border-white/50 ml-auto mb-2"
+                    />
+                  )}
                   <div>{data.personalInfo.phone}</div>
                   <div>{data.personalInfo.email}</div>
                   <div>{data.personalInfo.city}</div>
@@ -82,4 +89,3 @@ export const TemplateCNWave: React.FC<{ data: ResumeData; styles: any; disableSh
     </div>
   );
 };
-

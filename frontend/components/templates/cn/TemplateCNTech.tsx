@@ -40,7 +40,7 @@ export const TemplateCNTech: React.FC<{ data: ResumeData; styles: any; disableSh
               {data.personalInfo.avatarUrl && (
                 <div className="relative mb-6 group">
                    <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-                   <img src={data.personalInfo.avatarUrl} alt="Avatar" className="relative w-full rounded-lg grayscale hover:grayscale-0 transition-all duration-500 border border-cyan-500/30" />
+                   <img src={data.personalInfo.avatarUrl} alt="Avatar" className="relative w-full rounded-lg transition-all duration-500 border border-cyan-500/30" />
                 </div>
               )}
               
@@ -115,4 +115,3 @@ export const TemplateCNTech: React.FC<{ data: ResumeData; styles: any; disableSh
     </div>
   );
 };
-

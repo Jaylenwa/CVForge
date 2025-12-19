@@ -39,6 +39,13 @@ export const TemplateCNArchitect: React.FC<{ data: ResumeData; styles: any; disa
                   <div className="text-xl tracking-widest opacity-80">{data.personalInfo.jobTitle}</div>
               </div>
               <div className="text-right text-sm space-y-2 opacity-70">
+                   {data.personalInfo.avatarUrl && (
+                     <img
+                       src={data.personalInfo.avatarUrl}
+                       alt={t('a11y.avatarAlt')}
+                       className="w-20 h-20 object-cover border border-white/50 rounded-sm ml-auto mb-2"
+                     />
+                   )}
                    <div className="flex items-center justify-end gap-2">
                        <span className="w-2 h-2 border border-white rounded-full"></span>
                        {data.personalInfo.phone}

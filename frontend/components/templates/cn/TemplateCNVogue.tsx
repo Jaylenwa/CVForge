@@ -32,7 +32,7 @@ export const TemplateCNVogue: React.FC<{ data: ResumeData; styles: any; disableS
           {/* 左侧栏 - 窄 */}
           <div className="col-span-4 border-r border-black pr-8 flex flex-col h-full">
               {data.personalInfo.avatarUrl && (
-                  <div className="mb-8 filter grayscale contrast-125">
+                  <div className="mb-8">
                       <img src={data.personalInfo.avatarUrl} className="w-full h-auto object-cover" alt="Portrait" />
                       <div className="text-[10px] font-sans text-right mt-1 uppercase text-gray-500">Photo by Self</div>
                   </div>
@@ -91,4 +91,3 @@ export const TemplateCNVogue: React.FC<{ data: ResumeData; styles: any; disableS
     </div>
   );
 };
-

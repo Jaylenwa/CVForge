@@ -31,7 +31,12 @@ export const Settings: React.FC = () => {
     const form = new FormData();
     form.append('file', file);
     try {
-      const res = await fetch(`${API_BASE}/upload/avatar`, { method: 'POST', body: form });
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/upload/avatar`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : undefined, body: form });
+      if (res.status === 401) {
+        alert('登录已过期，请重新登录');
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         setFormData(prev => ({ ...prev, avatarUrl: data.url }));

@@ -33,11 +33,11 @@ export const TemplateMinimalist: React.FC<{ data: ResumeData; styles: any; disab
                   </div>
                 )}
             </div>
-             {data.personalInfo.avatarUrl && (
+            {data.personalInfo.avatarUrl && (
                 <img 
                     src={data.personalInfo.avatarUrl} 
                     alt="Profile" 
-                    className="w-24 h-24 object-cover border border-gray-200 grayscale shadow-sm flex-shrink-0 self-center md:self-end"
+                    className="w-24 h-24 object-cover border border-gray-200 shadow-sm flex-shrink-0 self-center md:self-end"
                 />
             )}
         </header>

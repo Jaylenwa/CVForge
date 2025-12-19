@@ -51,6 +51,15 @@ export const TemplateCNCode: React.FC<{ data: ResumeData; styles: any; disableSh
                     <span className="ml-2 hover:bg-[#444] rounded-full w-4 h-4 flex items-center justify-center">×</span>
                 </div>
             </div>
+            {data.personalInfo.avatarUrl && (
+              <div className="flex justify-end mb-3">
+                <img
+                  src={data.personalInfo.avatarUrl}
+                  alt={t('a11y.avatarAlt')}
+                  className="w-16 h-16 rounded-md object-cover border border-[#37373d]"
+                />
+              </div>
+            )}
 
             <div className="space-y-1">
                 {/* Header Code */}

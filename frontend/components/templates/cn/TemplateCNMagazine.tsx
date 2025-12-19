@@ -21,7 +21,7 @@ export const TemplateCNMagazine: React.FC<{ data: ResumeData; styles: any; disab
           <div className="col-span-5 bg-gray-100 relative overflow-hidden flex flex-col justify-end p-8">
              {data.personalInfo.avatarUrl ? (
                 <div className="absolute inset-0 z-0">
-                   <img src={data.personalInfo.avatarUrl} alt="Cover" className="w-full h-full object-cover grayscale contrast-125" />
+                   <img src={data.personalInfo.avatarUrl} alt="Cover" className="w-full h-full object-cover" />
                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                 </div>
              ) : (

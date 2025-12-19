@@ -38,6 +38,14 @@ export const TemplateCNLaw: React.FC<{ data: ResumeData; styles: any; disableSha
                 )}
             </div>
             
+            {data.personalInfo.avatarUrl && (
+              <img
+                src={data.personalInfo.avatarUrl}
+                alt={t('a11y.avatarAlt')}
+                className="w-24 h-24 rounded-full object-cover mx-auto mt-6 border-2 border-[#2c3e50]"
+              />
+            )}
+            
             {/* 天平背景水印 */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none">
                 <svg width="300" height="300" viewBox="0 0 24 24" fill="currentColor">
@@ -93,4 +101,3 @@ export const TemplateCNLaw: React.FC<{ data: ResumeData; styles: any; disableSha
     </div>
   );
 };
-

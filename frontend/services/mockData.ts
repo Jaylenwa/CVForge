@@ -63,6 +63,7 @@ export const INITIAL_RESUME: ResumeData = {
     fullName: 'YOUR NAME',
     email: 'email@example.com',
     phone: '123-456-7890',
+    avatarUrl: 'https://i.pravatar.cc/256?img=12',
     jobTitle: 'Software Engineer',
     gender: 'Male',
     age: '25',

@@ -27,6 +27,13 @@ export const TemplateCNFinance: React.FC<{ data: ResumeData; styles: any; disabl
                 <p className="text-lg text-[#b8860b] font-bold uppercase tracking-wider">{data.personalInfo.jobTitle}</p>
             </div>
             <div className="text-right text-sm text-gray-600 leading-snug">
+                {data.personalInfo.avatarUrl && (
+                  <img
+                    src={data.personalInfo.avatarUrl}
+                    alt={t('a11y.avatarAlt')}
+                    className="w-20 h-20 object-cover rounded-md border border-[#b8860b] ml-auto mb-2"
+                  />
+                )}
                 <div>{data.personalInfo.phone}</div>
                 <div>{data.personalInfo.email}</div>
                 {data.personalInfo.city && <div>{data.personalInfo.city}</div>}
@@ -75,4 +82,3 @@ export const TemplateCNFinance: React.FC<{ data: ResumeData; styles: any; disabl
     </div>
   );
 };
-

@@ -21,7 +21,7 @@ export const TemplateCNDark: React.FC<{ data: ResumeData; styles: any; disableSh
        <div className="p-16">
           <div className="text-center mb-16 relative">
              <div className="inline-block border border-[#d4af37] p-1 rounded-full mb-6">
-                {data.personalInfo.avatarUrl && <img src={data.personalInfo.avatarUrl} alt="Avatar" className="w-28 h-28 rounded-full object-cover grayscale brightness-75 contrast-125" />}
+                {data.personalInfo.avatarUrl && <img src={data.personalInfo.avatarUrl} alt="Avatar" className="w-28 h-28 rounded-full object-cover" />}
              </div>
              <h1 className="text-4xl text-white font-normal tracking-[0.3em] uppercase mb-4">{data.personalInfo.fullName}</h1>
              <div className="text-[#d4af37] text-sm tracking-[0.2em] uppercase mb-8">{data.personalInfo.jobTitle}</div>

@@ -26,6 +26,13 @@ export const TemplateCNFashion: React.FC<{ data: ResumeData; styles: any; disabl
              </div>
 
              <div className="text-right text-xs font-sans tracking-widest uppercase text-gray-400 space-y-1">
+                 {data.personalInfo.avatarUrl && (
+                   <img
+                     src={data.personalInfo.avatarUrl}
+                     alt={t('a11y.avatarAlt')}
+                     className="w-20 h-20 object-cover rounded-md border border-gray-300 ml-auto mb-2"
+                   />
+                 )}
                  <div>{data.personalInfo.phone}</div>
                  <div>{data.personalInfo.email}</div>
                  <div>{data.personalInfo.city}</div>
@@ -69,4 +76,3 @@ export const TemplateCNFashion: React.FC<{ data: ResumeData; styles: any; disabl
     </div>
   );
 };
-

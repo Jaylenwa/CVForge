@@ -28,7 +28,7 @@ export const TemplateCNMarketing: React.FC<{ data: ResumeData; styles: any; disa
                 </div>
                 {data.personalInfo.avatarUrl && (
                    <div className="w-32 h-32 border-4 border-black rounded-full overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-yellow-300">
-                      <img src={data.personalInfo.avatarUrl} alt="Avatar" className="w-full h-full object-cover grayscale contrast-125" />
+                      <img src={data.personalInfo.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                    </div>
                 )}
              </div>

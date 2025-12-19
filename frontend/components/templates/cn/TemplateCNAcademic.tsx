@@ -33,6 +33,14 @@ export const TemplateCNAcademic: React.FC<{ data: ResumeData; styles: any; disab
                 </>
               )}
            </div>
+           
+           {data.personalInfo.avatarUrl && (
+             <img
+               src={data.personalInfo.avatarUrl}
+               alt={t('a11y.avatarAlt')}
+               className="w-24 h-24 rounded-md object-cover mx-auto mt-6 border border-gray-300"
+             />
+           )}
         </div>
 
         {/* 内容 */}

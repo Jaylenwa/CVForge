@@ -1,8 +1,10 @@
 import React from 'react';
 import { ResumeData, ResumeSectionType } from '../../../types';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import { sanitizeHtml } from '../../../utils/resume-helpers';
 
 export const TemplateCNMinimal: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
+  const { t } = useLanguage();
   const titleMap: Record<string, string> = {
     [ResumeSectionType.Summary]: '关于',
     [ResumeSectionType.Education]: '教育',
@@ -19,6 +21,15 @@ export const TemplateCNMinimal: React.FC<{ data: ResumeData; styles: any; disabl
          <div className="mb-20">
             <h1 className="text-6xl font-light text-gray-900 mb-6 tracking-tighter">{data.personalInfo.fullName}</h1>
             <div className="text-xl text-gray-400 font-light mb-8">{data.personalInfo.jobTitle}</div>
+            {data.personalInfo.avatarUrl && (
+              <div className="mb-6">
+                <img
+                  src={data.personalInfo.avatarUrl}
+                  alt={t('a11y.avatarAlt')}
+                  className="w-24 h-24 rounded-md object-cover border border-gray-200"
+                />
+              </div>
+            )}
             
             <div className="flex flex-col space-y-1 text-sm text-gray-500 font-mono">
                <div>{data.personalInfo.phone}</div>

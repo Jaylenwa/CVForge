@@ -97,10 +97,16 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     const form = new FormData();
     form.append('file', file);
     try {
+      const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE}/upload/avatar`, {
         method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         body: form
       });
+      if (res.status === 401) {
+        alert('登录已过期，请重新登录');
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         updatePersonalInfo('avatarUrl', data.url);

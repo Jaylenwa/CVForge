@@ -42,8 +42,7 @@ export const TemplateCNGlitch: React.FC<{ data: ResumeData; styles: any; disable
              <div className="md:col-span-4 space-y-8 border-r-2 border-[#00ff00] border-dashed pr-6">
                 {data.personalInfo.avatarUrl && (
                    <div className="mb-8 relative group">
-                      <div className="absolute inset-0 bg-[#00ff00] mix-blend-overlay opacity-50"></div>
-                      <img src={data.personalInfo.avatarUrl} alt="Avatar" className="w-full grayscale contrast-125 filter brightness-75 group-hover:brightness-100 transition-all" />
+                      <img src={data.personalInfo.avatarUrl} alt="Avatar" className="w-full object-cover transition-all" />
                       <div className="absolute top-0 left-0 w-full h-1 bg-[#ff00ff] opacity-50"></div>
                       <div className="absolute bottom-0 right-0 w-full h-1 bg-[#00ffff] opacity-50"></div>
                    </div>

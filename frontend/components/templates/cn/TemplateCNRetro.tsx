@@ -43,7 +43,7 @@ export const TemplateCNRetro: React.FC<{ data: ResumeData; styles: any; disableS
              <div className="col-span-4 border-r border-black pr-6 flex flex-col">
                 {data.personalInfo.avatarUrl && (
                    <div className="mb-6 border-2 border-black p-1 bg-white">
-                      <img src={data.personalInfo.avatarUrl} alt="Profile" className="w-full grayscale contrast-125 sepia-[.3]" />
+                      <img src={data.personalInfo.avatarUrl} alt="Profile" className="w-full object-cover" />
                       <div className="text-[10px] text-center mt-1 font-sans uppercase">Fig 1. Candidate Portrait</div>
                    </div>
                 )}

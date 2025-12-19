@@ -62,7 +62,7 @@ export const TemplateCNNewspaper: React.FC<{ data: ResumeData; styles: any; disa
             <div className="col-span-4 space-y-8">
                 {data.personalInfo.avatarUrl && (
                     <div className="border-2 border-black p-2 bg-white transform rotate-1 shadow-lg">
-                        <img src={data.personalInfo.avatarUrl} className="w-full grayscale contrast-125" alt="Profile" />
+                        <img src={data.personalInfo.avatarUrl} className="w-full object-cover" alt="Profile" />
                         <div className="text-center text-xs font-sans mt-2 font-bold uppercase">Figure 1. The Candidate</div>
                     </div>
                 )}
@@ -91,4 +91,3 @@ export const TemplateCNNewspaper: React.FC<{ data: ResumeData; styles: any; disa
     </div>
   );
 };
-

@@ -24,7 +24,7 @@ export const TemplateCNArtistic: React.FC<{ data: ResumeData; styles: any; disab
           <div className="flex flex-col items-center mb-16 relative">
              {data.personalInfo.avatarUrl && (
                 <div className="mb-6 p-1 border border-gray-400 rounded-full">
-                   <img src={data.personalInfo.avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover grayscale opacity-90" />
+                   <img src={data.personalInfo.avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover" />
                 </div>
              )}
              
