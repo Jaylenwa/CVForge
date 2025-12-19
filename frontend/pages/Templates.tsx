@@ -7,7 +7,7 @@ import { API_BASE } from '../config';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ResumeArtboard } from './editor/ResumePreview';
-import { INITIAL_RESUME } from '../services/mockData';
+import { INITIAL_RESUME, MOCK_TEMPLATES } from '../services/mockData';
 
 export const Templates: React.FC = () => {
   const navigate = useNavigate();
@@ -34,17 +34,26 @@ export const Templates: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`${API_BASE}/templates`);
-      const data = await res.json();
-      const items = (data.items || []).map((t: any) => ({
-        id: t.ExternalID || t.id,
-        name: t.Name || t.name,
-        tags: typeof t.Tags === 'string' ? (t.Tags as string).split(',') : (t.tags || []),
-        popularity: t.Popularity || t.popularity,
-        isPremium: t.IsPremium ?? t.isPremium,
-        category: t.Category || t.category,
-      }));
-      setTemplates(items);
+      try {
+        const res = await fetch(`${API_BASE}/templates`);
+        if (res.ok) {
+          const data = await res.json();
+          const items = (data.items || []).map((t: any) => ({
+            id: t.ExternalID || t.id,
+            name: t.Name || t.name,
+            tags: typeof t.Tags === 'string' ? (t.Tags as string).split(',') : (t.tags || []),
+            popularity: t.Popularity || t.popularity,
+            isPremium: t.IsPremium ?? t.isPremium,
+            category: t.Category || t.category,
+          }));
+          setTemplates(items);
+        } else {
+          throw new Error('Network response was not ok');
+        }
+      } catch (error) {
+        console.warn('Failed to fetch templates from API, falling back to mock data:', error);
+        setTemplates(MOCK_TEMPLATES);
+      }
     })();
   }, []);
 

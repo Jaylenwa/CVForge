@@ -40,6 +40,7 @@ export interface ResumeData {
     fullName: string;
     email: string;
     phone: string;
+    city?: string;
     avatarUrl?: string;
     jobTitle: string;
     gender?: string;
