@@ -8,11 +8,18 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../config';
 import { ResumeArtboard } from './editor/ResumePreview';
 import { INITIAL_RESUME } from '../services/mockData';
+import { Modal } from '../components/ui/Modal';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [popularTemplates, setPopularTemplates] = React.useState<any[]>([]);
+  const [previewOpen, setPreviewOpen] = React.useState(false);
+  const [previewTemplateId, setPreviewTemplateId] = React.useState<string | null>(null);
+  const previewContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const [previewScale, setPreviewScale] = React.useState<number | null>(null);
+  const previewRafRef = React.useRef<number | null>(null);
+  const previewRoRef = React.useRef<ResizeObserver | null>(null);
   React.useEffect(() => {
     (async () => {
       try {
@@ -35,7 +42,7 @@ export const Home: React.FC = () => {
     { key: 'home.quick.creative', icon: <PenTool size={20} />, query: 'Creative' },
   ];
 
-  const HomeTemplateCard: React.FC<{ template: any; onUse: () => void }> = ({ template, onUse }) => {
+  const HomeTemplateCard: React.FC<{ template: any; onUse: () => void; onPreview: () => void }> = ({ template, onUse, onPreview }) => {
     const containerRef = React.useRef<HTMLDivElement | null>(null);
     const rafRef = React.useRef<number | null>(null);
     const roRef = React.useRef<ResizeObserver | null>(null);
@@ -115,7 +122,10 @@ export const Home: React.FC = () => {
             )}
           </div>
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100">
-            <Button onClick={onUse}>{t('home.actions.useTemplate')}</Button>
+            <div className="flex flex-col items-center space-y-3">
+              <Button className="w-40" onClick={onUse}>{t('home.actions.useTemplate')}</Button>
+              <Button className="w-40" variant="outline" onClick={onPreview}>{t('common.preview')}</Button>
+            </div>
           </div>
         </div>
         <div className="p-3">
@@ -207,6 +217,7 @@ export const Home: React.FC = () => {
                       key={template.id}
                       template={template}
                       onUse={() => navigate(`${AppRoute.Editor}?template=${template.id}`)}
+                      onPreview={() => { setPreviewTemplateId(template.id); setPreviewOpen(true); }}
                     />
                 ))}
             </div>
@@ -276,6 +287,27 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
+      <Modal isOpen={previewOpen} onClose={() => setPreviewOpen(false)} title={t('common.preview')}>
+        <div ref={previewContainerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            {previewTemplateId && previewScale !== null ? (
+              <div
+                style={{ width: (96 / 25.4) * 210 * previewScale, height: (96 / 25.4) * 297 * previewScale }}
+                className="relative select-none pointer-events-none shadow-sm bg-white"
+              >
+                <ResumeArtboard
+                  data={{ ...INITIAL_RESUME, templateId: previewTemplateId }}
+                  scale={previewScale}
+                  disableShadow
+                  style={{ margin: 0 }}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full bg-white" />
+            )}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

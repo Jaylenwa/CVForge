@@ -8,6 +8,7 @@ import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ResumeArtboard } from './editor/ResumePreview';
 import { INITIAL_RESUME, MOCK_TEMPLATES } from '../services/mockData';
+import { Modal } from '../components/ui/Modal';
 
 export const Templates: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +17,12 @@ export const Templates: React.FC = () => {
   
   const [filter, setFilter] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
+  const previewContainerRef = useRef<HTMLDivElement | null>(null);
+  const [previewScale, setPreviewScale] = useState<number | null>(null);
+  const previewRafRef = useRef<number | null>(null);
+  const previewRoRef = useRef<ResizeObserver | null>(null);
   
 
   useEffect(() => {
@@ -66,6 +73,37 @@ export const Templates: React.FC = () => {
   const handleUseTemplate = (templateId: string) => {
     navigate(`${AppRoute.Editor}?template=${templateId}`);
   };
+  const handlePreviewTemplate = (templateId: string) => {
+    setPreviewTemplateId(templateId);
+    setPreviewOpen(true);
+  };
+
+  useLayoutEffect(() => {
+    if (!previewOpen) return;
+    const mmToPx = 96 / 25.4;
+    const a4w = 210 * mmToPx;
+    const schedule = () => {
+      if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
+      previewRafRef.current = requestAnimationFrame(() => {
+        const el = previewContainerRef.current;
+        if (!el) return;
+        const s = el.clientWidth / a4w;
+        setPreviewScale(s);
+      });
+    };
+    schedule();
+    const onResize = () => schedule();
+    window.addEventListener('resize', onResize);
+    if (previewContainerRef.current) {
+      previewRoRef.current = new ResizeObserver(onResize);
+      previewRoRef.current.observe(previewContainerRef.current);
+    }
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
+      if (previewRoRef.current) previewRoRef.current.disconnect();
+    };
+  }, [previewOpen]);
 
   const TemplateGridItem: React.FC<{ template: any }> = ({ template }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -147,7 +185,10 @@ export const Templates: React.FC = () => {
             )}
           </div>
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100">
-            <Button onClick={() => handleUseTemplate(template.id)}>{t('templates.actions.useTemplate')}</Button>
+            <div className="flex flex-col items-center space-y-3">
+              <Button className="w-40" onClick={() => handleUseTemplate(template.id)}>{t('templates.actions.useTemplate')}</Button>
+              <Button className="w-40" variant="outline" onClick={() => handlePreviewTemplate(template.id)}>{t('common.preview')}</Button>
+            </div>
           </div>
           {template.isPremium && (
             <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded flex items-center">
@@ -243,6 +284,28 @@ export const Templates: React.FC = () => {
               <Button variant="ghost" onClick={() => {setFilter(''); setSelectedCategory('All')}} className="mt-4">{t('templates.actions.clearFilters')}</Button>
           </div>
       )}
+      
+      <Modal isOpen={previewOpen} onClose={() => setPreviewOpen(false)} title={t('common.preview')}>
+        <div ref={previewContainerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
+          <div className="absolute inset-0 flex items-center justify-center">
+            {previewTemplateId && previewScale !== null ? (
+              <div
+                style={{ width: (96 / 25.4) * 210 * previewScale, height: (96 / 25.4) * 297 * previewScale }}
+                className="relative select-none pointer-events-none shadow-sm bg-white"
+              >
+                <ResumeArtboard
+                  data={{ ...INITIAL_RESUME, templateId: previewTemplateId }}
+                  scale={previewScale}
+                  disableShadow
+                  style={{ margin: 0 }}
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full bg-white" />
+            )}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
