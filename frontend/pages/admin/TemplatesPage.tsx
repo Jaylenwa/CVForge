@@ -8,6 +8,7 @@ import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { INITIAL_RESUME, MOCK_TEMPLATES } from '../../services/mockData';
+import { RefreshCw } from 'lucide-react';
 
 type Row = {
   id: string;
@@ -45,8 +46,10 @@ export const TemplatesPage: React.FC = () => {
   const [syncing, setSyncing] = useState(false);
   const [syncDone, setSyncDone] = useState(0);
   const [syncTotal, setSyncTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const load = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/templates`);
       const data = await res.json();
@@ -61,7 +64,7 @@ export const TemplatesPage: React.FC = () => {
       setItems(mapped);
     } catch {
       showToast(t('admin.msg.loadTemplatesFailed'), 'error');
-    }
+    } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
@@ -186,7 +189,9 @@ export const TemplatesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.templates')}</h1>
-        <Button variant="outline" onClick={() => load()}>{t('common.refresh') || 'Refresh'}</Button>
+        <Button variant="outline" onClick={() => load()} disabled={loading}>
+          <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
+        </Button>
       </div>
       <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">

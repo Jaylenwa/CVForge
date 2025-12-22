@@ -105,7 +105,7 @@ export const ConfigPage: React.FC = () => {
           <h1 className="text-4xl font-bold text-gray-800">{t('admin.menu.settings')}</h1>
           <div className="flex space-x-2">
             <Button variant="outline" onClick={fetchConfigs} disabled={loading}>
-              <RefreshCw size={16} className={`mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('common.refresh') || 'Refresh'}
+              <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
             </Button>
             <Button onClick={handleSave} isLoading={saving}>
               <Save size={16} className="mr-2" /> {t('common.save') || 'Save Changes'}

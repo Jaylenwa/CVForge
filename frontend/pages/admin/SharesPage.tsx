@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { RefreshCw } from 'lucide-react';
 
 export const SharesPage: React.FC = () => {
   const [items, setItems] = useState<AdminShare[]>([]);
@@ -15,14 +16,16 @@ export const SharesPage: React.FC = () => {
   const confirm = useConfirm();
   const { t } = useLanguage();
 
+  const [loading, setLoading] = useState(false);
   const load = async () => {
+    setLoading(true);
     try {
       const resp = await listShares({ page: String(page), pageSize: String(pageSize), slug: keyword });
       setItems(resp.items);
       setTotal(resp.total);
     } catch {
       showToast(t('admin.msg.loadSharesFailed'), 'error');
-    }
+    } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, [page, pageSize]);
 
@@ -30,7 +33,9 @@ export const SharesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.shares')}</h1>
-        <Button variant="outline" onClick={() => load()}>{t('common.refresh') || 'Refresh'}</Button>
+        <Button variant="outline" onClick={() => load()} disabled={loading}>
+          <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
+        </Button>
       </div>
       <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
         <div className="flex items-center mb-4 space-x-2">
