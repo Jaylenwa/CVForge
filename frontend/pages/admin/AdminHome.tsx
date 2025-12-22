@@ -3,6 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { getAdminStats, AdminStats } from '../../services/adminService';
 import { RefreshCw, Users, FileText } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export const AdminHome: React.FC = () => {
   const { t } = useLanguage();
@@ -22,66 +23,59 @@ export const AdminHome: React.FC = () => {
   useEffect(() => { reload(); }, []);
 
   const Chart: React.FC<{ dates: string[]; a: number[]; b: number[]; la: string; lb: string }> = ({ dates, a, b, la, lb }) => {
-    const w = 720, h = 350, p = 28;
-    const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-    const svgRef = useRef<SVGSVGElement | null>(null);
-    const max = Math.max(1, ...a, ...b);
-    const stepX = (w - p * 2) / Math.max(1, dates.length - 1);
-    const toY = (v: number) => h - p - (v / max) * (h - p * 2);
-    const toX = (i: number) => p + i * stepX;
-    const path = (arr: number[]) => arr.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i)} ${toY(v)}`).join(' ');
-    const handleMove = (e: React.MouseEvent<SVGSVGElement>) => {
-      const rect = (e.target as Element).closest('svg')?.getBoundingClientRect();
-      const x = rect ? e.clientX - rect.left : 0;
-      const i = Math.max(0, Math.min(dates.length - 1, Math.round((x - p) / stepX)));
-      setHoverIndex(i);
-    };
-    const handleLeave = () => setHoverIndex(null);
+    const data = dates.map((date, i) => ({
+      date,
+      users: a[i] ?? 0,
+      resumes: b[i] ?? 0,
+    }));
     return (
-      <svg ref={svgRef} width={w} height={h} className="rounded-md border border-gray-200" onMouseMove={handleMove} onMouseLeave={handleLeave}>
-        <rect x={0} y={0} width={w} height={h} fill="#ffffff" rx={12} />
-        <line x1={p} y1={h - p} x2={w - p} y2={h - p} stroke="#e5e7eb" />
-        <line x1={p} y1={p} x2={p} y2={h - p} stroke="#e5e7eb" />
-        {Array.from({ length: 4 }).map((_, i) => {
-          const y = p + ((h - p * 2) / 4) * i;
-          return <line key={`hg-${i}`} x1={p} y1={y} x2={w - p} y2={y} stroke="#f3f4f6" strokeDasharray="3 3" />;
-        })}
-        {dates.map((_, i) => {
-          const x = toX(i);
-          return <line key={`vg-${i}`} x1={x} y1={p} x2={x} y2={h - p} stroke="#f3f4f6" strokeDasharray="3 3" />;
-        })}
-        <path d={path(a)} fill="none" stroke="#3b82f6" strokeWidth={2} />
-        <path d={path(b)} fill="none" stroke="#22c55e" strokeWidth={2} />
-        {a.map((v, i) => (
-          <circle key={`ua-${i}`} cx={toX(i)} cy={toY(v)} r={hoverIndex === i ? 5 : 3} fill="#ffffff" stroke="#3b82f6" strokeWidth={hoverIndex === i ? 2 : 1.5} />
-        ))}
-        {b.map((v, i) => (
-          <circle key={`ub-${i}`} cx={toX(i)} cy={toY(v)} r={hoverIndex === i ? 5 : 3} fill="#ffffff" stroke="#22c55e" strokeWidth={hoverIndex === i ? 2 : 1.5} />
-        ))}
-        <g>
-          <circle cx={w - 200} cy={24} r={5} fill="#3b82f6" />
-          <text x={w - 188} y={28} fontSize="13" fill="#374151">{la}</text>
-          <circle cx={w - 120} cy={24} r={5} fill="#22c55e" />
-          <text x={w - 108} y={28} fontSize="13" fill="#374151">{lb}</text>
-        </g>
-        {hoverIndex !== null && (
-          <>
-            <line x1={toX(hoverIndex)} y1={p} x2={toX(hoverIndex)} y2={h - p} stroke="#e5e7eb" />
-            <rect x={Math.min(w - p - 160, Math.max(p, toX(hoverIndex) + 12))} y={p + 12} width={150} height={60} rx={8} fill="#ffffff" stroke="#e5e7eb" />
-            <text x={Math.min(w - p - 150, Math.max(p + 10, toX(hoverIndex) + 22))} y={p + 32} fontSize="12" fill="#6b7280">{dates[hoverIndex]}</text>
-            <circle cx={Math.min(w - p - 150, Math.max(p + 10, toX(hoverIndex) + 22))} cy={p + 48} r={4} fill="#3b82f6" />
-            <text x={Math.min(w - p - 140, Math.max(p + 20, toX(hoverIndex) + 32))} y={p + 52} fontSize="12" fill="#374151">{la}: {a[hoverIndex]}</text>
-            <circle cx={Math.min(w - p - 90, Math.max(p + 10, toX(hoverIndex) + 92))} cy={p + 48} r={4} fill="#22c55e" />
-            <text x={Math.min(w - p - 80, Math.max(p + 20, toX(hoverIndex) + 102))} y={p + 52} fontSize="12" fill="#374151">{lb}: {b[hoverIndex]}</text>
-          </>
-        )}
-        {dates.map((d, i) => (
-          <text key={`tx-${i}`} x={toX(i)} y={h - p + 16} fontSize="12" fill="#9ca3af" textAnchor="middle">{d}</text>
-        ))}
-        {[0, Math.ceil(max / 4), Math.ceil(max / 2), Math.ceil((3 * max) / 4), max].map((tick, i) => (
-          <text key={`ty-${i}`} x={p - 6} y={toY(tick)} fontSize="12" fill="#9ca3af" textAnchor="end">{tick}</text>
-        ))}
-      </svg>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <CartesianGrid vertical={true} horizontal={true} strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis
+            dataKey="date"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#9ca3af', fontSize: 13 }}
+            dy={10}
+          />
+          <YAxis
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: '#9ca3af', fontSize: 13 }}
+            dx={-5}
+            domain={[0, 'auto']}
+            allowDecimals={false}
+          />
+          <Tooltip
+            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+          />
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            iconType="circle"
+            wrapperStyle={{ paddingTop: '20px' }}
+          />
+          <Line
+            name={la}
+            type="monotone"
+            dataKey="users"
+            stroke="#3b82f6"
+            strokeWidth={1.5}
+            dot={{ r: 3, fill: '#fff', strokeWidth: 1.5, stroke: '#3b82f6' }}
+            activeDot={{ r: 5 }}
+          />
+          <Line
+            name={lb}
+            type="monotone"
+            dataKey="resumes"
+            stroke="#22c55e"
+            strokeWidth={1.5}
+            dot={{ r: 3, fill: '#fff', strokeWidth: 1.5, stroke: '#22c55e' }}
+            activeDot={{ r: 5 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     );
   };
 
