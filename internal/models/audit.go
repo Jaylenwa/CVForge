@@ -13,3 +13,6 @@ type AuditLog struct {
 	UA         string `gorm:"size:256"`
 }
 
+func (AuditLog) TableName() string {
+	return "audit_log"
+}

@@ -49,6 +49,16 @@ import { TemplateCNProduct } from '../../components/templates/cn/TemplateCNProdu
 import { TemplateCNSocial } from '../../components/templates/cn/TemplateCNSocial';
 import { TemplateCNVogue } from '../../components/templates/cn/TemplateCNVogue';
 import { TemplateCNWave } from '../../components/templates/cn/TemplateCNWave';
+import { TemplateCNSeal } from '../../components/templates/cn/TemplateCNSeal';
+import { TemplateCNPaper } from '../../components/templates/cn/TemplateCNPaper';
+import { TemplateCNBamboo } from '../../components/templates/cn/TemplateCNBamboo';
+import { TemplateCNSong } from '../../components/templates/cn/TemplateCNSong';
+import { TemplateCNKai } from '../../components/templates/cn/TemplateCNKai';
+import { TemplateCNInk } from '../../components/templates/cn/TemplateCNInk';
+import { TemplateCNLedger } from '../../components/templates/cn/TemplateCNLedger';
+import { TemplateCNPorcelain } from '../../components/templates/cn/TemplateCNPorcelain';
+import { TemplateCNJade } from '../../components/templates/cn/TemplateCNJade';
+import { TemplateCNMei } from '../../components/templates/cn/TemplateCNMei';
 
 interface PreviewProps {
   data: ResumeData;
@@ -151,6 +161,20 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
           case 't39': return <TemplateCNSocial data={data} styles={styles} disableShadow={disableShadow} />;
           case 't40': return <TemplateCNVogue data={data} styles={styles} disableShadow={disableShadow} />;
           case 't41': return <TemplateCNWave data={data} styles={styles} disableShadow={disableShadow} />;
+          
+          // CN Single Column (t42-t47)
+          case 't42': return <TemplateCNSeal data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't43': return <TemplateCNPaper data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't44': return <TemplateCNBamboo data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't45': return <TemplateCNSong data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't46': return <TemplateCNKai data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't47': return <TemplateCNInk data={data} styles={styles} disableShadow={disableShadow} />;
+          
+          // CN Single Column (t48-t51)
+          case 't48': return <TemplateCNLedger data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't49': return <TemplateCNPorcelain data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't50': return <TemplateCNJade data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't51': return <TemplateCNMei data={data} styles={styles} disableShadow={disableShadow} />;
 
           default: return <TemplateClassic data={data} styles={styles} />;
       }

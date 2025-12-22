@@ -29,6 +29,10 @@ type Resume struct {
 	Sections        []ResumeSection `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
 }
 
+func (Resume) TableName() string {
+	return "resume"
+}
+
 type ResumeSection struct {
 	gorm.Model
 	ResumeID   uint
@@ -40,6 +44,10 @@ type ResumeSection struct {
 	Items      []ResumeItem `gorm:"constraint:OnDelete:CASCADE;foreignKey:SectionID"`
 }
 
+func (ResumeSection) TableName() string {
+	return "resume_section"
+}
+
 type ResumeItem struct {
 	gorm.Model
 	SectionID   uint
@@ -49,4 +57,8 @@ type ResumeItem struct {
 	DateRange   string `gorm:"size:64"`
 	Description string `gorm:"type:text"`
 	OrderNum    int
+}
+
+func (ResumeItem) TableName() string {
+	return "resume_item"
 }

@@ -7,7 +7,7 @@ import { useToast } from '../../components/ui/Toast';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ResumeArtboard } from '../editor/ResumePreview';
-import { INITIAL_RESUME } from '../../services/mockData';
+import { INITIAL_RESUME, MOCK_TEMPLATES } from '../../services/mockData';
 
 type Row = {
   id: string;
@@ -42,6 +42,10 @@ export const TemplatesPage: React.FC = () => {
   const rafRef = useRef<number | null>(null);
   const roRef = useRef<ResizeObserver | null>(null);
 
+  const [syncing, setSyncing] = useState(false);
+  const [syncDone, setSyncDone] = useState(0);
+  const [syncTotal, setSyncTotal] = useState(0);
+
   const load = async () => {
     try {
       const res = await fetch(`${API_BASE}/templates`);
@@ -61,6 +65,37 @@ export const TemplatesPage: React.FC = () => {
   };
   useEffect(() => { load(); }, []);
 
+  const handleSyncMockData = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    setSyncDone(0);
+    const data = MOCK_TEMPLATES;
+    setSyncTotal(data.length);
+    const existing = new Set(items.map(i => i.id));
+    let errors = 0;
+    for (const t of data) {
+      const body = { externalId: t.id, name: t.name, tags: (t.tags || []).join(','), category: t.category, popularity: t.popularity, isPremium: t.isPremium };
+      try {
+        if (existing.has(t.id)) {
+          await updateTemplate(t.id, { name: body.name, tags: body.tags, category: body.category, popularity: body.popularity, isPremium: body.isPremium });
+        } else {
+          await createTemplate(body);
+          existing.add(t.id);
+        }
+      } catch {
+        errors += 1;
+      } finally {
+        setSyncDone(x => x + 1);
+      }
+    }
+    setSyncing(false);
+    await load();
+    if (errors === 0) {
+      showToast('同步完成', 'success');
+    } else {
+      showToast(`同步完成，失败 ${errors} 项`, 'warning');
+    }
+  };
   const filtered = items.filter(i => {
     const s = keyword.trim().toLowerCase();
     const m1 = !s || i.name.toLowerCase().includes(s) || i.id.toLowerCase().includes(s);
@@ -162,7 +197,12 @@ export const TemplatesPage: React.FC = () => {
             </select>
           </div>
         </div>
-        <Button onClick={openCreate}>{t('admin.actions.create')}</Button>
+        <div className="flex items-center space-x-2">
+          <Button onClick={openCreate}>{t('admin.actions.create')}</Button>
+          <Button variant="outline" onClick={handleSyncMockData} disabled={syncing}>
+            {syncing ? `${syncDone}/${syncTotal} 同步中` : '同步 mockData 到后端'}
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white shadow-sm rounded-md overflow-hidden">

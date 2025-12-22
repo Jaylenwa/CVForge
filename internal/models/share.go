@@ -8,3 +8,7 @@ type ShareLink struct {
 	Slug     string `gorm:"uniqueIndex;size:64"`
 	IsPublic bool
 }
+
+func (ShareLink) TableName() string {
+	return "share_link"
+}

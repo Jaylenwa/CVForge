@@ -24,13 +24,13 @@ func (s *Service) ListAllPayload() (string, error) {
 			return val, nil
 		}
 	}
-	count, err := s.repo.Count()
-	if err != nil {
-		return "", err
-	}
-	if count == 0 {
-		s.seed()
-	}
+	// count, err := s.repo.Count()
+	// if err != nil {
+	// 	return "", err
+	// }
+	// if count == 0 {
+	// 	s.seed()
+	// }
 	list, err := s.repo.ListAll()
 	if err != nil {
 		return "", err

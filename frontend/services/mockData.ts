@@ -2,146 +2,195 @@ import { ResumeData, ResumeSectionType, Template } from '../types';
 
 export const MOCK_TEMPLATES: Template[] = [
   // Base
-  { id: 't1', name: 'Classic Professional', tags: ['Professional', 'Simple', 'ATS Friendly'], popularity: 98, isPremium: false, category: 'General' },
-  { id: 't2', name: 'Modern Dark', tags: ['Creative', 'Design', 'Startup'], popularity: 85, isPremium: true, category: 'Creative' },
-  { id: 't3', name: 'Tech Minimalist', tags: ['Minimalist', 'Tech', 'Clean'], popularity: 92, isPremium: false, category: 'IT' },
-  { id: 't4', name: 'Executive Serif', tags: ['Professional', 'Management', 'Senior'], popularity: 70, isPremium: true, category: 'Finance' },
-  { id: 't5', name: 'Creative Bold', tags: ['Creative', 'Marketing', 'Colorful'], popularity: 65, isPremium: true, category: 'Creative' },
-  { id: 't6', name: 'Elegant Teal', tags: ['Modern', 'Fresh', 'Entry Level'], popularity: 88, isPremium: false, category: 'General' },
+  { id: 't1', name: '经典专业版', tags: ['专业', '简洁', 'ATS 友好'], popularity: 98, isPremium: false, category: 'General' },
+  { id: 't2', name: '现代暗色', tags: ['创意', '设计', '初创'], popularity: 85, isPremium: true, category: 'Creative' },
+  { id: 't3', name: '技术极简', tags: ['极简', '技术', '清爽'], popularity: 92, isPremium: false, category: 'IT' },
+  { id: 't4', name: '高管衬线', tags: ['专业', '管理', '资深'], popularity: 70, isPremium: true, category: 'Finance' },
+  { id: 't5', name: '创意大胆', tags: ['创意', '营销', '色彩'], popularity: 65, isPremium: true, category: 'Creative' },
+  { id: 't6', name: '优雅青绿', tags: ['现代', '清新', '入门'], popularity: 88, isPremium: false, category: 'General' },
 
   // CN
-  { id: 't7', name: 'Chinese Blue', tags: ['General', 'Chinese', 'ATS Friendly'], popularity: 75, isPremium: false, category: 'General' },
-  { id: 't8', name: 'Chinese Ziyuan', tags: ['General', 'Chinese', 'Classic'], popularity: 80, isPremium: false, category: 'General' },
-  { id: 't9', name: 'Chinese Modern', tags: ['Modern', 'Chinese', 'Clean'], popularity: 82, isPremium: false, category: 'General' },
-  { id: 't10', name: 'Chinese Business', tags: ['Business', 'Chinese', 'Professional'], popularity: 85, isPremium: false, category: 'Finance' },
-  { id: 't11', name: 'Chinese Creative', tags: ['Creative', 'Chinese', 'Design'], popularity: 78, isPremium: true, category: 'Creative' },
-  { id: 't12', name: 'Chinese Tech', tags: ['Tech', 'Chinese', 'Geek'], popularity: 88, isPremium: false, category: 'IT' },
-  { id: 't13', name: 'Chinese Academic', tags: ['Academic', 'Chinese', 'Research'], popularity: 60, isPremium: false, category: 'General' },
-  { id: 't14', name: 'Chinese Minimal', tags: ['Minimal', 'Chinese', 'Simple'], popularity: 90, isPremium: false, category: 'General' },
-  { id: 't15', name: 'Chinese Marketing', tags: ['Marketing', 'Chinese', 'Bold'], popularity: 72, isPremium: true, category: 'Creative' },
-  { id: 't16', name: 'Chinese Artistic', tags: ['Artistic', 'Chinese', 'Ink'], popularity: 68, isPremium: true, category: 'Creative' },
-  { id: 't17', name: 'Chinese Retro', tags: ['Retro', 'Chinese', 'Newspaper'], popularity: 55, isPremium: true, category: 'Creative' },
-  { id: 't18', name: 'Chinese Fresh', tags: ['Fresh', 'Chinese', 'Green'], popularity: 76, isPremium: false, category: 'General' },
-  { id: 't19', name: 'Chinese Dark', tags: ['Dark', 'Chinese', 'Luxury'], popularity: 65, isPremium: true, category: 'Creative' },
-  { id: 't20', name: 'Chinese Magazine', tags: ['Magazine', 'Chinese', 'Fashion'], popularity: 62, isPremium: true, category: 'Creative' },
-  { id: 't21', name: 'Chinese Timeline', tags: ['Timeline', 'Chinese', 'Infographic'], popularity: 70, isPremium: false, category: 'General' },
+  { id: 't7', name: '蓝色简约', tags: ['通用', '中文', 'ATS 友好'], popularity: 75, isPremium: false, category: 'General' },
+  { id: 't8', name: '紫苑经典', tags: ['通用', '中文', '经典'], popularity: 80, isPremium: false, category: 'General' },
+  { id: 't9', name: '现代中文', tags: ['现代', '中文', '清爽'], popularity: 82, isPremium: false, category: 'General' },
+  { id: 't10', name: '商务专业', tags: ['商务', '中文', '专业'], popularity: 85, isPremium: false, category: 'Finance' },
+  { id: 't11', name: '中文创意', tags: ['创意', '中文', '设计'], popularity: 78, isPremium: true, category: 'Creative' },
+  { id: 't12', name: '科技极客', tags: ['技术', '中文', '极客'], popularity: 88, isPremium: false, category: 'IT' },
+  { id: 't13', name: '学术研究', tags: ['学术', '中文', '研究'], popularity: 60, isPremium: false, category: 'General' },
+  { id: 't14', name: '中文极简', tags: ['极简', '中文', '简洁'], popularity: 90, isPremium: false, category: 'General' },
+  { id: 't15', name: '营销大胆', tags: ['营销', '中文', '醒目'], popularity: 72, isPremium: true, category: 'Creative' },
+  { id: 't16', name: '艺术水墨', tags: ['艺术', '中文', '水墨'], popularity: 68, isPremium: true, category: 'Creative' },
+  { id: 't17', name: '复古报纸', tags: ['复古', '中文', '报纸'], popularity: 55, isPremium: true, category: 'Creative' },
+  { id: 't18', name: '清新绿色', tags: ['清新', '中文', '绿色'], popularity: 76, isPremium: false, category: 'General' },
+  { id: 't19', name: '暗黑奢华', tags: ['暗黑', '中文', '奢华'], popularity: 65, isPremium: true, category: 'Creative' },
+  { id: 't20', name: '杂志时尚', tags: ['杂志', '中文', '时尚'], popularity: 62, isPremium: true, category: 'Creative' },
+  { id: 't21', name: '时间轴信息图', tags: ['时间轴', '中文', '信息图'], popularity: 70, isPremium: false, category: 'General' },
 
   // New CN (t22-t41)
-  { id: 't22', name: 'Chinese Architect', tags: ['Architecture', 'Chinese', 'Structure'], popularity: 60, isPremium: true, category: 'Creative' },
-  { id: 't23', name: 'Chinese Block', tags: ['Block', 'Chinese', 'Modern'], popularity: 75, isPremium: false, category: 'General' },
-  { id: 't24', name: 'Chinese Brush', tags: ['Brush', 'Chinese', 'Art'], popularity: 58, isPremium: true, category: 'Creative' },
-  { id: 't25', name: 'Chinese Cloud', tags: ['Cloud', 'Chinese', 'Soft'], popularity: 66, isPremium: false, category: 'IT' },
-  { id: 't26', name: 'Chinese Code', tags: ['Code', 'Chinese', 'Dev'], popularity: 85, isPremium: false, category: 'IT' },
-  { id: 't27', name: 'Chinese Fashion', tags: ['Fashion', 'Chinese', 'Trend'], popularity: 70, isPremium: true, category: 'Creative' },
-  { id: 't28', name: 'Chinese Finance', tags: ['Finance', 'Chinese', 'Data'], popularity: 82, isPremium: false, category: 'Finance' },
-  { id: 't29', name: 'Chinese Game', tags: ['Game', 'Chinese', 'Playful'], popularity: 64, isPremium: false, category: 'IT' },
-  { id: 't30', name: 'Chinese Geometric', tags: ['Geometric', 'Chinese', 'Shape'], popularity: 72, isPremium: false, category: 'General' },
-  { id: 't31', name: 'Chinese Glitch', tags: ['Glitch', 'Chinese', 'Cyberpunk'], popularity: 50, isPremium: true, category: 'IT' },
-  { id: 't32', name: 'Chinese Hexagon', tags: ['Hexagon', 'Chinese', 'Tech'], popularity: 78, isPremium: false, category: 'IT' },
-  { id: 't33', name: 'Chinese Law', tags: ['Law', 'Chinese', 'Serious'], popularity: 68, isPremium: false, category: 'General' },
-  { id: 't34', name: 'Chinese Medical', tags: ['Medical', 'Chinese', 'Clean'], popularity: 74, isPremium: false, category: 'General' },
-  { id: 't35', name: 'Chinese Newspaper', tags: ['Newspaper', 'Chinese', 'Classic'], popularity: 52, isPremium: true, category: 'Creative' },
-  { id: 't36', name: 'Chinese Origami', tags: ['Origami', 'Chinese', 'Paper'], popularity: 60, isPremium: true, category: 'Creative' },
-  { id: 't37', name: 'Chinese Pixel', tags: ['Pixel', 'Chinese', 'Retro'], popularity: 55, isPremium: true, category: 'IT' },
-  { id: 't38', name: 'Chinese Product', tags: ['Product', 'Chinese', 'Showcase'], popularity: 80, isPremium: false, category: 'General' },
-  { id: 't39', name: 'Chinese Social', tags: ['Social', 'Chinese', 'Media'], popularity: 76, isPremium: false, category: 'Creative' },
-  { id: 't40', name: 'Chinese Vogue', tags: ['Vogue', 'Chinese', 'Style'], popularity: 65, isPremium: true, category: 'Creative' },
-  { id: 't41', name: 'Chinese Wave', tags: ['Wave', 'Chinese', 'Fluid'], popularity: 70, isPremium: false, category: 'Creative' },
+  { id: 't22', name: '建筑结构', tags: ['建筑', '中文', '结构'], popularity: 60, isPremium: true, category: 'Creative' },
+  { id: 't23', name: '模块化现代', tags: ['模块', '中文', '现代'], popularity: 75, isPremium: false, category: 'General' },
+  { id: 't24', name: '毛笔艺术', tags: ['毛笔', '中文', '艺术'], popularity: 58, isPremium: true, category: 'Creative' },
+  { id: 't25', name: '云朵柔和', tags: ['云端', '中文', '柔和'], popularity: 66, isPremium: false, category: 'IT' },
+  { id: 't26', name: '代码开发', tags: ['代码', '中文', '开发'], popularity: 85, isPremium: false, category: 'IT' },
+  { id: 't27', name: '潮流时尚', tags: ['时尚', '中文', '潮流'], popularity: 70, isPremium: true, category: 'Creative' },
+  { id: 't28', name: '金融数据', tags: ['金融', '中文', '数据'], popularity: 82, isPremium: false, category: 'Finance' },
+  { id: 't29', name: '游戏趣味', tags: ['游戏', '中文', '趣味'], popularity: 64, isPremium: false, category: 'IT' },
+  { id: 't30', name: '几何图形', tags: ['几何', '中文', '造型'], popularity: 72, isPremium: false, category: 'General' },
+  { id: 't31', name: '赛博故障', tags: ['故障', '中文', '赛博'], popularity: 50, isPremium: true, category: 'IT' },
+  { id: 't32', name: '六边形科技', tags: ['六边形', '中文', '科技'], popularity: 78, isPremium: false, category: 'IT' },
+  { id: 't33', name: '法律严谨', tags: ['法律', '中文', '严谨'], popularity: 68, isPremium: false, category: 'General' },
+  { id: 't34', name: '医疗洁净', tags: ['医疗', '中文', '洁净'], popularity: 74, isPremium: false, category: 'General' },
+  { id: 't35', name: '报纸经典', tags: ['报纸', '中文', '经典'], popularity: 52, isPremium: true, category: 'Creative' },
+  { id: 't36', name: '折纸艺术', tags: ['折纸', '中文', '纸感'], popularity: 60, isPremium: true, category: 'Creative' },
+  { id: 't37', name: '像素复古', tags: ['像素', '中文', '复古'], popularity: 55, isPremium: true, category: 'IT' },
+  { id: 't38', name: '产品展示', tags: ['产品', '中文', '展示'], popularity: 80, isPremium: false, category: 'General' },
+  { id: 't39', name: '社交媒体', tags: ['社交', '中文', '媒体'], popularity: 76, isPremium: false, category: 'Creative' },
+  { id: 't40', name: '轻奢风尚', tags: ['风尚', '中文', '轻奢'], popularity: 65, isPremium: true, category: 'Creative' },
+  { id: 't41', name: '流线波纹', tags: ['波纹', '中文', '流线'], popularity: 70, isPremium: false, category: 'Creative' },
+  
+  // CN Single Column (t42-t47)
+  { id: 't42', name: '印章雅致', tags: ['中国风', '单列', '稳重'], popularity: 78, isPremium: false, category: 'General' },
+  { id: 't43', name: '米色宣纸', tags: ['中国风', '单列', '温润'], popularity: 80, isPremium: false, category: 'General' },
+  { id: 't44', name: '竹韵清雅', tags: ['中国风', '单列', '清雅'], popularity: 76, isPremium: false, category: 'General' },
+  { id: 't45', name: '宋韵简洁', tags: ['中国风', '单列', '宋体'], popularity: 74, isPremium: false, category: 'General' },
+  { id: 't46', name: '楷书端正', tags: ['中国风', '单列', '楷体'], popularity: 72, isPremium: false, category: 'General' },
+  { id: 't47', name: '墨痕淡雅', tags: ['中国风', '单列', '淡雅'], popularity: 70, isPremium: false, category: 'General' },
+  
+  // CN Single Column (t48-t51)
+  { id: 't48', name: '账簿线稿', tags: ['中国风', '单列', '规整'], popularity: 73, isPremium: false, category: 'General' },
+  { id: 't49', name: '青花瓷蓝', tags: ['中国风', '单列', '清洁'], popularity: 75, isPremium: false, category: 'General' },
+  { id: 't50', name: '翠玉清润', tags: ['中国风', '单列', '清润'], popularity: 74, isPremium: false, category: 'General' },
+  { id: 't51', name: '梅韵简雅', tags: ['中国风', '单列', '简雅'], popularity: 72, isPremium: false, category: 'General' },
 ];
 
 export const INITIAL_RESUME: ResumeData = {
   id: 'new',
-  title: 'My Resume',
+  title: '我的简历',
   templateId: 't1',
   themeConfig: {
     color: '#000000',
-    fontFamily: 'inter',
+    fontFamily: 'yahei',
     spacing: 'normal'
   },
   lastModified: Date.now(),
   personalInfo: {
-    fullName: 'YOUR NAME',
-    email: 'email@example.com',
-    phone: '123-456-7890',
+    fullName: '张伟',
+    email: 'zhangwei@example.com',
+    phone: '138-0000-0000',
     avatarUrl: 'https://i.pravatar.cc/256?img=12',
-    jobTitle: 'Software Engineer',
-    gender: 'Male',
-    age: '25',
-    maritalStatus: 'Single',
-    politicalStatus: 'Member',
-    birthplace: 'Beijing',
-    ethnicity: 'Han',
+    jobTitle: '高级软件工程师',
+    gender: '男',
+    age: '28',
+    maritalStatus: '未婚',
+    politicalStatus: '中共党员',
+    birthplace: '江苏苏州',
+    ethnicity: '汉族',
     height: '180cm',
     weight: '70kg',
-    customInfo: []
+    city: '上海',
+    customInfo: [
+      { label: 'GitHub', value: 'github.com/zhangwei' },
+      { label: '个人网站', value: 'https://zhangwei.dev' },
+      { label: '微信', value: 'zhangwei_dev' },
+      { label: '期望城市', value: '上海 / 杭州' }
+    ]
   },
   sections: [
     {
       id: 'summary',
       type: ResumeSectionType.Summary,
-      title: 'Professional Summary',
+      title: '个人简介',
       isVisible: true,
       items: [
         {
           id: 's1',
-          description: 'Experienced software engineer with a passion for building scalable web applications.'
+          description: '拥有 5 年以上全栈开发经验，专注于 React/TypeScript/Node.js 与 Go，擅长前后端协同与系统性能优化，具备从 0 到 1 搭建企业级项目的实战能力。熟悉微服务架构、CI/CD 与云原生部署，能有效推动跨团队协作与交付。'
+        },
+        {
+          id: 's2',
+          description: '<ul><li>核心页面首屏加载降低 45%，转化率提升 18%</li><li>主导组件库与工程化改造，构建速度提升 35%</li><li>设计并落地日志与监控体系，故障定位时间缩短 60%</li></ul>'
         }
       ]
     },
     {
       id: 'exp',
       type: ResumeSectionType.Experience,
-      title: 'Work Experience',
+      title: '工作经历',
       isVisible: true,
       items: [
         {
           id: 'e1',
-          title: 'Senior Developer',
-          subtitle: 'Tech Corp',
-          dateRange: '2020 - Present',
-          description: 'Led a team of 5 developers to build a new SaaS product.'
+          title: '高级软件工程师',
+          subtitle: '某知名互联网公司',
+          dateRange: '2021.07 - 至今',
+          description: '<ul><li>负责核心前端架构重构，搭建 React 18 + TypeScript + Vite 技术栈与组件库</li><li>引入服务端渲染与按需加载，页面首屏从 3.2s 降至 1.8s</li><li>协同后端落地基于 Go 的微服务，拆分单体应用，稳定性提升</li><li>建设自动化测试与 CI/CD 流程，发布效率提升，故障率下降</li><li>推动数据可观测方案（埋点/日志/监控/告警），显著缩短问题定位时间</li></ul>'
+        },
+        {
+          id: 'e2',
+          title: '全栈工程师',
+          subtitle: '某 SaaS 初创公司',
+          dateRange: '2019.07 - 2021.06',
+          description: '<ul><li>独立负责三个核心模块的端到端开发（Web + API + 数据库）</li><li>基于 Node.js/NestJS 实现多租户权限与审计日志，提高安全合规性</li><li>设计并优化数据库索引与缓存策略，接口 P95 延迟下降 40%</li><li>与产品团队合作完善需求与交互，推动版本迭代与用户增长</li></ul>'
         }
       ]
     },
     {
       id: 'edu',
       type: ResumeSectionType.Education,
-      title: 'Education',
+      title: '教育背景',
       isVisible: true,
       items: [
         {
           id: 'ed1',
-          title: 'Computer Science',
-          subtitle: 'University of Tech',
-          dateRange: '2016 - 2020',
-          description: 'Bachelor of Science'
+          title: '计算机科学与技术（本科）',
+          subtitle: '上海交通大学',
+          dateRange: '2015 - 2019',
+          description: '主修数据结构与算法、操作系统、计算机网络；ACM 校队成员，省级竞赛获奖。'
+        },
+        {
+          id: 'ed2',
+          title: '软件工程（硕士）',
+          subtitle: '浙江大学',
+          dateRange: '2019 - 2021',
+          description: '研究方向为 Web 性能优化与前端工程化；以第一作者发表相关论文。'
         }
       ]
     },
     {
       id: 'skills',
       type: ResumeSectionType.Skills,
-      title: 'Skills',
+      title: '技能特长',
       isVisible: true,
       items: [
-        { id: 'sk1', description: 'React' },
-        { id: 'sk2', description: 'TypeScript' },
-        { id: 'sk3', description: 'Go' },
-        { id: 'sk4', description: 'Node.js' }
+        { id: 'sk1', description: 'Go / Gin / 微服务' }
       ]
     },
     {
       id: 'projects',
       type: ResumeSectionType.Projects,
-      title: 'Projects',
+      title: '项目经历',
       isVisible: true,
       items: [
         {
           id: 'p1',
-          title: 'OpenResume',
-          subtitle: 'Open Source',
+          title: 'OpenResume 开源简历生成器',
+          subtitle: '开源项目',
           dateRange: '2023',
-          description: 'A free and open source resume builder.'
+          description: '<ul><li>设计并实现拖拽编辑、模板切换、PDF 导出等核心功能</li><li>支持多语言与主题配置，适配多行业模板</li><li>开源社区维护，累计 Star 及 Issue 处理</li></ul>'
+        },
+        {
+          id: 'p2',
+          title: '智能报表平台',
+          subtitle: '企业内部系统',
+          dateRange: '2022',
+          description: '<ul><li>前端采用可视化搭建与低代码思路，提升报表配置效率</li><li>后端提供统一数据网关与权限体系，保障数据安全</li><li>上线后减少运营成本 30%，报告生成时间从小时级降至分钟级</li></ul>'
+        },
+        {
+          id: 'p3',
+          title: '跨境电商多语言官网',
+          subtitle: '自由职业',
+          dateRange: '2024',
+          description: '<ul><li>基于 Next.js 与国际化方案实现中/英/西多语言站点</li><li>接入 Stripe 支付与内容管理系统（CMS），支持活动快速上线</li><li>实现 SEO 友好与性能优化，Google PageSpeed 评分提升至 95+</li></ul>'
         }
       ]
     }

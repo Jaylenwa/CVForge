@@ -39,6 +39,15 @@ func (s *Service) IssueTokens(uid uint) (string, string) {
 	return mk(2 * time.Hour), mk(7 * 24 * time.Hour)
 }
 
+func (s *Service) initialRole() string {
+	var n int64
+	s.db.Model(&User{}).Count(&n)
+	if n == 0 {
+		return "admin"
+	}
+	return "user"
+}
+
 func (s *Service) GenerateVerifyCode() string {
 	n := 6
 	out := make([]byte, n)
@@ -67,7 +76,7 @@ func (s *Service) Register(email, code, password, name string) (string, string, 
 		return "", "", http.ErrBodyNotAllowed
 	}
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	u := User{Email: email, PasswordHash: string(hash), Name: name}
+	u := User{Email: email, PasswordHash: string(hash), Name: name, Role: s.initialRole()}
 	if err := s.db.Create(&u).Error; err != nil {
 		return "", "", gorm.ErrDuplicatedKey
 	}
@@ -204,7 +213,7 @@ func (s *Service) FindOrCreateWeChatUser(ui WechatUserInfo, tr WechatTokenRespon
 		Name:      ui.Nickname,
 		AvatarURL: ui.HeadImgURL,
 		IsActive:  true,
-		Role:      "user",
+		Role:      s.initialRole(),
 	}
 	if err := s.db.Create(&user).Error; err != nil {
 		return User{}, err
@@ -380,7 +389,7 @@ func (s *Service) FindOrCreateGithubUser(ui GithubUserInfo) (User, error) {
 		Email:     ui.Email, // GitHub might return empty email if private, but we try
 		AvatarURL: ui.AvatarURL,
 		IsActive:  true,
-		Role:      "user",
+		Role:      s.initialRole(),
 	}
 	if user.Name == "" {
 		user.Name = ui.Login
