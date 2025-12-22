@@ -1,0 +1,8 @@
+{
+  "name": "Elite Template Manager",
+  "description": "A sophisticated dashboard for managing content templates with modern UI patterns, featuring AI-powered tag suggestions and professional data visualization.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

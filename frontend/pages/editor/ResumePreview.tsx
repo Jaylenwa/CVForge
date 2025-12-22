@@ -72,9 +72,10 @@ export interface ArtboardProps {
   disableShadow?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  showPageHint?: boolean;
 }
 
-export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disableShadow = false, className = '', style = {} }) => {
+export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disableShadow = false, className = '', style = {}, showPageHint = true }) => {
   const { t } = useLanguage();
   const styles = getThemeStyles(data.themeConfig);
   const rootRef = React.useRef<HTMLDivElement>(null);
@@ -187,9 +188,11 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
         className={`relative w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none border border-gray-200 print:border-0 ${className}`}
         style={containerStyle}
       >
-        <div className="absolute left-2 top-2 px-2 py-1 text-xs rounded bg-amber-100 text-amber-800 shadow-sm print:hidden">
-          {t('preview.pagesHint').replace('{count}', String(pageInfo.count))}
-        </div>
+        {showPageHint && (
+          <div className="absolute left-2 top-2 px-2 py-1 text-xs rounded bg-amber-100 text-amber-800 shadow-sm print:hidden">
+            {t('preview.pagesHint').replace('{count}', String(pageInfo.count))}
+          </div>
+        )}
         {Array.from({ length: Math.max(0, pageInfo.count - 1) }).map((_, i) => {
           const top = (i + 1) * pageInfo.pageHeight;
           return (
