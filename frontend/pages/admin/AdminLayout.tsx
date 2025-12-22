@@ -11,6 +11,7 @@ export const AdminLayout: React.FC = () => {
     { to: AppRoute.AdminResumes, label: t('admin.resumes') },
     { to: AppRoute.AdminTemplates, label: t('admin.templates') },
     { to: AppRoute.AdminShares, label: t('admin.shares') },
+    { to: AppRoute.AdminConfigs, label: 'Settings' },
   ];
   return (
     <MainLayout hideFooter>

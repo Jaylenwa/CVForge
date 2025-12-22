@@ -6,7 +6,8 @@ import { Button } from '../../components/ui/Button';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { sendVerificationCode, verifyCode, registerUser } from '../../services/authService';
-import { AppRoute } from '../../types';
+import { getAuthConfig } from '../../services/configService';
+import { AppRoute, AuthConfig } from '../../types';
 
 export const Register: React.FC = () => {
   const { t } = useLanguage();
@@ -17,6 +18,11 @@ export const Register: React.FC = () => {
   const [step, setStep] = useState<1 | 2>(1); // 1: Email, 2: Code & Password
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [authConfig, setAuthConfig] = useState<AuthConfig | null>(null);
+
+  useEffect(() => {
+    getAuthConfig().then(setAuthConfig);
+  }, []);
   
   // Timer for code
   const [countdown, setCountdown] = useState(0);
@@ -73,11 +79,13 @@ export const Register: React.FC = () => {
     setLoading(true);
 
     try {
-        const isValid = await verifyCode(formData.email, formData.code);
-        if (!isValid) {
-            setError(t('auth.error.invalidCode'));
-            setLoading(false);
-            return;
+        if (authConfig?.enableEmailVerification) {
+            const isValid = await verifyCode(formData.email, formData.code);
+            if (!isValid) {
+                setError(t('auth.error.invalidCode'));
+                setLoading(false);
+                return;
+            }
         }
         const res = await registerUser(formData.email, formData.code, formData.password);
         if (res.success) {
@@ -219,7 +227,7 @@ export const Register: React.FC = () => {
             </div>
         )}
         
-        {step === 1 ? (
+        {step === 1 && authConfig?.enableEmailVerification ? (
              <Button 
                 type="button" 
                 onClick={handleSendCode} 

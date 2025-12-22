@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"openresume/internal/infra/config"
+	conf "openresume/internal/module/config"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -18,8 +19,8 @@ type Handler struct {
 	svc *Service
 }
 
-func NewHandler(cfg config.Config, rdb *redis.Client, db *gorm.DB) *Handler {
-	return &Handler{svc: NewService(cfg, rdb, db)}
+func NewHandler(cfg config.Config, sysConfig *conf.Service, rdb *redis.Client, db *gorm.DB) *Handler {
+	return &Handler{svc: NewService(cfg, sysConfig, rdb, db)}
 }
 
 func popupHTML(origin, access, refresh string, user map[string]any) string {

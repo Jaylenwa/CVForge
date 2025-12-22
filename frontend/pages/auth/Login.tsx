@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Github, ArrowLeft, Globe } from 'lucide-react';
 import { WeChatIcon } from '../../components/ui/WeChatIcon';
@@ -6,7 +6,8 @@ import { Button } from '../../components/ui/Button';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { loginUser } from '../../services/authService';
-import { AppRoute } from '../../types';
+import { getAuthConfig } from '../../services/configService';
+import { AppRoute, AuthConfig } from '../../types';
 
 export const Login: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -15,6 +16,11 @@ export const Login: React.FC = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [authConfig, setAuthConfig] = useState<AuthConfig | null>(null);
+
+  useEffect(() => {
+    getAuthConfig().then(setAuthConfig);
+  }, []);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -196,6 +202,7 @@ export const Login: React.FC = () => {
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
+              {authConfig?.enableGithubLogin && (
               <div>
                 <Button
                   variant="outline"
@@ -207,6 +214,8 @@ export const Login: React.FC = () => {
                   {t('auth.provider.github')}
                 </Button>
               </div>
+              )}
+              {authConfig?.enableWeChatLogin && (
               <div>
                 <Button
                   variant="outline"
@@ -218,6 +227,7 @@ export const Login: React.FC = () => {
                   {t('auth.provider.wechat')}
                 </Button>
               </div>
+              )}
             </div>
           </div>
           

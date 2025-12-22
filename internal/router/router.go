@@ -8,6 +8,7 @@ import (
 	"openresume/internal/middleware"
 	"openresume/internal/module/ai"
 	"openresume/internal/module/auth"
+	conf "openresume/internal/module/config"
 	"openresume/internal/module/health"
 	"openresume/internal/module/pdf"
 	"openresume/internal/module/resume"
@@ -29,7 +30,10 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 
 	api := router.Group("/api/v1")
 
-	authH := auth.NewHandler(cfg, rdb, db)
+	confService := conf.NewService(db, rdb)
+	confHandler := conf.NewHandler(confService)
+
+	authH := auth.NewHandler(cfg, confService, rdb, db)
 	userAuth := middleware.Auth(cfg)
 	userAdmin := middleware.RequireRole("admin")
 	templateH := template.NewHandler(db, rdb)
@@ -37,6 +41,7 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 	api.GET("/templates/:id", templateH.GetByID)
 
 	authR := api.Group("/auth")
+	authR.GET("/config", confHandler.GetPublic)
 	authR.GET("/wechat/redirect", middleware.RateLimit(rdb, 10, time.Minute), authH.WeChatRedirect(cfg))
 	authR.GET("/wechat/callback", middleware.RateLimit(rdb, 30, time.Minute), authH.WeChatCallback(cfg))
 	authR.GET("/github/redirect", middleware.RateLimit(rdb, 10, time.Minute), authH.GithubRedirect(cfg))
@@ -96,6 +101,9 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 	adm.GET("/share-links", shareAdmH.AdminList)
 	adm.PATCH("/share-links/:slug", shareAdmH.AdminUpdate)
 	adm.DELETE("/share-links/:slug", shareAdmH.AdminDelete)
+
+	adm.GET("/configs", confHandler.AdminList)
+	adm.PUT("/configs", confHandler.AdminUpdate)
 
 	air := api.Group("/ai")
 	air.Use(middleware.RateLimit(rdb, 10, time.Minute))

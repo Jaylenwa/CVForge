@@ -80,7 +80,24 @@ export enum AppRoute {
   AdminUsers = '/admin/users',
   AdminResumes = '/admin/resumes',
   AdminTemplates = '/admin/templates',
-  AdminShares = '/admin/shares'
+  AdminShares = '/admin/shares',
+  AdminConfigs = '/admin/configs'
 }
 
 export type Language = 'en' | 'zh';
+
+export interface SystemConfig {
+  key: string;
+  value: string;
+  description: string;
+  type: string;
+}
+
+export interface AuthConfig {
+  enableEmailVerification: boolean;
+  enableWeChatLogin: boolean;
+  enableGithubLogin: boolean;
+  weChatAppID: string;
+  githubClientID: string;
+}
+

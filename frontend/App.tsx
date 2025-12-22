@@ -24,6 +24,7 @@ import { UsersPage } from './pages/admin/UsersPage';
 import { ResumesPage } from './pages/admin/ResumesPage';
 import { TemplatesPage } from './pages/admin/TemplatesPage';
 import { SharesPage } from './pages/admin/SharesPage';
+import { ConfigPage } from './pages/admin/ConfigPage';
 
 const LayoutWrapper = () => (
     <MainLayout>
@@ -71,6 +72,7 @@ const App: React.FC = () => {
                   <Route path={AppRoute.AdminResumes} element={<ResumesPage />} />
                   <Route path={AppRoute.AdminTemplates} element={<TemplatesPage />} />
                   <Route path={AppRoute.AdminShares} element={<SharesPage />} />
+                  <Route path={AppRoute.AdminConfigs} element={<ConfigPage />} />
                 </Route>
               </Route>
               

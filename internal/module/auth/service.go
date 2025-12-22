@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"openresume/internal/infra/config"
+	conf "openresume/internal/module/config"
 	"openresume/internal/pkg/mailer"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -21,13 +22,14 @@ import (
 )
 
 type Service struct {
-	cfg config.Config
-	rdb *redis.Client
-	db  *gorm.DB
+	cfg       config.Config
+	sysConfig *conf.Service
+	rdb       *redis.Client
+	db        *gorm.DB
 }
 
-func NewService(cfg config.Config, rdb *redis.Client, db *gorm.DB) *Service {
-	return &Service{cfg: cfg, rdb: rdb, db: db}
+func NewService(cfg config.Config, sysConfig *conf.Service, rdb *redis.Client, db *gorm.DB) *Service {
+	return &Service{cfg: cfg, sysConfig: sysConfig, rdb: rdb, db: db}
 }
 
 func (s *Service) IssueTokens(uid uint) (string, string) {
@@ -68,12 +70,30 @@ func (s *Service) ValidateVerifyCode(email, code string) bool {
 }
 
 func (s *Service) SendCode(email string, code string) error {
-	return mailer.SendVerificationCode(s.cfg, email, code)
+	cfg := s.cfg
+	if v := s.sysConfig.Get("smtp_host"); v != "" {
+		cfg.SMTPHost = v
+	}
+	if v := s.sysConfig.Get("smtp_port"); v != "" {
+		cfg.SMTPPort = v
+	}
+	if v := s.sysConfig.Get("smtp_username"); v != "" {
+		cfg.SMTPUsername = v
+	}
+	if v := s.sysConfig.Get("smtp_password"); v != "" {
+		cfg.SMTPPassword = v
+	}
+	if v := s.sysConfig.Get("smtp_from_name"); v != "" {
+		cfg.SMTPFromName = v
+	}
+	return mailer.SendVerificationCode(cfg, email, code)
 }
 
 func (s *Service) Register(email, code, password, name string) (string, string, error) {
-	if !s.ValidateVerifyCode(email, code) {
-		return "", "", http.ErrBodyNotAllowed
+	if s.sysConfig.GetBool("enable_email_verification", false) {
+		if !s.ValidateVerifyCode(email, code) {
+			return "", "", http.ErrBodyNotAllowed
+		}
 	}
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	u := User{Email: email, PasswordHash: string(hash), Name: name, Role: s.initialRole()}
@@ -144,12 +164,15 @@ type WechatUserInfo struct {
 }
 
 func (s *Service) MakeWeChatLoginURL(state string) string {
-	if s.cfg.WeChatAppID == "" || s.cfg.WeChatRedirectURI == "" {
+	appID := s.sysConfig.GetWithDefault("wechat_app_id", s.cfg.WeChatAppID)
+	redirectURI := s.sysConfig.GetWithDefault("wechat_redirect_uri", s.cfg.WeChatRedirectURI)
+
+	if !s.sysConfig.GetBool("feature_wechat_login", s.cfg.FeatureWeChatLogin == "on") || appID == "" || redirectURI == "" {
 		return ""
 	}
 	params := url.Values{}
-	params.Set("appid", s.cfg.WeChatAppID)
-	params.Set("redirect_uri", s.cfg.WeChatRedirectURI)
+	params.Set("appid", appID)
+	params.Set("redirect_uri", redirectURI)
 	params.Set("response_type", "code")
 	params.Set("scope", "snsapi_login")
 	params.Set("state", state)
@@ -158,11 +181,14 @@ func (s *Service) MakeWeChatLoginURL(state string) string {
 
 func (s *Service) ExchangeCode(code string) (WechatTokenResponse, error) {
 	var out WechatTokenResponse
-	if s.cfg.WeChatAppID == "" || s.cfg.WeChatAppSecret == "" {
+	appID := s.sysConfig.GetWithDefault("wechat_app_id", s.cfg.WeChatAppID)
+	appSecret := s.sysConfig.GetWithDefault("wechat_app_secret", s.cfg.WeChatAppSecret)
+
+	if appID == "" || appSecret == "" {
 		return out, http.ErrNotSupported
 	}
-	u := "https://api.weixin.qq.com/sns/oauth2/access_token?appid=" + url.QueryEscape(s.cfg.WeChatAppID) +
-		"&secret=" + url.QueryEscape(s.cfg.WeChatAppSecret) +
+	u := "https://api.weixin.qq.com/sns/oauth2/access_token?appid=" + url.QueryEscape(appID) +
+		"&secret=" + url.QueryEscape(appSecret) +
 		"&code=" + url.QueryEscape(code) +
 		"&grant_type=authorization_code"
 	resp, err := http.Get(u)

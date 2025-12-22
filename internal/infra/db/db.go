@@ -58,6 +58,7 @@ func autoMigrate() error {
 		&models.ShareLink{},
 		&models.AuditLog{},
 		&models.OAuthAccount{},
+		&models.SystemConfig{},
 	); err != nil {
 		return err
 	}
