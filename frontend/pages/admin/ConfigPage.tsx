@@ -67,7 +67,7 @@ export const ConfigPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">{t('admin.menu.settings')}</h2>
+        <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.settings')}</h1>
         <div className="flex space-x-2">
           <Button variant="outline" onClick={fetchConfigs} disabled={loading}>
             <RefreshCw size={16} className={`mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('common.refresh') || 'Refresh'}
@@ -77,9 +77,7 @@ export const ConfigPage: React.FC = () => {
           </Button>
         </div>
       </div>
-
-      {/* Tabs */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
         <div className="border-b border-gray-200 px-4">
           <nav className="-mb-px flex space-x-6">
             {Object.keys(groups).map(name => (

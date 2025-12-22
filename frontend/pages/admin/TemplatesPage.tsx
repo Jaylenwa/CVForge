@@ -183,77 +183,81 @@ export const TemplatesPage: React.FC = () => {
   }, [showPreview]);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <input value={keyword} onChange={e => { setKeyword(e.target.value); setPage(1); }} placeholder={t('admin.keyword')} className="border rounded-md px-3 py-2 text-sm" />
-        <div className="flex items-center space-x-2">
-            <label className="text-sm text-gray-500">{t('templates.filter.industry')}:</label>
-            <select className="border rounded-md px-2 py-1 text-sm" value={selectedCategory} onChange={e => { setSelectedCategory(e.target.value); setPage(1); }}>
-              {categories.map(c => {
-                const key = c === 'All' ? 'all' : c;
-                return <option key={c} value={c}>{t(`templates.category.${key}`)}</option>;
-              })}
-            </select>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.templates')}</h1>
+        <Button variant="outline" onClick={() => load()}>{t('common.refresh') || 'Refresh'}</Button>
+      </div>
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <input value={keyword} onChange={e => { setKeyword(e.target.value); setPage(1); }} placeholder={t('admin.keyword')} className="border rounded-lg px-3 py-2 text-sm shadow-sm border-gray-200" />
+            <div className="flex items-center space-x-2">
+              <label className="text-sm text-gray-500">{t('templates.filter.industry')}:</label>
+              <select className="border rounded-md px-2 py-1 text-sm" value={selectedCategory} onChange={e => { setSelectedCategory(e.target.value); setPage(1); }}>
+                {categories.map(c => {
+                  const key = c === 'All' ? 'all' : c;
+                  return <option key={c} value={c}>{t(`templates.category.${key}`)}</option>;
+                })}
+              </select>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button onClick={openCreate}>{t('admin.actions.create')}</Button>
+            <Button variant="outline" onClick={handleSyncMockData} disabled={syncing}>
+              {syncing ? `${syncDone}/${syncTotal} 同步中` : '同步 mockData 到后端'}
+            </Button>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button onClick={openCreate}>{t('admin.actions.create')}</Button>
-          <Button variant="outline" onClick={handleSyncMockData} disabled={syncing}>
-            {syncing ? `${syncDone}/${syncTotal} 同步中` : '同步 mockData 到后端'}
-          </Button>
-        </div>
-      </div>
-
-      <div className="bg-white shadow-sm rounded-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">ID</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.name')}</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('templates.filter.industry')}</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.popularity')}</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.isPremium')}</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.tags')}</th>
-              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">{t('admin.columns.actions')}</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {pageItems.map(r => (
-              <tr key={r.id}>
-                <td className="px-4 py-2 text-sm text-gray-700">{r.id}</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{r.name}</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{r.category}</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{r.popularity}</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{r.isPremium ? t('admin.value.yes') : t('admin.value.no')}</td>
-                <td className="px-4 py-2 text-sm text-gray-700">
-                  <div className="flex flex-wrap gap-1">
-                    {(r.tags || []).slice(0, 4).map(tag => (
-                      <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{tag}</span>
-                    ))}
-                  </div>
-                </td>
-                <td className="px-4 py-2 text-sm text-right space-x-2">
-                  <Button variant="outline" onClick={() => openEdit(r)}>{t('admin.actions.update')}</Button>
-                  <Button variant="ghost" onClick={() => openPreview(r.id)}>{t('admin.actions.preview')}</Button>
-                  <Button variant="danger" onClick={() => remove(r.id)}>{t('admin.actions.delete')}</Button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">ID</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.name')}</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('templates.filter.industry')}</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.popularity')}</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.isPremium')}</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.form.tags')}</th>
+                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">{t('admin.columns.actions')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex justify-between items-center mt-4">
-        <div className="text-sm text-gray-500">{t('admin.total')} {total}</div>
-        <div className="space-x-2">
-          <Button variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(p - 1, 1))}>{t('admin.prev')}</Button>
-          <Button variant="outline" onClick={() => setPage(p => p + 1)} disabled={page * pageSize >= total}>{t('admin.next')}</Button>
-          <select className="border rounded-md px-2 py-1 text-sm" value={pageSize} onChange={e => { setPageSize(parseInt(e.target.value)); setPage(1); }}>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-          </select>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {pageItems.map(r => (
+                <tr key={r.id}>
+                  <td className="px-4 py-2 text-sm text-gray-700">{r.id}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700">{r.name}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700">{r.category}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700">{r.popularity}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700">{r.isPremium ? t('admin.value.yes') : t('admin.value.no')}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700">
+                    <div className="flex flex-wrap gap-1">
+                      {(r.tags || []).slice(0, 4).map(tag => (
+                        <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">{tag}</span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 text-sm text-right space-x-2">
+                    <Button variant="outline" onClick={() => openEdit(r)}>{t('admin.actions.update')}</Button>
+                    <Button variant="ghost" onClick={() => openPreview(r.id)}>{t('admin.actions.preview')}</Button>
+                    <Button variant="danger" onClick={() => remove(r.id)}>{t('admin.actions.delete')}</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex justify-between items-center mt-4">
+          <div className="text-sm text-gray-500">{t('admin.total')} {total}</div>
+          <div className="space-x-2">
+            <Button variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(p - 1, 1))}>{t('admin.prev')}</Button>
+            <Button variant="outline" onClick={() => setPage(p => p + 1)} disabled={page * pageSize >= total}>{t('admin.next')}</Button>
+            <select className="border rounded-md px-2 py-1 text-sm" value={pageSize} onChange={e => { setPageSize(parseInt(e.target.value)); setPage(1); }}>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
         </div>
       </div>
 
