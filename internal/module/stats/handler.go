@@ -21,13 +21,15 @@ func NewHandler(db *gorm.DB) *Handler {
 
 type StatsResponse struct {
 	Totals struct {
-		Users   int64 `json:"users"`
-		Resumes int64 `json:"resumes"`
+		Users     int64 `json:"users"`
+		Resumes   int64 `json:"resumes"`
+		Templates int64 `json:"templates"`
 	} `json:"totals"`
 	Trend struct {
-		Dates   []string `json:"dates"`
-		Users   []int64  `json:"users"`
-		Resumes []int64  `json:"resumes"`
+		Dates     []string `json:"dates"`
+		Users     []int64  `json:"users"`
+		Resumes   []int64  `json:"resumes"`
+		Templates []int64  `json:"templates"`
 	} `json:"trend"`
 	GeneratedAt int64 `json:"generatedAt"`
 }
@@ -42,8 +44,10 @@ func (h *Handler) AdminStats(c *gin.Context) {
 
 	var userTotal int64
 	var resumeTotal int64
+	var templateTotal int64
 	_ = h.db.Model(&models.User{}).Count(&userTotal).Error
 	_ = h.db.Model(&models.Resume{}).Count(&resumeTotal).Error
+	_ = h.db.Model(&models.Template{}).Count(&templateTotal).Error
 
 	now := time.Now()
 	// Truncate to local midnight
@@ -52,6 +56,7 @@ func (h *Handler) AdminStats(c *gin.Context) {
 	dates := make([]string, 0, days)
 	users := make([]int64, 0, days)
 	resumes := make([]int64, 0, days)
+	templates := make([]int64, 0, days)
 
 	for i := days - 1; i >= 0; i-- {
 		dayStart := end.Add(-time.Duration(i+1) * 24 * time.Hour)
@@ -61,11 +66,14 @@ func (h *Handler) AdminStats(c *gin.Context) {
 
 		var uc int64
 		var rc int64
+		var tc int64
 		_ = h.db.Model(&models.User{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&uc).Error
 		_ = h.db.Model(&models.Resume{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&rc).Error
+		_ = h.db.Model(&models.Template{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&tc).Error
 
 		users = append(users, uc)
 		resumes = append(resumes, rc)
+		templates = append(templates, tc)
 	}
 
 	out := StatsResponse{
@@ -73,9 +81,11 @@ func (h *Handler) AdminStats(c *gin.Context) {
 	}
 	out.Totals.Users = userTotal
 	out.Totals.Resumes = resumeTotal
+	out.Totals.Templates = templateTotal
 	out.Trend.Dates = dates
 	out.Trend.Users = users
 	out.Trend.Resumes = resumes
+	out.Trend.Templates = templates
 
 	c.JSON(http.StatusOK, out)
 }

@@ -11,8 +11,8 @@ export interface PageResp<T> {
 
 // Stats
 export interface AdminStats {
-  totals: { users: number; resumes: number };
-  trend: { dates: string[]; users: number[]; resumes: number[] };
+  totals: { users: number; resumes: number; templates: number };
+  trend: { dates: string[]; users: number[]; resumes: number[]; templates: number[] };
   generatedAt: number;
 }
 
