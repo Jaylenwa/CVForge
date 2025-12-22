@@ -91,9 +91,9 @@ export const TemplatesPage: React.FC = () => {
     setSyncing(false);
     await load();
     if (errors === 0) {
-      showToast('同步完成', 'success');
+      showToast(t('admin.sync.complete'), 'success');
     } else {
-      showToast(`同步完成，失败 ${errors} 项`, 'warning');
+      showToast(t('admin.sync.partial').replace('{count}', String(errors)), 'warning');
     }
   };
   const filtered = items.filter(i => {
@@ -205,7 +205,7 @@ export const TemplatesPage: React.FC = () => {
           <div className="flex items-center space-x-2">
             <Button onClick={openCreate}>{t('admin.actions.create')}</Button>
             <Button variant="outline" onClick={handleSyncMockData} disabled={syncing}>
-              {syncing ? `${syncDone}/${syncTotal} 同步中` : '同步 mockData 到后端'}
+              {syncing ? `${syncDone}/${syncTotal} ${t('admin.sync.syncing')}` : t('admin.sync.syncMockData')}
             </Button>
           </div>
         </div>

@@ -22,7 +22,7 @@ export const AdminLayout: React.FC = () => {
       <aside className="w-64 bg-transparent h-screen flex flex-col py-6 px-4 overflow-y-auto">
         <div className="px-2 py-3 flex items-center justify-between">
           <div>
-            <div className="text-xl font-bold text-gray-900">{language === 'zh' ? '管理后台' : 'Admin'}</div>
+            <div className="text-xl font-bold text-gray-900">{t('nav.admin')}</div>
             <div className="text-xs text-gray-500">{t('admin.title')}</div>
           </div>
           <button

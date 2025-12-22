@@ -3,7 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { SystemConfig } from '../../types';
 import { getSystemConfigs, updateSystemConfigs } from '../../services/configService';
 import { Button } from '../../components/ui/Button';
-import { Save, RefreshCw } from 'lucide-react';
+import { Save, RefreshCw, ChevronDown } from 'lucide-react';
 import { useToast } from '../../components/ui/Toast';
 
 export const ConfigPage: React.FC = () => {
@@ -14,13 +14,47 @@ export const ConfigPage: React.FC = () => {
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('General');
 
+  const getTabLabel = (name: string) => {
+    const code = name.toLowerCase() === 'smtp' ? 'smtp' : name.toLowerCase();
+    return t(`admin.config.tab.${code}`);
+  };
+
+  const getConfigLabel = (key: string, description?: string) => {
+    const map: Record<string, string> = {
+      enable_email_verification: 'admin.config.key.enableEmailVerification',
+      enable_wechat_login: 'admin.config.key.enableWeChatLogin',
+      wechat_enable_login: 'admin.config.key.enableWeChatLogin',
+      enableWeChatLogin: 'admin.config.key.enableWeChatLogin',
+      enable_github_login: 'admin.config.key.enableGithubLogin',
+      github_enable_login: 'admin.config.key.enableGithubLogin',
+      enableGithubLogin: 'admin.config.key.enableGithubLogin',
+      wechat_app_id: 'admin.config.key.wechatAppId',
+      wechat_appid: 'admin.config.key.wechatAppId',
+      weChatAppID: 'admin.config.key.wechatAppId',
+      github_client_id: 'admin.config.key.githubClientId',
+      github_clientid: 'admin.config.key.githubClientId',
+      githubClientID: 'admin.config.key.githubClientId',
+      smtp_host: 'admin.config.key.smtpHost',
+      smtp_port: 'admin.config.key.smtpPort',
+      smtp_user: 'admin.config.key.smtpUser',
+      smtp_username: 'admin.config.key.smtpUser',
+      smtp_pass: 'admin.config.key.smtpPass',
+      smtp_password: 'admin.config.key.smtpPass',
+      smtp_secure: 'admin.config.key.smtpSecure',
+      oauth_allowed_origins: 'admin.config.key.oauthAllowedOrigins'
+    };
+    const keyName = map[key];
+    if (keyName) return t(keyName);
+    return description || key;
+  };
+
   const fetchConfigs = async () => {
     setLoading(true);
     try {
       const data = await getSystemConfigs();
       setConfigs(data);
     } catch (err) {
-      showToast('Failed to load configs', 'error');
+      showToast(t('admin.config.msg.loadFailed'), 'error');
     } finally {
       setLoading(false);
     }
@@ -34,9 +68,9 @@ export const ConfigPage: React.FC = () => {
     setSaving(true);
     try {
       await updateSystemConfigs(configs);
-      showToast('Configs saved successfully', 'success');
+      showToast(t('admin.config.msg.saveSuccess'), 'success');
     } catch (err) {
-      showToast('Failed to save configs', 'error');
+      showToast(t('admin.config.msg.saveFailed'), 'error');
     } finally {
       setSaving(false);
     }
@@ -65,72 +99,78 @@ export const ConfigPage: React.FC = () => {
   }, [configs]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.settings')}</h1>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={fetchConfigs} disabled={loading}>
-            <RefreshCw size={16} className={`mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('common.refresh') || 'Refresh'}
-          </Button>
-          <Button onClick={handleSave} isLoading={saving}>
-            <Save size={16} className="mr-2" /> {t('common.save') || 'Save Changes'}
-          </Button>
+    <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
+      <div className="px-10 pt-10 pb-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-4xl font-bold text-gray-800">{t('admin.menu.settings')}</h1>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={fetchConfigs} disabled={loading}>
+              <RefreshCw size={16} className={`mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('common.refresh') || 'Refresh'}
+            </Button>
+            <Button onClick={handleSave} isLoading={saving}>
+              <Save size={16} className="mr-2" /> {t('common.save') || 'Save Changes'}
+            </Button>
+          </div>
+        </div>
+        <div className="flex border-b border-gray-100 overflow-x-auto mt-6">
+          {Object.keys(groups).map(name => (
+            <button
+              key={name}
+              onClick={() => setActiveTab(name)}
+              className={`flex items-center space-x-2 px-4 pb-4 border-b-2 transition-all duration-200 whitespace-nowrap ${
+                activeTab === name ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <span className="text-[15px] font-medium">{getTabLabel(name)}</span>
+            </button>
+          ))}
         </div>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-        <div className="border-b border-gray-200 px-4">
-          <nav className="-mb-px flex space-x-6">
-            {Object.keys(groups).map(name => (
-              <button
-                key={name}
-                onClick={() => setActiveTab(name)}
-                className={`whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium ${
-                  activeTab === name ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                {name}
-              </button>
-            ))}
-          </nav>
-        </div>
-        <div className="p-6">
+      <div className="flex-1 overflow-y-auto px-10 pb-10">
+        <div className="max-w-3xl space-y-8">
           {loading && configs.length === 0 ? (
             <div className="text-center py-12">{t('common.loading') || 'Loading...'}</div>
           ) : (
-            <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-              {(groups[activeTab] || []).map(config => (
-                <div key={config.key} className="sm:col-span-6">
-                  <label htmlFor={config.key} className="block text-sm font-medium text-gray-700">
-                    {config.description || config.key}
-                  </label>
-                  <div className="mt-1">
-                    {config.type === 'bool' || config.value === 'true' || config.value === 'false' || config.value === 'on' || config.value === 'off' ? (
-                      <select
-                        id={config.key}
-                        value={config.value}
-                        onChange={(e) => handleChange(config.key, e.target.value)}
-                        className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                      >
-                        <option value="true">True / On</option>
-                        <option value="false">False / Off</option>
-                        <option value="on">On</option>
-                        <option value="off">Off</option>
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        name={config.key}
-                        id={config.key}
-                        value={config.value}
-                        onChange={(e) => handleChange(config.key, e.target.value)}
-                        className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
-                      />
-                    )}
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">{config.key}</p>
+            (groups[activeTab] || []).map(config => {
+              const isBool = config.type === 'bool' || config.value === 'true' || config.value === 'false' || config.value === 'on' || config.value === 'off';
+              const enabled = config.value === 'true' || config.value === 'on';
+              return (
+                <div key={config.key} className="space-y-2">
+                  {isBool ? (
+                    <div className="flex flex-col space-y-1 py-2">
+                      <div className="flex items-center space-x-4">
+                        <button
+                          onClick={() => handleChange(config.key, enabled ? 'false' : 'true')}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
+                            enabled ? 'bg-blue-600' : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                              enabled ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                        <span className="text-gray-800 text-[15px] font-medium">{getConfigLabel(config.key, config.description)}</span>
+                      </div>
+                      <p className="text-gray-400 text-sm pl-[60px]">{config.key}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="text-gray-800 text-[14px] font-bold block">{getConfigLabel(config.key, config.description)}</label>
+                      <div className="relative group">
+                        <input
+                          className="w-full h-11 px-4 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-gray-800"
+                          value={config.value}
+                          onChange={(e) => handleChange(config.key, e.target.value)}
+                        />
+                      </div>
+                      <p className="text-gray-400 text-sm">{config.key}</p>
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
+              );
+            })
           )}
         </div>
       </div>
