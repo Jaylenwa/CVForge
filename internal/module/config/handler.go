@@ -40,8 +40,8 @@ func (h *Handler) AdminUpdate(c *gin.Context) {
 	}
 
 	for _, cfg := range req.Configs {
-		if err := h.service.Set(cfg.Key, cfg.Value, cfg.Description, cfg.Type); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update config: " + cfg.Key})
+		if err := h.service.Set(cfg.ConfigKey, cfg.ConfigValue, cfg.Description, cfg.Type); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update config: " + cfg.ConfigKey})
 			return
 		}
 	}

@@ -52,11 +52,11 @@ func (s *Service) EnsureDefaults(cfg config.Config) error {
 	}
 	for _, d := range defaults {
 		var existing models.Config
-		if err := s.db.Where("key = ?", d.Key).First(&existing).Error; err != nil {
+		if err := s.db.Where("config_key = ?", d.Key).First(&existing).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				_ = s.db.Create(&models.Config{
-					Key:         d.Key,
-					Value:       d.Value,
+					ConfigKey:   d.Key,
+					ConfigValue: d.Value,
 					Description: d.Description,
 					Type:        d.Type,
 				}).Error
@@ -80,10 +80,10 @@ func (s *Service) Get(key string) string {
 
 	// Try DB
 	var cfg models.Config
-	if err := s.db.Where("key = ?", key).First(&cfg).Error; err == nil {
+	if err := s.db.Where("config_key = ?", key).First(&cfg).Error; err == nil {
 		// Cache it
-		s.rdb.Set(ctx, "sysconfig:"+key, cfg.Value, 24*time.Hour)
-		return cfg.Value
+		s.rdb.Set(ctx, "sysconfig:"+key, cfg.ConfigValue, 24*time.Hour)
+		return cfg.ConfigValue
 	}
 
 	return ""
@@ -111,12 +111,12 @@ func (s *Service) GetBool(key string, def bool) bool {
 
 func (s *Service) Set(key, value, description, typeName string) error {
 	var cfg models.Config
-	err := s.db.Where("key = ?", key).First(&cfg).Error
+	err := s.db.Where("config_key = ?", key).First(&cfg).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			cfg = models.Config{
-				Key:         key,
-				Value:       value,
+				ConfigKey:   key,
+				ConfigValue: value,
 				Description: description,
 				Type:        typeName,
 			}
@@ -127,7 +127,7 @@ func (s *Service) Set(key, value, description, typeName string) error {
 			return err
 		}
 	} else {
-		cfg.Value = value
+		cfg.ConfigValue = value
 		if description != "" {
 			cfg.Description = description
 		}
@@ -168,17 +168,17 @@ func (s *Service) GetPublicConfig() PublicConfig {
 	configs, err := s.GetAll()
 	if err == nil {
 		for _, cfg := range configs {
-			switch cfg.Key {
+			switch cfg.ConfigKey {
 			case "enable_email_verification":
-				if b, err := strconv.ParseBool(cfg.Value); err == nil {
+				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableEmailVerification = b
 				}
 			case "wechat_login":
-				if b, err := strconv.ParseBool(cfg.Value); err == nil {
+				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableWeChatLogin = b
 				}
 			case "github_login":
-				if b, err := strconv.ParseBool(cfg.Value); err == nil {
+				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableGithubLogin = b
 				}
 			}
