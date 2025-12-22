@@ -221,7 +221,7 @@ AI 接口：`internal/module/ai/handler.go:26`
 - `SQLITE_PATH`：SQLite 文件路径（设置后优先生效）
 - `REDIS_ADDR`、`REDIS_PASSWORD`：Redis 连接
 - `JWT_SECRET`：JWT HMAC 签名密钥
-- `CORS_ORIGINS`：允许的跨域来源（逗号分隔）
+- `CORS_ORIGINS`：允许的跨域来源（使用逗号分隔）
 - `GEMINI_API_KEY`：可选，用于 AI 能力（如集成）
 - `UPLOAD_BACKEND`：`local` 或 `s3`
 - `S3_BUCKET`、`S3_REGION`、`S3_ENDPOINT`、`S3_ACCESS_KEY`、`S3_SECRET_KEY`：S3 配置
