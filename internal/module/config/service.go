@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"openresume/internal/infra/config"
 	"openresume/internal/models"
 	"strconv"
 	"time"
@@ -17,6 +18,55 @@ type Service struct {
 
 func NewService(db *gorm.DB, rdb *redis.Client) *Service {
 	return &Service{db: db, rdb: rdb}
+}
+
+// EnsureDefaults inserts a set of default configuration keys into DB if they don't exist.
+// Values are initialized from environment-backed Config where applicable.
+func (s *Service) EnsureDefaults(cfg config.Config) error {
+	type def struct {
+		Key         string
+		Value       string
+		Description string
+		Type        string
+	}
+	defaults := []def{
+		// Registration
+		{"enable_email_verification", "false", "Enable email verification during registration", "bool"},
+		// SMTP
+		{"smtp_host", cfg.SMTPHost, "SMTP host", "string"},
+		{"smtp_port", cfg.SMTPPort, "SMTP port", "string"},
+		{"smtp_username", cfg.SMTPUsername, "SMTP username", "string"},
+		{"smtp_password", cfg.SMTPPassword, "SMTP password", "string"},
+		{"smtp_from_name", cfg.SMTPFromName, "SMTP from name", "string"},
+		// WeChat OAuth
+		{"feature_wechat_login", "false", "Enable WeChat login", "bool"},
+		{"wechat_app_id", cfg.WeChatAppID, "WeChat AppID", "string"},
+		{"wechat_app_secret", cfg.WeChatAppSecret, "WeChat App Secret", "string"},
+		{"wechat_redirect_uri", cfg.WeChatRedirectURI, "WeChat Redirect URI", "string"},
+		// GitHub OAuth
+		{"feature_github_login", "false", "Enable GitHub login", "bool"},
+		{"github_client_id", cfg.GithubClientID, "GitHub Client ID", "string"},
+		{"github_client_secret", cfg.GithubClientSecret, "GitHub Client Secret", "string"},
+		{"github_redirect_uri", cfg.GithubRedirectURI, "GitHub Redirect URI", "string"},
+	}
+	for _, d := range defaults {
+		var existing models.SystemConfig
+		if err := s.db.Where("key = ?", d.Key).First(&existing).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				_ = s.db.Create(&models.SystemConfig{
+					Key:         d.Key,
+					Value:       d.Value,
+					Description: d.Description,
+					Type:        d.Type,
+				}).Error
+				// best-effort; continue on error to attempt other inserts
+				continue
+			}
+			// if other DB error, abort early
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *Service) Get(key string) string {
@@ -102,9 +152,9 @@ func (s *Service) GetAll() ([]models.SystemConfig, error) {
 }
 
 type PublicConfig struct {
-	EnableEmailVerification bool `json:"enableEmailVerification"`
-	EnableWeChatLogin       bool `json:"enableWeChatLogin"`
-	EnableGithubLogin       bool `json:"enableGithubLogin"`
+	EnableEmailVerification bool   `json:"enableEmailVerification"`
+	EnableWeChatLogin       bool   `json:"enableWeChatLogin"`
+	EnableGithubLogin       bool   `json:"enableGithubLogin"`
 	WeChatAppID             string `json:"weChatAppID"`
 	GithubClientID          string `json:"githubClientID"`
 }

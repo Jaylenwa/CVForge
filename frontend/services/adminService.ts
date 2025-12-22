@@ -9,6 +9,19 @@ export interface PageResp<T> {
   total: number;
 }
 
+// Stats
+export interface AdminStats {
+  totals: { users: number; resumes: number };
+  trend: { dates: string[]; users: number[]; resumes: number[] };
+  generatedAt: number;
+}
+
+export const getAdminStats = async (days = 14): Promise<AdminStats> => {
+  const res = await fetch(`${API_BASE}/admin/stats?days=${days}`, { headers: authHeader() });
+  if (!res.ok) throw new Error('Failed to fetch stats');
+  return res.json();
+};
+
 // Users
 export interface AdminUser {
   id: number;

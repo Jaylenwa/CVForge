@@ -35,6 +35,8 @@ const translations: Translations = {
     'common.confirm': 'Confirm',
     'common.confirmAction': 'Confirm Action',
     'common.close': 'Close',
+    'common.refresh': 'Refresh',
+    'common.loading': 'Loading...',
     'editor.content': 'Content',
     'editor.design': 'Design',
     'editor.personal': 'Personal Information',
@@ -326,6 +328,18 @@ const translations: Translations = {
     'admin.form.level': 'Level',
     'admin.form.popularity': 'Popularity',
     'admin.form.isPremium': 'Premium'
+    ,
+    'admin.menu.dashboard': 'Dashboard',
+    'admin.menu.users': 'Users',
+    'admin.menu.resumes': 'Resumes',
+    'admin.menu.templates': 'Templates',
+    'admin.menu.shares': 'Shares',
+    'admin.menu.settings': 'Settings',
+    'admin.stats.trend': 'Trend',
+    'admin.stats.totals': 'Totals',
+    'admin.stats.users': 'Registered Users',
+    'admin.stats.resumes': 'New Resumes',
+    'admin.stats.generated': 'Generated'
   },
   zh: {
     'nav.templates': '模板库',
@@ -354,6 +368,8 @@ const translations: Translations = {
     'common.confirm': '确认',
     'common.confirmAction': '确认操作',
     'common.close': '关闭',
+    'common.refresh': '刷新',
+    'common.loading': '加载中...',
     'editor.content': '内容编辑',
     'editor.design': '外观设计',
     'editor.personal': '个人信息',
@@ -644,6 +660,18 @@ const translations: Translations = {
     'admin.form.level': '等级',
     'admin.form.popularity': '热度',
     'admin.form.isPremium': '付费模板'
+    ,
+    'admin.menu.dashboard': '面板首页',
+    'admin.menu.users': '用户',
+    'admin.menu.resumes': '简历',
+    'admin.menu.templates': '模板',
+    'admin.menu.shares': '分享',
+    'admin.menu.settings': '参数设置',
+    'admin.stats.trend': '趋势',
+    'admin.stats.totals': '总计',
+    'admin.stats.users': '注册用户',
+    'admin.stats.resumes': '新增简历',
+    'admin.stats.generated': '生成于'
   }
 };
 

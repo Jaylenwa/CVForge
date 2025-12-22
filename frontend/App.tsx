@@ -25,6 +25,7 @@ import { ResumesPage } from './pages/admin/ResumesPage';
 import { TemplatesPage } from './pages/admin/TemplatesPage';
 import { SharesPage } from './pages/admin/SharesPage';
 import { ConfigPage } from './pages/admin/ConfigPage';
+import { AdminHome } from './pages/admin/AdminHome';
 
 const LayoutWrapper = () => (
     <MainLayout>
@@ -68,6 +69,7 @@ const App: React.FC = () => {
               {/* Admin Routes */}
               <Route element={<ProtectedAdminRoute />}>
                 <Route element={<AdminLayout />}>
+                  <Route path={AppRoute.Admin} element={<AdminHome />} />
                   <Route path={AppRoute.AdminUsers} element={<UsersPage />} />
                   <Route path={AppRoute.AdminResumes} element={<ResumesPage />} />
                   <Route path={AppRoute.AdminTemplates} element={<TemplatesPage />} />

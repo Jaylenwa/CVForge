@@ -32,6 +32,14 @@ func NewService(cfg config.Config, sysConfig *conf.Service, rdb *redis.Client, d
 	return &Service{cfg: cfg, sysConfig: sysConfig, rdb: rdb, db: db}
 }
 
+func (s *Service) FeatureWeChatEnabled() bool {
+	return s.sysConfig.GetBool("feature_wechat_login", s.cfg.FeatureWeChatLogin == "on")
+}
+
+func (s *Service) FeatureGithubEnabled() bool {
+	return s.sysConfig.GetBool("feature_github_login", s.cfg.FeatureGithubLogin == "on")
+}
+
 func (s *Service) IssueTokens(uid uint) (string, string) {
 	mk := func(exp time.Duration) string {
 		t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"uid": uid, "exp": time.Now().Add(exp).Unix(), "jti": uuid.NewString()})
@@ -336,12 +344,14 @@ type GithubUserInfo struct {
 }
 
 func (s *Service) MakeGithubLoginURL(state string) string {
-	if s.cfg.GithubClientID == "" || s.cfg.GithubRedirectURI == "" {
+	clientID := s.sysConfig.GetWithDefault("github_client_id", s.cfg.GithubClientID)
+	redirectURI := s.sysConfig.GetWithDefault("github_redirect_uri", s.cfg.GithubRedirectURI)
+	if !s.sysConfig.GetBool("feature_github_login", s.cfg.FeatureGithubLogin == "on") || clientID == "" || redirectURI == "" {
 		return ""
 	}
 	params := url.Values{}
-	params.Set("client_id", s.cfg.GithubClientID)
-	params.Set("redirect_uri", s.cfg.GithubRedirectURI)
+	params.Set("client_id", clientID)
+	params.Set("redirect_uri", redirectURI)
 	params.Set("scope", "user:email")
 	params.Set("state", state)
 	return "https://github.com/login/oauth/authorize?" + params.Encode()
@@ -349,15 +359,18 @@ func (s *Service) MakeGithubLoginURL(state string) string {
 
 func (s *Service) ExchangeGithubCode(code string) (GithubTokenResponse, error) {
 	var out GithubTokenResponse
-	if s.cfg.GithubClientID == "" || s.cfg.GithubClientSecret == "" {
+	clientID := s.sysConfig.GetWithDefault("github_client_id", s.cfg.GithubClientID)
+	clientSecret := s.sysConfig.GetWithDefault("github_client_secret", s.cfg.GithubClientSecret)
+	redirectURI := s.sysConfig.GetWithDefault("github_redirect_uri", s.cfg.GithubRedirectURI)
+	if clientID == "" || clientSecret == "" {
 		return out, http.ErrNotSupported
 	}
 	u := "https://github.com/login/oauth/access_token"
 	params := url.Values{}
-	params.Set("client_id", s.cfg.GithubClientID)
-	params.Set("client_secret", s.cfg.GithubClientSecret)
+	params.Set("client_id", clientID)
+	params.Set("client_secret", clientSecret)
 	params.Set("code", code)
-	params.Set("redirect_uri", s.cfg.GithubRedirectURI)
+	params.Set("redirect_uri", redirectURI)
 
 	req, _ := http.NewRequest("POST", u, nil)
 	req.URL.RawQuery = params.Encode()

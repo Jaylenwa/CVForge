@@ -30,7 +30,7 @@ func popupHTML(origin, access, refresh string, user map[string]any) string {
 
 func (h *Handler) WeChatRedirect(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if cfg.FeatureWeChatLogin == "off" {
+		if !h.svc.FeatureWeChatEnabled() {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
 			return
 		}
@@ -63,7 +63,7 @@ func (h *Handler) WeChatRedirect(cfg config.Config) gin.HandlerFunc {
 
 func (h *Handler) GithubRedirect(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if cfg.FeatureGithubLogin == "off" {
+		if !h.svc.FeatureGithubEnabled() {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
 			return
 		}
@@ -96,7 +96,7 @@ func (h *Handler) GithubRedirect(cfg config.Config) gin.HandlerFunc {
 
 func (h *Handler) GithubCallback(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if cfg.FeatureGithubLogin == "off" {
+		if !h.svc.FeatureGithubEnabled() {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
 			return
 		}
@@ -153,7 +153,7 @@ func (h *Handler) GithubCallback(cfg config.Config) gin.HandlerFunc {
 
 func (h *Handler) WeChatCallback(cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if cfg.FeatureWeChatLogin == "off" {
+		if !h.svc.FeatureWeChatEnabled() {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
 			return
 		}

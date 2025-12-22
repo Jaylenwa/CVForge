@@ -13,6 +13,7 @@ import (
 	"openresume/internal/module/pdf"
 	"openresume/internal/module/resume"
 	"openresume/internal/module/share"
+	"openresume/internal/module/stats"
 	"openresume/internal/module/template"
 	"openresume/internal/module/upload"
 	"openresume/internal/module/user"
@@ -32,6 +33,7 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 
 	confService := conf.NewService(db, rdb)
 	confHandler := conf.NewHandler(confService)
+	_ = confService.EnsureDefaults(cfg)
 
 	authH := auth.NewHandler(cfg, confService, rdb, db)
 	userAuth := middleware.Auth(cfg)
@@ -101,6 +103,9 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 	adm.GET("/share-links", shareAdmH.AdminList)
 	adm.PATCH("/share-links/:slug", shareAdmH.AdminUpdate)
 	adm.DELETE("/share-links/:slug", shareAdmH.AdminDelete)
+
+	statsH := stats.NewHandler(db)
+	adm.GET("/stats", statsH.AdminStats)
 
 	adm.GET("/configs", confHandler.AdminList)
 	adm.PUT("/configs", confHandler.AdminUpdate)
