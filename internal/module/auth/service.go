@@ -33,11 +33,11 @@ func NewService(cfg config.Config, sysConfig *conf.Service, rdb *redis.Client, d
 }
 
 func (s *Service) FeatureWeChatEnabled() bool {
-	return s.sysConfig.GetBool("feature_wechat_login", s.cfg.FeatureWeChatLogin == "on")
+	return s.sysConfig.GetBool("wechat_login", true)
 }
 
 func (s *Service) FeatureGithubEnabled() bool {
-	return s.sysConfig.GetBool("feature_github_login", s.cfg.FeatureGithubLogin == "on")
+	return s.sysConfig.GetBool("github_login", true)
 }
 
 func (s *Service) IssueTokens(uid uint) (string, string) {
@@ -78,27 +78,18 @@ func (s *Service) ValidateVerifyCode(email, code string) bool {
 }
 
 func (s *Service) SendCode(email string, code string) error {
-	cfg := s.cfg
-	if v := s.sysConfig.Get("smtp_host"); v != "" {
-		cfg.SMTPHost = v
+	smtpCfg := mailer.SMTPSettings{
+		Host:     s.sysConfig.Get("smtp_host"),
+		Port:     s.sysConfig.Get("smtp_port"),
+		Username: s.sysConfig.Get("smtp_username"),
+		Password: s.sysConfig.Get("smtp_password"),
+		FromName: s.sysConfig.GetWithDefault("smtp_from_name", "OpenResume"),
 	}
-	if v := s.sysConfig.Get("smtp_port"); v != "" {
-		cfg.SMTPPort = v
-	}
-	if v := s.sysConfig.Get("smtp_username"); v != "" {
-		cfg.SMTPUsername = v
-	}
-	if v := s.sysConfig.Get("smtp_password"); v != "" {
-		cfg.SMTPPassword = v
-	}
-	if v := s.sysConfig.Get("smtp_from_name"); v != "" {
-		cfg.SMTPFromName = v
-	}
-	return mailer.SendVerificationCode(cfg, email, code)
+	return mailer.SendVerificationCode(smtpCfg, email, code)
 }
 
 func (s *Service) Register(email, code, password, name string) (string, string, error) {
-	if s.sysConfig.GetBool("enable_email_verification", false) {
+	if s.sysConfig.GetBool("enable_email_verification", true) {
 		if !s.ValidateVerifyCode(email, code) {
 			return "", "", http.ErrBodyNotAllowed
 		}
@@ -172,10 +163,9 @@ type WechatUserInfo struct {
 }
 
 func (s *Service) MakeWeChatLoginURL(state string) string {
-	appID := s.sysConfig.GetWithDefault("wechat_app_id", s.cfg.WeChatAppID)
-	redirectURI := s.sysConfig.GetWithDefault("wechat_redirect_uri", s.cfg.WeChatRedirectURI)
-
-	if !s.sysConfig.GetBool("feature_wechat_login", s.cfg.FeatureWeChatLogin == "on") || appID == "" || redirectURI == "" {
+	appID := s.sysConfig.Get("wechat_app_id")
+	redirectURI := s.sysConfig.Get("wechat_redirect_uri")
+	if !s.sysConfig.GetBool("wechat_login", true) || appID == "" || redirectURI == "" {
 		return ""
 	}
 	params := url.Values{}
@@ -189,8 +179,8 @@ func (s *Service) MakeWeChatLoginURL(state string) string {
 
 func (s *Service) ExchangeCode(code string) (WechatTokenResponse, error) {
 	var out WechatTokenResponse
-	appID := s.sysConfig.GetWithDefault("wechat_app_id", s.cfg.WeChatAppID)
-	appSecret := s.sysConfig.GetWithDefault("wechat_app_secret", s.cfg.WeChatAppSecret)
+	appID := s.sysConfig.Get("wechat_app_id")
+	appSecret := s.sysConfig.Get("wechat_app_secret")
 
 	if appID == "" || appSecret == "" {
 		return out, http.ErrNotSupported
@@ -344,9 +334,9 @@ type GithubUserInfo struct {
 }
 
 func (s *Service) MakeGithubLoginURL(state string) string {
-	clientID := s.sysConfig.GetWithDefault("github_client_id", s.cfg.GithubClientID)
-	redirectURI := s.sysConfig.GetWithDefault("github_redirect_uri", s.cfg.GithubRedirectURI)
-	if !s.sysConfig.GetBool("feature_github_login", s.cfg.FeatureGithubLogin == "on") || clientID == "" || redirectURI == "" {
+	clientID := s.sysConfig.Get("github_client_id")
+	redirectURI := s.sysConfig.Get("github_redirect_uri")
+	if !s.sysConfig.GetBool("github_login", true) || clientID == "" || redirectURI == "" {
 		return ""
 	}
 	params := url.Values{}
@@ -359,9 +349,9 @@ func (s *Service) MakeGithubLoginURL(state string) string {
 
 func (s *Service) ExchangeGithubCode(code string) (GithubTokenResponse, error) {
 	var out GithubTokenResponse
-	clientID := s.sysConfig.GetWithDefault("github_client_id", s.cfg.GithubClientID)
-	clientSecret := s.sysConfig.GetWithDefault("github_client_secret", s.cfg.GithubClientSecret)
-	redirectURI := s.sysConfig.GetWithDefault("github_redirect_uri", s.cfg.GithubRedirectURI)
+	clientID := s.sysConfig.Get("github_client_id")
+	clientSecret := s.sysConfig.Get("github_client_secret")
+	redirectURI := s.sysConfig.Get("github_redirect_uri")
 	if clientID == "" || clientSecret == "" {
 		return out, http.ErrNotSupported
 	}

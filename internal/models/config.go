@@ -2,7 +2,7 @@ package models
 
 import "gorm.io/gorm"
 
-type SystemConfig struct {
+type Config struct {
 	gorm.Model
 	Key         string `gorm:"uniqueIndex;size:100" json:"key"`
 	Value       string `gorm:"type:text" json:"value"`
@@ -10,6 +10,6 @@ type SystemConfig struct {
 	Type        string `gorm:"size:20;default:string" json:"type"` // string, bool, int, json
 }
 
-func (SystemConfig) TableName() string {
-	return "system_config"
+func (Config) TableName() string {
+	return "config"
 }

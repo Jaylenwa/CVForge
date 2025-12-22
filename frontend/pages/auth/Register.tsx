@@ -23,6 +23,7 @@ export const Register: React.FC = () => {
   useEffect(() => {
     getAuthConfig().then(setAuthConfig);
   }, []);
+  const emailVerificationEnabled = !!(authConfig && authConfig.enableEmailVerification);
   
   // Timer for code
   const [countdown, setCountdown] = useState(0);
@@ -78,8 +79,8 @@ export const Register: React.FC = () => {
 
     setLoading(true);
 
-    try {
-        if (authConfig?.enableEmailVerification) {
+  try {
+        if (emailVerificationEnabled) {
             const isValid = await verifyCode(formData.email, formData.code);
             if (!isValid) {
                 setError(t('auth.error.invalidCode'));
@@ -141,84 +142,88 @@ export const Register: React.FC = () => {
             </div>
         </div>
 
-        {/* Step 2: Verification Code & Password */}
-        {step === 2 && (
-            <div className="space-y-4 animate-fadeIn">
-                <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm text-center">
-                    {t('auth.success.codeSent')}
-                </div>
-
-                <div>
-                    <label htmlFor="code" className="block text-sm font-medium text-gray-700">
-                        {t('auth.verificationCode')}
-                    </label>
-                    <div className="mt-1 flex space-x-2">
-                        <div className="relative rounded-md shadow-sm flex-grow">
-                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <KeyRound className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                id="code"
-                                type="text"
-                                required
-                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder={t('auth.placeholder.code')}
-                                value={formData.code}
-                                onChange={(e) => setFormData({...formData, code: e.target.value})}
-                            />
-                        </div>
-                        <Button 
-                            type="button" 
-                            variant="outline" 
-                            disabled={countdown > 0}
-                            onClick={handleSendCode}
-                            className="whitespace-nowrap w-32"
-                        >
-                            {countdown > 0 ? `${countdown}s` : t('auth.resend')}
-                        </Button>
-                    </div>
-                </div>
-
-                <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                        {t('auth.password')}
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                            id="password"
-                            type="password"
-                            required
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            placeholder={t('auth.placeholder.passwordMin')}
-                            value={formData.password}
-                            onChange={(e) => setFormData({...formData, password: e.target.value})}
-                        />
-                    </div>
-                </div>
-
-                 <div>
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                        {t('auth.confirmPassword')}
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                            id="confirmPassword"
-                            type="password"
-                            required
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            placeholder={t('auth.placeholder.reenterPassword')}
-                            value={formData.confirmPassword}
-                            onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                        />
-                    </div>
-                </div>
+        {/* Verification Code (only when enabled and after sending) */}
+        {emailVerificationEnabled && step === 2 && (
+          <div className="space-y-4 animate-fadeIn">
+            <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm text-center">
+              {t('auth.success.codeSent')}
             </div>
+            <div>
+              <label htmlFor="code" className="block text-sm font-medium text-gray-700">
+                {t('auth.verificationCode')}
+              </label>
+              <div className="mt-1 flex space-x-2">
+                <div className="relative rounded-md shadow-sm flex-grow">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <KeyRound className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="code"
+                    type="text"
+                    required
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder={t('auth.placeholder.code')}
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={countdown > 0}
+                  onClick={handleSendCode}
+                  className="whitespace-nowrap w-32"
+                >
+                  {countdown > 0 ? `${countdown}s` : t('auth.resend')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Password fields (always needed; show immediately if verification disabled) */}
+        {(!emailVerificationEnabled || step === 2) && (
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                {t('auth.password')}
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder={t('auth.placeholder.passwordMin')}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                {t('auth.confirmPassword')}
+              </label>
+              <div className="mt-1 relative rounded-md shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder={t('auth.placeholder.reenterPassword')}
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {error && (
@@ -227,7 +232,7 @@ export const Register: React.FC = () => {
             </div>
         )}
         
-        {step === 1 && authConfig?.enableEmailVerification ? (
+        {emailVerificationEnabled && step === 1 ? (
              <Button 
                 type="button" 
                 onClick={handleSendCode} 

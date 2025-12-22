@@ -13,20 +13,7 @@ services:
       CORS_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn"
       UPLOAD_BACKEND: "local"
       FRONTEND_BASE_URL: "http://www.vfoy.cn"
-      OAUTH_ALLOWED_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn"
-      WECHAT_APP_ID: "${WECHAT_APP_ID:-}"
-      WECHAT_APP_SECRET: "${WECHAT_APP_SECRET:-}"
-      WECHAT_REDIRECT_URI: "http://vfoy.cn/api/v1/auth/wechat/callback"
-      FEATURE_WECHAT_LOGIN: "off"
-      GITHUB_CLIENT_ID: "Ov23liwTPGaHmFuVwdKF"
-      GITHUB_CLIENT_SECRET: "99d0256ebd2609f4b04c2808524d4449d0cdd1a0"
-      GITHUB_REDIRECT_URI: "http://vfoy.cn/api/v1/auth/github/callback"
       CHROME_JSON_URL: "http://chrome:3000/json/version"
-      SMTP_HOST: "smtp.qq.com"
-      SMTP_PORT: "465"
-      SMTP_USERNAME: "1318248167@qq.com"
-      SMTP_PASSWORD: "pfyqdiadwwvfbadj"
-      SMTP_FROM_NAME: "OpenResume"
     volumes:
       - /var/lib/openresume/upload:/app/uploads
     depends_on:

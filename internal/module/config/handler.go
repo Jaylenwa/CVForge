@@ -29,7 +29,7 @@ func (h *Handler) AdminList(c *gin.Context) {
 }
 
 type UpdateRequest struct {
-	Configs []models.SystemConfig `json:"configs"`
+	Configs []models.Config `json:"configs"`
 }
 
 func (h *Handler) AdminUpdate(c *gin.Context) {

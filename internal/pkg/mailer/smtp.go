@@ -7,11 +7,17 @@ import (
 	"net/smtp"
 	"strconv"
 	"strings"
-
-	"openresume/internal/infra/config"
 )
 
-func SendVerificationCode(cfg config.Config, toEmail, code string) error {
+type SMTPSettings struct {
+	Host     string
+	Port     string
+	Username string
+	Password string
+	FromName string
+}
+
+func SendVerificationCode(smtpCfg SMTPSettings, toEmail, code string) error {
 	subject := "Your OpenResume verification code"
 	body := fmt.Sprintf("<div style=\"font-family:Arial,sans-serif;font-size:14px;color:#333\">"+
 		"<p>Your verification code is:</p>"+
@@ -19,15 +25,15 @@ func SendVerificationCode(cfg config.Config, toEmail, code string) error {
 		"<p>The code expires in 10 minutes.</p>"+
 		"<p>If you did not request this, please ignore.</p>"+
 		"</div>", code)
-	return sendSMTP(cfg, toEmail, subject, body)
+	return sendSMTP(smtpCfg, toEmail, subject, body)
 }
 
-func sendSMTP(cfg config.Config, toEmail, subject, htmlBody string) error {
-	host := cfg.SMTPHost
-	portStr := cfg.SMTPPort
-	user := cfg.SMTPUsername
-	pass := cfg.SMTPPassword
-	fromName := cfg.SMTPFromName
+func sendSMTP(cfg SMTPSettings, toEmail, subject, htmlBody string) error {
+	host := cfg.Host
+	portStr := cfg.Port
+	user := cfg.Username
+	pass := cfg.Password
+	fromName := cfg.FromName
 	if host == "" || portStr == "" || user == "" || pass == "" {
 		return fmt.Errorf("smtp config missing")
 	}

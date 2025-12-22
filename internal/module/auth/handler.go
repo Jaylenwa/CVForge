@@ -39,10 +39,6 @@ func (h *Handler) WeChatRedirect(cfg config.Config) gin.HandlerFunc {
 			client = "popup"
 		}
 		origin := c.Query("origin")
-		if origin != "" && !h.svc.IsAllowedOrigin(cfg.OAuthAllowedOrigins, origin) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "origin not allowed"})
-			return
-		}
 		state := uuid.NewString()
 		st := map[string]any{
 			"client":  client,
@@ -72,10 +68,6 @@ func (h *Handler) GithubRedirect(cfg config.Config) gin.HandlerFunc {
 			client = "popup"
 		}
 		origin := c.Query("origin")
-		if origin != "" && !h.svc.IsAllowedOrigin(cfg.OAuthAllowedOrigins, origin) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "origin not allowed"})
-			return
-		}
 		state := uuid.NewString()
 		st := map[string]any{
 			"client":  client,

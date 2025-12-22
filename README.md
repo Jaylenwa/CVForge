@@ -84,7 +84,7 @@ Environment variables (backend) from `internal/infra/config/config.go`:
 - `WECHAT_APP_ID`, `WECHAT_APP_SECRET`, `WECHAT_REDIRECT_URI`: WeChat OAuth
 - `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`: GitHub OAuth
 - `OAUTH_ALLOWED_ORIGINS`: Allowed origins for OAuth popups/redirects
-- `FEATURE_WECHAT_LOGIN`, `FEATURE_GITHUB_LOGIN`: `on`/`off` feature switches
+- `wechat_login`, `github_login`: `on`/`off` feature switches
 
 Environment variables (frontend):
 - `VITE_API_BASE`: Base path or URL for API, default `/api/v1`
@@ -231,7 +231,7 @@ AI 接口：`internal/module/ai/handler.go:26`
 - `WECHAT_APP_ID`、`WECHAT_APP_SECRET`、`WECHAT_REDIRECT_URI`：微信 OAuth
 - `GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`、`GITHUB_REDIRECT_URI`：GitHub OAuth
 - `OAUTH_ALLOWED_ORIGINS`：OAuth 弹窗/跳转的允许来源
-- `FEATURE_WECHAT_LOGIN`、`FEATURE_GITHUB_LOGIN`：`on`/`off` 功能开关
+- `wechat_login`、`github_login`：`on`/`off` 功能开关
 
 前端环境变量：
 - `VITE_API_BASE`：API 基路径或 URL，默认 `/api/v1`

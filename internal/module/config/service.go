@@ -4,6 +4,7 @@ import (
 	"context"
 	"openresume/internal/infra/config"
 	"openresume/internal/models"
+	"os"
 	"strconv"
 	"time"
 
@@ -33,27 +34,27 @@ func (s *Service) EnsureDefaults(cfg config.Config) error {
 		// Registration
 		{"enable_email_verification", "false", "Enable email verification during registration", "bool"},
 		// SMTP
-		{"smtp_host", cfg.SMTPHost, "SMTP host", "string"},
-		{"smtp_port", cfg.SMTPPort, "SMTP port", "string"},
-		{"smtp_username", cfg.SMTPUsername, "SMTP username", "string"},
-		{"smtp_password", cfg.SMTPPassword, "SMTP password", "string"},
-		{"smtp_from_name", cfg.SMTPFromName, "SMTP from name", "string"},
+		{"smtp_host", os.Getenv("SMTP_HOST"), "SMTP host", "string"},
+		{"smtp_port", os.Getenv("SMTP_PORT"), "SMTP port", "string"},
+		{"smtp_username", os.Getenv("SMTP_USERNAME"), "SMTP username", "string"},
+		{"smtp_password", os.Getenv("SMTP_PASSWORD"), "SMTP password", "string"},
+		{"smtp_from_name", os.Getenv("SMTP_FROM_NAME"), "SMTP from name", "string"},
 		// WeChat OAuth
-		{"feature_wechat_login", "false", "Enable WeChat login", "bool"},
-		{"wechat_app_id", cfg.WeChatAppID, "WeChat AppID", "string"},
-		{"wechat_app_secret", cfg.WeChatAppSecret, "WeChat App Secret", "string"},
-		{"wechat_redirect_uri", cfg.WeChatRedirectURI, "WeChat Redirect URI", "string"},
+		{"wechat_login", "false", "Enable WeChat login", "bool"},
+		{"wechat_app_id", os.Getenv("WECHAT_APP_ID"), "WeChat AppID", "string"},
+		{"wechat_app_secret", os.Getenv("WECHAT_APP_SECRET"), "WeChat App Secret", "string"},
+		{"wechat_redirect_uri", os.Getenv("WECHAT_REDIRECT_URI"), "WeChat Redirect URI", "string"},
 		// GitHub OAuth
-		{"feature_github_login", "false", "Enable GitHub login", "bool"},
-		{"github_client_id", cfg.GithubClientID, "GitHub Client ID", "string"},
-		{"github_client_secret", cfg.GithubClientSecret, "GitHub Client Secret", "string"},
-		{"github_redirect_uri", cfg.GithubRedirectURI, "GitHub Redirect URI", "string"},
+		{"github_login", "false", "Enable GitHub login", "bool"},
+		{"github_client_id", os.Getenv("GITHUB_CLIENT_ID"), "GitHub Client ID", "string"},
+		{"github_client_secret", os.Getenv("GITHUB_CLIENT_SECRET"), "GitHub Client Secret", "string"},
+		{"github_redirect_uri", os.Getenv("GITHUB_REDIRECT_URI"), "GitHub Redirect URI", "string"},
 	}
 	for _, d := range defaults {
-		var existing models.SystemConfig
+		var existing models.Config
 		if err := s.db.Where("key = ?", d.Key).First(&existing).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
-				_ = s.db.Create(&models.SystemConfig{
+				_ = s.db.Create(&models.Config{
 					Key:         d.Key,
 					Value:       d.Value,
 					Description: d.Description,
@@ -78,7 +79,7 @@ func (s *Service) Get(key string) string {
 	}
 
 	// Try DB
-	var cfg models.SystemConfig
+	var cfg models.Config
 	if err := s.db.Where("key = ?", key).First(&cfg).Error; err == nil {
 		// Cache it
 		s.rdb.Set(ctx, "sysconfig:"+key, cfg.Value, 24*time.Hour)
@@ -109,11 +110,11 @@ func (s *Service) GetBool(key string, def bool) bool {
 }
 
 func (s *Service) Set(key, value, description, typeName string) error {
-	var cfg models.SystemConfig
+	var cfg models.Config
 	err := s.db.Where("key = ?", key).First(&cfg).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			cfg = models.SystemConfig{
+			cfg = models.Config{
 				Key:         key,
 				Value:       value,
 				Description: description,
@@ -143,8 +144,8 @@ func (s *Service) Set(key, value, description, typeName string) error {
 	return nil
 }
 
-func (s *Service) GetAll() ([]models.SystemConfig, error) {
-	var configs []models.SystemConfig
+func (s *Service) GetAll() ([]models.Config, error) {
+	var configs []models.Config
 	if err := s.db.Find(&configs).Error; err != nil {
 		return nil, err
 	}
@@ -152,19 +153,40 @@ func (s *Service) GetAll() ([]models.SystemConfig, error) {
 }
 
 type PublicConfig struct {
-	EnableEmailVerification bool   `json:"enableEmailVerification"`
-	EnableWeChatLogin       bool   `json:"enableWeChatLogin"`
-	EnableGithubLogin       bool   `json:"enableGithubLogin"`
-	WeChatAppID             string `json:"weChatAppID"`
-	GithubClientID          string `json:"githubClientID"`
+	EnableEmailVerification bool `json:"enableEmailVerification"`
+	EnableWeChatLogin       bool `json:"enableWeChatLogin"`
+	EnableGithubLogin       bool `json:"enableGithubLogin"`
 }
 
 func (s *Service) GetPublicConfig() PublicConfig {
+	// Read from DB once and map required keys
+	var (
+		enableEmailVerification bool
+		enableWeChatLogin       bool
+		enableGithubLogin       bool
+	)
+	configs, err := s.GetAll()
+	if err == nil {
+		for _, cfg := range configs {
+			switch cfg.Key {
+			case "enable_email_verification":
+				if b, err := strconv.ParseBool(cfg.Value); err == nil {
+					enableEmailVerification = b
+				}
+			case "wechat_login":
+				if b, err := strconv.ParseBool(cfg.Value); err == nil {
+					enableWeChatLogin = b
+				}
+			case "github_login":
+				if b, err := strconv.ParseBool(cfg.Value); err == nil {
+					enableGithubLogin = b
+				}
+			}
+		}
+	}
 	return PublicConfig{
-		EnableEmailVerification: s.GetBool("enable_email_verification", false),
-		EnableWeChatLogin:       s.GetBool("feature_wechat_login", true),
-		EnableGithubLogin:       s.GetBool("feature_github_login", true),
-		WeChatAppID:             s.Get("wechat_app_id"),
-		GithubClientID:          s.Get("github_client_id"),
+		EnableEmailVerification: enableEmailVerification,
+		EnableWeChatLogin:       enableWeChatLogin,
+		EnableGithubLogin:       enableGithubLogin,
 	}
 }
