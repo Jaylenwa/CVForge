@@ -12,12 +12,6 @@ type Config struct {
 	RedisPassword   string
 	JWTSecret       string
 	CORSOrigins     string
-	UploadBackend   string
-	S3Bucket        string
-	S3Region        string
-	S3Endpoint      string
-	S3AccessKey     string
-	S3SecretKey     string
 	FrontendBaseURL string
 	ChromeJSONURL   string
 }
@@ -31,12 +25,6 @@ func Load() Config {
 		RedisPassword:   getenv("REDIS_PASSWORD", ""),
 		JWTSecret:       getenv("JWT_SECRET", "devsecret"),
 		CORSOrigins:     getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"),
-		UploadBackend:   getenv("UPLOAD_BACKEND", "local"),
-		S3Bucket:        getenv("S3_BUCKET", ""),
-		S3Region:        getenv("S3_REGION", ""),
-		S3Endpoint:      getenv("S3_ENDPOINT", ""),
-		S3AccessKey:     getenv("S3_ACCESS_KEY", ""),
-		S3SecretKey:     getenv("S3_SECRET_KEY", ""),
 		FrontendBaseURL: getenv("FRONTEND_BASE_URL", "http://localhost:3000"),
 		ChromeJSONURL:   getenv("CHROME_JSON_URL", ""),
 	}

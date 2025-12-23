@@ -3,7 +3,6 @@ package storage
 import (
 	"bytes"
 	"context"
-	"openresume/internal/infra/config"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awscfg "github.com/aws/aws-sdk-go-v2/config"
@@ -16,14 +15,14 @@ type S3Uploader struct {
 	bucket string
 }
 
-func NewS3(cfgApp config.Config) (Uploader, error) {
-	opts := []func(*awscfg.LoadOptions) error{awscfg.WithRegion(cfgApp.S3Region)}
-	if cfgApp.S3AccessKey != "" && cfgApp.S3SecretKey != "" {
-		opts = append(opts, awscfg.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(cfgApp.S3AccessKey, cfgApp.S3SecretKey, "")))
+func NewS3(bucket, region, endpoint, accessKey, secretKey string) (Uploader, error) {
+	opts := []func(*awscfg.LoadOptions) error{awscfg.WithRegion(region)}
+	if accessKey != "" && secretKey != "" {
+		opts = append(opts, awscfg.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")))
 	}
-	if cfgApp.S3Endpoint != "" {
+	if endpoint != "" {
 		resolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-			return aws.Endpoint{URL: cfgApp.S3Endpoint, HostnameImmutable: true}, nil
+			return aws.Endpoint{URL: endpoint, HostnameImmutable: true}, nil
 		})
 		opts = append(opts, awscfg.WithEndpointResolverWithOptions(resolver))
 	}
@@ -32,7 +31,7 @@ func NewS3(cfgApp config.Config) (Uploader, error) {
 		return nil, err
 	}
 	cli := s3.NewFromConfig(cfg)
-	return &S3Uploader{cli: cli, bucket: cfgApp.S3Bucket}, nil
+	return &S3Uploader{cli: cli, bucket: bucket}, nil
 }
 
 func (s *S3Uploader) Upload(ctx context.Context, name string, content []byte) (string, error) {
