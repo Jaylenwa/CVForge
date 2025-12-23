@@ -9,7 +9,7 @@ services:
       DB_DSN: "root:password@tcp(mysql:3306)/openresume?charset=utf8mb4&parseTime=True&loc=Local"
       REDIS_ADDR: "redis:6379"
       REDIS_PASSWORD: ""
-      JWT_SECRET: "change-me"
+      JWT_SECRET: "abcdefghijklmnopqrstuvwxyz"
       CORS_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn"
       FRONTEND_BASE_URL: "http://www.vfoy.cn"
       CHROME_JSON_URL: "http://chrome:3000/json/version"

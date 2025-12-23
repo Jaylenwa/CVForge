@@ -33,11 +33,11 @@ func NewService(cfg config.Config, sysConfig *conf.Service, rdb *redis.Client, d
 }
 
 func (s *Service) FeatureWeChatEnabled() bool {
-	return s.sysConfig.GetBool("wechat_login", true)
+	return s.sysConfig.GetBool("enabled_wechat_login", true)
 }
 
 func (s *Service) FeatureGithubEnabled() bool {
-	return s.sysConfig.GetBool("github_login", true)
+	return s.sysConfig.GetBool("enabled_github_login", true)
 }
 
 func (s *Service) IssueTokens(uid uint) (string, string) {
@@ -165,7 +165,7 @@ type WechatUserInfo struct {
 func (s *Service) MakeWeChatLoginURL(state string) string {
 	appID := s.sysConfig.Get("wechat_app_id")
 	redirectURI := s.sysConfig.Get("wechat_redirect_uri")
-	if !s.sysConfig.GetBool("wechat_login", true) || appID == "" || redirectURI == "" {
+	if !s.sysConfig.GetBool("enabled_wechat_login", true) || appID == "" || redirectURI == "" {
 		return ""
 	}
 	params := url.Values{}
@@ -336,7 +336,7 @@ type GithubUserInfo struct {
 func (s *Service) MakeGithubLoginURL(state string) string {
 	clientID := s.sysConfig.Get("github_client_id")
 	redirectURI := s.sysConfig.Get("github_redirect_uri")
-	if !s.sysConfig.GetBool("github_login", true) || clientID == "" || redirectURI == "" {
+	if !s.sysConfig.GetBool("enabled_github_login", true) || clientID == "" || redirectURI == "" {
 		return ""
 	}
 	params := url.Values{}

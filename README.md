@@ -75,9 +75,9 @@ Backend process environment (directly loaded at startup):
 System configuration keys (stored in DB; seeded from env on first run; editable in Admin → Settings):
 - `enable_email_verification`: Enable email verification during registration (default `false`)
 - SMTP: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_NAME`
-- WeChat OAuth: `WECHAT_APP_ID`, `WECHAT_APP_SECRET`, `WECHAT_REDIRECT_URI`, toggle `wechat_login`
-- GitHub OAuth: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`, toggle `github_login`
-- S3 storage: `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, toggle `storage_s3_enabled`
+- WeChat OAuth: `WECHAT_APP_ID`, `WECHAT_APP_SECRET`, `WECHAT_REDIRECT_URI`, toggle `enabled_wechat_login`
+- GitHub OAuth: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`, toggle `enabled_github_login`
+- S3 storage: `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, toggle `enabled_storage_s3`
 
 Environment variables (frontend):
 - `VITE_API_BASE`: Base path or URL for API, default `/api/v1`

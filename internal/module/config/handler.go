@@ -44,7 +44,7 @@ func (h *Handler) AdminUpdate(c *gin.Context) {
 		updates[cfg.ConfigKey] = cfg.ConfigValue
 	}
 	// Validate storage configuration strictly
-	if v, ok := updates["storage_s3_enabled"]; ok {
+	if v, ok := updates["enabled_storage_s3"]; ok {
 		enabled := v == "true" || v == "on" || v == "1"
 		if enabled {
 			bucket := updates["storage_s3_bucket"]

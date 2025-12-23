@@ -33,23 +33,23 @@ func (s *Service) EnsureDefaults(cfg config.Config) error {
 	defaults := []def{
 		// Registration
 		{"enable_email_verification", "false", "Enable email verification during registration", "bool"},
-		// SMTP
 		{"smtp_host", os.Getenv("SMTP_HOST"), "SMTP host", "string"},
 		{"smtp_port", os.Getenv("SMTP_PORT"), "SMTP port", "string"},
 		{"smtp_username", os.Getenv("SMTP_USERNAME"), "SMTP username", "string"},
 		{"smtp_password", os.Getenv("SMTP_PASSWORD"), "SMTP password", "string"},
 		{"smtp_from_name", os.Getenv("SMTP_FROM_NAME"), "SMTP from name", "string"},
 		// WeChat OAuth
-		{"wechat_login", "false", "Enable WeChat login", "bool"},
+		{"enabled_wechat_login", "false", "Enable WeChat login", "bool"},
 		{"wechat_app_id", os.Getenv("WECHAT_APP_ID"), "WeChat AppID", "string"},
 		{"wechat_app_secret", os.Getenv("WECHAT_APP_SECRET"), "WeChat App Secret", "string"},
 		{"wechat_redirect_uri", os.Getenv("WECHAT_REDIRECT_URI"), "WeChat Redirect URI", "string"},
 		// GitHub OAuth
-		{"github_login", "false", "Enable GitHub login", "bool"},
+		{"enabled_github_login", "false", "Enable GitHub login", "bool"},
 		{"github_client_id", os.Getenv("GITHUB_CLIENT_ID"), "GitHub Client ID", "string"},
 		{"github_client_secret", os.Getenv("GITHUB_CLIENT_SECRET"), "GitHub Client Secret", "string"},
 		{"github_redirect_uri", os.Getenv("GITHUB_REDIRECT_URI"), "GitHub Redirect URI", "string"},
-		{"storage_s3_enabled", "false", "Enable S3 storage", "bool"},
+		// Storage
+		{"enabled_storage_s3", "false", "Enable S3 storage", "bool"},
 		{"storage_s3_bucket", os.Getenv("S3_BUCKET"), "S3 bucket", "string"},
 		{"storage_s3_region", os.Getenv("S3_REGION"), "S3 region", "string"},
 		{"storage_s3_endpoint", os.Getenv("S3_ENDPOINT"), "S3 endpoint (optional)", "string"},
@@ -179,11 +179,11 @@ func (s *Service) GetPublicConfig() PublicConfig {
 				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableEmailVerification = b
 				}
-			case "wechat_login":
+			case "enabled_wechat_login":
 				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableWeChatLogin = b
 				}
-			case "github_login":
+			case "enabled_github_login":
 				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableGithubLogin = b
 				}

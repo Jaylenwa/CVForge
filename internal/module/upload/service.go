@@ -16,7 +16,7 @@ type Service struct {
 func NewService(cfg config.Config, sys *conf.Service) *Service { return &Service{cfg: cfg, sys: sys} }
 
 func (s *Service) Upload(c *gin.Context, name string, b []byte) (string, error) {
-	useS3 := s.sys.GetBool("storage_s3_enabled", false)
+	useS3 := s.sys.GetBool("enabled_storage_s3", false)
 	bucket := s.sys.GetWithDefault("storage_s3_bucket", "")
 	region := s.sys.GetWithDefault("storage_s3_region", "")
 	endpoint := s.sys.GetWithDefault("storage_s3_endpoint", "")

@@ -22,10 +22,10 @@ export const ConfigPage: React.FC = () => {
   const getConfigLabel = (key: string, description?: string) => {
     const map: Record<string, string> = {
       enable_email_verification: 'admin.config.key.enableEmailVerification',
-      enable_wechat_login: 'admin.config.key.enableWeChatLogin',
+      enable_enabled_wechat_login: 'admin.config.key.enableWeChatLogin',
       wechat_enable_login: 'admin.config.key.enableWeChatLogin',
       enableWeChatLogin: 'admin.config.key.enableWeChatLogin',
-      enable_github_login: 'admin.config.key.enableGithubLogin',
+      enable_enabled_github_login: 'admin.config.key.enableGithubLogin',
       github_enable_login: 'admin.config.key.enableGithubLogin',
       enableGithubLogin: 'admin.config.key.enableGithubLogin',
       wechat_app_id: 'admin.config.key.wechatAppId',
@@ -42,7 +42,7 @@ export const ConfigPage: React.FC = () => {
       smtp_password: 'admin.config.key.smtpPass',
       smtp_secure: 'admin.config.key.smtpSecure',
       oauth_allowed_origins: 'admin.config.key.oauthAllowedOrigins',
-      storage_s3_enabled: 'admin.config.key.storageS3Enabled',
+      enabled_storage_s3: 'admin.config.key.storageS3Enabled',
       storage_s3_bucket: 'admin.config.key.storageS3Bucket',
       storage_s3_region: 'admin.config.key.storageS3Region',
       storage_s3_endpoint: 'admin.config.key.storageS3Endpoint',
@@ -142,10 +142,10 @@ export const ConfigPage: React.FC = () => {
             ((() => {
               const items = groups[activeTab] || [];
               if (activeTab === 'Storage') {
-                const s3Enabled = (configs.find(c => c.key === 'storage_s3_enabled')?.value || 'false');
+                const s3Enabled = (configs.find(c => c.key === 'enabled_storage_s3')?.value || 'false');
                 const isOn = s3Enabled === 'true' || s3Enabled === 'on';
                 return items.filter(c => {
-                  if (c.key === 'storage_s3_enabled') return true;
+                  if (c.key === 'enabled_storage_s3') return true;
                   if (c.key.startsWith('storage_s3_')) return isOn;
                   return true;
                 });
