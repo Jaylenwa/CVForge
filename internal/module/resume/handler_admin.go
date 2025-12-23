@@ -71,7 +71,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	items := make([]gin.H, 0, len(list))
 	for _, r := range list {
 		items = append(items, gin.H{
-			"id":           r.ExternalID,
+			"id":           r.ID,
 			"userId":       r.UserID,
 			"userName":     nameMap[r.UserID],
 			"title":        r.Title,

@@ -69,11 +69,16 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	}
 	var list []User
 	q := h.db.Model(&User{})
-	if v := strings.TrimSpace(c.Query("email")); v != "" {
-		q = q.Where("email LIKE ?", "%"+v+"%")
-	}
-	if v := strings.TrimSpace(c.Query("name")); v != "" {
-		q = q.Where("name LIKE ?", "%"+v+"%")
+	emailQ := strings.TrimSpace(c.Query("email"))
+	nameQ := strings.TrimSpace(c.Query("name"))
+	if emailQ != "" || nameQ != "" {
+		if emailQ != "" && nameQ != "" {
+			q = q.Where("(email LIKE ? OR name LIKE ?)", "%"+emailQ+"%", "%"+nameQ+"%")
+		} else if emailQ != "" {
+			q = q.Where("email LIKE ?", "%"+emailQ+"%")
+		} else {
+			q = q.Where("name LIKE ?", "%"+nameQ+"%")
+		}
 	}
 	if v := strings.TrimSpace(c.Query("role")); v != "" {
 		q = q.Where("role = ?", v)
