@@ -19,10 +19,10 @@ func InitMySQL(cfg config.Config) (*gorm.DB, error) {
 		db  *gorm.DB
 		err error
 	)
-	if cfg.SQLitePath != "" {
-		db, err = gorm.Open(sqlite.Open(cfg.SQLitePath), &gorm.Config{})
-	} else {
+	if cfg.MySQLDSN != "" {
 		db, err = gorm.Open(mysql.Open(cfg.MySQLDSN), &gorm.Config{})
+	} else {
+		db, err = gorm.Open(sqlite.Open(cfg.SQLitePath), &gorm.Config{})
 	}
 	if err != nil {
 		return nil, err
