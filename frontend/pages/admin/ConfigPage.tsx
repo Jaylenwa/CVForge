@@ -41,7 +41,13 @@ export const ConfigPage: React.FC = () => {
       smtp_pass: 'admin.config.key.smtpPass',
       smtp_password: 'admin.config.key.smtpPass',
       smtp_secure: 'admin.config.key.smtpSecure',
-      oauth_allowed_origins: 'admin.config.key.oauthAllowedOrigins'
+      oauth_allowed_origins: 'admin.config.key.oauthAllowedOrigins',
+      storage_s3_enabled: 'admin.config.key.storageS3Enabled',
+      storage_s3_bucket: 'admin.config.key.storageS3Bucket',
+      storage_s3_region: 'admin.config.key.storageS3Region',
+      storage_s3_endpoint: 'admin.config.key.storageS3Endpoint',
+      storage_s3_access_key: 'admin.config.key.storageS3AccessKey',
+      storage_s3_secret_key: 'admin.config.key.storageS3SecretKey'
     };
     const keyName = map[key];
     if (keyName) return t(keyName);
@@ -86,12 +92,14 @@ export const ConfigPage: React.FC = () => {
       'SMTP': [],
       'WeChat': [],
       'GitHub': [],
+      'Storage': [],
       'Other': []
     };
     configs.forEach(c => {
       if (c.key.startsWith('smtp_')) g['SMTP'].push(c);
       else if (c.key.startsWith('wechat_') || c.key.includes('wechat')) g['WeChat'].push(c);
       else if (c.key.startsWith('github_') || c.key.includes('github')) g['GitHub'].push(c);
+      else if (c.key.startsWith('storage_')) g['Storage'].push(c);
       else if (c.key === 'enable_email_verification' || c.key.startsWith('feature_')) g['General'].push(c);
       else g['Other'].push(c);
     });
@@ -131,7 +139,19 @@ export const ConfigPage: React.FC = () => {
           {loading && configs.length === 0 ? (
             <div className="text-center py-12">{t('common.loading') || 'Loading...'}</div>
           ) : (
-            (groups[activeTab] || []).map(config => {
+            ((() => {
+              const items = groups[activeTab] || [];
+              if (activeTab === 'Storage') {
+                const s3Enabled = (configs.find(c => c.key === 'storage_s3_enabled')?.value || 'false');
+                const isOn = s3Enabled === 'true' || s3Enabled === 'on';
+                return items.filter(c => {
+                  if (c.key === 'storage_s3_enabled') return true;
+                  if (c.key.startsWith('storage_s3_')) return isOn;
+                  return true;
+                });
+              }
+              return items;
+            })()).map(config => {
               const isBool = config.type === 'bool' || config.value === 'true' || config.value === 'false' || config.value === 'on' || config.value === 'off';
               const enabled = config.value === 'true' || config.value === 'on';
               return (

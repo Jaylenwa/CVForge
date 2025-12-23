@@ -66,7 +66,7 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 	g.PUT("/resumes/:id", resumeH.Update)
 	g.DELETE("/resumes/:id", resumeH.Delete)
 
-	uploadH := upload.NewHandler()
+	uploadH := upload.NewHandler(cfg, confService)
 	g.POST("/upload/avatar", uploadH.UploadAvatar)
 
 	shareH := share.NewHandler(db, rdb)

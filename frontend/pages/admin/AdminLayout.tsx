@@ -9,7 +9,7 @@ export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
 
   const menu = [
-    { to: AppRoute.Admin, label: t('admin.menu.dashboard'), icon: <BarChart3 size={18} /> },
+    { to: AppRoute.Admin, label: t('admin.menu.dashboard'), icon: <BarChart3 size={18} />, end: true },
     { to: AppRoute.AdminUsers, label: t('admin.menu.users'), icon: <Users size={18} /> },
     { to: AppRoute.AdminResumes, label: t('admin.menu.resumes'), icon: <FileText size={18} /> },
     { to: AppRoute.AdminTemplates, label: t('admin.menu.templates'), icon: <LayoutGrid size={18} /> },
@@ -43,6 +43,7 @@ export const AdminLayout: React.FC = () => {
             <NavLink
               key={item.to}
               to={item.to}
+              end={Boolean((item as any).end)}
               className={({ isActive }) =>
                 `w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group ${
                   isActive

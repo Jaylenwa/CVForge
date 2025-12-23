@@ -49,6 +49,12 @@ func (s *Service) EnsureDefaults(cfg config.Config) error {
 		{"github_client_id", os.Getenv("GITHUB_CLIENT_ID"), "GitHub Client ID", "string"},
 		{"github_client_secret", os.Getenv("GITHUB_CLIENT_SECRET"), "GitHub Client Secret", "string"},
 		{"github_redirect_uri", os.Getenv("GITHUB_REDIRECT_URI"), "GitHub Redirect URI", "string"},
+		{"storage_s3_enabled", "false", "Enable S3 storage", "bool"},
+		{"storage_s3_bucket", os.Getenv("S3_BUCKET"), "S3 bucket", "string"},
+		{"storage_s3_region", os.Getenv("S3_REGION"), "S3 region", "string"},
+		{"storage_s3_endpoint", os.Getenv("S3_ENDPOINT"), "S3 endpoint (optional)", "string"},
+		{"storage_s3_access_key", os.Getenv("S3_ACCESS_KEY"), "S3 access key (optional)", "string"},
+		{"storage_s3_secret_key", os.Getenv("S3_SECRET_KEY"), "S3 secret key (optional)", "string"},
 	}
 	for _, d := range defaults {
 		var existing models.Config

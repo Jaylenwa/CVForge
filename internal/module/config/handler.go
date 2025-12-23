@@ -39,6 +39,41 @@ func (h *Handler) AdminUpdate(c *gin.Context) {
 		return
 	}
 
+	updates := map[string]string{}
+	for _, cfg := range req.Configs {
+		updates[cfg.ConfigKey] = cfg.ConfigValue
+	}
+	// Validate storage configuration strictly
+	if v, ok := updates["storage_s3_enabled"]; ok {
+		enabled := v == "true" || v == "on" || v == "1"
+		if enabled {
+			bucket := updates["storage_s3_bucket"]
+			region := updates["storage_s3_region"]
+			if bucket == "" {
+				bucket = h.service.Get("storage_s3_bucket")
+			}
+			if region == "" {
+				region = h.service.Get("storage_s3_region")
+			}
+			if bucket == "" || region == "" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "S3 enabled requires bucket and region"})
+				return
+			}
+			ak := updates["storage_s3_access_key"]
+			sk := updates["storage_s3_secret_key"]
+			if ak == "" {
+				ak = h.service.Get("storage_s3_access_key")
+			}
+			if sk == "" {
+				sk = h.service.Get("storage_s3_secret_key")
+			}
+			if (ak != "" && sk == "") || (ak == "" && sk != "") {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "S3 credentials must provide both access_key and secret_key"})
+				return
+			}
+		}
+	}
+
 	for _, cfg := range req.Configs {
 		if err := h.service.Set(cfg.ConfigKey, cfg.ConfigValue, cfg.Description, cfg.Type); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update config: " + cfg.ConfigKey})

@@ -9,14 +9,16 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"openresume/internal/infra/config"
+	conf "openresume/internal/module/config"
 )
 
 type Handler struct {
 	svc *Service
 }
 
-func NewHandler() *Handler {
-	return &Handler{svc: NewService()}
+func NewHandler(cfg config.Config, sys *conf.Service) *Handler {
+	return &Handler{svc: NewService(cfg, sys)}
 }
 
 func (h *Handler) UploadAvatar(c *gin.Context) {
