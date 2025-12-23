@@ -15,31 +15,32 @@ export const ConfigPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('General');
 
   const getTabLabel = (name: string) => {
-    const code = name.toLowerCase() === 'smtp' ? 'smtp' : name.toLowerCase();
+    const code = name.toLowerCase();
     return t(`admin.config.tab.${code}`);
   };
 
   const getConfigLabel = (key: string, description?: string) => {
     const map: Record<string, string> = {
       enable_email_verification: 'admin.config.key.enableEmailVerification',
-      enable_enabled_wechat_login: 'admin.config.key.enableWeChatLogin',
-      wechat_enable_login: 'admin.config.key.enableWeChatLogin',
-      enableWeChatLogin: 'admin.config.key.enableWeChatLogin',
-      enable_enabled_github_login: 'admin.config.key.enableGithubLogin',
-      github_enable_login: 'admin.config.key.enableGithubLogin',
-      enableGithubLogin: 'admin.config.key.enableGithubLogin',
+      enabled_wechat_login: 'admin.config.key.enableWeChatLogin',
+      enabled_github_login: 'admin.config.key.enableGithubLogin',
       wechat_app_id: 'admin.config.key.wechatAppId',
       wechat_appid: 'admin.config.key.wechatAppId',
       weChatAppID: 'admin.config.key.wechatAppId',
+      wechat_app_secret: 'admin.config.key.wechatAppSecret',
+      wechat_redirect_uri: 'admin.config.key.wechatRedirectUri',
       github_client_id: 'admin.config.key.githubClientId',
       github_clientid: 'admin.config.key.githubClientId',
       githubClientID: 'admin.config.key.githubClientId',
+      github_client_secret: 'admin.config.key.githubClientSecret',
+      github_redirect_uri: 'admin.config.key.githubRedirectUri',
       smtp_host: 'admin.config.key.smtpHost',
       smtp_port: 'admin.config.key.smtpPort',
       smtp_user: 'admin.config.key.smtpUser',
       smtp_username: 'admin.config.key.smtpUser',
       smtp_pass: 'admin.config.key.smtpPass',
       smtp_password: 'admin.config.key.smtpPass',
+      smtp_from_name: 'admin.config.key.smtpFromName',
       smtp_secure: 'admin.config.key.smtpSecure',
       oauth_allowed_origins: 'admin.config.key.oauthAllowedOrigins',
       enabled_storage_s3: 'admin.config.key.storageS3Enabled',
@@ -89,19 +90,22 @@ export const ConfigPage: React.FC = () => {
   const groups = useMemo(() => {
     const g: { [key: string]: SystemConfig[] } = {
       'General': [],
-      'SMTP': [],
-      'WeChat': [],
-      'GitHub': [],
-      'Storage': [],
-      'Other': []
+      'OAuth': [],
+      'Storage': []
     };
     configs.forEach(c => {
-      if (c.key.startsWith('smtp_')) g['SMTP'].push(c);
-      else if (c.key.startsWith('wechat_') || c.key.includes('wechat')) g['WeChat'].push(c);
-      else if (c.key.startsWith('github_') || c.key.includes('github')) g['GitHub'].push(c);
-      else if (c.key.startsWith('storage_') || c.key === 'enabled_storage_s3') g['Storage'].push(c);
-      else if (c.key === 'enable_email_verification' || c.key.startsWith('feature_')) g['General'].push(c);
-      else g['Other'].push(c);
+      if (c.key === 'enable_email_verification' || c.key.startsWith('feature_') || c.key.startsWith('smtp_')) {
+        g['General'].push(c);
+      } else if (
+        c.key === 'oauth_allowed_origins' ||
+        c.key.startsWith('wechat_') || c.key.includes('wechat') ||
+        c.key.startsWith('github_') || c.key.includes('github') ||
+        c.key === 'enabled_wechat_login' || c.key === 'enabled_github_login'
+      ) {
+        g['OAuth'].push(c);
+      } else if (c.key.startsWith('storage_') || c.key === 'enabled_storage_s3') {
+        g['Storage'].push(c);
+      }
     });
     return g;
   }, [configs]);
@@ -150,12 +154,42 @@ export const ConfigPage: React.FC = () => {
                   return true;
                 });
               }
+              if (activeTab === 'General') {
+                const ev = (configs.find(c => c.key === 'enable_email_verification')?.value || 'false');
+                const isOn = ev === 'true' || ev === 'on';
+                return items.filter(c => {
+                  if (c.key === 'enable_email_verification') return true;
+                  if (c.key.startsWith('smtp_')) return isOn;
+                  return true;
+                });
+              }
+              if (activeTab === 'OAuth') {
+                const wechatVal = (configs.find(c => c.key === 'enabled_wechat_login')?.value || 'false');
+                const githubVal = (configs.find(c => c.key === 'enabled_github_login')?.value || 'false');
+                const wechatOn = wechatVal === 'true' || wechatVal === 'on';
+                const githubOn = githubVal === 'true' || githubVal === 'on';
+                return items.filter(c => {
+                  if (c.key === 'enabled_wechat_login' || c.key === 'enabled_github_login') return true;
+                  if (c.key === 'oauth_allowed_origins') return true;
+                  if (c.key.startsWith('wechat_') || c.key.includes('wechat')) return wechatOn;
+                  if (c.key.startsWith('github_') || c.key.includes('github')) return githubOn;
+                  return true;
+                });
+              }
               return items;
             })()).map(config => {
               const isBool = config.type === 'bool' || config.value === 'true' || config.value === 'false' || config.value === 'on' || config.value === 'off';
               const enabled = config.value === 'true' || config.value === 'on';
+              const indent =
+                (activeTab === 'General' && config.key.startsWith('smtp_')) ||
+                (activeTab === 'OAuth' &&
+                  config.key !== 'enabled_wechat_login' &&
+                  config.key !== 'enabled_github_login' &&
+                  config.key !== 'oauth_allowed_origins' &&
+                  (config.key.startsWith('wechat_') || config.key.includes('wechat') || config.key.startsWith('github_') || config.key.includes('github'))) ||
+                (activeTab === 'Storage' && config.key.startsWith('storage_s3_'));
               return (
-                <div key={config.key} className="space-y-2">
+                <div key={config.key} className={`space-y-2 ${indent ? 'ml-8' : ''}`}>
                   {isBool ? (
                     <div className="flex flex-col space-y-1 py-2">
                       <div className="flex items-center space-x-4">
@@ -173,7 +207,6 @@ export const ConfigPage: React.FC = () => {
                         </button>
                         <span className="text-gray-800 text-[15px] font-medium">{getConfigLabel(config.key, config.description)}</span>
                       </div>
-                      <p className="text-gray-400 text-sm pl-[60px]">{config.key}</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -185,7 +218,6 @@ export const ConfigPage: React.FC = () => {
                           onChange={(e) => handleChange(config.key, e.target.value)}
                         />
                       </div>
-                      <p className="text-gray-400 text-sm">{config.key}</p>
                     </div>
                   )}
                 </div>
