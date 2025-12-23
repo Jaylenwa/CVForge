@@ -24,13 +24,6 @@ func (s *Service) ListAllPayload() (string, error) {
 			return val, nil
 		}
 	}
-	// count, err := s.repo.Count()
-	// if err != nil {
-	// 	return "", err
-	// }
-	// if count == 0 {
-	// 	s.seed()
-	// }
 	list, err := s.repo.ListAll()
 	if err != nil {
 		return "", err
@@ -80,19 +73,4 @@ func (s *Service) Delete(id string) error {
 		_ = s.rdb.Del(context.Background(), "templates:list:all").Err()
 	}
 	return nil
-}
-
-func (s *Service) seed() {
-	mocks := []Template{
-		{ExternalID: "t1", Name: "Classic Professional", Tags: "Professional,Simple,ATS Friendly", Popularity: 98, IsPremium: false, Category: "General"},
-		{ExternalID: "t2", Name: "Modern Dark", Tags: "Creative,Design,Startup", Popularity: 85, IsPremium: true, Category: "Creative"},
-		{ExternalID: "t3", Name: "Tech Minimalist", Tags: "Minimalist,Tech,Clean", Popularity: 92, IsPremium: false, Category: "IT"},
-		{ExternalID: "t4", Name: "Executive Serif", Tags: "Professional,Management,Senior", Popularity: 70, IsPremium: true, Category: "Finance"},
-		{ExternalID: "t5", Name: "Creative Bold", Tags: "Creative,Marketing,Colorful", Popularity: 65, IsPremium: true, Category: "Creative"},
-		{ExternalID: "t6", Name: "Elegant Teal", Tags: "Modern,Fresh,Entry Level", Popularity: 88, IsPremium: false, Category: "General"},
-		{ExternalID: "t7", Name: "Chinese Blue", Tags: "General,Chinese,ATS Friendly", Popularity: 75, IsPremium: false, Category: "General"},
-	}
-	for _, m := range mocks {
-		_ = s.repo.Create(&m)
-	}
 }

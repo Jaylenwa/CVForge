@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"openresume/internal/common"
 	"openresume/internal/infra/config"
 	"openresume/internal/models"
 	"os"
@@ -32,29 +33,29 @@ func (s *Service) EnsureDefaults(cfg config.Config) error {
 	}
 	defaults := []def{
 		// Registration
-		{"enable_email_verification", "false", "Enable email verification during registration", "bool"},
-		{"smtp_host", os.Getenv("SMTP_HOST"), "SMTP host", "string"},
-		{"smtp_port", os.Getenv("SMTP_PORT"), "SMTP port", "string"},
-		{"smtp_username", os.Getenv("SMTP_USERNAME"), "SMTP username", "string"},
-		{"smtp_password", os.Getenv("SMTP_PASSWORD"), "SMTP password", "string"},
-		{"smtp_from_name", os.Getenv("SMTP_FROM_NAME"), "SMTP from name", "string"},
+		{string(common.ConfigKeyEnableEmailVerification), "false", "Enable email verification during registration", "bool"},
+		{string(common.ConfigKeySMTPHost), os.Getenv("SMTP_HOST"), "SMTP host", "string"},
+		{string(common.ConfigKeySMTPPort), os.Getenv("SMTP_PORT"), "SMTP port", "string"},
+		{string(common.ConfigKeySMTPUsername), os.Getenv("SMTP_USERNAME"), "SMTP username", "string"},
+		{string(common.ConfigKeySMTPPassword), os.Getenv("SMTP_PASSWORD"), "SMTP password", "string"},
+		{string(common.ConfigKeySMTPFromName), os.Getenv("SMTP_FROM_NAME"), "SMTP from name", "string"},
 		// WeChat OAuth
-		{"enabled_wechat_login", "false", "Enable WeChat login", "bool"},
-		{"wechat_app_id", os.Getenv("WECHAT_APP_ID"), "WeChat AppID", "string"},
-		{"wechat_app_secret", os.Getenv("WECHAT_APP_SECRET"), "WeChat App Secret", "string"},
-		{"wechat_redirect_uri", os.Getenv("WECHAT_REDIRECT_URI"), "WeChat Redirect URI", "string"},
+		{string(common.ConfigKeyEnabledWechatLogin), "false", "Enable WeChat login", "bool"},
+		{string(common.ConfigKeyWeChatAppID), os.Getenv("WECHAT_APP_ID"), "WeChat AppID", "string"},
+		{string(common.ConfigKeyWeChatAppSecret), os.Getenv("WECHAT_APP_SECRET"), "WeChat App Secret", "string"},
+		{string(common.ConfigKeyWeChatRedirectURI), os.Getenv("WECHAT_REDIRECT_URI"), "WeChat Redirect URI", "string"},
 		// GitHub OAuth
-		{"enabled_github_login", "false", "Enable GitHub login", "bool"},
-		{"github_client_id", os.Getenv("GITHUB_CLIENT_ID"), "GitHub Client ID", "string"},
-		{"github_client_secret", os.Getenv("GITHUB_CLIENT_SECRET"), "GitHub Client Secret", "string"},
-		{"github_redirect_uri", os.Getenv("GITHUB_REDIRECT_URI"), "GitHub Redirect URI", "string"},
+		{string(common.ConfigKeyEnabledGithubLogin), "false", "Enable GitHub login", "bool"},
+		{string(common.ConfigKeyGithubClientID), os.Getenv("GITHUB_CLIENT_ID"), "GitHub Client ID", "string"},
+		{string(common.ConfigKeyGithubClientSecret), os.Getenv("GITHUB_CLIENT_SECRET"), "GitHub Client Secret", "string"},
+		{string(common.ConfigKeyGithubRedirectURI), os.Getenv("GITHUB_REDIRECT_URI"), "GitHub Redirect URI", "string"},
 		// Storage
-		{"enabled_storage_s3", "false", "Enable S3 storage", "bool"},
-		{"storage_s3_bucket", os.Getenv("S3_BUCKET"), "S3 bucket", "string"},
-		{"storage_s3_region", os.Getenv("S3_REGION"), "S3 region", "string"},
-		{"storage_s3_endpoint", os.Getenv("S3_ENDPOINT"), "S3 endpoint (optional)", "string"},
-		{"storage_s3_access_key", os.Getenv("S3_ACCESS_KEY"), "S3 access key (optional)", "string"},
-		{"storage_s3_secret_key", os.Getenv("S3_SECRET_KEY"), "S3 secret key (optional)", "string"},
+		{string(common.ConfigKeyEnabledStorageS3), "false", "Enable S3 storage", "bool"},
+		{string(common.ConfigKeyStorageS3Bucket), os.Getenv("S3_BUCKET"), "S3 bucket", "string"},
+		{string(common.ConfigKeyStorageS3Region), os.Getenv("S3_REGION"), "S3 region", "string"},
+		{string(common.ConfigKeyStorageS3Endpoint), os.Getenv("S3_ENDPOINT"), "S3 endpoint (optional)", "string"},
+		{string(common.ConfigKeyStorageS3AccessKey), os.Getenv("S3_ACCESS_KEY"), "S3 access key (optional)", "string"},
+		{string(common.ConfigKeyStorageS3SecretKey), os.Getenv("S3_SECRET_KEY"), "S3 secret key (optional)", "string"},
 	}
 	for _, d := range defaults {
 		var existing models.Config
@@ -175,15 +176,15 @@ func (s *Service) GetPublicConfig() PublicConfig {
 	if err == nil {
 		for _, cfg := range configs {
 			switch cfg.ConfigKey {
-			case "enable_email_verification":
+			case string(common.ConfigKeyEnableEmailVerification):
 				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableEmailVerification = b
 				}
-			case "enabled_wechat_login":
+			case string(common.ConfigKeyEnabledWechatLogin):
 				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableWeChatLogin = b
 				}
-			case "enabled_github_login":
+			case string(common.ConfigKeyEnabledGithubLogin):
 				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableGithubLogin = b
 				}

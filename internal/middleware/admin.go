@@ -3,13 +3,14 @@ package middleware
 import (
 	"net/http"
 
+	"openresume/internal/common"
 	"openresume/internal/infra/db"
 	"openresume/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-func RequireRole(roles ...string) gin.HandlerFunc {
+func RequireRole(roles ...common.Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uidVal, ok := c.Get("uid")
 		if !ok {

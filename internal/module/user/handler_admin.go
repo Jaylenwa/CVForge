@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"openresume/internal/common"
 	"openresume/internal/infra/db"
 
 	"github.com/gin-gonic/gin"
@@ -78,10 +79,14 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 		q = q.Where("role = ?", v)
 	}
 	if v := strings.TrimSpace(c.Query("isActive")); v != "" {
-		if v == "true" {
+		switch v {
+		case "true":
 			q = q.Where("is_active = ?", true)
-		} else if v == "false" {
+		case "false":
 			q = q.Where("is_active = ?", false)
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid isActive"})
+			return
 		}
 	}
 	var total int64
@@ -129,11 +134,11 @@ func (h *AdminHandler) AdminGet(c *gin.Context) {
 
 func (h *AdminHandler) AdminPatch(c *gin.Context) {
 	var body struct {
-		Name      *string `json:"name"`
-		AvatarURL *string `json:"avatarUrl"`
-		Language  *string `json:"language"`
-		Role      *string `json:"role"`
-		IsActive  *bool   `json:"isActive"`
+		Name      *string      `json:"name"`
+		AvatarURL *string      `json:"avatarUrl"`
+		Language  *string      `json:"language"`
+		Role      *common.Role `json:"role"`
+		IsActive  *bool        `json:"isActive"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
@@ -154,8 +159,8 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 		u.Language = *body.Language
 	}
 	if body.Role != nil {
-		r := strings.ToLower(*body.Role)
-		if r == "user" || r == "moderator" || r == "admin" {
+		r := *body.Role
+		if r == common.RoleUser || r == common.RoleAdmin {
 			u.Role = r
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid role"})

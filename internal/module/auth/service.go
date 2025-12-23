@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"openresume/internal/common"
 	"openresume/internal/infra/config"
 	conf "openresume/internal/module/config"
 	"openresume/internal/pkg/mailer"
@@ -33,11 +34,11 @@ func NewService(cfg config.Config, sysConfig *conf.Service, rdb *redis.Client, d
 }
 
 func (s *Service) FeatureWeChatEnabled() bool {
-	return s.sysConfig.GetBool("enabled_wechat_login", true)
+	return s.sysConfig.GetBool(string(common.ConfigKeyEnabledWechatLogin), true)
 }
 
 func (s *Service) FeatureGithubEnabled() bool {
-	return s.sysConfig.GetBool("enabled_github_login", true)
+	return s.sysConfig.GetBool(string(common.ConfigKeyEnabledGithubLogin), true)
 }
 
 func (s *Service) IssueTokens(uid uint) (string, string) {
@@ -49,13 +50,13 @@ func (s *Service) IssueTokens(uid uint) (string, string) {
 	return mk(2 * time.Hour), mk(7 * 24 * time.Hour)
 }
 
-func (s *Service) initialRole() string {
+func (s *Service) initialRole() common.Role {
 	var n int64
 	s.db.Model(&User{}).Count(&n)
 	if n == 0 {
-		return "admin"
+		return common.RoleAdmin
 	}
-	return "user"
+	return common.RoleUser
 }
 
 func (s *Service) GenerateVerifyCode() string {
@@ -79,17 +80,17 @@ func (s *Service) ValidateVerifyCode(email, code string) bool {
 
 func (s *Service) SendCode(email string, code string) error {
 	smtpCfg := mailer.SMTPSettings{
-		Host:     s.sysConfig.Get("smtp_host"),
-		Port:     s.sysConfig.Get("smtp_port"),
-		Username: s.sysConfig.Get("smtp_username"),
-		Password: s.sysConfig.Get("smtp_password"),
-		FromName: s.sysConfig.GetWithDefault("smtp_from_name", "OpenResume"),
+		Host:     s.sysConfig.Get(string(common.ConfigKeySMTPHost)),
+		Port:     s.sysConfig.Get(string(common.ConfigKeySMTPPort)),
+		Username: s.sysConfig.Get(string(common.ConfigKeySMTPUsername)),
+		Password: s.sysConfig.Get(string(common.ConfigKeySMTPPassword)),
+		FromName: s.sysConfig.GetWithDefault(string(common.ConfigKeySMTPFromName), "OpenResume"),
 	}
 	return mailer.SendVerificationCode(smtpCfg, email, code)
 }
 
 func (s *Service) Register(email, code, password, name string) (string, string, error) {
-	if s.sysConfig.GetBool("enable_email_verification", true) {
+	if s.sysConfig.GetBool(string(common.ConfigKeyEnableEmailVerification), true) {
 		if !s.ValidateVerifyCode(email, code) {
 			return "", "", http.ErrBodyNotAllowed
 		}
@@ -163,9 +164,9 @@ type WechatUserInfo struct {
 }
 
 func (s *Service) MakeWeChatLoginURL(state string) string {
-	appID := s.sysConfig.Get("wechat_app_id")
-	redirectURI := s.sysConfig.Get("wechat_redirect_uri")
-	if !s.sysConfig.GetBool("enabled_wechat_login", true) || appID == "" || redirectURI == "" {
+	appID := s.sysConfig.Get(string(common.ConfigKeyWeChatAppID))
+	redirectURI := s.sysConfig.Get(string(common.ConfigKeyWeChatRedirectURI))
+	if !s.sysConfig.GetBool(string(common.ConfigKeyEnabledWechatLogin), true) || appID == "" || redirectURI == "" {
 		return ""
 	}
 	params := url.Values{}
@@ -179,8 +180,8 @@ func (s *Service) MakeWeChatLoginURL(state string) string {
 
 func (s *Service) ExchangeCode(code string) (WechatTokenResponse, error) {
 	var out WechatTokenResponse
-	appID := s.sysConfig.Get("wechat_app_id")
-	appSecret := s.sysConfig.Get("wechat_app_secret")
+	appID := s.sysConfig.Get(string(common.ConfigKeyWeChatAppID))
+	appSecret := s.sysConfig.Get(string(common.ConfigKeyWeChatAppSecret))
 
 	if appID == "" || appSecret == "" {
 		return out, http.ErrNotSupported
@@ -334,9 +335,9 @@ type GithubUserInfo struct {
 }
 
 func (s *Service) MakeGithubLoginURL(state string) string {
-	clientID := s.sysConfig.Get("github_client_id")
-	redirectURI := s.sysConfig.Get("github_redirect_uri")
-	if !s.sysConfig.GetBool("enabled_github_login", true) || clientID == "" || redirectURI == "" {
+	clientID := s.sysConfig.Get(string(common.ConfigKeyGithubClientID))
+	redirectURI := s.sysConfig.Get(string(common.ConfigKeyGithubRedirectURI))
+	if !s.sysConfig.GetBool(string(common.ConfigKeyEnabledGithubLogin), true) || clientID == "" || redirectURI == "" {
 		return ""
 	}
 	params := url.Values{}
@@ -349,9 +350,9 @@ func (s *Service) MakeGithubLoginURL(state string) string {
 
 func (s *Service) ExchangeGithubCode(code string) (GithubTokenResponse, error) {
 	var out GithubTokenResponse
-	clientID := s.sysConfig.Get("github_client_id")
-	clientSecret := s.sysConfig.Get("github_client_secret")
-	redirectURI := s.sysConfig.Get("github_redirect_uri")
+	clientID := s.sysConfig.Get(string(common.ConfigKeyGithubClientID))
+	clientSecret := s.sysConfig.Get(string(common.ConfigKeyGithubClientSecret))
+	redirectURI := s.sysConfig.Get(string(common.ConfigKeyGithubRedirectURI))
 	if clientID == "" || clientSecret == "" {
 		return out, http.ErrNotSupported
 	}

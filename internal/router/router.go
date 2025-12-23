@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"openresume/internal/common"
 	"openresume/internal/infra/config"
 	"openresume/internal/middleware"
 	"openresume/internal/module/ai"
@@ -37,7 +38,7 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 
 	authH := auth.NewHandler(cfg, confService, rdb, db)
 	userAuth := middleware.Auth(cfg)
-	userAdmin := middleware.RequireRole("admin")
+	userAdmin := middleware.RequireRole(common.RoleAdmin)
 	templateH := template.NewHandler(db, rdb)
 	api.GET("/templates", templateH.ListAll)
 	api.GET("/templates/:id", templateH.GetByID)

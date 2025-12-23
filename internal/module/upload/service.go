@@ -1,6 +1,7 @@
 package upload
 
 import (
+	"openresume/internal/common"
 	"openresume/internal/infra/config"
 	conf "openresume/internal/module/config"
 	"openresume/internal/pkg/storage"
@@ -16,12 +17,12 @@ type Service struct {
 func NewService(cfg config.Config, sys *conf.Service) *Service { return &Service{cfg: cfg, sys: sys} }
 
 func (s *Service) Upload(c *gin.Context, name string, b []byte) (string, error) {
-	useS3 := s.sys.GetBool("enabled_storage_s3", false)
-	bucket := s.sys.GetWithDefault("storage_s3_bucket", "")
-	region := s.sys.GetWithDefault("storage_s3_region", "")
-	endpoint := s.sys.GetWithDefault("storage_s3_endpoint", "")
-	accessKey := s.sys.GetWithDefault("storage_s3_access_key", "")
-	secretKey := s.sys.GetWithDefault("storage_s3_secret_key", "")
+	useS3 := s.sys.GetBool(string(common.ConfigKeyEnabledStorageS3), false)
+	bucket := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3Bucket), "")
+	region := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3Region), "")
+	endpoint := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3Endpoint), "")
+	accessKey := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3AccessKey), "")
+	secretKey := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3SecretKey), "")
 	up, e := storage.New(useS3, bucket, region, endpoint, accessKey, secretKey)
 	if e != nil {
 		return "", e
