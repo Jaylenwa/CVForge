@@ -99,7 +99,7 @@ export const ConfigPage: React.FC = () => {
       if (c.key.startsWith('smtp_')) g['SMTP'].push(c);
       else if (c.key.startsWith('wechat_') || c.key.includes('wechat')) g['WeChat'].push(c);
       else if (c.key.startsWith('github_') || c.key.includes('github')) g['GitHub'].push(c);
-      else if (c.key.startsWith('storage_')) g['Storage'].push(c);
+      else if (c.key.startsWith('storage_') || c.key === 'enabled_storage_s3') g['Storage'].push(c);
       else if (c.key === 'enable_email_verification' || c.key.startsWith('feature_')) g['General'].push(c);
       else g['Other'].push(c);
     });

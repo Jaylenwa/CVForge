@@ -57,6 +57,7 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 	authR.POST("/logout", authH.Logout)
 
 	api.Use(middleware.RateLimitUser(rdb, 120, time.Minute))
+	api.Use(middleware.DailyUV(rdb, "/api/v1/healthz", "/api/v1/metrics"))
 	g := api.Group("")
 	g.Use(userAuth)
 
@@ -105,7 +106,7 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 	adm.PATCH("/share-links/:slug", shareAdmH.AdminUpdate)
 	adm.DELETE("/share-links/:slug", shareAdmH.AdminDelete)
 
-	statsH := stats.NewHandler(db)
+	statsH := stats.NewHandler(db, rdb)
 	adm.GET("/stats", statsH.AdminStats)
 
 	adm.GET("/configs", confHandler.AdminList)

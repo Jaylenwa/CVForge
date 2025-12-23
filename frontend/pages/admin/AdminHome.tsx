@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getAdminStats, AdminStats } from '../../services/adminService';
-import { RefreshCw, Users, FileText, LayoutGrid } from 'lucide-react';
+import { RefreshCw, Users, FileText, LayoutGrid, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
@@ -22,12 +22,13 @@ export const AdminHome: React.FC = () => {
 
   useEffect(() => { reload(); }, []);
 
-  const Chart: React.FC<{ dates: string[]; a: number[]; b: number[]; c?: number[]; la: string; lb: string; lc?: string }> = ({ dates, a, b, c, la, lb, lc }) => {
+  const Chart: React.FC<{ dates: string[]; a: number[]; b: number[]; c?: number[]; d?: number[]; la: string; lb: string; lc?: string; ld?: string }> = ({ dates, a, b, c, d, la, lb, lc, ld }) => {
     const data = dates.map((date, i) => ({
       date,
       users: a[i] ?? 0,
       resumes: b[i] ?? 0,
       templates: c ? (c[i] ?? 0) : undefined,
+      visitors: d ? (d[i] ?? 0) : undefined,
     }));
     return (
       <ResponsiveContainer width="100%" height="100%">
@@ -86,6 +87,17 @@ export const AdminHome: React.FC = () => {
               activeDot={{ r: 5 }}
             />
           )}
+          {d && ld && (
+            <Line
+              name={ld}
+              type="monotone"
+              dataKey="visitors"
+              stroke="#f59e0b"
+              strokeWidth={1.5}
+              dot={{ r: 3, fill: '#fff', strokeWidth: 1.5, stroke: '#f59e0b' }}
+              activeDot={{ r: 5 }}
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     );
@@ -107,7 +119,7 @@ export const AdminHome: React.FC = () => {
           </div>
           <div className="h-[350px] w-full flex items-center justify-center">
             {stats ? (
-              <Chart dates={stats.trend.dates} a={stats.trend.users} b={stats.trend.resumes} c={stats.trend.templates} la={t('admin.stats.users')} lb={t('admin.stats.resumes')} lc={t('admin.stats.templates')} />
+              <Chart dates={stats.trend.dates} a={stats.trend.users} b={stats.trend.resumes} c={stats.trend.templates} d={stats.trend.visitors} la={t('admin.stats.users')} lb={t('admin.stats.resumes')} lc={t('admin.stats.templates')} ld={t('admin.stats.visitors')} />
             ) : (
               <div className="h-48 flex items-center justify-center text-gray-400">{t('common.loading') || 'Loading...'}</div>
             )}
@@ -142,6 +154,15 @@ export const AdminHome: React.FC = () => {
               <div>
                 <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.templates ?? '-'}</p>
                 <p className="text-gray-500 text-sm">{t('admin.stats.templates')}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-11 h-11 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center">
+                <Eye size={20} />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.visitorsToday ?? '-'}</p>
+                <p className="text-gray-500 text-sm">{t('admin.stats.visitors')}</p>
               </div>
             </div>
           </div>
