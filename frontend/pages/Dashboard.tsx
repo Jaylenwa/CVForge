@@ -1,23 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, MoreVertical, Plus, Clock, Copy, Trash2, Edit2 } from 'lucide-react';
+import { FileText, MoreVertical, Plus, Clock, Copy, Trash2, Edit2, Share2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { INITIAL_RESUME } from '../services/mockData';
 import { AppRoute, ResumeData } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../config';
 import { ResumeArtboard } from './editor/ResumePreview';
+import { Modal } from '../components/ui/Modal';
+import { useToast } from '../components/ui/Toast';
  
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { showToast } = useToast();
   
   
   const [resumes, setResumes] = useState<ResumeData[]>([]);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [tempTitle, setTempTitle] = useState('');
+  const [shareModal, setShareModal] = useState<{ open: boolean; url: string; slug: string }>({ open: false, url: '', slug: '' });
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -88,6 +93,27 @@ export const Dashboard: React.FC = () => {
   const saveRename = (id: string) => {
       setResumes(prev => prev.map(r => r.id === id ? { ...r, title: tempTitle } : r));
       setRenamingId(null);
+  };
+
+  const handleShare = async (resumeId: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const r = await fetch(`${API_BASE}/resumes/${resumeId}/publish`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+        if (!r.ok) {
+          let txt = '';
+          try { txt = await r.text(); } catch {}
+          throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
+        }
+        const data = await r.json();
+        const uiUrl = `${window.location.origin}${window.location.pathname}#${AppRoute.Public.replace(':slug', data.slug)}`;
+        setShareModal({ open: true, url: uiUrl, slug: data.slug });
+      } catch (err) {
+        showToast(t('editor.share.failed'), 'error');
+      } finally {
+        setActiveMenu(null);
+      }
   };
 
   return (
@@ -171,6 +197,9 @@ export const Dashboard: React.FC = () => {
                                     <button onClick={(e) => startRename(resume, e)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
                                         <Edit2 size={14} className="mr-2"/> {t('common.rename')}
                                     </button>
+                                    <button onClick={(e) => handleShare(resume.id, e)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
+                                        <Share2 size={14} className="mr-2"/> {t('common.share')}
+                                    </button>
                                     <button onClick={(e) => handleDuplicate(resume, e)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
                                         <Copy size={14} className="mr-2"/> {t('common.duplicate')}
                                     </button>
@@ -189,6 +218,65 @@ export const Dashboard: React.FC = () => {
             </div>
         ))}
       </div>
+      <Modal isOpen={shareModal.open} onClose={() => setShareModal(prev => ({ ...prev, open: false }))} title={t('editor.share')}>
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[13px] font-bold text-slate-700 ml-1">{t('editor.share.link')}</label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 flex items-center gap-2 overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+                <svg className="text-slate-400 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <input
+                  type="text"
+                  readOnly
+                  value={shareModal.url}
+                  className="flex-1 text-sm text-slate-600 outline-none bg-transparent truncate"
+                />
+              </div>
+              <button
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(shareModal.url);
+                    setCopied(true);
+                    showToast(t('editor.share.copied'), 'success');
+                    setTimeout(() => setCopied(false), 2000);
+                  } catch {}
+                }}
+                className={`flex-shrink-0 h-10 px-4 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2 ${
+                  copied
+                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100'
+                }`}
+              >
+                {copied ? (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>{t('editor.share.copied')}</span>
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span>{t('editor.share.copy')}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+          <div className="-mx-6 px-6 mt-2 pt-4 border-t bg-slate-50 flex items-center justify-between">
+            <button
+              onClick={() => setShareModal(prev => ({ ...prev, open: false }))}
+              className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800 transition-colors"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              onClick={() => { window.open(`#${AppRoute.Public.replace(':slug', shareModal.slug)}`, '_blank'); }}
+              className="px-5 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
+            >
+              {t('common.preview')}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

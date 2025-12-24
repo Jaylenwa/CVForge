@@ -16,6 +16,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { ConfirmDialogProvider } from './components/ui/ConfirmDialog';
 import { PrintResume } from './pages/print/PrintResume';
 import { Pricing } from './pages/Pricing';
+import { PublicResume } from './pages/public/PublicResume';
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ProtectedAdminRoute } from './components/ProtectedAdminRoute';
@@ -80,6 +81,7 @@ const App: React.FC = () => {
               
               {/* Standalone Routes */}
               <Route path={AppRoute.Print} element={<PrintResume />} />
+              <Route path={AppRoute.Public} element={<PublicResume />} />
           </Routes>
             </Router>
           </AuthProvider>

@@ -68,6 +68,7 @@ export interface Template {
 export enum AppRoute {
   Home = '/',
   Templates = '/templates',
+  Public = '/public/:slug',
   Editor = '/editor',
   Dashboard = '/dashboard',
   Login = '/login',
@@ -100,4 +101,3 @@ export interface AuthConfig {
   weChatAppID: string;
   githubClientID: string;
 }
-
