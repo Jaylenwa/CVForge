@@ -218,15 +218,15 @@ export const TemplatesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.templates')}</h1>
-        <Button variant="outline" onClick={() => load()} disabled={loading}>
-          <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
-        </Button>
-      </div>
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+    <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
+      <div className="px-10 pt-10 pb-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.templates')}</h1>
+          <Button variant="outline" onClick={() => load()} disabled={loading}>
+            <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
+          </Button>
+        </div>
+        <div className="flex items-center justify-between mt-6 pb-4 border-b border-gray-100">
           <div className="flex items-center space-x-2">
             <input value={keyword} onChange={e => { setKeyword(e.target.value); setPage(1); }} placeholder={t('admin.keyword')} className="border rounded-lg px-3 py-2 text-sm shadow-sm border-gray-200" />
             <div className="flex items-center space-x-2">
@@ -246,6 +246,8 @@ export const TemplatesPage: React.FC = () => {
             </Button>
           </div>
         </div>
+      </div>
+      <div className="flex-1 overflow-y-auto px-10 pb-10">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

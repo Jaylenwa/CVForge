@@ -104,71 +104,75 @@ export const AdminHome: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.dashboard')}</h1>
-        <Button variant="outline" onClick={reload} disabled={loading}>
-          <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
-        </Button>
-      </div>
-      <div className="flex flex-col lg:flex-row gap-6 items-stretch">
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 flex-1 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-gray-800 font-semibold text-lg">{t('admin.stats.trend')}</h3>
-            {stats && <span className="text-gray-400 text-sm">{t('admin.stats.generated')} {new Date(stats.generatedAt * 1000).toLocaleString()}</span>}
-          </div>
-          <div className="h-[350px] w-full flex items-center justify-center">
-            {stats ? (
-              <Chart dates={stats.trend.dates} a={stats.trend.users} b={stats.trend.resumes} c={stats.trend.templates} d={stats.trend.visitors} la={t('admin.stats.users')} lb={t('admin.stats.resumes')} lc={t('admin.stats.templates')} ld={t('admin.stats.visitors')} />
-            ) : (
-              <div className="h-48 flex items-center justify-center text-gray-400">{t('common.loading') || 'Loading...'}</div>
-            )}
-          </div>
-        </div>
-        <div className="w-72 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex flex-col">
-          <h3 className="text-gray-800 font-bold text-lg mb-4">{t('admin.stats.totals')}</h3>
-          <div className="h-px bg-gray-100 w-full mb-6"></div>
-          <div className="space-y-8">
-            <div className="flex items-center space-x-4">
-              <div className="w-11 h-11 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center">
-                <Users size={20} />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.users ?? '-'}</p>
-                <p className="text-gray-500 text-sm">{t('admin.stats.users')}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-11 h-11 bg-green-100 text-green-500 rounded-full flex items-center justify-center">
-                <FileText size={20} />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.resumes ?? '-'}</p>
-                <p className="text-gray-500 text-sm">{t('admin.stats.resumes')}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-11 h-11 bg-purple-100 text-purple-500 rounded-full flex items-center justify-center">
-                <LayoutGrid size={20} />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.templates ?? '-'}</p>
-                <p className="text-gray-500 text-sm">{t('admin.stats.templates')}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="w-11 h-11 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center">
-                <Eye size={20} />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.visitorsToday ?? '-'}</p>
-                <p className="text-gray-500 text-sm">{t('admin.stats.visitors')}</p>
-              </div>
-            </div>
-          </div>
+    <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
+      <div className="px-10 pt-10 pb-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.dashboard')}</h1>
+          <Button variant="outline" onClick={reload} disabled={loading}>
+            <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
+          </Button>
         </div>
       </div>
-      <div className="mt-8 flex-1"></div>
+      <div className="flex-1 overflow-y-auto px-10 pb-10">
+        <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 flex-1 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-gray-800 font-semibold text-lg">{t('admin.stats.trend')}</h3>
+              {stats && <span className="text-gray-400 text-sm">{t('admin.stats.generated')} {new Date(stats.generatedAt * 1000).toLocaleString()}</span>}
+            </div>
+            <div className="h-[350px] w-full flex items-center justify-center">
+              {stats ? (
+                <Chart dates={stats.trend.dates} a={stats.trend.users} b={stats.trend.resumes} c={stats.trend.templates} d={stats.trend.visitors} la={t('admin.stats.users')} lb={t('admin.stats.resumes')} lc={t('admin.stats.templates')} ld={t('admin.stats.visitors')} />
+              ) : (
+                <div className="h-48 flex items-center justify-center text-gray-400">{t('common.loading') || 'Loading...'}</div>
+              )}
+            </div>
+          </div>
+          <div className="w-72 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm flex flex-col">
+            <h3 className="text-gray-800 font-bold text-lg mb-4">{t('admin.stats.totals')}</h3>
+            <div className="h-px bg-gray-100 w-full mb-6"></div>
+            <div className="space-y-8">
+              <div className="flex items-center space-x-4">
+                <div className="w-11 h-11 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center">
+                  <Users size={20} />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.users ?? '-'}</p>
+                  <p className="text-gray-500 text-sm">{t('admin.stats.users')}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="w-11 h-11 bg-green-100 text-green-500 rounded-full flex items-center justify-center">
+                  <FileText size={20} />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.resumes ?? '-'}</p>
+                  <p className="text-gray-500 text-sm">{t('admin.stats.resumes')}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="w-11 h-11 bg-purple-100 text-purple-500 rounded-full flex items-center justify-center">
+                  <LayoutGrid size={20} />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.templates ?? '-'}</p>
+                  <p className="text-gray-500 text-sm">{t('admin.stats.templates')}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="w-11 h-11 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center">
+                  <Eye size={20} />
+                </div>
+                <div>
+                  <p className="text-xl font-bold text-gray-800 leading-none mb-1">{stats?.totals.visitorsToday ?? '-'}</p>
+                  <p className="text-gray-500 text-sm">{t('admin.stats.visitors')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-8 flex-1"></div>
+      </div>
     </div>
   );
 };
