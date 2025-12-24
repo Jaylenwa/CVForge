@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"openresume/internal/common"
+
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
@@ -20,7 +22,7 @@ func NewService(db *gorm.DB, rdb *redis.Client) *Service {
 
 func (s *Service) ListAllPayload() (string, error) {
 	if s.rdb != nil {
-		if val, err := s.rdb.Get(context.Background(), "templates:list:all").Result(); err == nil {
+		if val, err := s.rdb.Get(context.Background(), string(common.RedisKeyTemplatesListAll)).Result(); err == nil {
 			return val, nil
 		}
 	}
@@ -31,7 +33,7 @@ func (s *Service) ListAllPayload() (string, error) {
 	payloadBytes, _ := json.Marshal(map[string]any{"items": list})
 	payload := string(payloadBytes)
 	if s.rdb != nil {
-		_ = s.rdb.Set(context.Background(), "templates:list:all", payload, time.Hour).Err()
+		_ = s.rdb.Set(context.Background(), string(common.RedisKeyTemplatesListAll), payload, time.Hour).Err()
 	}
 	return payload, nil
 }
@@ -45,7 +47,7 @@ func (s *Service) Create(t Template) error {
 		return err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Del(context.Background(), "templates:list:all").Err()
+		_ = s.rdb.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
 	}
 	return nil
 }
@@ -60,7 +62,7 @@ func (s *Service) Update(id string, patch func(*Template)) error {
 		return err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Del(context.Background(), "templates:list:all").Err()
+		_ = s.rdb.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
 	}
 	return nil
 }
@@ -70,7 +72,7 @@ func (s *Service) Delete(id string) error {
 		return err
 	}
 	if s.rdb != nil {
-		_ = s.rdb.Del(context.Background(), "templates:list:all").Err()
+		_ = s.rdb.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
 	}
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"openresume/internal/common"
 	"openresume/internal/infra/db"
 
 	"github.com/gin-gonic/gin"
@@ -136,7 +137,7 @@ func (h *AdminHandler) AdminUpdateVisibility(c *gin.Context) {
 		}
 	}
 	if h.rdb != nil {
-		_ = h.rdb.Del(c, "public:resume:"+sl.Slug).Err()
+		_ = h.rdb.Del(c, common.RedisKeyPublicResume.F(sl.Slug)).Err()
 	}
 	writeAudit(c, "resume.visibility", "resume", c.Param("id"), strconv.FormatBool(body.IsPublic))
 	c.JSON(http.StatusOK, gin.H{"success": true, "slug": sl.Slug})

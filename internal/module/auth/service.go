@@ -70,11 +70,11 @@ func (s *Service) GenerateVerifyCode() string {
 }
 
 func (s *Service) SaveVerifyCode(email, code string) error {
-	return s.rdb.Set(context.Background(), "verify:"+email, code, 10*time.Minute).Err()
+	return s.rdb.Set(context.Background(), common.RedisKeyVerify.F(email), code, 10*time.Minute).Err()
 }
 
 func (s *Service) ValidateVerifyCode(email, code string) bool {
-	val, err := s.rdb.Get(context.Background(), "verify:"+email).Result()
+	val, err := s.rdb.Get(context.Background(), common.RedisKeyVerify.F(email)).Result()
 	return err == nil && val == code
 }
 
@@ -124,7 +124,7 @@ func (s *Service) Refresh(refreshToken string) (string, string, error) {
 	claims, _ := t.Claims.(jwt.MapClaims)
 	jti, _ := claims["jti"].(string)
 	if jti != "" {
-		if s.rdb.Get(context.Background(), "jwt:blacklist:"+jti).Val() == "1" {
+		if s.rdb.Get(context.Background(), common.RedisKeyJWTBlacklist.F(jti)).Val() == "1" {
 			return "", "", gorm.ErrInvalidTransaction
 		}
 	}
@@ -141,7 +141,7 @@ func (s *Service) Logout(refreshToken string) error {
 	claims, _ := t.Claims.(jwt.MapClaims)
 	jti, _ := claims["jti"].(string)
 	if jti != "" {
-		return s.rdb.Set(context.Background(), "jwt:blacklist:"+jti, "1", time.Hour*24*7).Err()
+		return s.rdb.Set(context.Background(), common.RedisKeyJWTBlacklist.F(jti), "1", time.Hour*24*7).Err()
 	}
 	return nil
 }
@@ -258,29 +258,29 @@ func (s *Service) FindOrCreateWeChatUser(ui WechatUserInfo, tr WechatTokenRespon
 
 func (s *Service) SaveOAuthState(state string, data map[string]any) error {
 	b, _ := json.Marshal(data)
-	return s.rdb.Set(context.Background(), "oauth:state:"+state, string(b), 10*time.Minute).Err()
+	return s.rdb.Set(context.Background(), common.RedisKeyOAuthState.F(state), string(b), 10*time.Minute).Err()
 }
 
 func (s *Service) GetOAuthState(state string) (string, error) {
-	return s.rdb.Get(context.Background(), "oauth:state:"+state).Result()
+	return s.rdb.Get(context.Background(), common.RedisKeyOAuthState.F(state)).Result()
 }
 
 func (s *Service) DelOAuthState(state string) {
-	_ = s.rdb.Del(context.Background(), "oauth:state:"+state).Err()
+	_ = s.rdb.Del(context.Background(), common.RedisKeyOAuthState.F(state)).Err()
 }
 
 func (s *Service) SaveOTT(ott string, payload map[string]any) error {
 	b, _ := json.Marshal(payload)
-	return s.rdb.Set(context.Background(), "oauth:ott:"+ott, string(b), time.Minute).Err()
+	return s.rdb.Set(context.Background(), common.RedisKeyOAuthOTT.F(ott), string(b), time.Minute).Err()
 }
 
 func (s *Service) GetOTT(ott string) (string, error) {
-	return s.rdb.Get(context.Background(), "oauth:ott:"+ott).Result()
+	return s.rdb.Get(context.Background(), common.RedisKeyOAuthOTT.F(ott)).Result()
 }
 
 func (s *Service) DelOTT(ott string) {
-	_ = s.rdb.Set(context.Background(), "oauth:ott:"+ott, "", time.Second).Err()
-	_ = s.rdb.Del(context.Background(), "oauth:ott:"+ott).Err()
+	_ = s.rdb.Set(context.Background(), common.RedisKeyOAuthOTT.F(ott), "", time.Second).Err()
+	_ = s.rdb.Del(context.Background(), common.RedisKeyOAuthOTT.F(ott)).Err()
 }
 
 func (s *Service) SanitizeUser(u User) map[string]any {

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"openresume/internal/common"
 	"openresume/internal/models"
 
 	"github.com/gin-gonic/gin"
@@ -78,7 +79,7 @@ func (h *Handler) AdminStats(c *gin.Context) {
 		_ = h.db.Model(&models.Template{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&tc).Error
 		var vc int64
 		if h.rdb != nil {
-			key := "uv:" + dayStart.Format("2006-01-02")
+			key := common.RedisKeyUVDay.F(dayStart.Format("2006-01-02"))
 			if n, err := h.rdb.SCard(context.Background(), key).Result(); err == nil {
 				vc = n
 			}
@@ -102,7 +103,7 @@ func (h *Handler) AdminStats(c *gin.Context) {
 	out.Trend.Templates = templates
 	out.Trend.Visitors = visitors
 	if h.rdb != nil {
-		todayKey := "uv:" + time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Format("2006-01-02")
+		todayKey := common.RedisKeyUVDay.F(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Format("2006-01-02"))
 		if n, err := h.rdb.SCard(context.Background(), todayKey).Result(); err == nil {
 			out.Totals.VisitorsToday = n
 		}

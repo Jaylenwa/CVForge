@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"openresume/internal/common"
+
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
@@ -18,7 +20,7 @@ func RateLimitUser(rdb *redis.Client, limit int64, window time.Duration) gin.Han
 		} else {
 			uid = c.ClientIP()
 		}
-		key := "rlu:" + c.FullPath() + ":" + uid
+		key := common.RedisKeyRateLimitUser.F(c.FullPath(), uid)
 		cnt, err := rdb.Incr(context.Background(), key).Result()
 		if err == nil && cnt == 1 {
 			_ = rdb.Expire(context.Background(), key, window).Err()

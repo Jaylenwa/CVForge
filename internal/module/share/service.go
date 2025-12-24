@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"openresume/internal/common"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -41,10 +43,10 @@ func (s *Service) PublishResumeForUser(uid uint, externalID string) (ShareLink, 
 }
 
 func (s *Service) GetPublicPayload(slug string) (string, int, error) {
-	cacheKey := "public:resume:" + slug
+	cacheKey := common.RedisKeyPublicResume.F(slug)
 	if s.rdb != nil {
 		if val, err := s.rdb.Get(context.Background(), cacheKey).Result(); err == nil {
-			_ = s.rdb.Incr(context.Background(), "views:"+slug)
+			_ = s.rdb.Incr(context.Background(), common.RedisKeyViews.F(slug))
 			return val, 200, nil
 		}
 	}
@@ -72,7 +74,7 @@ func (s *Service) GetPublicPayload(slug string) (string, int, error) {
 	val := string(b)
 	if s.rdb != nil {
 		_ = s.rdb.Set(context.Background(), cacheKey, val, 10*time.Minute).Err()
-		_ = s.rdb.Incr(context.Background(), "views:"+slug)
+		_ = s.rdb.Incr(context.Background(), common.RedisKeyViews.F(slug))
 	}
 	return val, 200, nil
 }

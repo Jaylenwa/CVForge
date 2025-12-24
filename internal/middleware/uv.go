@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"openresume/internal/common"
+
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 )
@@ -26,7 +28,7 @@ func DailyUV(rdb *redis.Client, exclude ...string) gin.HandlerFunc {
 			return
 		}
 		now := time.Now()
-		key := "uv:" + now.Format("2006-01-02")
+		key := common.RedisKeyUVDay.F(now.Format("2006-01-02"))
 		id := dailyUVIdentity(c)
 		added, err := rdb.SAdd(context.Background(), key, id).Result()
 		if err == nil && added > 0 {

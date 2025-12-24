@@ -80,7 +80,7 @@ func (s *Service) EnsureDefaults(cfg config.Config) error {
 func (s *Service) Get(key string) string {
 	// Try cache first
 	ctx := context.Background()
-	val, err := s.rdb.Get(ctx, "sysconfig:"+key).Result()
+	val, err := s.rdb.Get(ctx, common.RedisKeySysConfig.F(key)).Result()
 	if err == nil {
 		return val
 	}
@@ -89,7 +89,7 @@ func (s *Service) Get(key string) string {
 	var cfg models.Config
 	if err := s.db.Where("config_key = ?", key).First(&cfg).Error; err == nil {
 		// Cache it
-		s.rdb.Set(ctx, "sysconfig:"+key, cfg.ConfigValue, 24*time.Hour)
+		s.rdb.Set(ctx, common.RedisKeySysConfig.F(key), cfg.ConfigValue, 24*time.Hour)
 		return cfg.ConfigValue
 	}
 
@@ -147,7 +147,7 @@ func (s *Service) Set(key, value, description, typeName string) error {
 	}
 
 	// Invalidate cache
-	s.rdb.Del(context.Background(), "sysconfig:"+key)
+	s.rdb.Del(context.Background(), common.RedisKeySysConfig.F(key))
 	return nil
 }
 

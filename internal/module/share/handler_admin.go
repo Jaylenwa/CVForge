@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"openresume/internal/common"
+
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -86,7 +88,7 @@ func (h *AdminHandler) AdminUpdate(c *gin.Context) {
 		return
 	}
 	if h.rdb != nil {
-		_ = h.rdb.Del(c, "public:resume:"+s.Slug).Err()
+		_ = h.rdb.Del(c, common.RedisKeyPublicResume.F(s.Slug)).Err()
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
@@ -98,7 +100,7 @@ func (h *AdminHandler) AdminDelete(c *gin.Context) {
 		return
 	}
 	if h.rdb != nil {
-		_ = h.rdb.Del(c, "public:resume:"+slug).Err()
+		_ = h.rdb.Del(c, common.RedisKeyPublicResume.F(slug)).Err()
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"openresume/internal/common"
 	"openresume/internal/infra/config"
 
 	"github.com/chromedp/cdproto/emulation"
@@ -32,26 +33,26 @@ func (s *Service) cbOpen(svc string) bool {
 	if s.rdb == nil {
 		return false
 	}
-	return s.rdb.Get(context.Background(), "cb:"+svc).Val() == "open"
+	return s.rdb.Get(context.Background(), common.RedisKeyCircuitBreaker.F(svc)).Val() == "open"
 }
 func (s *Service) cbFail(svc string) {
 	if s.rdb == nil {
 		return
 	}
-	cnt, _ := s.rdb.Incr(context.Background(), "cb:"+svc+":fail").Result()
+	cnt, _ := s.rdb.Incr(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc)).Result()
 	if cnt == 1 {
-		_ = s.rdb.Expire(context.Background(), "cb:"+svc+":fail", time.Minute).Err()
+		_ = s.rdb.Expire(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc), time.Minute).Err()
 	}
 	if cnt >= 3 {
-		_ = s.rdb.Set(context.Background(), "cb:"+svc, "open", time.Minute).Err()
+		_ = s.rdb.Set(context.Background(), common.RedisKeyCircuitBreaker.F(svc), "open", time.Minute).Err()
 	}
 }
 func (s *Service) cbReset(svc string) {
 	if s.rdb == nil {
 		return
 	}
-	_ = s.rdb.Del(context.Background(), "cb:"+svc+":fail").Err()
-	_ = s.rdb.Del(context.Background(), "cb:"+svc).Err()
+	_ = s.rdb.Del(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc)).Err()
+	_ = s.rdb.Del(context.Background(), common.RedisKeyCircuitBreaker.F(svc)).Err()
 }
 
 func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, error) {
