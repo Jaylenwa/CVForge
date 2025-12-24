@@ -36,7 +36,12 @@ func (h *Handler) PublishResume(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"slug": sl.Slug, "url": "/public/resumes/" + sl.Slug})
+	c.JSON(http.StatusOK, gin.H{
+		"slug":    sl.Slug,
+		"url":     "/public/resumes/" + sl.Slug,
+		"apiUrl":  "/public/resumes/" + sl.Slug,
+		"pageUrl": "/#/public/" + sl.Slug,
+	})
 }
 
 func (h *Handler) GetPublic(c *gin.Context) {

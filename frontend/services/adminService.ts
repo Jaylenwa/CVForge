@@ -120,8 +120,11 @@ export const deleteTemplate = async (id: string) => {
 export interface AdminShare {
   id: number;
   resumeId: number;
+  userId?: number;
+  userName?: string;
   slug: string;
   isPublic: boolean;
+  url?: string;
 }
 export const listShares = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();

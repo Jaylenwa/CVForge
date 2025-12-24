@@ -56,12 +56,64 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
+	// Map resume_id -> user_id
+	resumeIDs := make([]uint, 0, len(list))
+	for _, s := range list {
+		if s.ResumeID != 0 {
+			resumeIDs = append(resumeIDs, s.ResumeID)
+		}
+	}
+	userIDByResume := make(map[uint]uint)
+	if len(resumeIDs) > 0 {
+		var rs []Resume
+		if err := h.db.Where("id IN ?", resumeIDs).Find(&rs).Error; err == nil {
+			for _, r := range rs {
+				userIDByResume[r.ID] = r.UserID
+			}
+		}
+	}
+	// Collect user IDs
+	uidSet := make(map[uint]struct{})
+	for _, s := range list {
+		uid := s.UserID
+		if uid == 0 {
+			uid = userIDByResume[s.ResumeID]
+		}
+		if uid != 0 {
+			uidSet[uid] = struct{}{}
+		}
+	}
+	uids := make([]uint, 0, len(uidSet))
+	for id := range uidSet {
+		uids = append(uids, id)
+	}
+	nameMap := make(map[uint]string, len(uids))
+	if len(uids) > 0 {
+		var users []User
+		if err := h.db.Where("id IN ?", uids).Find(&users).Error; err == nil {
+			for _, u := range users {
+				if u.Name != "" {
+					nameMap[u.ID] = u.Name
+				} else {
+					nameMap[u.ID] = u.Email
+				}
+			}
+		}
+	}
 	items := make([]gin.H, 0, len(list))
 	for _, s := range list {
+		uid := s.UserID
+		if uid == 0 {
+			uid = userIDByResume[s.ResumeID]
+		}
 		items = append(items, gin.H{
 			"id":        s.ID,
 			"resumeId":  s.ResumeID,
+			"userId":    uid,
+			"userName":  nameMap[uid],
 			"slug":      s.Slug,
+			"url":       "/#/public/" + s.Slug,
+			"apiUrl":    "/public/resumes/" + s.Slug,
 			"isPublic":  s.IsPublic,
 			"createdAt": s.CreatedAt,
 		})

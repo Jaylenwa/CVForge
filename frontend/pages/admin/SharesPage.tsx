@@ -49,6 +49,8 @@ export const SharesPage: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.columns.slug')}</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.columns.user')}</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.columns.url')}</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.columns.status')}</th>
                 <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">{t('admin.columns.actions')}</th>
               </tr>
@@ -57,6 +59,18 @@ export const SharesPage: React.FC = () => {
               {items.map(s => (
                 <tr key={s.slug}>
                   <td className="px-4 py-2 text-sm text-gray-700">{s.slug}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700">{s.userName || (s.userId ? `#${s.userId}` : '')}</td>
+                  <td className="px-4 py-2 text-sm text-gray-700">
+                    {(() => {
+                      const rel = s.url ? (s.url.startsWith('/#/') ? s.url.slice(2) : s.url) : `#/public/${s.slug}`;
+                      const uiUrl = `${window.location.origin}${window.location.pathname}${rel.startsWith('#') ? rel : `#${rel}`}`;
+                      return (
+                        <a href={uiUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
+                          {uiUrl}
+                        </a>
+                      );
+                    })()}
+                  </td>
                   <td className="px-4 py-2 text-sm text-gray-700">{s.isPublic ? t('admin.actions.setPublic') : t('admin.actions.setPrivate')}</td>
                   <td className="px-4 py-2 text-sm text-right space-x-2">
                     <Button variant="outline" onClick={async () => {

@@ -33,10 +33,13 @@ func (s *Service) PublishResumeForUser(uid uint, externalID string) (ShareLink, 
 	}
 	var sl ShareLink
 	if err := s.db.Where("resume_id = ?", res.ID).First(&sl).Error; err != nil {
-		sl = ShareLink{ResumeID: res.ID, Slug: uuid.NewString()[:8], IsPublic: true}
+		sl = ShareLink{ResumeID: res.ID, UserID: uid, Slug: uuid.NewString()[:8], IsPublic: true}
 		_ = s.db.Create(&sl).Error
 	} else {
 		sl.IsPublic = true
+		if sl.UserID == 0 {
+			sl.UserID = uid
+		}
 		_ = s.db.Save(&sl).Error
 	}
 	return sl, 200, nil
