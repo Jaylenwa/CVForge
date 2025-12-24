@@ -100,13 +100,24 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Create New Placeholder Card - Move to the front */}
+        <div 
+            onClick={() => navigate(AppRoute.Templates)}
+            className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center min-h-[180px] cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors group"
+        >
+            <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-100 mb-4 transition-colors">
+                <Plus size={24} className="text-gray-400 group-hover:text-blue-600"/>
+            </div>
+            <span className="font-medium text-gray-600 group-hover:text-blue-600">{t('dashboard.createNew')}</span>
+        </div>
+
         {resumes.map(resume => (
             <div 
                 key={resume.id} 
                 className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all relative cursor-pointer group"
                 onClick={() => handleEdit(resume.id)}
             >
-                <div className="h-40 bg-gray-50 rounded-t-lg flex justify-center items-start border-b border-gray-100 relative overflow-hidden pt-4">
+                <div className="h-36 bg-gray-50 rounded-t-lg flex justify-center items-start border-b border-gray-100 relative overflow-hidden">
                      {/* Resume Thumbnail */}
                      <div style={{ width: 'calc(210mm * 0.25)', height: 'calc(297mm * 0.25)' }} className="relative select-none pointer-events-none shadow-sm bg-white">
                         <ResumeArtboard 
@@ -125,8 +136,8 @@ export const Dashboard: React.FC = () => {
                         </Button>
                      </div>
                 </div>
-                <div className="p-5">
-                    <div className="flex justify-between items-start mb-4">
+                <div className="p-4">
+                    <div className="flex justify-between items-start mb-2">
                         <div className="flex-1 mr-2">
                             {renamingId === resume.id ? (
                                 <div className="flex items-center" onClick={e => e.stopPropagation()}>
@@ -142,7 +153,7 @@ export const Dashboard: React.FC = () => {
                             ) : (
                                 <h3 className="font-semibold text-lg text-gray-900 truncate" title={resume.title}>{resume.title}</h3>
                             )}
-                            <p className="text-sm text-gray-500 mt-1 flex items-center">
+                            <p className="text-sm text-gray-500 mt-0.5 flex items-center">
                                 <Clock size={12} className="mr-1"/> {new Date(resume.lastModified).toLocaleDateString()}
                             </p>
                         </div>
@@ -177,17 +188,6 @@ export const Dashboard: React.FC = () => {
                 )}
             </div>
         ))}
-        
-        {/* Create New Placeholder Card */}
-        <div 
-            onClick={() => navigate(AppRoute.Templates)}
-            className="border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center h-full min-h-[250px] cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors group"
-        >
-            <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-blue-100 mb-4 transition-colors">
-                <Plus size={24} className="text-gray-400 group-hover:text-blue-600"/>
-            </div>
-            <span className="font-medium text-gray-600 group-hover:text-blue-600">{t('dashboard.createNew')}</span>
-        </div>
       </div>
     </div>
   );
