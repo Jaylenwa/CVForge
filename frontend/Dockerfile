@@ -1,3 +1,7 @@
+# ===== 平台参数（由 build 传入）=====
+ARG TARGETPLATFORM
+ARG TARGETARCH
+
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json* ./

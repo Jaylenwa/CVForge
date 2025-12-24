@@ -1,16 +1,19 @@
 # ===== 可配置变量 =====
 IMAGE_NAME := openresume-backend:latest
 TAR_NAME := openresume-backend.tar
-DOCKERFILE := Dockerfile_Local
+DOCKERFILE := Dockerfile
 FRONTEND_IMAGE_NAME := openresume-frontend:latest
 FRONTEND_TAR_NAME := openresume-frontend.tar
-FRONTEND_DOCKERFILE := frontend/Dockerfile_Local
+FRONTEND_DOCKERFILE := frontend/Dockerfile
 
 REMOTE_USER := root
 REMOTE_HOST := 182.254.166.74
 REMOTE_PORT := 22
 REMOTE_DIR := /root/docker
 REMOTE_COMPOSE_DIR := /root/OpenResume
+
+# ===== 平台控制 =====
+PLATFORM := linux/amd64
 
 # ===== 默认目标 =====
 .PHONY: all
@@ -22,11 +25,11 @@ backend: build save upload load
 # ===== 构建镜像 =====
 .PHONY: build
 build:
-	docker build -f $(DOCKERFILE) -t $(IMAGE_NAME) .
+	docker build --platform=$(PLATFORM) -f $(DOCKERFILE) -t $(IMAGE_NAME) .
 
 .PHONY: build-frontend
 build-frontend:
-	docker build -f $(FRONTEND_DOCKERFILE) -t $(FRONTEND_IMAGE_NAME) frontend
+	docker build --platform=$(PLATFORM) -f $(FRONTEND_DOCKERFILE) -t $(FRONTEND_IMAGE_NAME) frontend
 
 # ===== 导出镜像 =====
 .PHONY: save
