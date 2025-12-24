@@ -33,7 +33,7 @@ func (s *Service) cbOpen(svc string) bool {
 	if s.rdb == nil {
 		return false
 	}
-	return s.rdb.Get(context.Background(), common.RedisKeyCircuitBreaker.F(svc)).Val() == "open"
+	return s.rdb.Get(context.Background(), common.RedisKeyCircuitBreaker.F(svc)).Val() == common.CBCircuitOpen
 }
 func (s *Service) cbFail(svc string) {
 	if s.rdb == nil {
@@ -44,7 +44,7 @@ func (s *Service) cbFail(svc string) {
 		_ = s.rdb.Expire(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc), time.Minute).Err()
 	}
 	if cnt >= 3 {
-		_ = s.rdb.Set(context.Background(), common.RedisKeyCircuitBreaker.F(svc), "open", time.Minute).Err()
+		_ = s.rdb.Set(context.Background(), common.RedisKeyCircuitBreaker.F(svc), common.CBCircuitOpen, time.Minute).Err()
 	}
 }
 func (s *Service) cbReset(svc string) {
@@ -56,7 +56,7 @@ func (s *Service) cbReset(svc string) {
 }
 
 func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, error) {
-	if s.cbOpen("pdf") {
+	if s.cbOpen(common.CBCircuitPDF) {
 		return nil, 503, fmt.Errorf("cb")
 	}
 	var res Resume
@@ -70,12 +70,12 @@ func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, e
 	var v verInfo
 	resp, err := http.Get(cfg.ChromeJSONURL)
 	if err != nil {
-		s.cbFail("pdf")
+		s.cbFail(common.CBCircuitPDF)
 		return nil, 503, err
 	}
 	defer resp.Body.Close()
 	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil || v.WebSocketDebuggerUrl == "" {
-		s.cbFail("pdf")
+		s.cbFail(common.CBCircuitPDF)
 		return nil, 503, fmt.Errorf("ws empty")
 	}
 	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(context.Background(), v.WebSocketDebuggerUrl)
@@ -112,15 +112,15 @@ func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, e
 		}),
 	)
 	if err != nil {
-		s.cbFail("pdf")
+		s.cbFail(common.CBCircuitPDF)
 		return nil, 503, err
 	}
-	s.cbReset("pdf")
+	s.cbReset(common.CBCircuitPDF)
 	return pdf, 200, nil
 }
 
 func (s *Service) GenerateImage(c *gin.Context, externalID string) ([]byte, int, error) {
-	if s.cbOpen("image") {
+	if s.cbOpen(common.CBCircuitImage) {
 		return nil, 503, fmt.Errorf("cb")
 	}
 	var res Resume
@@ -134,12 +134,12 @@ func (s *Service) GenerateImage(c *gin.Context, externalID string) ([]byte, int,
 	var v verInfo
 	resp, err := http.Get(cfg.ChromeJSONURL)
 	if err != nil {
-		s.cbFail("image")
+		s.cbFail(common.CBCircuitImage)
 		return nil, 503, err
 	}
 	defer resp.Body.Close()
 	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil || v.WebSocketDebuggerUrl == "" {
-		s.cbFail("image")
+		s.cbFail(common.CBCircuitImage)
 		return nil, 503, fmt.Errorf("ws empty")
 	}
 	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(context.Background(), v.WebSocketDebuggerUrl)
@@ -172,9 +172,9 @@ func (s *Service) GenerateImage(c *gin.Context, externalID string) ([]byte, int,
 		}),
 	)
 	if err != nil {
-		s.cbFail("image")
+		s.cbFail(common.CBCircuitImage)
 		return nil, 503, err
 	}
-	s.cbReset("image")
+	s.cbReset(common.CBCircuitImage)
 	return png, 200, nil
 }

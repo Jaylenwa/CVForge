@@ -23,3 +23,9 @@ const (
 func (k RedisKey) F(args ...any) string {
 	return fmt.Sprintf(string(k), args...)
 }
+
+const (
+	CBCircuitPDF   string = "pdf"
+	CBCircuitImage string = "image"
+	CBCircuitOpen  string = "open"
+)
