@@ -31,3 +31,10 @@ const (
 	RoleAdmin Role = "admin"
 	RoleUser  Role = "user"
 )
+
+type ProviderType string
+
+const (
+	Github ProviderType = "github"
+	Wechat ProviderType = "wechat"
+)

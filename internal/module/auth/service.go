@@ -245,7 +245,7 @@ func (s *Service) FindOrCreateWeChatUser(ui WechatUserInfo, tr WechatTokenRespon
 	}
 	record := OAuthAccount{
 		UserID:          user.ID,
-		Provider:        "wechat",
+		Provider:        common.Wechat,
 		ProviderOpenID:  tr.OpenID,
 		ProviderUnionID: ui.UnionID,
 	}
@@ -431,7 +431,7 @@ func (s *Service) FindOrCreateGithubUser(ui GithubUserInfo) (User, error) {
 
 	record := OAuthAccount{
 		UserID:         user.ID,
-		Provider:       "github",
+		Provider:       common.Github,
 		ProviderOpenID: providerOpenID,
 	}
 	if b, e := json.Marshal(ui); e == nil {
