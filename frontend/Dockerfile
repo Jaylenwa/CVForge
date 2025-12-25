@@ -1,4 +1,3 @@
-# ===== 平台参数（由 build 传入）=====
 ARG TARGETPLATFORM
 ARG TARGETARCH
 
