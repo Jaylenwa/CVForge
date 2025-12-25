@@ -79,3 +79,8 @@ deploy-all: build build-frontend save save-frontend upload upload-frontend
 .PHONY: deploy
 deploy:
 	ssh -p $(REMOTE_PORT) $(REMOTE_USER)@$(REMOTE_HOST) "cd $(REMOTE_COMPOSE_DIR) && docker compose down && docker compose up -d"
+
+.PHONY: commit
+commit:
+	git add .
+	git commit -m "$$(date '+%Y-%m-%d %H:%M:%S')"
