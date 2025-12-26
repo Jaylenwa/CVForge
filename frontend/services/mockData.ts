@@ -77,7 +77,7 @@ export const INITIAL_RESUME: ResumeData = {
     fullName: '张伟',
     email: 'zhangwei@example.com',
     phone: '13800000000',
-    avatarUrl: 'https://i.pravatar.cc/256?img=12',
+    avatarUrl: '/avator.avif',
     jobTitle: '高级软件工程师',
     gender: '男',
     age: '28',
