@@ -116,26 +116,53 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const loginWithOAuth = async (url: string, name: string, width: number, height: number) => {
     return new Promise<boolean>((resolve) => {
       const popup = window.open(url, name, `width=${width},height=${height}`);
-      if (!popup) return resolve(false);
-
+      if (!popup) {
+        resolve(false);
+        return;
+      }
+      let finished = false;
+      let intervalId: number | null = null;
+      let timeoutId: number | null = null;
+      const cleanup = () => {
+        finished = true;
+        window.removeEventListener('message', listener);
+        if (intervalId) {
+          window.clearInterval(intervalId);
+          intervalId = null;
+        }
+        if (timeoutId) {
+          window.clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+      };
       const listener = async (event: MessageEvent) => {
         const allowedEnv = (import.meta as any).env?.VITE_OAUTH_ALLOWED_ORIGINS || '';
         const allowed = String(allowedEnv).split(',').filter(Boolean);
         if (allowed.length === 0) allowed.push(window.location.origin);
         if (!allowed.includes(event.origin)) return;
-        
         const data = event.data || {};
         if (data.status === 'ok' && data.accessToken && data.refreshToken) {
           localStorage.setItem('token', data.accessToken);
           localStorage.setItem('refreshToken', data.refreshToken);
           scheduleRefresh();
           await loadUser();
+          cleanup();
           resolve(true);
         }
-        // We don't resolve(false) on mismatching messages as they might be from other sources
       };
-      
-      window.addEventListener('message', listener, { once: true });
+      window.addEventListener('message', listener);
+      intervalId = window.setInterval(() => {
+        if (popup.closed && !finished) {
+          cleanup();
+          resolve(false);
+        }
+      }, 400);
+      timeoutId = window.setTimeout(() => {
+        if (!finished) {
+          cleanup();
+          resolve(false);
+        }
+      }, 180000);
     });
   };
 
