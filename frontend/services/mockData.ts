@@ -76,7 +76,7 @@ export const INITIAL_RESUME: ResumeData = {
   personalInfo: {
     fullName: '张伟',
     email: 'zhangwei@example.com',
-    phone: '138-0000-0000',
+    phone: '13800000000',
     avatarUrl: 'https://i.pravatar.cc/256?img=12',
     jobTitle: '高级软件工程师',
     gender: '男',
@@ -89,9 +89,6 @@ export const INITIAL_RESUME: ResumeData = {
     weight: '70kg',
     city: '上海',
     customInfo: [
-      { label: 'GitHub', value: 'github.com/zhangwei' },
-      { label: '个人网站', value: 'https://zhangwei.dev' },
-      { label: '微信', value: 'zhangwei_dev' },
       { label: '期望城市', value: '上海 / 杭州' }
     ]
   },
