@@ -22,7 +22,7 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 		ExternalID string `json:"externalId"`
 		Name       string `json:"name"`
 		Tags       string `json:"tags"`
-		Popularity *int   `json:"popularity"`
+		UsageCount *int   `json:"usageCount"`
 		IsPremium  *bool  `json:"isPremium"`
 		Category   string `json:"category"`
 	}
@@ -36,8 +36,8 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 		Tags:       body.Tags,
 		Category:   body.Category,
 	}
-	if body.Popularity != nil {
-		mt.Popularity = *body.Popularity
+	if body.UsageCount != nil {
+		mt.UsageCount = *body.UsageCount
 	}
 	if body.IsPremium != nil {
 		mt.IsPremium = *body.IsPremium
@@ -53,7 +53,7 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 	var body struct {
 		Name       *string `json:"name"`
 		Tags       *string `json:"tags"`
-		Popularity *int    `json:"popularity"`
+		UsageCount *int    `json:"usageCount"`
 		IsPremium  *bool   `json:"isPremium"`
 		Category   *string `json:"category"`
 	}
@@ -68,8 +68,8 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 		if body.Tags != nil {
 			t.Tags = strings.TrimSpace(*body.Tags)
 		}
-		if body.Popularity != nil {
-			t.Popularity = *body.Popularity
+		if body.UsageCount != nil {
+			t.UsageCount = *body.UsageCount
 		}
 		if body.IsPremium != nil {
 			t.IsPremium = *body.IsPremium

@@ -14,7 +14,7 @@ type Template struct {
 	ExternalID string         `gorm:"uniqueIndex:uk_external_id_deleted_at,priority:1;size:64"`
 	Name       string         `gorm:"size:128"`
 	Tags       string         `gorm:"size:256"` // comma-separated for简单实现
-	Popularity int            `gorm:"default:0"`
+	UsageCount int            `gorm:"default:0"`
 	IsPremium  bool           `gorm:"default:false"`
 	Category   string         `gorm:"size:64"`
 }

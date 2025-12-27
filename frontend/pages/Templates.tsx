@@ -37,7 +37,7 @@ export const Templates: React.FC = () => {
 
   const categories = ['All', 'IT', 'Finance', 'Creative', 'General'];
 
-  const [templates, setTemplates] = useState(Array<{id?:string; ExternalID?:string; name?:string; Name?:string; tags?:string[]; Tags?:string; popularity?:number; Popularity?:number; isPremium?:boolean; IsPremium?:boolean; category?:string; Category?:string}>());
+  const [templates, setTemplates] = useState(Array<{id?:string; ExternalID?:string; name?:string; Name?:string; tags?:string[]; Tags?:string; usageCount?:number; UsageCount?:number; Popularity?:number; isPremium?:boolean; IsPremium?:boolean; category?:string; Category?:string}>());
 
   useEffect(() => {
     (async () => {
@@ -49,7 +49,7 @@ export const Templates: React.FC = () => {
             id: t.ExternalID || t.id,
             name: t.Name || t.name,
             tags: typeof t.Tags === 'string' ? (t.Tags as string).split(',') : (t.tags || []),
-            popularity: t.Popularity || t.popularity,
+            usageCount: t.UsageCount ?? t.usageCount ?? t.Popularity ?? t.popularity,
             isPremium: t.IsPremium ?? t.isPremium,
             category: t.Category || t.category,
           }));
@@ -199,7 +199,7 @@ export const Templates: React.FC = () => {
         <div className="p-4">
           <h3 className="text-lg font-medium text-gray-900">{template.name}</h3>
           <div className="mt-2 flex items-center justify-between text-sm text-gray-500">
-            <span>{template.popularity}% {t('templates.meta.popularity')}</span>
+            <span>{template.usageCount ?? 0} {t('templates.meta.usageCount')}</span>
           </div>
           <div className="mt-3 flex flex-wrap gap-1">
             <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded border border-blue-100">{template.category}</span>

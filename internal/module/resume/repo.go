@@ -1,6 +1,7 @@
 package resume
 
 import (
+	"openresume/internal/models"
 	"gorm.io/gorm"
 )
 
@@ -58,4 +59,13 @@ func (r *Repo) Replace(existing Resume, updated Resume) error {
 		}
 		return nil
 	})
+}
+
+func (r *Repo) IncrementTemplateUsage(externalID string) error {
+	if externalID == "" {
+		return nil
+	}
+	return r.db.Model(&models.Template{}).
+		Where("external_id = ?", externalID).
+		UpdateColumn("usage_count", gorm.Expr("usage_count + ?", 1)).Error
 }

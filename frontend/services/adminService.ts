@@ -99,7 +99,7 @@ export interface AdminTemplateReq {
   externalId: string;
   name: string;
   tags?: string;
-  popularity?: number;
+  usageCount?: number;
   isPremium?: boolean;
   category?: string;
 }

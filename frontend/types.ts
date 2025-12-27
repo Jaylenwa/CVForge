@@ -60,7 +60,7 @@ export interface Template {
   id: string;
   name: string;
   tags: string[]; // 'Professional', 'Creative', 'ATS'
-  popularity: number;
+  usageCount: number;
   isPremium: boolean;
   category: 'IT' | 'Finance' | 'Creative' | 'General';
 }

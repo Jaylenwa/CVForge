@@ -14,7 +14,7 @@ type Row = {
   id: string;
   name: string;
   tags: string[];
-  popularity: number;
+  usageCount: number;
   isPremium: boolean;
   category: string;
 };
@@ -34,7 +34,7 @@ export const TemplatesPage: React.FC = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ externalId: '', name: '', tags: '', category: '', popularity: 0, isPremium: false });
+  const [form, setForm] = useState({ externalId: '', name: '', tags: '', category: '', usageCount: 0, isPremium: false });
 
   const [showPreview, setShowPreview] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -62,7 +62,7 @@ export const TemplatesPage: React.FC = () => {
         id: t.ExternalID || t.id,
         name: t.Name || t.name,
         tags: typeof t.Tags === 'string' ? (t.Tags as string).split(',').map((x: string) => x.trim()).filter(Boolean) : (t.tags || []),
-        popularity: t.Popularity ?? t.popularity ?? 0,
+        usageCount: t.UsageCount ?? t.usageCount ?? t.Popularity ?? t.popularity ?? 0,
         isPremium: t.IsPremium ?? t.isPremium ?? false,
         category: t.Category || t.category || '',
       }));
@@ -82,10 +82,10 @@ export const TemplatesPage: React.FC = () => {
     const existing = new Set(items.map(i => i.id));
     let errors = 0;
     for (const t of data) {
-      const body = { externalId: t.id, name: t.name, tags: (t.tags || []).join(','), category: t.category, popularity: t.popularity, isPremium: t.isPremium };
+      const body = { externalId: t.id, name: t.name, tags: (t.tags || []).join(','), category: t.category, usageCount: (t as any).usageCount ?? (t as any).popularity ?? 0, isPremium: t.isPremium };
       try {
         if (existing.has(t.id)) {
-          await updateTemplate(t.id, { name: body.name, tags: body.tags, category: body.category, popularity: body.popularity, isPremium: body.isPremium });
+          await updateTemplate(t.id, { name: body.name, tags: body.tags, category: body.category, usageCount: body.usageCount, isPremium: body.isPremium });
         } else {
           await createTemplate(body);
           existing.add(t.id);
@@ -115,7 +115,7 @@ export const TemplatesPage: React.FC = () => {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ externalId: '', name: '', tags: '', category: '', popularity: 0, isPremium: false });
+    setForm({ externalId: '', name: '', tags: '', category: '', usageCount: 0, isPremium: false });
     setShowForm(true);
   };
   const openEdit = (row: Row) => {
@@ -125,7 +125,7 @@ export const TemplatesPage: React.FC = () => {
       name: row.name,
       tags: (row.tags || []).join(','),
       category: row.category || '',
-      popularity: row.popularity || 0,
+      usageCount: row.usageCount || 0,
       isPremium: !!row.isPremium,
     });
     setShowForm(true);
@@ -133,10 +133,10 @@ export const TemplatesPage: React.FC = () => {
   const submitForm = async () => {
     try {
       if (editingId) {
-        await updateTemplate(editingId, { name: form.name, tags: form.tags, category: form.category, popularity: form.popularity, isPremium: form.isPremium });
+        await updateTemplate(editingId, { name: form.name, tags: form.tags, category: form.category, usageCount: form.usageCount, isPremium: form.isPremium });
         showToast(t('admin.msg.templateUpdated'), 'success');
       } else {
-        await createTemplate({ externalId: form.externalId, name: form.name, tags: form.tags, category: form.category, popularity: form.popularity, isPremium: form.isPremium });
+        await createTemplate({ externalId: form.externalId, name: form.name, tags: form.tags, category: form.category, usageCount: form.usageCount, isPremium: form.isPremium });
         showToast(t('admin.msg.templateCreated'), 'success');
       }
       setShowForm(false);
@@ -255,7 +255,7 @@ export const TemplatesPage: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.form.name')}</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('templates.filter.industry')}</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.form.popularity')}</th>
+                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.form.usageCount')}</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.form.isPremium')}</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.form.tags')}</th>
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('admin.columns.actions')}</th>
@@ -278,12 +278,7 @@ export const TemplatesPage: React.FC = () => {
                     <CategoryBadge value={r.category} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                        <div className="bg-indigo-500 h-full rounded-full transition-all duration-700" style={{ width: `${Math.min(100, Math.max(0, r.popularity || 0))}%` }} />
-                      </div>
-                      <span className="text-sm font-semibold text-slate-700">{r.popularity}%</span>
-                    </div>
+                    <span className="text-sm font-semibold text-slate-700">{r.usageCount}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {r.isPremium ? (
@@ -374,8 +369,8 @@ export const TemplatesPage: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">{t('admin.form.popularity')}</label>
-              <input className="border rounded-md px-3 py-2 text-sm w-full" type="number" min={0} max={100} placeholder={t('admin.form.popularity')} value={form.popularity} onChange={e => setForm({ ...form, popularity: parseInt(e.target.value || '0') })} />
+              <label className="block text-sm font-medium text-gray-700">{t('admin.form.usageCount')}</label>
+              <input className="border rounded-md px-3 py-2 text-sm w-full" type="number" min={0} placeholder={t('admin.form.usageCount')} value={form.usageCount} onChange={e => setForm({ ...form, usageCount: parseInt(e.target.value || '0') })} />
             </div>
           </div>
           <div className="space-y-1">

@@ -61,7 +61,7 @@ func Init(cfg config.Config, db *gorm.DB, rdb *redis.Client) *gin.Engine {
 	g := api.Group("")
 	g.Use(userAuth)
 
-	resumeH := resume.NewHandler(db)
+	resumeH := resume.NewHandler(db, rdb)
 	g.GET("/resumes", resumeH.List)
 	g.POST("/resumes", resumeH.Create)
 	g.GET("/resumes/:id", resumeH.Get)
