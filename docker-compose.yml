@@ -11,7 +11,7 @@ services:
       REDIS_PASSWORD: ""
       JWT_SECRET: "abcdefghijklmnopqrstuvwxyz"
       CORS_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn"
-      FRONTEND_BASE_URL: "http://www.vfoy.cn"
+      FRONTEND_BASE_URL: "http://vfoy.cn"
       CHROME_API_URL: "http://chrome:3000"
     volumes:
       - /var/lib/openresume/upload:/app/uploads
