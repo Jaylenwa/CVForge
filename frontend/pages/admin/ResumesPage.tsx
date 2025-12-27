@@ -1,15 +1,17 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { listResumes, AdminResume, deleteResume, setResumeVisibility } from '../../services/adminService';
 import { Button } from '../../components/ui/Button';
-import { Modal } from '../../components/ui/Modal';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { INITIAL_RESUME } from '../../services/mockData';
 import { RefreshCw, Search, ChevronLeft, ChevronRight, Eye, Trash2, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AppRoute } from '../../types';
 
 export const ResumesPage: React.FC = () => {
+  const navigate = useNavigate();
   const [items, setItems] = useState<AdminResume[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -20,17 +22,10 @@ export const ResumesPage: React.FC = () => {
   const { t } = useLanguage();
 
   const [loading, setLoading] = useState(false);
-  const mmToPx = 96 / 25.4;
-  const a4w = 210 * mmToPx;
   const thumbnailWidth = 40;
-  const thumbnailScale = thumbnailWidth / a4w;
+  const thumbnailScale = thumbnailWidth / (210 * (96 / 25.4));
 
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewResume, setPreviewResume] = useState<AdminResume | null>(null);
-  const previewContainerRef = useRef<HTMLDivElement | null>(null);
-  const [previewScale, setPreviewScale] = useState<number | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const roRef = useRef<ResizeObserver | null>(null);
+  
 
   const load = async () => {
     setLoading(true);
@@ -55,30 +50,7 @@ export const ResumesPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [keyword]);
 
-  useLayoutEffect(() => {
-    if (!showPreview) return;
-    const schedule = () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => {
-        const el = previewContainerRef.current;
-        if (!el) return;
-        const s = el.clientWidth / a4w;
-        setPreviewScale(s);
-      });
-    };
-    schedule();
-    const onResize = () => schedule();
-    window.addEventListener('resize', onResize);
-    if (previewContainerRef.current) {
-      roRef.current = new ResizeObserver(onResize);
-      roRef.current.observe(previewContainerRef.current);
-    }
-    return () => {
-      window.removeEventListener('resize', onResize);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (roRef.current) roRef.current.disconnect();
-    };
-  }, [showPreview]);
+  
 
   const Thumbnail: React.FC<{ r: AdminResume }> = ({ r }) => {
     return (
@@ -158,7 +130,7 @@ export const ResumesPage: React.FC = () => {
                     <div className="flex items-center justify-end gap-0.5">
                       <div className="relative group">
                         <button
-                          onClick={() => { setPreviewResume(r); setShowPreview(true); }}
+                          onClick={() => window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?id=${r.id}`, '_blank')}
                           className="p-1.5 leading-none text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-all"
                         >
                           <Eye className="w-4 h-4" />
@@ -238,27 +210,7 @@ export const ResumesPage: React.FC = () => {
         </div>
       </div>
 
-      <Modal isOpen={showPreview} onClose={() => setShowPreview(false)} title={t('admin.actions.preview')}>
-        <div ref={previewContainerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            {previewResume && previewScale !== null ? (
-              <div
-                style={{ width: (96 / 25.4) * 210 * previewScale, height: (96 / 25.4) * 297 * previewScale }}
-                className="relative select-none pointer-events-none shadow-sm bg-white"
-              >
-                <ResumeArtboard
-                  data={{ ...INITIAL_RESUME, templateId: previewResume.templateId, themeConfig: previewResume.themeConfig }}
-                  scale={previewScale}
-                  disableShadow
-                  style={{ margin: 0 }}
-                />
-              </div>
-            ) : (
-              <div className="w-full h-full bg-white" />
-            )}
-          </div>
-        </div>
-      </Modal>
+      
     </div>
   );
 };

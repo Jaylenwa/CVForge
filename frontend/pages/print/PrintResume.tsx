@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { ResumeData } from '../../types';
 import { API_BASE } from '../../config';
 import { ResumePreview } from '../editor/ResumePreview';
+import { INITIAL_RESUME } from '../../services/mockData';
 
 export const PrintResume: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -10,6 +11,12 @@ export const PrintResume: React.FC = () => {
 
   useEffect(() => {
     const id = searchParams.get('id');
+    const template = searchParams.get('template');
+    if (template && !id) {
+      const demo: ResumeData = { ...INITIAL_RESUME, templateId: template };
+      setData(demo);
+      return;
+    }
     if (!id) return;
     const token = localStorage.getItem('token');
     fetch(`${API_BASE}/resumes/${id}`, {

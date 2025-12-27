@@ -8,7 +8,7 @@ import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ResumeArtboard } from './editor/ResumePreview';
 import { INITIAL_RESUME, MOCK_TEMPLATES } from '../services/mockData';
-import { Modal } from '../components/ui/Modal';
+ 
 
 export const Templates: React.FC = () => {
   const navigate = useNavigate();
@@ -17,12 +17,7 @@ export const Templates: React.FC = () => {
   
   const [filter, setFilter] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
-  const previewContainerRef = useRef<HTMLDivElement | null>(null);
-  const [previewScale, setPreviewScale] = useState<number | null>(null);
-  const previewRafRef = useRef<number | null>(null);
-  const previewRoRef = useRef<ResizeObserver | null>(null);
+  // preview moved to dedicated print page via router
   
 
   useEffect(() => {
@@ -71,39 +66,13 @@ export const Templates: React.FC = () => {
   });
 
   const handleUseTemplate = (templateId: string) => {
-    navigate(`${AppRoute.Editor}?template=${templateId}`);
+    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${templateId}`, '_blank');
   };
   const handlePreviewTemplate = (templateId: string) => {
-    setPreviewTemplateId(templateId);
-    setPreviewOpen(true);
+    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${templateId}`, '_blank');
   };
 
-  useLayoutEffect(() => {
-    if (!previewOpen) return;
-    const mmToPx = 96 / 25.4;
-    const a4w = 210 * mmToPx;
-    const schedule = () => {
-      if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
-      previewRafRef.current = requestAnimationFrame(() => {
-        const el = previewContainerRef.current;
-        if (!el) return;
-        const s = el.clientWidth / a4w;
-        setPreviewScale(s);
-      });
-    };
-    schedule();
-    const onResize = () => schedule();
-    window.addEventListener('resize', onResize);
-    if (previewContainerRef.current) {
-      previewRoRef.current = new ResizeObserver(onResize);
-      previewRoRef.current.observe(previewContainerRef.current);
-    }
-    return () => {
-      window.removeEventListener('resize', onResize);
-      if (previewRafRef.current) cancelAnimationFrame(previewRafRef.current);
-      if (previewRoRef.current) previewRoRef.current.disconnect();
-    };
-  }, [previewOpen]);
+  // preview is now handled by navigating to the print page
 
   const TemplateGridItem: React.FC<{ template: any }> = ({ template }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -285,27 +254,6 @@ export const Templates: React.FC = () => {
           </div>
       )}
       
-      <Modal isOpen={previewOpen} onClose={() => setPreviewOpen(false)} title={t('common.preview')}>
-        <div ref={previewContainerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            {previewTemplateId && previewScale !== null ? (
-              <div
-                style={{ width: (96 / 25.4) * 210 * previewScale, height: (96 / 25.4) * 297 * previewScale }}
-                className="relative select-none pointer-events-none shadow-sm bg-white"
-              >
-                <ResumeArtboard
-                  data={{ ...INITIAL_RESUME, templateId: previewTemplateId }}
-                  scale={previewScale}
-                  disableShadow
-                  style={{ margin: 0 }}
-                />
-              </div>
-            ) : (
-              <div className="w-full h-full bg-white" />
-            )}
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

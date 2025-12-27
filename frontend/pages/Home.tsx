@@ -8,18 +8,12 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../config';
 import { ResumeArtboard } from './editor/ResumePreview';
 import { INITIAL_RESUME } from '../services/mockData';
-import { Modal } from '../components/ui/Modal';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [popularTemplates, setPopularTemplates] = React.useState<any[]>([]);
-  const [previewOpen, setPreviewOpen] = React.useState(false);
-  const [previewTemplateId, setPreviewTemplateId] = React.useState<string | null>(null);
-  const previewContainerRef = React.useRef<HTMLDivElement | null>(null);
-  const [previewScale, setPreviewScale] = React.useState<number | null>(null);
-  const previewRafRef = React.useRef<number | null>(null);
-  const previewRoRef = React.useRef<ResizeObserver | null>(null);
+  // preview moved to dedicated print page via router
   React.useEffect(() => {
     (async () => {
       try {
@@ -213,11 +207,11 @@ export const Home: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {popularTemplates.map(template => (
-                    <HomeTemplateCard
+                  <HomeTemplateCard
                       key={template.id}
                       template={template}
-                      onUse={() => navigate(`${AppRoute.Editor}?template=${template.id}`)}
-                      onPreview={() => { setPreviewTemplateId(template.id); setPreviewOpen(true); }}
+                      onUse={() => window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${template.id}`, '_blank')}
+                      onPreview={() => window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${template.id}`, '_blank')}
                     />
                 ))}
             </div>
@@ -287,27 +281,7 @@ export const Home: React.FC = () => {
           </div>
         </div>
       </section>
-      <Modal isOpen={previewOpen} onClose={() => setPreviewOpen(false)} title={t('common.preview')}>
-        <div ref={previewContainerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            {previewTemplateId && previewScale !== null ? (
-              <div
-                style={{ width: (96 / 25.4) * 210 * previewScale, height: (96 / 25.4) * 297 * previewScale }}
-                className="relative select-none pointer-events-none shadow-sm bg-white"
-              >
-                <ResumeArtboard
-                  data={{ ...INITIAL_RESUME, templateId: previewTemplateId }}
-                  scale={previewScale}
-                  disableShadow
-                  style={{ margin: 0 }}
-                />
-              </div>
-            ) : (
-              <div className="w-full h-full bg-white" />
-            )}
-          </div>
-        </div>
-      </Modal>
+      
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { API_BASE } from '../../config';
 import { createTemplate, updateTemplate, deleteTemplate } from '../../services/adminService';
 import { Button } from '../../components/ui/Button';
@@ -9,6 +9,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { INITIAL_RESUME, MOCK_TEMPLATES } from '../../services/mockData';
 import { RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AppRoute } from '../../types';
 
 type Row = {
   id: string;
@@ -23,6 +25,7 @@ export const TemplatesPage: React.FC = () => {
   const { t } = useLanguage();
   const { showToast } = useToast();
   const confirm = useConfirm();
+  const navigate = useNavigate();
 
   const [items, setItems] = useState<Row[]>([]);
   const [keyword, setKeyword] = useState('');
@@ -35,13 +38,6 @@ export const TemplatesPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ externalId: '', name: '', tags: '', category: '', usageCount: 0, isPremium: false });
-
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewId, setPreviewId] = useState<string | null>(null);
-  const previewContainerRef = useRef<HTMLDivElement | null>(null);
-  const [previewScale, setPreviewScale] = useState<number | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const roRef = useRef<ResizeObserver | null>(null);
 
   const [syncing, setSyncing] = useState(false);
   const [syncDone, setSyncDone] = useState(0);
@@ -159,36 +155,10 @@ export const TemplatesPage: React.FC = () => {
   };
 
   const openPreview = (id: string) => {
-    setPreviewId(id);
-    setShowPreview(true);
+    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${id}`, '_blank');
   };
 
-  useLayoutEffect(() => {
-    if (!showPreview) return;
-    const mmToPx = 96 / 25.4;
-    const a4w = 210 * mmToPx;
-    const schedule = () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => {
-        const el = previewContainerRef.current;
-        if (!el) return;
-        const s = el.clientWidth / a4w;
-        setPreviewScale(s);
-      });
-    };
-    schedule();
-    const onResize = () => schedule();
-    window.addEventListener('resize', onResize);
-    if (previewContainerRef.current) {
-      roRef.current = new ResizeObserver(onResize);
-      roRef.current.observe(previewContainerRef.current);
-    }
-    return () => {
-      window.removeEventListener('resize', onResize);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (roRef.current) roRef.current.disconnect();
-    };
-  }, [showPreview]);
+  
 
   const CategoryBadge: React.FC<{ value: string }> = ({ value }) => {
     const cls =
@@ -382,28 +352,6 @@ export const TemplatesPage: React.FC = () => {
           </div>
           <div className="pt-2 flex justify-end space-x-2">
             <Button onClick={submitForm}>{editingId ? t('admin.actions.update') : t('admin.actions.create')}</Button>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal isOpen={showPreview} onClose={() => setShowPreview(false)} title={t('admin.actions.preview')}>
-        <div ref={previewContainerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            {previewId && previewScale !== null ? (
-              <div
-                style={{ width: (96 / 25.4) * 210 * previewScale, height: (96 / 25.4) * 297 * previewScale }}
-                className="relative select-none pointer-events-none shadow-sm bg-white"
-              >
-                <ResumeArtboard
-                  data={{ ...INITIAL_RESUME, templateId: previewId }}
-                  scale={previewScale}
-                  disableShadow
-                  style={{ margin: 0 }}
-                />
-              </div>
-            ) : (
-              <div className="w-full h-full bg-white" />
-            )}
           </div>
         </div>
       </Modal>

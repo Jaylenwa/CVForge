@@ -17,7 +17,7 @@ PLATFORM := linux/amd64
 
 # ===== 默认目标 =====
 .PHONY: all
-all: backend frontend
+all: backend frontend deploy clean
 
 .PHONY: backend
 backend: build save upload load
