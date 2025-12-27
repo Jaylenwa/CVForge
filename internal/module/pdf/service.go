@@ -67,7 +67,7 @@ func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, e
 	if cfg.FrontendBaseURL == "" {
 		return nil, 503, fmt.Errorf("fe empty")
 	}
-	dest := cfg.FrontendBaseURL + "/#/print?id=" + externalID
+	dest := "http://frontend/#/print?id=" + externalID
 	authHeader := c.GetHeader("Authorization")
 	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 	type PDFRequest struct {
