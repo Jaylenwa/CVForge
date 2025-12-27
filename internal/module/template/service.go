@@ -6,25 +6,20 @@ import (
 	"time"
 
 	"openresume/internal/common"
-
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
+	"openresume/internal/infra/cache"
 )
 
 type Service struct {
 	repo *Repo
-	rdb  *redis.Client
 }
 
-func NewService(db *gorm.DB, rdb *redis.Client) *Service {
-	return &Service{repo: NewRepo(db), rdb: rdb}
+func NewService() *Service {
+	return &Service{repo: DefaultRepo()}
 }
 
 func (s *Service) ListAllPayload() (string, error) {
-	if s.rdb != nil {
-		if val, err := s.rdb.Get(context.Background(), string(common.RedisKeyTemplatesListAll)).Result(); err == nil {
-			return val, nil
-		}
+	if val, err := cache.RDB.Get(context.Background(), string(common.RedisKeyTemplatesListAll)).Result(); err == nil {
+		return val, nil
 	}
 	list, err := s.repo.ListAll()
 	if err != nil {
@@ -32,9 +27,7 @@ func (s *Service) ListAllPayload() (string, error) {
 	}
 	payloadBytes, _ := json.Marshal(map[string]any{"items": list})
 	payload := string(payloadBytes)
-	if s.rdb != nil {
-		_ = s.rdb.Set(context.Background(), string(common.RedisKeyTemplatesListAll), payload, time.Hour).Err()
-	}
+	cache.RDB.Set(context.Background(), string(common.RedisKeyTemplatesListAll), payload, time.Hour)
 	return payload, nil
 }
 
@@ -46,9 +39,7 @@ func (s *Service) Create(t Template) error {
 	if err := s.repo.Create(&t); err != nil {
 		return err
 	}
-	if s.rdb != nil {
-		_ = s.rdb.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
-	}
+	cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll))
 	return nil
 }
 
@@ -61,9 +52,7 @@ func (s *Service) Update(id string, patch func(*Template)) error {
 	if err := s.repo.Save(&t); err != nil {
 		return err
 	}
-	if s.rdb != nil {
-		_ = s.rdb.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
-	}
+	cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll))
 	return nil
 }
 
@@ -71,8 +60,6 @@ func (s *Service) Delete(id string) error {
 	if err := s.repo.DeleteByExternal(id); err != nil {
 		return err
 	}
-	if s.rdb != nil {
-		_ = s.rdb.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
-	}
+	cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll))
 	return nil
 }

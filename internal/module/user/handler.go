@@ -11,8 +11,8 @@ type Handler struct {
 	svc *Service
 }
 
-func NewHandler(db *gorm.DB) *Handler {
-	return &Handler{svc: NewService(db)}
+func NewHandler() *Handler {
+	return &Handler{svc: NewService()}
 }
 
 func (h *Handler) Me(c *gin.Context) {

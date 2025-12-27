@@ -4,16 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 )
 
 type Handler struct {
 	svc *Service
 }
 
-func NewHandler(db *gorm.DB, rdb *redis.Client) *Handler {
-	return &Handler{svc: NewService(db, rdb)}
+func NewHandler() *Handler {
+	return &Handler{svc: NewService()}
 }
 
 func (h *Handler) ListAll(c *gin.Context) {

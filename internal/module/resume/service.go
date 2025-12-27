@@ -6,21 +6,20 @@ import (
 	"time"
 
 	"openresume/internal/common"
+	"openresume/internal/infra/cache"
 	"openresume/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type Service struct {
 	repo *Repo
-	rdb  *redis.Client
 }
 
-func NewService(db *gorm.DB, rdb *redis.Client) *Service {
-	return &Service{repo: NewRepo(db), rdb: rdb}
+func NewService() *Service {
+	return &Service{repo: DefaultRepo()}
 }
 
 type ResumeReq struct {
@@ -74,7 +73,7 @@ func (s *Service) CreateResume(uid uint, req ResumeReq) (Resume, error) {
 	err := s.repo.Create(&res)
 	if err == nil && req.TemplateId != "" {
 		_ = s.repo.IncrementTemplateUsage(req.TemplateId)
-		_ = s.rdb.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
+		_ = cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
 	}
 	return res, err
 }

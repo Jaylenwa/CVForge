@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -13,8 +12,8 @@ type AdminHandler struct {
 	svc *Service
 }
 
-func NewAdminHandler(db *gorm.DB, rdb *redis.Client) *AdminHandler {
-	return &AdminHandler{svc: NewService(db, rdb)}
+func NewAdminHandler() *AdminHandler {
+	return &AdminHandler{svc: NewService()}
 }
 
 func (h *AdminHandler) AdminCreate(c *gin.Context) {

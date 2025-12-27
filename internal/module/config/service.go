@@ -3,23 +3,21 @@ package config
 import (
 	"context"
 	"openresume/internal/common"
+	"openresume/internal/infra/cache"
 	"openresume/internal/infra/config"
+	"openresume/internal/infra/database"
 	"openresume/internal/models"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
-type Service struct {
-	db  *gorm.DB
-	rdb *redis.Client
-}
+type Service struct{}
 
-func NewService(db *gorm.DB, rdb *redis.Client) *Service {
-	return &Service{db: db, rdb: rdb}
+func NewService() *Service {
+	return &Service{}
 }
 
 // EnsureDefaults inserts a set of default configuration keys into DB if they don't exist.
@@ -59,9 +57,9 @@ func (s *Service) EnsureDefaults(cfg config.Config) error {
 	}
 	for _, d := range defaults {
 		var existing models.Config
-		if err := s.db.Where("config_key = ?", d.Key).First(&existing).Error; err != nil {
+		if err := database.DB.Where("config_key = ?", d.Key).First(&existing).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
-				_ = s.db.Create(&models.Config{
+				_ = database.DB.Create(&models.Config{
 					ConfigKey:   d.Key,
 					ConfigValue: d.Value,
 					Description: d.Description,
@@ -80,16 +78,16 @@ func (s *Service) EnsureDefaults(cfg config.Config) error {
 func (s *Service) Get(key string) string {
 	// Try cache first
 	ctx := context.Background()
-	val, err := s.rdb.Get(ctx, common.RedisKeySysConfig.F(key)).Result()
+	val, err := cache.RDB.Get(ctx, common.RedisKeySysConfig.F(key)).Result()
 	if err == nil {
 		return val
 	}
 
 	// Try DB
 	var cfg models.Config
-	if err := s.db.Where("config_key = ?", key).First(&cfg).Error; err == nil {
+	if err := database.DB.Where("config_key = ?", key).First(&cfg).Error; err == nil {
 		// Cache it
-		s.rdb.Set(ctx, common.RedisKeySysConfig.F(key), cfg.ConfigValue, 24*time.Hour)
+		cache.RDB.Set(ctx, common.RedisKeySysConfig.F(key), cfg.ConfigValue, 24*time.Hour)
 		return cfg.ConfigValue
 	}
 
@@ -118,7 +116,7 @@ func (s *Service) GetBool(key string, def bool) bool {
 
 func (s *Service) Set(key, value, description, typeName string) error {
 	var cfg models.Config
-	err := s.db.Where("config_key = ?", key).First(&cfg).Error
+	err := database.DB.Where("config_key = ?", key).First(&cfg).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			cfg = models.Config{
@@ -127,7 +125,7 @@ func (s *Service) Set(key, value, description, typeName string) error {
 				Description: description,
 				Type:        typeName,
 			}
-			if err := s.db.Create(&cfg).Error; err != nil {
+			if err := database.DB.Create(&cfg).Error; err != nil {
 				return err
 			}
 		} else {
@@ -141,19 +139,19 @@ func (s *Service) Set(key, value, description, typeName string) error {
 		if typeName != "" {
 			cfg.Type = typeName
 		}
-		if err := s.db.Save(&cfg).Error; err != nil {
+		if err := database.DB.Save(&cfg).Error; err != nil {
 			return err
 		}
 	}
 
 	// Invalidate cache
-	s.rdb.Del(context.Background(), common.RedisKeySysConfig.F(key))
+	cache.RDB.Del(context.Background(), common.RedisKeySysConfig.F(key))
 	return nil
 }
 
 func (s *Service) GetAll() ([]models.Config, error) {
 	var configs []models.Config
-	if err := s.db.Find(&configs).Error; err != nil {
+	if err := database.DB.Find(&configs).Error; err != nil {
 		return nil, err
 	}
 	return configs, nil

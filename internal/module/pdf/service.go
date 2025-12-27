@@ -10,49 +10,46 @@ import (
 	"time"
 
 	"openresume/internal/common"
+	"openresume/internal/infra/cache"
 	"openresume/internal/infra/config"
+	"openresume/internal/infra/database"
 
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 )
 
-type Service struct {
-	db  *gorm.DB
-	rdb *redis.Client
-}
+type Service struct{}
 
-func NewService(db *gorm.DB, rdb *redis.Client) *Service {
-	return &Service{db: db, rdb: rdb}
+func NewService() *Service {
+	return &Service{}
 }
 
 func (s *Service) cbOpen(svc string) bool {
-	if s.rdb == nil {
+	if cache.RDB == nil {
 		return false
 	}
-	return s.rdb.Get(context.Background(), common.RedisKeyCircuitBreaker.F(svc)).Val() == common.CBCircuitOpen
+	return cache.RDB.Get(context.Background(), common.RedisKeyCircuitBreaker.F(svc)).Val() == common.CBCircuitOpen
 }
 func (s *Service) cbFail(svc string) {
-	if s.rdb == nil {
+	if cache.RDB == nil {
 		return
 	}
-	cnt, _ := s.rdb.Incr(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc)).Result()
+	cnt, _ := cache.RDB.Incr(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc)).Result()
 	if cnt == 1 {
-		_ = s.rdb.Expire(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc), time.Minute).Err()
+		_ = cache.RDB.Expire(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc), time.Minute).Err()
 	}
 	if cnt >= 3 {
-		_ = s.rdb.Set(context.Background(), common.RedisKeyCircuitBreaker.F(svc), common.CBCircuitOpen, time.Minute).Err()
+		_ = cache.RDB.Set(context.Background(), common.RedisKeyCircuitBreaker.F(svc), common.CBCircuitOpen, time.Minute).Err()
 	}
 }
 func (s *Service) cbReset(svc string) {
-	if s.rdb == nil {
+	if cache.RDB == nil {
 		return
 	}
-	_ = s.rdb.Del(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc)).Err()
-	_ = s.rdb.Del(context.Background(), common.RedisKeyCircuitBreaker.F(svc)).Err()
+	_ = cache.RDB.Del(context.Background(), common.RedisKeyCircuitBreakerFail.F(svc)).Err()
+	_ = cache.RDB.Del(context.Background(), common.RedisKeyCircuitBreaker.F(svc)).Err()
 }
 
 func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, error) {
@@ -60,7 +57,7 @@ func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, e
 		return nil, 503, fmt.Errorf("cb")
 	}
 	var res Resume
-	if err := s.db.Where("external_id = ?", externalID).Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("external_id = ?", externalID).Preload("Sections.Items").First(&res).Error; err != nil {
 		return nil, 404, err
 	}
 	cfg := config.Load()
@@ -124,7 +121,7 @@ func (s *Service) GenerateImage(c *gin.Context, externalID string) ([]byte, int,
 		return nil, 503, fmt.Errorf("cb")
 	}
 	var res Resume
-	if err := s.db.Where("external_id = ?", externalID).Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("external_id = ?", externalID).Preload("Sections.Items").First(&res).Error; err != nil {
 		return nil, 404, err
 	}
 	cfg := config.Load()

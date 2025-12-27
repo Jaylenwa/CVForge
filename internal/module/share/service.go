@@ -6,50 +6,49 @@ import (
 	"time"
 
 	"openresume/internal/common"
+	"openresume/internal/infra/cache"
+	"openresume/internal/infra/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type Service struct {
 	repo *Repo
-	db   *gorm.DB
-	rdb  *redis.Client
 }
 
-func NewService(db *gorm.DB, rdb *redis.Client) *Service {
-	return &Service{repo: NewRepo(db), db: db, rdb: rdb}
+func NewService() *Service {
+	return &Service{repo: DefaultRepo()}
 }
 
 func (s *Service) PublishResumeForUser(uid uint, externalID string) (ShareLink, int, error) {
 	var res Resume
-	if err := s.db.Where("external_id = ?", externalID).First(&res).Error; err != nil {
+	if err := database.DB.Where("external_id = ?", externalID).First(&res).Error; err != nil {
 		return ShareLink{}, 404, err
 	}
 	if res.UserID != uid {
 		return ShareLink{}, 403, gorm.ErrInvalidData
 	}
 	var sl ShareLink
-	if err := s.db.Where("resume_id = ?", res.ID).First(&sl).Error; err != nil {
+	if err := database.DB.Where("resume_id = ?", res.ID).First(&sl).Error; err != nil {
 		sl = ShareLink{ResumeID: res.ID, UserID: uid, Slug: uuid.NewString()[:8], IsPublic: true}
-		_ = s.db.Create(&sl).Error
+		_ = database.DB.Create(&sl).Error
 	} else {
 		sl.IsPublic = true
 		if sl.UserID == 0 {
 			sl.UserID = uid
 		}
-		_ = s.db.Save(&sl).Error
+		_ = database.DB.Save(&sl).Error
 	}
 	return sl, 200, nil
 }
 
 func (s *Service) GetPublicPayload(slug string) (string, int, error) {
 	cacheKey := common.RedisKeyPublicResume.F(slug)
-	if s.rdb != nil {
-		if val, err := s.rdb.Get(context.Background(), cacheKey).Result(); err == nil {
-			_ = s.rdb.Incr(context.Background(), common.RedisKeyViews.F(slug))
+	if cache.RDB != nil {
+		if val, err := cache.RDB.Get(context.Background(), cacheKey).Result(); err == nil {
+			_ = cache.RDB.Incr(context.Background(), common.RedisKeyViews.F(slug))
 			return val, 200, nil
 		}
 	}
@@ -58,7 +57,7 @@ func (s *Service) GetPublicPayload(slug string) (string, int, error) {
 		return "", 404, err
 	}
 	var res Resume
-	if err := s.db.Where("id = ?", sl.ResumeID).Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("id = ?", sl.ResumeID).Preload("Sections.Items").First(&res).Error; err != nil {
 		return "", 404, err
 	}
 	payloadObj := gin.H{
@@ -75,9 +74,9 @@ func (s *Service) GetPublicPayload(slug string) (string, int, error) {
 	}
 	b, _ := json.Marshal(payloadObj)
 	val := string(b)
-	if s.rdb != nil {
-		_ = s.rdb.Set(context.Background(), cacheKey, val, 10*time.Minute).Err()
-		_ = s.rdb.Incr(context.Background(), common.RedisKeyViews.F(slug))
+	if cache.RDB != nil {
+		_ = cache.RDB.Set(context.Background(), cacheKey, val, 10*time.Minute).Err()
+		_ = cache.RDB.Incr(context.Background(), common.RedisKeyViews.F(slug))
 	}
 	return val, 200, nil
 }

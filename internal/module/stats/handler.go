@@ -6,28 +6,26 @@ import (
 	"time"
 
 	"openresume/internal/common"
+	"openresume/internal/infra/cache"
+	"openresume/internal/infra/database"
 	"openresume/internal/models"
 
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-	"github.com/redis/go-redis/v9"
 	"context"
+
+	"github.com/gin-gonic/gin"
 )
 
-type Handler struct {
-	db  *gorm.DB
-	rdb *redis.Client
-}
+type Handler struct{}
 
-func NewHandler(db *gorm.DB, rdb *redis.Client) *Handler {
-	return &Handler{db: db, rdb: rdb}
+func NewHandler() *Handler {
+	return &Handler{}
 }
 
 type StatsResponse struct {
 	Totals struct {
-		Users     int64 `json:"users"`
-		Resumes   int64 `json:"resumes"`
-		Templates int64 `json:"templates"`
+		Users         int64 `json:"users"`
+		Resumes       int64 `json:"resumes"`
+		Templates     int64 `json:"templates"`
 		VisitorsToday int64 `json:"visitorsToday"`
 	} `json:"totals"`
 	Trend struct {
@@ -51,9 +49,9 @@ func (h *Handler) AdminStats(c *gin.Context) {
 	var userTotal int64
 	var resumeTotal int64
 	var templateTotal int64
-	_ = h.db.Model(&models.User{}).Count(&userTotal).Error
-	_ = h.db.Model(&models.Resume{}).Count(&resumeTotal).Error
-	_ = h.db.Model(&models.Template{}).Count(&templateTotal).Error
+	_ = database.DB.Model(&models.User{}).Count(&userTotal).Error
+	_ = database.DB.Model(&models.Resume{}).Count(&resumeTotal).Error
+	_ = database.DB.Model(&models.Template{}).Count(&templateTotal).Error
 
 	now := time.Now()
 	// Truncate to local midnight
@@ -74,13 +72,13 @@ func (h *Handler) AdminStats(c *gin.Context) {
 		var uc int64
 		var rc int64
 		var tc int64
-		_ = h.db.Model(&models.User{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&uc).Error
-		_ = h.db.Model(&models.Resume{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&rc).Error
-		_ = h.db.Model(&models.Template{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&tc).Error
+		_ = database.DB.Model(&models.User{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&uc).Error
+		_ = database.DB.Model(&models.Resume{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&rc).Error
+		_ = database.DB.Model(&models.Template{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&tc).Error
 		var vc int64
-		if h.rdb != nil {
+		if cache.RDB != nil {
 			key := common.RedisKeyUVDay.F(dayStart.Format("2006-01-02"))
-			if n, err := h.rdb.SCard(context.Background(), key).Result(); err == nil {
+			if n, err := cache.RDB.SCard(context.Background(), key).Result(); err == nil {
 				vc = n
 			}
 		}
@@ -102,9 +100,9 @@ func (h *Handler) AdminStats(c *gin.Context) {
 	out.Trend.Resumes = resumes
 	out.Trend.Templates = templates
 	out.Trend.Visitors = visitors
-	if h.rdb != nil {
+	if cache.RDB != nil {
 		todayKey := common.RedisKeyUVDay.F(time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Format("2006-01-02"))
-		if n, err := h.rdb.SCard(context.Background(), todayKey).Result(); err == nil {
+		if n, err := cache.RDB.SCard(context.Background(), todayKey).Result(); err == nil {
 			out.Totals.VisitorsToday = n
 		}
 	}

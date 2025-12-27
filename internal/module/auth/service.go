@@ -11,13 +11,14 @@ import (
 	"time"
 
 	"openresume/internal/common"
+	"openresume/internal/infra/cache"
 	"openresume/internal/infra/config"
+	"openresume/internal/infra/database"
 	conf "openresume/internal/module/config"
 	"openresume/internal/pkg/mailer"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -25,12 +26,10 @@ import (
 type Service struct {
 	cfg       config.Config
 	sysConfig *conf.Service
-	rdb       *redis.Client
-	db        *gorm.DB
 }
 
-func NewService(cfg config.Config, sysConfig *conf.Service, rdb *redis.Client, db *gorm.DB) *Service {
-	return &Service{cfg: cfg, sysConfig: sysConfig, rdb: rdb, db: db}
+func NewService(cfg config.Config, sysConfig *conf.Service) *Service {
+	return &Service{cfg: cfg, sysConfig: sysConfig}
 }
 
 func (s *Service) FeatureWeChatEnabled() bool {
@@ -52,7 +51,7 @@ func (s *Service) IssueTokens(uid uint) (string, string) {
 
 func (s *Service) initialRole() common.Role {
 	var n int64
-	s.db.Model(&User{}).Count(&n)
+	database.DB.Model(&User{}).Count(&n)
 	if n == 0 {
 		return common.RoleAdmin
 	}
@@ -70,11 +69,11 @@ func (s *Service) GenerateVerifyCode() string {
 }
 
 func (s *Service) SaveVerifyCode(email, code string) error {
-	return s.rdb.Set(context.Background(), common.RedisKeyVerify.F(email), code, 10*time.Minute).Err()
+	return cache.RDB.Set(context.Background(), common.RedisKeyVerify.F(email), code, 10*time.Minute).Err()
 }
 
 func (s *Service) ValidateVerifyCode(email, code string) bool {
-	val, err := s.rdb.Get(context.Background(), common.RedisKeyVerify.F(email)).Result()
+	val, err := cache.RDB.Get(context.Background(), common.RedisKeyVerify.F(email)).Result()
 	return err == nil && val == code
 }
 
@@ -97,7 +96,7 @@ func (s *Service) Register(email, code, password, name string) (string, string, 
 	}
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	u := User{Email: email, PasswordHash: string(hash), Name: name, Role: s.initialRole()}
-	if err := s.db.Create(&u).Error; err != nil {
+	if err := database.DB.Create(&u).Error; err != nil {
 		return "", "", gorm.ErrDuplicatedKey
 	}
 	access, refresh := s.IssueTokens(u.ID)
@@ -106,7 +105,7 @@ func (s *Service) Register(email, code, password, name string) (string, string, 
 
 func (s *Service) Login(email, password string) (string, string, error) {
 	var u User
-	if err := s.db.Where("email = ?", email).First(&u).Error; err != nil {
+	if err := database.DB.Where("email = ?", email).First(&u).Error; err != nil {
 		return "", "", gorm.ErrRecordNotFound
 	}
 	if bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) != nil {
@@ -124,7 +123,7 @@ func (s *Service) Refresh(refreshToken string) (string, string, error) {
 	claims, _ := t.Claims.(jwt.MapClaims)
 	jti, _ := claims["jti"].(string)
 	if jti != "" {
-		if s.rdb.Get(context.Background(), common.RedisKeyJWTBlacklist.F(jti)).Val() == "1" {
+		if cache.RDB.Get(context.Background(), common.RedisKeyJWTBlacklist.F(jti)).Val() == "1" {
 			return "", "", gorm.ErrInvalidTransaction
 		}
 	}
@@ -141,7 +140,7 @@ func (s *Service) Logout(refreshToken string) error {
 	claims, _ := t.Claims.(jwt.MapClaims)
 	jti, _ := claims["jti"].(string)
 	if jti != "" {
-		return s.rdb.Set(context.Background(), common.RedisKeyJWTBlacklist.F(jti), "1", time.Hour*24*7).Err()
+		return cache.RDB.Set(context.Background(), common.RedisKeyJWTBlacklist.F(jti), "1", time.Hour*24*7).Err()
 	}
 	return nil
 }
@@ -223,14 +222,14 @@ func (s *Service) FetchUserInfo(accessToken, openid string) (WechatUserInfo, err
 func (s *Service) FindOrCreateWeChatUser(ui WechatUserInfo, tr WechatTokenResponse) (User, error) {
 	var user User
 	var oa OAuthAccount
-	q := s.db.Where("provider = ? AND provider_union_id <> '' AND provider_union_id = ?", "wechat", ui.UnionID).First(&oa)
+	q := database.DB.Where("provider = ? AND provider_union_id <> '' AND provider_union_id = ?", "wechat", ui.UnionID).First(&oa)
 	if ui.UnionID != "" && q.Error == nil {
-		if err := s.db.First(&user, oa.UserID).Error; err == nil {
+		if err := database.DB.First(&user, oa.UserID).Error; err == nil {
 			return user, nil
 		}
 	}
-	if err := s.db.Where("provider = ? AND provider_open_id = ?", "wechat", tr.OpenID).First(&oa).Error; err == nil {
-		if err := s.db.First(&user, oa.UserID).Error; err == nil {
+	if err := database.DB.Where("provider = ? AND provider_open_id = ?", "wechat", tr.OpenID).First(&oa).Error; err == nil {
+		if err := database.DB.First(&user, oa.UserID).Error; err == nil {
 			return user, nil
 		}
 	}
@@ -240,7 +239,7 @@ func (s *Service) FindOrCreateWeChatUser(ui WechatUserInfo, tr WechatTokenRespon
 		IsActive:  true,
 		Role:      s.initialRole(),
 	}
-	if err := s.db.Create(&user).Error; err != nil {
+	if err := database.DB.Create(&user).Error; err != nil {
 		return User{}, err
 	}
 	record := OAuthAccount{
@@ -252,35 +251,35 @@ func (s *Service) FindOrCreateWeChatUser(ui WechatUserInfo, tr WechatTokenRespon
 	if b, e := json.Marshal(ui); e == nil {
 		record.RawProfileJSON = string(b)
 	}
-	_ = s.db.Create(&record).Error
+	_ = database.DB.Create(&record).Error
 	return user, nil
 }
 
 func (s *Service) SaveOAuthState(state string, data map[string]any) error {
 	b, _ := json.Marshal(data)
-	return s.rdb.Set(context.Background(), common.RedisKeyOAuthState.F(state), string(b), 10*time.Minute).Err()
+	return cache.RDB.Set(context.Background(), common.RedisKeyOAuthState.F(state), string(b), 10*time.Minute).Err()
 }
 
 func (s *Service) GetOAuthState(state string) (string, error) {
-	return s.rdb.Get(context.Background(), common.RedisKeyOAuthState.F(state)).Result()
+	return cache.RDB.Get(context.Background(), common.RedisKeyOAuthState.F(state)).Result()
 }
 
 func (s *Service) DelOAuthState(state string) {
-	_ = s.rdb.Del(context.Background(), common.RedisKeyOAuthState.F(state)).Err()
+	_ = cache.RDB.Del(context.Background(), common.RedisKeyOAuthState.F(state)).Err()
 }
 
 func (s *Service) SaveOTT(ott string, payload map[string]any) error {
 	b, _ := json.Marshal(payload)
-	return s.rdb.Set(context.Background(), common.RedisKeyOAuthOTT.F(ott), string(b), time.Minute).Err()
+	return cache.RDB.Set(context.Background(), common.RedisKeyOAuthOTT.F(ott), string(b), time.Minute).Err()
 }
 
 func (s *Service) GetOTT(ott string) (string, error) {
-	return s.rdb.Get(context.Background(), common.RedisKeyOAuthOTT.F(ott)).Result()
+	return cache.RDB.Get(context.Background(), common.RedisKeyOAuthOTT.F(ott)).Result()
 }
 
 func (s *Service) DelOTT(ott string) {
-	_ = s.rdb.Set(context.Background(), common.RedisKeyOAuthOTT.F(ott), "", time.Second).Err()
-	_ = s.rdb.Del(context.Background(), common.RedisKeyOAuthOTT.F(ott)).Err()
+	_ = cache.RDB.Set(context.Background(), common.RedisKeyOAuthOTT.F(ott), "", time.Second).Err()
+	_ = cache.RDB.Del(context.Background(), common.RedisKeyOAuthOTT.F(ott)).Err()
 }
 
 func (s *Service) SanitizeUser(u User) map[string]any {
@@ -407,8 +406,8 @@ func (s *Service) FindOrCreateGithubUser(ui GithubUserInfo) (User, error) {
 	providerOpenID := strconv.Itoa(ui.ID)
 
 	// Try to find by oauth account
-	if err := s.db.Where("provider = ? AND provider_open_id = ?", "github", providerOpenID).First(&oa).Error; err == nil {
-		if err := s.db.First(&user, oa.UserID).Error; err == nil {
+	if err := database.DB.Where("provider = ? AND provider_open_id = ?", "github", providerOpenID).First(&oa).Error; err == nil {
+		if err := database.DB.First(&user, oa.UserID).Error; err == nil {
 			return user, nil
 		}
 	}
@@ -425,7 +424,7 @@ func (s *Service) FindOrCreateGithubUser(ui GithubUserInfo) (User, error) {
 		user.Name = ui.Login
 	}
 
-	if err := s.db.Create(&user).Error; err != nil {
+	if err := database.DB.Create(&user).Error; err != nil {
 		return User{}, err
 	}
 
@@ -437,6 +436,6 @@ func (s *Service) FindOrCreateGithubUser(ui GithubUserInfo) (User, error) {
 	if b, e := json.Marshal(ui); e == nil {
 		record.RawProfileJSON = string(b)
 	}
-	_ = s.db.Create(&record).Error
+	_ = database.DB.Create(&record).Error
 	return user, nil
 }

@@ -6,19 +6,16 @@ import (
 	"strings"
 
 	"openresume/internal/common"
+	"openresume/internal/infra/cache"
+	"openresume/internal/infra/database"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 )
 
-type AdminHandler struct {
-	db  *gorm.DB
-	rdb *redis.Client
-}
+type AdminHandler struct{}
 
-func NewAdminHandler(db *gorm.DB, rdb *redis.Client) *AdminHandler {
-	return &AdminHandler{db: db, rdb: rdb}
+func NewAdminHandler() *AdminHandler {
+	return &AdminHandler{}
 }
 
 func parseIntDefault(s string, d int) int {
@@ -39,7 +36,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 		size = 100
 	}
 	var list []ShareLink
-	q := h.db.Model(&ShareLink{})
+	q := database.DB.Model(&ShareLink{})
 	if v := strings.TrimSpace(c.Query("slug")); v != "" {
 		q = q.Where("slug LIKE ?", "%"+v+"%")
 	}
@@ -66,7 +63,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	userIDByResume := make(map[uint]uint)
 	if len(resumeIDs) > 0 {
 		var rs []Resume
-		if err := h.db.Where("id IN ?", resumeIDs).Find(&rs).Error; err == nil {
+		if err := database.DB.Where("id IN ?", resumeIDs).Find(&rs).Error; err == nil {
 			for _, r := range rs {
 				userIDByResume[r.ID] = r.UserID
 			}
@@ -90,7 +87,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	nameMap := make(map[uint]string, len(uids))
 	if len(uids) > 0 {
 		var users []User
-		if err := h.db.Where("id IN ?", uids).Find(&users).Error; err == nil {
+		if err := database.DB.Where("id IN ?", uids).Find(&users).Error; err == nil {
 			for _, u := range users {
 				if u.Name != "" {
 					nameMap[u.ID] = u.Name
@@ -130,29 +127,29 @@ func (h *AdminHandler) AdminUpdate(c *gin.Context) {
 		return
 	}
 	var s ShareLink
-	if err := h.db.Where("slug = ?", c.Param("slug")).First(&s).Error; err != nil {
+	if err := database.DB.Where("slug = ?", c.Param("slug")).First(&s).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
 	s.IsPublic = body.IsPublic
-	if err := h.db.Save(&s).Error; err != nil {
+	if err := database.DB.Save(&s).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
-	if h.rdb != nil {
-		_ = h.rdb.Del(c, common.RedisKeyPublicResume.F(s.Slug)).Err()
+	if cache.RDB != nil {
+		_ = cache.RDB.Del(c, common.RedisKeyPublicResume.F(s.Slug)).Err()
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
 func (h *AdminHandler) AdminDelete(c *gin.Context) {
 	slug := c.Param("slug")
-	if err := h.db.Where("slug = ?", slug).Delete(&ShareLink{}).Error; err != nil {
+	if err := database.DB.Where("slug = ?", slug).Delete(&ShareLink{}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
-	if h.rdb != nil {
-		_ = h.rdb.Del(c, common.RedisKeyPublicResume.F(slug)).Err()
+	if cache.RDB != nil {
+		_ = cache.RDB.Del(c, common.RedisKeyPublicResume.F(slug)).Err()
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }

@@ -11,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -19,8 +18,8 @@ type Handler struct {
 	svc *Service
 }
 
-func NewHandler(cfg config.Config, sysConfig *conf.Service, rdb *redis.Client, db *gorm.DB) *Handler {
-	return &Handler{svc: NewService(cfg, sysConfig, rdb, db)}
+func NewHandler(cfg config.Config, sysConfig *conf.Service) *Handler {
+	return &Handler{svc: NewService(cfg, sysConfig)}
 }
 
 func popupHTML(origin, access, refresh string, user map[string]any) string {

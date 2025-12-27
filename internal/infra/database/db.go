@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"log"
@@ -13,27 +13,23 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-var g *gorm.DB
+var DB *gorm.DB
 
 func InitMySQL(cfg config.Config) (*gorm.DB, error) {
-	var (
-		db  *gorm.DB
-		err error
-	)
+	var err error
 	if cfg.MySQLDSN != "" {
-		db, err = gorm.Open(mysql.Open(cfg.MySQLDSN), &gorm.Config{
+		DB, err = gorm.Open(mysql.Open(cfg.MySQLDSN), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Info),
 		})
 	} else {
-		db, err = gorm.Open(sqlite.Open(cfg.SQLitePath), &gorm.Config{
+		DB, err = gorm.Open(sqlite.Open(cfg.SQLitePath), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Info),
 		})
 	}
 	if err != nil {
 		return nil, err
 	}
-	g = db
-	sqlDB, err := db.DB()
+	sqlDB, err := DB.DB()
 	if err != nil {
 		return nil, err
 	}
@@ -48,13 +44,11 @@ func InitMySQL(cfg config.Config) (*gorm.DB, error) {
 		}
 	}
 	log.Println("mysql connected")
-	return db, nil
+	return DB, nil
 }
 
-func Gorm() *gorm.DB { return g }
-
 func autoMigrate() error {
-	if err := g.AutoMigrate(
+	if err := DB.AutoMigrate(
 		&models.User{},
 		&models.Template{},
 		&models.Resume{},

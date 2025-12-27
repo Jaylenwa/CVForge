@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"openresume/internal/common"
-	"openresume/internal/infra/db"
+	"openresume/internal/infra/database"
 	"openresume/internal/models"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +18,7 @@ func RequireRole(roles ...common.Role) gin.HandlerFunc {
 			return
 		}
 		var u models.User
-		if err := db.Gorm().First(&u, uidVal).Error; err != nil {
+		if err := database.DB.First(&u, uidVal).Error; err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			return
 		}

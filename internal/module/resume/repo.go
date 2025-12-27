@@ -1,12 +1,18 @@
 package resume
 
 import (
+	"openresume/internal/infra/database"
 	"openresume/internal/models"
+
 	"gorm.io/gorm"
 )
 
 type Repo struct {
 	db *gorm.DB
+}
+
+func DefaultRepo() *Repo {
+	return NewRepo(database.DB)
 }
 
 func NewRepo(db *gorm.DB) *Repo {

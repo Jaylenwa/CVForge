@@ -6,26 +6,24 @@ import (
 	"strings"
 
 	"openresume/internal/common"
-	"openresume/internal/infra/db"
+	"openresume/internal/infra/database"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type AdminHandler struct {
-	db *gorm.DB
 }
 
-func NewAdminHandler(gdb *gorm.DB) *AdminHandler {
-	return &AdminHandler{db: gdb}
+func NewAdminHandler() *AdminHandler {
+	return &AdminHandler{}
 }
 
 func writeAudit(c *gin.Context, action, targetType, targetID, metadata string) {
 	actorVal, _ := c.Get("uid")
 	ip := c.ClientIP()
 	ua := c.GetHeader("User-Agent")
-	_ = db.Gorm().Create(&AuditLog{
+	_ = database.DB.Create(&AuditLog{
 		ActorID:    toUint(actorVal),
 		Action:     action,
 		TargetType: targetType,
@@ -68,7 +66,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 		size = 100
 	}
 	var list []User
-	q := h.db.Model(&User{})
+	q := database.DB.Model(&User{})
 	emailQ := strings.TrimSpace(c.Query("email"))
 	nameQ := strings.TrimSpace(c.Query("name"))
 	if emailQ != "" || nameQ != "" {
@@ -119,7 +117,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 
 func (h *AdminHandler) AdminGet(c *gin.Context) {
 	var u User
-	if err := h.db.First(&u, c.Param("id")).Error; err != nil {
+	if err := database.DB.First(&u, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
@@ -150,7 +148,7 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 		return
 	}
 	var u User
-	if err := h.db.First(&u, c.Param("id")).Error; err != nil {
+	if err := database.DB.First(&u, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
@@ -175,7 +173,7 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 	if body.IsActive != nil {
 		u.IsActive = *body.IsActive
 	}
-	if err := h.db.Save(&u).Error; err != nil {
+	if err := database.DB.Save(&u).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -192,13 +190,13 @@ func (h *AdminHandler) AdminResetPassword(c *gin.Context) {
 		return
 	}
 	var u User
-	if err := h.db.First(&u, c.Param("id")).Error; err != nil {
+	if err := database.DB.First(&u, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
 	hash, _ := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
 	u.PasswordHash = string(hash)
-	if err := h.db.Save(&u).Error; err != nil {
+	if err := database.DB.Save(&u).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -207,7 +205,7 @@ func (h *AdminHandler) AdminResetPassword(c *gin.Context) {
 }
 
 func (h *AdminHandler) AdminBan(c *gin.Context) {
-	if err := h.db.Model(&User{}).Where("id = ?", c.Param("id")).Update("is_active", false).Error; err != nil {
+	if err := database.DB.Model(&User{}).Where("id = ?", c.Param("id")).Update("is_active", false).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -216,7 +214,7 @@ func (h *AdminHandler) AdminBan(c *gin.Context) {
 }
 
 func (h *AdminHandler) AdminUnban(c *gin.Context) {
-	if err := h.db.Model(&User{}).Where("id = ?", c.Param("id")).Update("is_active", true).Error; err != nil {
+	if err := database.DB.Model(&User{}).Where("id = ?", c.Param("id")).Update("is_active", true).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}

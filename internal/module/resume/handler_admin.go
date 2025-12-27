@@ -6,21 +6,18 @@ import (
 	"strings"
 
 	"openresume/internal/common"
-	"openresume/internal/infra/db"
+	"openresume/internal/infra/cache"
+	"openresume/internal/infra/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
-	"gorm.io/gorm"
 )
 
 type AdminHandler struct {
-	db  *gorm.DB
-	rdb *redis.Client
 }
 
-func NewAdminHandler(db *gorm.DB, rdb *redis.Client) *AdminHandler {
-	return &AdminHandler{db: db, rdb: rdb}
+func NewAdminHandler() *AdminHandler {
+	return &AdminHandler{}
 }
 
 func (h *AdminHandler) AdminList(c *gin.Context) {
@@ -30,7 +27,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 		size = 100
 	}
 	var list []Resume
-	q := h.db.Model(&Resume{})
+	q := database.DB.Model(&Resume{})
 	if v := strings.TrimSpace(c.Query("userId")); v != "" {
 		q = q.Where("user_id = ?", v)
 	}
@@ -59,7 +56,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	nameMap := make(map[uint]string, len(uids))
 	if len(uids) > 0 {
 		var users []User
-		if err := h.db.Where("id IN ?", uids).Find(&users).Error; err == nil {
+		if err := database.DB.Where("id IN ?", uids).Find(&users).Error; err == nil {
 			for _, u := range users {
 				if u.Name != "" {
 					nameMap[u.ID] = u.Name
@@ -88,7 +85,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 
 func (h *AdminHandler) AdminGet(c *gin.Context) {
 	var res Resume
-	if err := h.db.Where("external_id = ?", c.Param("id")).Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("external_id = ?", c.Param("id")).Preload("Sections.Items").First(&res).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
@@ -97,11 +94,11 @@ func (h *AdminHandler) AdminGet(c *gin.Context) {
 
 func (h *AdminHandler) AdminDelete(c *gin.Context) {
 	var res Resume
-	if err := h.db.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
+	if err := database.DB.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
-	if err := h.db.Delete(&res).Error; err != nil {
+	if err := database.DB.Delete(&res).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -118,26 +115,26 @@ func (h *AdminHandler) AdminUpdateVisibility(c *gin.Context) {
 		return
 	}
 	var res Resume
-	if err := h.db.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
+	if err := database.DB.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
 	var sl ShareLink
-	if err := h.db.Where("resume_id = ?", res.ID).First(&sl).Error; err != nil {
+	if err := database.DB.Where("resume_id = ?", res.ID).First(&sl).Error; err != nil {
 		sl = ShareLink{ResumeID: res.ID, Slug: uuid.NewString()[:8], IsPublic: body.IsPublic}
-		if err := h.db.Create(&sl).Error; err != nil {
+		if err := database.DB.Create(&sl).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 			return
 		}
 	} else {
 		sl.IsPublic = body.IsPublic
-		if err := h.db.Save(&sl).Error; err != nil {
+		if err := database.DB.Save(&sl).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 			return
 		}
 	}
-	if h.rdb != nil {
-		_ = h.rdb.Del(c, common.RedisKeyPublicResume.F(sl.Slug)).Err()
+	if cache.RDB != nil {
+		_ = cache.RDB.Del(c, common.RedisKeyPublicResume.F(sl.Slug)).Err()
 	}
 	writeAudit(c, "resume.visibility", "resume", c.Param("id"), strconv.FormatBool(body.IsPublic))
 	c.JSON(http.StatusOK, gin.H{"success": true, "slug": sl.Slug})
@@ -146,7 +143,7 @@ func writeAudit(c *gin.Context, action, targetType, targetID, metadata string) {
 	actorVal, _ := c.Get("uid")
 	ip := c.ClientIP()
 	ua := c.GetHeader("User-Agent")
-	_ = db.Gorm().Create(&AuditLog{
+	_ = database.DB.Create(&AuditLog{
 		ActorID:    toUint(actorVal),
 		Action:     action,
 		TargetType: targetType,

@@ -11,8 +11,8 @@ type Service struct {
 	repo *Repo
 }
 
-func NewService(db *gorm.DB) *Service {
-	return &Service{repo: NewRepo(db)}
+func NewService() *Service {
+	return &Service{repo: DefaultRepo()}
 }
 
 func (s *Service) GetMe(id any) (User, error) {

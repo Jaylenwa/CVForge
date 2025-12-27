@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"openresume/internal/common"
+	"openresume/internal/infra/cache"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 )
 
-func RateLimitUser(rdb *redis.Client, limit int64, window time.Duration) gin.HandlerFunc {
+func RateLimitUser(limit int64, window time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var uid string
 		if v, ok := c.Get("uid"); ok {
@@ -21,9 +21,9 @@ func RateLimitUser(rdb *redis.Client, limit int64, window time.Duration) gin.Han
 			uid = c.ClientIP()
 		}
 		key := common.RedisKeyRateLimitUser.F(c.FullPath(), uid)
-		cnt, err := rdb.Incr(context.Background(), key).Result()
+		cnt, err := cache.RDB.Incr(context.Background(), key).Result()
 		if err == nil && cnt == 1 {
-			_ = rdb.Expire(context.Background(), key, window).Err()
+			_ = cache.RDB.Expire(context.Background(), key, window).Err()
 		}
 		if err == nil && cnt > limit {
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "rate limited"})
