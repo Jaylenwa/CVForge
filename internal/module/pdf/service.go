@@ -77,8 +77,7 @@ func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, e
 		return nil, 503, fmt.Errorf("ws empty")
 	}
 	u, _ := url.Parse(v.WebSocketDebuggerUrl)
-	// 强制替换 host
-	u.Host = "chrome:3000"
+	u.Host = "vfoy.cn:3000"
 	wsURL := u.String()
 	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(context.Background(), wsURL)
 	defer cancelAlloc()
@@ -144,7 +143,10 @@ func (s *Service) GenerateImage(c *gin.Context, externalID string) ([]byte, int,
 		s.cbFail(common.CBCircuitImage)
 		return nil, 503, fmt.Errorf("ws empty")
 	}
-	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(context.Background(), v.WebSocketDebuggerUrl)
+	u, _ := url.Parse(v.WebSocketDebuggerUrl)
+	u.Host = "vfoy.cn:3000"
+	wsURL := u.String()
+	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(context.Background(), wsURL)
 	defer cancelAlloc()
 	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
