@@ -3,61 +3,24 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { ResumeData, ThemeConfig } from '../../types';
 import { getThemeStyles } from '../../utils/resume-helpers';
 
-// Base Templates
 import { TemplateClassic } from '../../components/templates/base/TemplateClassic';
-import { TemplateModern } from '../../components/templates/base/TemplateModern';
-import { TemplateMinimalist } from '../../components/templates/base/TemplateMinimalist';
-import { TemplateExecutive } from '../../components/templates/base/TemplateExecutive';
 import { TemplateBold } from '../../components/templates/base/TemplateBold';
-import { TemplateElegant } from '../../components/templates/base/TemplateElegant';
-
-// CN Templates (t7-t21)
 import { TemplateCNBlue } from '../../components/templates/cn/TemplateCNBlue';
-import { TemplateCNZiyuan } from '../../components/templates/cn/TemplateCNZiyuan';
 import { TemplateCNModern } from '../../components/templates/cn/TemplateCNModern';
 import { TemplateCNBusiness } from '../../components/templates/cn/TemplateCNBusiness';
 import { TemplateCNCreative } from '../../components/templates/cn/TemplateCNCreative';
-import { TemplateCNTech } from '../../components/templates/cn/TemplateCNTech';
-import { TemplateCNAcademic } from '../../components/templates/cn/TemplateCNAcademic';
-import { TemplateCNMinimal } from '../../components/templates/cn/TemplateCNMinimal';
-import { TemplateCNMarketing } from '../../components/templates/cn/TemplateCNMarketing';
-import { TemplateCNArtistic } from '../../components/templates/cn/TemplateCNArtistic';
-import { TemplateCNRetro } from '../../components/templates/cn/TemplateCNRetro';
 import { TemplateCNFresh } from '../../components/templates/cn/TemplateCNFresh';
-import { TemplateCNDark } from '../../components/templates/cn/TemplateCNDark';
-import { TemplateCNMagazine } from '../../components/templates/cn/TemplateCNMagazine';
 import { TemplateCNTimeline } from '../../components/templates/cn/TemplateCNTimeline';
-
-// New CN Templates (t22-t41)
-import { TemplateCNArchitect } from '../../components/templates/cn/TemplateCNArchitect';
-import { TemplateCNBlock } from '../../components/templates/cn/TemplateCNBlock';
 import { TemplateCNBrush } from '../../components/templates/cn/TemplateCNBrush';
 import { TemplateCNCloud } from '../../components/templates/cn/TemplateCNCloud';
-import { TemplateCNCode } from '../../components/templates/cn/TemplateCNCode';
-import { TemplateCNFashion } from '../../components/templates/cn/TemplateCNFashion';
 import { TemplateCNFinance } from '../../components/templates/cn/TemplateCNFinance';
 import { TemplateCNGame } from '../../components/templates/cn/TemplateCNGame';
 import { TemplateCNGeometric } from '../../components/templates/cn/TemplateCNGeometric';
-import { TemplateCNGlitch } from '../../components/templates/cn/TemplateCNGlitch';
-import { TemplateCNHexagon } from '../../components/templates/cn/TemplateCNHexagon';
-import { TemplateCNLaw } from '../../components/templates/cn/TemplateCNLaw';
 import { TemplateCNMedical } from '../../components/templates/cn/TemplateCNMedical';
-import { TemplateCNNewspaper } from '../../components/templates/cn/TemplateCNNewspaper';
 import { TemplateCNOrigami } from '../../components/templates/cn/TemplateCNOrigami';
 import { TemplateCNPixel } from '../../components/templates/cn/TemplateCNPixel';
-import { TemplateCNProduct } from '../../components/templates/cn/TemplateCNProduct';
-import { TemplateCNSocial } from '../../components/templates/cn/TemplateCNSocial';
-import { TemplateCNVogue } from '../../components/templates/cn/TemplateCNVogue';
 import { TemplateCNWave } from '../../components/templates/cn/TemplateCNWave';
-import { TemplateCNSeal } from '../../components/templates/cn/TemplateCNSeal';
-import { TemplateCNPaper } from '../../components/templates/cn/TemplateCNPaper';
 import { TemplateCNBamboo } from '../../components/templates/cn/TemplateCNBamboo';
-import { TemplateCNSong } from '../../components/templates/cn/TemplateCNSong';
-import { TemplateCNKai } from '../../components/templates/cn/TemplateCNKai';
-import { TemplateCNInk } from '../../components/templates/cn/TemplateCNInk';
-import { TemplateCNLedger } from '../../components/templates/cn/TemplateCNLedger';
-import { TemplateCNPorcelain } from '../../components/templates/cn/TemplateCNPorcelain';
-import { TemplateCNJade } from '../../components/templates/cn/TemplateCNJade';
 import { TemplateCNMei } from '../../components/templates/cn/TemplateCNMei';
 
 interface PreviewProps {
@@ -116,67 +79,26 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 
   const renderTemplate = () => {
       switch (data.templateId) {
-          // Base
           case 't1': return <TemplateClassic data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't2': return <TemplateModern data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't3': return <TemplateMinimalist data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't4': return <TemplateExecutive data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't5': return <TemplateBold data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't6': return <TemplateElegant data={data} styles={styles} disableShadow={disableShadow} />;
-          
-          // CN
-          case 't7': return <TemplateCNBlue data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't8': return <TemplateCNZiyuan data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't9': return <TemplateCNModern data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't10': return <TemplateCNBusiness data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't11': return <TemplateCNCreative data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't12': return <TemplateCNTech data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't13': return <TemplateCNAcademic data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't14': return <TemplateCNMinimal data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't15': return <TemplateCNMarketing data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't16': return <TemplateCNArtistic data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't17': return <TemplateCNRetro data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't18': return <TemplateCNFresh data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't19': return <TemplateCNDark data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't20': return <TemplateCNMagazine data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't21': return <TemplateCNTimeline data={data} styles={styles} disableShadow={disableShadow} />;
-
-          // New CN (t22-t41)
-          case 't22': return <TemplateCNArchitect data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't23': return <TemplateCNBlock data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't24': return <TemplateCNBrush data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't25': return <TemplateCNCloud data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't26': return <TemplateCNCode data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't27': return <TemplateCNFashion data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't28': return <TemplateCNFinance data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't29': return <TemplateCNGame data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't30': return <TemplateCNGeometric data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't31': return <TemplateCNGlitch data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't32': return <TemplateCNHexagon data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't33': return <TemplateCNLaw data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't34': return <TemplateCNMedical data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't35': return <TemplateCNNewspaper data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't36': return <TemplateCNOrigami data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't37': return <TemplateCNPixel data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't38': return <TemplateCNProduct data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't39': return <TemplateCNSocial data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't40': return <TemplateCNVogue data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't41': return <TemplateCNWave data={data} styles={styles} disableShadow={disableShadow} />;
-          
-          // CN Single Column (t42-t47)
-          case 't42': return <TemplateCNSeal data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't43': return <TemplateCNPaper data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't44': return <TemplateCNBamboo data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't45': return <TemplateCNSong data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't46': return <TemplateCNKai data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't47': return <TemplateCNInk data={data} styles={styles} disableShadow={disableShadow} />;
-          
-          // CN Single Column (t48-t51)
-          case 't48': return <TemplateCNLedger data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't49': return <TemplateCNPorcelain data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't50': return <TemplateCNJade data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't51': return <TemplateCNMei data={data} styles={styles} disableShadow={disableShadow} />;
-
+          case 't2': return <TemplateBold data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't3': return <TemplateCNBlue data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't4': return <TemplateCNModern data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't5': return <TemplateCNBusiness data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't6': return <TemplateCNCreative data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't7': return <TemplateCNFresh data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't8': return <TemplateCNTimeline data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't9': return <TemplateCNBrush data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't10': return <TemplateCNCloud data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't11': return <TemplateCNFinance data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't12': return <TemplateCNGame data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't13': return <TemplateCNGeometric data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't14': return <TemplateCNMedical data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't15': return <TemplateCNOrigami data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't16': return <TemplateCNPixel data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't17': return <TemplateCNWave data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't18': return <TemplateCNBamboo data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't19': return <TemplateCNBamboo data={data} styles={styles} disableShadow={disableShadow} />;
+          case 't20': return <TemplateCNMei data={data} styles={styles} disableShadow={disableShadow} />;
           default: return <TemplateClassic data={data} styles={styles} />;
       }
   };

@@ -10,6 +10,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var g *gorm.DB
@@ -20,9 +21,13 @@ func InitMySQL(cfg config.Config) (*gorm.DB, error) {
 		err error
 	)
 	if cfg.MySQLDSN != "" {
-		db, err = gorm.Open(mysql.Open(cfg.MySQLDSN), &gorm.Config{})
+		db, err = gorm.Open(mysql.Open(cfg.MySQLDSN), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
 	} else {
-		db, err = gorm.Open(sqlite.Open(cfg.SQLitePath), &gorm.Config{})
+		db, err = gorm.Open(sqlite.Open(cfg.SQLitePath), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
 	}
 	if err != nil {
 		return nil, err
