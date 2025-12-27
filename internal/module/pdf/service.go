@@ -1,9 +1,11 @@
 package pdf
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -62,62 +64,92 @@ func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, e
 		return nil, 404, err
 	}
 	cfg := config.Load()
-	type verInfo struct {
-		WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
-	}
-	var v verInfo
-	resp, err := http.Get(cfg.ChromeJSONURL)
-	if err != nil {
-		s.cbFail(common.CBCircuitPDF)
-		return nil, 503, err
-	}
-	defer resp.Body.Close()
-	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil || v.WebSocketDebuggerUrl == "" {
-		s.cbFail(common.CBCircuitPDF)
-		return nil, 503, fmt.Errorf("ws empty")
-	}
-	u, _ := url.Parse(v.WebSocketDebuggerUrl)
-	u.Host = "vfoy.cn:3000"
-	wsURL := u.String()
-	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(context.Background(), wsURL)
-	defer cancelAlloc()
-	ctx, cancel := chromedp.NewContext(allocCtx)
-	defer cancel()
 	if cfg.FrontendBaseURL == "" {
 		return nil, 503, fmt.Errorf("fe empty")
 	}
 	dest := cfg.FrontendBaseURL + "/#/print?id=" + externalID
 	authHeader := c.GetHeader("Authorization")
 	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
-	var pdf []byte
-	err = chromedp.Run(ctx,
-		chromedp.Navigate(cfg.FrontendBaseURL),
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			js := fmt.Sprintf("localStorage.setItem('token', %s)", strconv.Quote(token))
-			return chromedp.Evaluate(js, nil).Do(ctx)
-		}),
-		chromedp.Navigate(dest),
-		emulation.SetDeviceMetricsOverride(1200, 1800, 1, false),
-		chromedp.WaitVisible(`#resume-export-root`, chromedp.ByID),
-		chromedp.Evaluate(`(function(){var s=document.createElement('style');s.innerHTML='@media print{body *{visibility:hidden} #resume-export-root,#resume-export-root *{visibility:visible} #resume-export-root{position:absolute;left:0;top:0}}';document.head.appendChild(s)})()`, nil),
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			buf, _, perr := page.PrintToPDF().WithPrintBackground(true).
-				WithDisplayHeaderFooter(false).WithPaperWidth(8.27).
-				WithPaperHeight(11.69).WithMarginTop(0.5).
-				WithMarginBottom(0.5).WithMarginLeft(0.5).WithMarginRight(0.5).Do(ctx)
-			if perr != nil {
-				return perr
-			}
-			pdf = buf
-			return nil
-		}),
-	)
+	type PDFRequest struct {
+		URL              string         `json:"url"`
+		HTML             string         `json:"html,omitempty"`
+		Options          map[string]any `json:"options,omitempty"`
+		EmulateMediaType string         `json:"emulateMediaType,omitempty"`
+		GotoOptions      struct {
+			Referer        string   `json:"referer,omitempty"`
+			ReferrerPolicy string   `json:"referrerPolicy,omitempty"`
+			Timeout        int      `json:"timeout,omitempty"`
+			WaitUntil      []string `json:"waitUntil,omitempty"`
+		} `json:"gotoOptions,omitempty"`
+		WaitForSelector struct {
+			Hidden   bool   `json:"hidden,omitempty"`
+			Selector string `json:"selector,omitempty"`
+			Timeout  int    `json:"timeout,omitempty"`
+			Visible  bool   `json:"visible,omitempty"`
+		} `json:"waitForSelector,omitempty"`
+		SetExtraHTTPHeaders map[string]string `json:"setExtraHTTPHeaders,omitempty"`
+		BestAttempt         bool              `json:"bestAttempt,omitempty"`
+	}
+	reqBody := PDFRequest{
+		URL: dest,
+		Options: map[string]any{
+			"format":          "A4",
+			"printBackground": true,
+			"margin": map[string]any{
+				"top":    "20mm",
+				"bottom": "20mm",
+				"left":   "15mm",
+				"right":  "15mm",
+			},
+		},
+		EmulateMediaType: "print",
+		GotoOptions: struct {
+			Referer        string   `json:"referer,omitempty"`
+			ReferrerPolicy string   `json:"referrerPolicy,omitempty"`
+			Timeout        int      `json:"timeout,omitempty"`
+			WaitUntil      []string `json:"waitUntil,omitempty"`
+		}{
+			Timeout:   60000,
+			WaitUntil: []string{"networkidle0"},
+		},
+		WaitForSelector: struct {
+			Hidden   bool   `json:"hidden,omitempty"`
+			Selector string `json:"selector,omitempty"`
+			Timeout  int    `json:"timeout,omitempty"`
+			Visible  bool   `json:"visible,omitempty"`
+		}{
+			Selector: "#resume-export-root",
+			Visible:  true,
+			Timeout:  60000,
+		},
+		SetExtraHTTPHeaders: map[string]string{
+			"Authorization": "Bearer " + token,
+		},
+		BestAttempt: true,
+	}
+	payload, err := json.Marshal(reqBody)
+	if err != nil {
+		s.cbFail(common.CBCircuitPDF)
+		return nil, 503, err
+	}
+	pdfAPI := cfg.ChromeAPIURL + "/pdf"
+	resp, err := http.Post(pdfAPI, "application/json", bytes.NewReader(payload))
+	if err != nil {
+		s.cbFail(common.CBCircuitPDF)
+		return nil, 503, fmt.Errorf("call pdf api failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		s.cbFail(common.CBCircuitPDF)
+		return nil, 503, fmt.Errorf("pdf api status: %d", resp.StatusCode)
+	}
+	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
 		s.cbFail(common.CBCircuitPDF)
 		return nil, 503, err
 	}
 	s.cbReset(common.CBCircuitPDF)
-	return pdf, 200, nil
+	return buf, 200, nil
 }
 
 func (s *Service) GenerateImage(c *gin.Context, externalID string) ([]byte, int, error) {
@@ -133,7 +165,7 @@ func (s *Service) GenerateImage(c *gin.Context, externalID string) ([]byte, int,
 		WebSocketDebuggerUrl string `json:"webSocketDebuggerUrl"`
 	}
 	var v verInfo
-	resp, err := http.Get(cfg.ChromeJSONURL)
+	resp, err := http.Get(cfg.ChromeAPIURL)
 	if err != nil {
 		s.cbFail(common.CBCircuitImage)
 		return nil, 503, err

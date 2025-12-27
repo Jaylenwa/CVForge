@@ -13,7 +13,7 @@ type Config struct {
 	JWTSecret       string
 	CORSOrigins     string
 	FrontendBaseURL string
-	ChromeJSONURL   string
+	ChromeAPIURL    string
 }
 
 func Load() Config {
@@ -26,7 +26,7 @@ func Load() Config {
 		JWTSecret:       getenv("JWT_SECRET", "abcdefghijklmnopqrstuvwxyz"),
 		CORSOrigins:     getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"),
 		FrontendBaseURL: getenv("FRONTEND_BASE_URL", "http://localhost:3000"),
-		ChromeJSONURL:   getenv("CHROME_JSON_URL", ""),
+		ChromeAPIURL:    getenv("CHROME_API_URL", ""),
 	}
 }
 
