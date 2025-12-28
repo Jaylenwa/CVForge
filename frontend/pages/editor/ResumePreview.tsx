@@ -44,10 +44,10 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });
 
-  const containerStyle = {
+  const containerStyle: React.CSSProperties = {
     transform: `scale(${scale})`,
     transformOrigin: 'top left',
-    minHeight: '297mm',
+    height: pageInfo.pageHeight > 0 ? `${pageInfo.count * pageInfo.pageHeight}px` : '297mm',
     ...style,
   };
 
