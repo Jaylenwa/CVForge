@@ -47,7 +47,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const containerStyle = {
     transform: `scale(${scale})`,
     transformOrigin: 'top left',
-    minHeight: `${Math.max(1, pageInfo.count) * (pageInfo.pageHeight || 1123)}px`,
+    minHeight: '297mm',
     ...style,
   };
 
