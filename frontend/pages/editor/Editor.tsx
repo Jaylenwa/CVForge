@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Printer, Share2, Layout, Globe, Eye } from 'lucide-react';
 import { EditorForm } from './EditorForm';
 import { ResumePreview } from './ResumePreview';
@@ -13,6 +13,7 @@ import { useToast } from '../../components/ui/Toast';
 
 export const Editor: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_RESUME);
   const [scale, setScale] = useState(0.8);
   const [isMobilePreview, setIsMobilePreview] = useState(false);
@@ -96,7 +97,7 @@ export const Editor: React.FC = () => {
           .then(r => r.json())
           .then(({ id }) => {
             setResumeData(prev => ({ ...prev, templateId, id }));
-            window.history.replaceState(null, '', `#${window.location.pathname}?id=${id}`);
+            window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}`);
           });
     }
   }, [searchParams]);
@@ -193,7 +194,7 @@ export const Editor: React.FC = () => {
       {/* Editor Toolbar */}
       <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 z-20 print:hidden">
         <div className="flex items-center">
-            <Button variant="ghost" size="sm" className="mr-4" onClick={() => window.history.back()}>
+            <Button variant="ghost" size="sm" className="mr-4" onClick={() => navigate(AppRoute.Templates)}>
                 <ArrowLeft size={18} className="mr-2"/> {t('editor.back')}
             </Button>
             <div className="hidden md:block h-6 w-px bg-gray-300 mx-2"></div>
