@@ -20,8 +20,6 @@ import { TemplateCNMedical } from '../../components/templates/cn/TemplateCNMedic
 import { TemplateCNOrigami } from '../../components/templates/cn/TemplateCNOrigami';
 import { TemplateCNPixel } from '../../components/templates/cn/TemplateCNPixel';
 import { TemplateCNWave } from '../../components/templates/cn/TemplateCNWave';
-import { TemplateCNBamboo } from '../../components/templates/cn/TemplateCNBamboo';
-import { TemplateCNMei } from '../../components/templates/cn/TemplateCNMei';
 
 interface PreviewProps {
   data: ResumeData;
@@ -43,6 +41,26 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const styles = getThemeStyles(data.themeConfig);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });
+
+  const TEMPLATE_COMPONENTS: Record<string, React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }>> = {
+    TemplateClassic: TemplateClassic,
+    TemplateBold: TemplateBold,
+    TemplateCNBlue: TemplateCNBlue,
+    TemplateCNModern: TemplateCNModern,
+    TemplateCNBusiness: TemplateCNBusiness,
+    TemplateCNCreative: TemplateCNCreative,
+    TemplateCNFresh: TemplateCNFresh,
+    TemplateCNTimeline: TemplateCNTimeline,
+    TemplateCNBrush: TemplateCNBrush,
+    TemplateCNCloud: TemplateCNCloud,
+    TemplateCNFinance: TemplateCNFinance,
+    TemplateCNGame: TemplateCNGame,
+    TemplateCNGeometric: TemplateCNGeometric,
+    TemplateCNMedical: TemplateCNMedical,
+    TemplateCNOrigami: TemplateCNOrigami,
+    TemplateCNPixel: TemplateCNPixel,
+    TemplateCNWave: TemplateCNWave,
+  };
 
   const containerStyle: React.CSSProperties = {
     transform: `scale(${scale})`,
@@ -78,29 +96,8 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   }, [measure]);
 
   const renderTemplate = () => {
-      switch (data.templateId) {
-          case 't1': return <TemplateClassic data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't2': return <TemplateBold data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't3': return <TemplateCNBlue data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't4': return <TemplateCNModern data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't5': return <TemplateCNBusiness data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't6': return <TemplateCNCreative data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't7': return <TemplateCNFresh data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't8': return <TemplateCNTimeline data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't9': return <TemplateCNBrush data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't10': return <TemplateCNCloud data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't11': return <TemplateCNFinance data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't12': return <TemplateCNGame data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't13': return <TemplateCNGeometric data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't14': return <TemplateCNMedical data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't15': return <TemplateCNOrigami data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't16': return <TemplateCNPixel data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't17': return <TemplateCNWave data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't18': return <TemplateCNBamboo data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't19': return <TemplateCNBamboo data={data} styles={styles} disableShadow={disableShadow} />;
-          case 't20': return <TemplateCNMei data={data} styles={styles} disableShadow={disableShadow} />;
-          default: return <TemplateClassic data={data} styles={styles} />;
-      }
+    const Comp = TEMPLATE_COMPONENTS[data.templateId] || TemplateClassic;
+    return <Comp data={data} styles={styles} disableShadow={disableShadow} />;
   };
 
   return (
