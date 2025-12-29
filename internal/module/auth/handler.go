@@ -125,7 +125,7 @@ func (h *Handler) GithubCallback(cfg config.Config) gin.HandlerFunc {
 		if st.Client == "popup" {
 			origin := st.Origin
 			if origin == "" {
-				origin = cfg.FrontendBaseURL
+				origin = h.svc.FrontendBase()
 			}
 			html := popupHTML(origin, access, refresh, h.svc.SanitizeUser(user))
 			c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
@@ -134,7 +134,7 @@ func (h *Handler) GithubCallback(cfg config.Config) gin.HandlerFunc {
 		ott := uuid.NewString()
 		payload := gin.H{"accessToken": access, "refreshToken": refresh, "user": h.svc.SanitizeUser(user)}
 		_ = h.svc.SaveOTT(ott, payload)
-		u := cfg.FrontendBaseURL
+		u := h.svc.FrontendBase()
 		if u == "" {
 			u = "http://localhost:3000"
 		}
@@ -182,7 +182,7 @@ func (h *Handler) WeChatCallback(cfg config.Config) gin.HandlerFunc {
 		if st.Client == "popup" {
 			origin := st.Origin
 			if origin == "" {
-				origin = cfg.FrontendBaseURL
+				origin = h.svc.FrontendBase()
 			}
 			html := popupHTML(origin, access, refresh, h.svc.SanitizeUser(user))
 			c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
@@ -191,7 +191,7 @@ func (h *Handler) WeChatCallback(cfg config.Config) gin.HandlerFunc {
 		ott := uuid.NewString()
 		payload := gin.H{"accessToken": access, "refreshToken": refresh, "user": h.svc.SanitizeUser(user)}
 		_ = h.svc.SaveOTT(ott, payload)
-		u := cfg.FrontendBaseURL
+		u := h.svc.FrontendBase()
 		if u == "" {
 			u = "http://localhost:3000"
 		}

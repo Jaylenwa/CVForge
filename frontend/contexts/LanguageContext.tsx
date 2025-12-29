@@ -387,6 +387,7 @@ const translations: Translations = {
     'admin.config.key.oauthAllowedOrigins': 'OAuth Allowed Origins',
     'admin.config.tab.storage': 'Storage',
     'admin.config.tab.chrome': 'Chrome',
+    'admin.config.tab.security': 'Security',
     'admin.config.key.storageS3Enabled': 'Enable S3 storage',
     'admin.config.key.storageS3Bucket': 'S3 Bucket',
     'admin.config.key.storageS3Region': 'S3 Region',
@@ -394,6 +395,9 @@ const translations: Translations = {
     'admin.config.key.storageS3AccessKey': 'S3 Access Key',
     'admin.config.key.storageS3SecretKey': 'S3 Secret Key',
     'admin.config.key.chromeApiUrl': 'Chrome API URL'
+    ,
+    'admin.config.key.corsOrigins': 'CORS Allowed Origins',
+    'admin.config.key.frontendBaseUrl': 'Frontend Base URL'
   },
   zh: {
     'nav.templates': '模板库',
@@ -775,13 +779,16 @@ const translations: Translations = {
     'admin.config.key.oauthAllowedOrigins': 'OAuth 允许来源',
     'admin.config.tab.storage': '存储配置',
     'admin.config.tab.chrome': 'Chrome',
+    'admin.config.tab.security': '安全',
     'admin.config.key.storageS3Enabled': '启用 S3 存储',
     'admin.config.key.storageS3Bucket': 'S3 存储桶',
     'admin.config.key.storageS3Region': 'S3 区域',
     'admin.config.key.storageS3Endpoint': 'S3 端点（可选）',
     'admin.config.key.storageS3AccessKey': 'S3 访问键（可选）',
     'admin.config.key.storageS3SecretKey': 'S3 密钥（可选）',
-    'admin.config.key.chromeApiUrl': 'Chrome API 地址'
+    'admin.config.key.chromeApiUrl': 'Chrome API 地址',
+    'admin.config.key.corsOrigins': 'CORS 允许来源',
+    'admin.config.key.frontendBaseUrl': '前端基础地址'
   }
 };
 

@@ -26,13 +26,13 @@ import (
 func Init(cfg config.Config) *gin.Engine {
 	router := gin.New()
 	router.Use(middleware.RequestID(), middleware.Logger(), gin.Recovery(), metrics.Middleware())
-	router.Use(middleware.CORS(cfg))
 
 	api := router.Group("/api/v1")
 
 	confService := conf.NewService()
 	confHandler := conf.NewHandler()
 	_ = confService.EnsureDefaults(cfg)
+	router.Use(middleware.CORS(cfg, confService))
 
 	authH := auth.NewHandler(cfg, confService)
 	userAuth := middleware.Auth(cfg)

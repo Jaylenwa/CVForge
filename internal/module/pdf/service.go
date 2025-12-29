@@ -62,10 +62,10 @@ func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, e
 	if err := database.DB.Where("external_id = ?", externalID).Preload("Sections.Items").First(&res).Error; err != nil {
 		return nil, 404, err
 	}
-	if s.cfg.FrontendBaseURL == "" {
+	if s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) == "" {
 		return nil, 503, fmt.Errorf("fe empty")
 	}
-	dest := "http://frontend/#/print?id=" + externalID
+	dest := s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) + "/#/print?id=" + externalID
 	authHeader := c.GetHeader("Authorization")
 	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 	reqBody := PDFRequest{
@@ -143,10 +143,10 @@ func (s *Service) GenerateImage(c *gin.Context, externalID string) ([]byte, int,
 	if err := database.DB.Where("external_id = ?", externalID).Preload("Sections.Items").First(&res).Error; err != nil {
 		return nil, 404, err
 	}
-	if s.cfg.FrontendBaseURL == "" {
+	if s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) == "" {
 		return nil, 503, fmt.Errorf("fe empty")
 	}
-	dest := "http://frontend/#/print?id=" + externalID
+	dest := s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) + "/#/print?id=" + externalID
 	authHeader := c.GetHeader("Authorization")
 	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 	reqBody := ScreenshotRequest{

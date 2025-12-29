@@ -18,11 +18,11 @@ func NewService(cfg config.Config, sys *conf.Service) *Service { return &Service
 
 func (s *Service) Upload(c *gin.Context, name string, b []byte) (string, error) {
 	useS3 := s.sys.GetBool(string(common.ConfigKeyEnabledStorageS3), false)
-	bucket := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3Bucket), "")
-	region := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3Region), "")
-	endpoint := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3Endpoint), "")
-	accessKey := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3AccessKey), "")
-	secretKey := s.sys.GetWithDefault(string(common.ConfigKeyStorageS3SecretKey), "")
+	bucket := s.sys.Get(string(common.ConfigKeyStorageS3Bucket))
+	region := s.sys.Get(string(common.ConfigKeyStorageS3Region))
+	endpoint := s.sys.Get(string(common.ConfigKeyStorageS3Endpoint))
+	accessKey := s.sys.Get(string(common.ConfigKeyStorageS3AccessKey))
+	secretKey := s.sys.Get(string(common.ConfigKeyStorageS3SecretKey))
 	up, e := storage.New(useS3, bucket, region, endpoint, accessKey, secretKey)
 	if e != nil {
 		return "", e

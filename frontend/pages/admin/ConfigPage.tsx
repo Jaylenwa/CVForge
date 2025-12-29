@@ -43,6 +43,8 @@ export const ConfigPage: React.FC = () => {
       smtp_from_name: 'admin.config.key.smtpFromName',
       smtp_secure: 'admin.config.key.smtpSecure',
       oauth_allowed_origins: 'admin.config.key.oauthAllowedOrigins',
+      cors_origins: 'admin.config.key.corsOrigins',
+      frontend_base_url: 'admin.config.key.frontendBaseUrl',
       enabled_storage_s3: 'admin.config.key.storageS3Enabled',
       storage_s3_bucket: 'admin.config.key.storageS3Bucket',
       storage_s3_region: 'admin.config.key.storageS3Region',
@@ -93,6 +95,7 @@ export const ConfigPage: React.FC = () => {
       'General': [],
       'OAuth': [],
       'Storage': [],
+      'Security': [],
       'Chrome': []
     };
     configs.forEach(c => {
@@ -107,6 +110,8 @@ export const ConfigPage: React.FC = () => {
         g['OAuth'].push(c);
       } else if (c.key.startsWith('storage_') || c.key === 'enabled_storage_s3') {
         g['Storage'].push(c);
+      } else if (c.key.startsWith('cors_') || c.key.startsWith('frontend_')) {
+        g['Security'].push(c);
       } else if (c.key.startsWith('chrome_')) {
         g['Chrome'].push(c);
       }

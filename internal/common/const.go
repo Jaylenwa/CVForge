@@ -24,6 +24,8 @@ const (
 	ConfigKeyStorageS3AccessKey      ConfigKey = "storage_s3_access_key"
 	ConfigKeyStorageS3SecretKey      ConfigKey = "storage_s3_secret_key"
 	ConfigKeyChromeAPIURL            ConfigKey = "chrome_api_url"
+	ConfigKeyCORSOrigins             ConfigKey = "cors_origins"
+	ConfigKeyFrontendBaseURL         ConfigKey = "frontend_base_url"
 )
 
 type Role string

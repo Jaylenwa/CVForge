@@ -55,6 +55,9 @@ func (s *Service) EnsureDefaults(cfg config.Config) error {
 		{string(common.ConfigKeyStorageS3AccessKey), os.Getenv("S3_ACCESS_KEY"), "S3 access key (optional)", "string"},
 		{string(common.ConfigKeyStorageS3SecretKey), os.Getenv("S3_SECRET_KEY"), "S3 secret key (optional)", "string"},
 		{string(common.ConfigKeyChromeAPIURL), os.Getenv("CHROME_API_URL"), "Chrome API base URL", "string"},
+		// Security
+		{string(common.ConfigKeyCORSOrigins), os.Getenv("CORS_ORIGINS"), "CORS allowed origins (comma separated)", "string"},
+		{string(common.ConfigKeyFrontendBaseURL), os.Getenv("FRONTEND_BASE_URL"), "Frontend base URL", "string"},
 	}
 	for _, d := range defaults {
 		var existing models.Config

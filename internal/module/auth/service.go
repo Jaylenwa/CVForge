@@ -40,6 +40,10 @@ func (s *Service) FeatureGithubEnabled() bool {
 	return s.sysConfig.GetBool(string(common.ConfigKeyEnabledGithubLogin), true)
 }
 
+func (s *Service) FrontendBase() string {
+	return s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL))
+}
+
 func (s *Service) IssueTokens(uid uint) (string, string) {
 	mk := func(exp time.Duration) string {
 		t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"uid": uid, "exp": time.Now().Add(exp).Unix(), "jti": uuid.NewString()})
@@ -83,7 +87,7 @@ func (s *Service) SendCode(email string, code string) error {
 		Port:     s.sysConfig.Get(string(common.ConfigKeySMTPPort)),
 		Username: s.sysConfig.Get(string(common.ConfigKeySMTPUsername)),
 		Password: s.sysConfig.Get(string(common.ConfigKeySMTPPassword)),
-		FromName: s.sysConfig.GetWithDefault(string(common.ConfigKeySMTPFromName), "OpenResume"),
+		FromName: s.sysConfig.Get(string(common.ConfigKeySMTPFromName)),
 	}
 	return mailer.SendVerificationCode(smtpCfg, email, code)
 }
