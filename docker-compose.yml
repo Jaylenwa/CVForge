@@ -30,7 +30,6 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE: "/api/v1"
         VITE_OAUTH_ALLOWED_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn"
     restart: unless-stopped
     depends_on:
