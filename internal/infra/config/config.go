@@ -24,7 +24,7 @@ func Load() Config {
 		RedisPassword:   getenv("REDIS_PASSWORD", ""),
 		JWTSecret:       getenv("JWT_SECRET", "abcdefghijklmnopqrstuvwxyz"),
 		CORSOrigins:     getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"),
-		FrontendBaseURL: getenv("FRONTEND_BASE_URL", "http://localhost:3000"),
+		FrontendBaseURL: getenv("FRONTEND_BASE_URL", "http://chrome:3000"),
 	}
 }
 

@@ -31,7 +31,7 @@ func Init(cfg config.Config) *gin.Engine {
 	api := router.Group("/api/v1")
 
 	confService := conf.NewService()
-	confHandler := conf.NewHandler(confService)
+	confHandler := conf.NewHandler()
 	_ = confService.EnsureDefaults(cfg)
 
 	authH := auth.NewHandler(cfg, confService)

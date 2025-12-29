@@ -11,8 +11,8 @@ type Handler struct {
 	service *Service
 }
 
-func NewHandler(service *Service) *Handler {
-	return &Handler{service: service}
+func NewHandler() *Handler {
+	return &Handler{service: NewService()}
 }
 
 func (h *Handler) GetPublic(c *gin.Context) {
