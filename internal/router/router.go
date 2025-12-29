@@ -118,7 +118,7 @@ func Init(cfg config.Config) *gin.Engine {
 	healthH := &health.Handler{}
 	api.GET("/healthz", healthH.Healthz)
 	api.GET("/metrics", metrics.Handler())
-	pdfH := pdf.NewHandler()
+	pdfH := pdf.NewHandler(cfg, confService)
 	g.POST("/resumes/:id/pdf", pdfH.GeneratePDF)
 	g.POST("/resumes/:id/image", pdfH.GenerateImage)
 

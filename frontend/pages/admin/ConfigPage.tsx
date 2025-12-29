@@ -48,7 +48,8 @@ export const ConfigPage: React.FC = () => {
       storage_s3_region: 'admin.config.key.storageS3Region',
       storage_s3_endpoint: 'admin.config.key.storageS3Endpoint',
       storage_s3_access_key: 'admin.config.key.storageS3AccessKey',
-      storage_s3_secret_key: 'admin.config.key.storageS3SecretKey'
+      storage_s3_secret_key: 'admin.config.key.storageS3SecretKey',
+      chrome_api_url: 'admin.config.key.chromeApiUrl'
     };
     const keyName = map[key];
     if (keyName) return t(keyName);
@@ -91,7 +92,8 @@ export const ConfigPage: React.FC = () => {
     const g: { [key: string]: SystemConfig[] } = {
       'General': [],
       'OAuth': [],
-      'Storage': []
+      'Storage': [],
+      'Chrome': []
     };
     configs.forEach(c => {
       if (c.key === 'enable_email_verification' || c.key.startsWith('feature_') || c.key.startsWith('smtp_')) {
@@ -105,6 +107,8 @@ export const ConfigPage: React.FC = () => {
         g['OAuth'].push(c);
       } else if (c.key.startsWith('storage_') || c.key === 'enabled_storage_s3') {
         g['Storage'].push(c);
+      } else if (c.key.startsWith('chrome_')) {
+        g['Chrome'].push(c);
       }
     });
     return g;
