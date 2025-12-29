@@ -266,7 +266,7 @@ export const Editor: React.FC = () => {
         </div>
 
         {/* Right: Preview */}
-        <div className={`w-full md:w-1/2 lg:w-7/12 xl:w-2/3 bg-white h-full overflow-hidden absolute md:relative transition-transform duration-300 md:border-l md:border-gray-200 ${isMobilePreview ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+        <div className={`w-full md:w-1/2 lg:w-7/12 xl:w-2/3 bg-white h-full overflow-auto min-h-0 absolute md:relative transition-transform duration-300 md:border-l md:border-gray-200 ${isMobilePreview ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
              <ResumePreview data={resumeData} scale={scale} disableShadow />
         </div>
       </div>

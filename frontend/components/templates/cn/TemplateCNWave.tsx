@@ -15,7 +15,7 @@ export const TemplateCNWave: React.FC<{ data: ResumeData; styles: any; disableSh
   };
 
   return (
-    <div className={`w-full bg-white text-slate-800 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto overflow-hidden`} style={{ fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif' }}>
+    <div className={`w-full bg-white text-slate-800 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif' }}>
       {/* 顶部波浪背景 */}
       <div className="bg-gradient-to-r from-teal-400 to-blue-500 text-white pb-20 pt-12 px-10 relative">
           <div className="relative z-10 flex justify-between items-center">

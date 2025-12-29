@@ -131,7 +131,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 
 export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1, disableShadow = false }) => {
   return (
-    <div className={`w-full flex justify-center bg-white p-8 overflow-auto print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
+    <div className={`w-full flex justify-center bg-white p-8 overflow-auto min-h-0 print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
       <ResumeArtboard data={data} scale={scale} disableShadow={disableShadow} />
     </div>
   );
