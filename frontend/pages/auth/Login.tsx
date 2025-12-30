@@ -174,12 +174,33 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
       author={t('auth.quoteAuthor')}
     >
       <div className="text-center">
-        <h2 className="text-3xl font-extrabold text-gray-900">
-          {mode === 'login' ? t('auth.welcome') : t('auth.createAccount')}
-        </h2>
-        <p className="mt-2 text-sm text-gray-600">
-          {mode === 'login' ? t('auth.welcomeDesc') : t('auth.createDesc')}
-        </p>
+        <div className="min-h-[5.5rem]">
+          <AnimatePresence initial={false} mode="wait">
+            {mode === 'login' ? (
+              <motion.div
+                key="hdr-login"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
+              >
+                <h2 className="text-3xl font-extrabold text-gray-900">{t('auth.welcome')}</h2>
+                <p className="mt-2 text-sm text-gray-600">{t('auth.welcomeDesc')}</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="hdr-register"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
+              >
+                <h2 className="text-3xl font-extrabold text-gray-900">{t('auth.createAccount')}</h2>
+                <p className="mt-2 text-sm text-gray-600">{t('auth.createDesc')}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       <div className="mt-6 relative overflow-hidden">
