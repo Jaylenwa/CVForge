@@ -194,7 +194,7 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
                   layout
                 >
                   <h2 className="text-3xl font-extrabold leading-tight text-gray-900">{t('auth.createAccount')}</h2>
-                  <p className="mt-2 text-sm leading-relaxed text-gray-600 invisible">placeholder</p>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600">{t('auth.createDesc')}</p>
                 </motion.div>
               )}
             </AnimatePresence>
