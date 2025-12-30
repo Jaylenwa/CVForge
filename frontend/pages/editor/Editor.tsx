@@ -6,6 +6,7 @@ import { ResumePreview } from './ResumePreview';
 import { API_BASE } from '../../config';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
+import { DownloadModal } from '../../components/ui/DownloadModal';
 import { INITIAL_RESUME } from '../../services/mockData';
 import { ResumeData, AppRoute } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -20,7 +21,7 @@ export const Editor: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
   const { showToast } = useToast();
   const [templates, setTemplates] = useState<Array<{ id: string }>>([]);
-  const [exportOpen, setExportOpen] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
   const [exportError, setExportError] = useState<{ open: boolean; title: string; details: string }>({ open: false, title: '', details: '' });
 
   // Initialize data based on URL params
@@ -139,54 +140,44 @@ export const Editor: React.FC = () => {
       });
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async (): Promise<void> => {
     const token = localStorage.getItem('token');
     if (!resumeData.id) return;
-    fetch(`${API_BASE}/resumes/${resumeData.id}/pdf`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
-      .then(async r => {
-        if (!r.ok) {
-          let txt = '';
-          try { txt = await r.text(); } catch {}
-          throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
-        }
-        const blob = await r.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${resumeData.title || 'resume'}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      })
-      .catch((err) => {
-        setExportError({ open: true, title: t('editor.export.failed'), details: err?.message ? String(err.message) : String(err) });
-      });
+    const r = await fetch(`${API_BASE}/resumes/${resumeData.id}/pdf`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) {
+      let txt = '';
+      try { txt = await r.text(); } catch {}
+      throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${resumeData.title || 'resume'}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
-  const handleExportImage = () => {
+  const handleExportImage = async (): Promise<void> => {
     const token = localStorage.getItem('token');
     if (!resumeData.id) return;
-    fetch(`${API_BASE}/resumes/${resumeData.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
-      .then(async r => {
-        if (!r.ok) {
-          let txt = '';
-          try { txt = await r.text(); } catch {}
-          throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
-        }
-        const blob = await r.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${resumeData.title || 'resume'}.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      })
-      .catch((err) => {
-        setExportError({ open: true, title: t('editor.export.failed'), details: err?.message ? String(err.message) : String(err) });
-      });
+    const r = await fetch(`${API_BASE}/resumes/${resumeData.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) {
+      let txt = '';
+      try { txt = await r.text(); } catch {}
+      throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${resumeData.title || 'resume'}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -233,21 +224,9 @@ export const Editor: React.FC = () => {
             <Button variant="primary" size="sm" onClick={handleSave} className="ml-2">
                 {t('editor.save')}
             </Button>
-            <div className="relative">
-              <Button variant="secondary" size="sm" icon={<Printer size={16}/>} onClick={() => setExportOpen(!exportOpen)}>
-                  {t('common.download')}
-              </Button>
-              {exportOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-30">
-                  <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => { setExportOpen(false); handleExportPDF(); }}>
-                    {t('editor.export.pdf')}
-                  </button>
-                  <button className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => { setExportOpen(false); handleExportImage(); }}>
-                    {t('editor.export.png')}
-                  </button>
-                </div>
-              )}
-            </div>
+            <Button variant="secondary" size="sm" icon={<Printer size={16}/>} onClick={() => setDownloadOpen(true)}>
+                {t('common.download')}
+            </Button>
             <Button 
                 className="md:hidden" 
                 size="sm" 
@@ -281,6 +260,13 @@ export const Editor: React.FC = () => {
           </div>
         </div>
       </Modal>
+      <DownloadModal
+        isOpen={downloadOpen}
+        onClose={() => setDownloadOpen(false)}
+        onExportPDF={handleExportPDF}
+        onExportImage={handleExportImage}
+        onError={(err) => setExportError({ open: true, title: t('editor.export.failed'), details: err?.message ? String(err.message) : String(err) })}
+      />
     </div>
   );
 };

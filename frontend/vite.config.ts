@@ -20,6 +20,9 @@ export default defineConfig(({ mode }) => {
         },
         allowedHosts: ['host.docker.internal'],
       },
+      optimizeDeps: {
+        exclude: ['framer-motion'],
+      },
       plugins: [react()],
       resolve: {
         alias: {
