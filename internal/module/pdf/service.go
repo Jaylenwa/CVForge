@@ -73,12 +73,12 @@ func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, e
 		Options: map[string]any{
 			"format":          "A4",
 			"printBackground": true,
-			"margin": map[string]any{
-				"top":    "20mm",
-				"bottom": "20mm",
-				"left":   "15mm",
-				"right":  "15mm",
-			},
+			// "margin": map[string]any{
+			// 	"top":    "20mm",
+			// 	"bottom": "20mm",
+			// 	"left":   "15mm",
+			// 	"right":  "15mm",
+			// },
 		},
 		EmulateMediaType: "print",
 		GotoOptions: struct {
