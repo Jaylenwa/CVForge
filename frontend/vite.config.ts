@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
             changeOrigin: true,
           },
         },
+        allowedHosts: ['host.docker.internal'],
       },
       plugins: [react()],
       resolve: {
