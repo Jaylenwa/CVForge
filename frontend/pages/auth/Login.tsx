@@ -41,6 +41,28 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
   const [registerError, setRegisterError] = useState('');
   const [countdown, setCountdown] = useState(0);
 
+  const clearLoginState = () => {
+    setLoginForm({ email: '', password: '' });
+    setLoginError('');
+    setLoginLoading(false);
+  };
+
+  const clearRegisterState = () => {
+    setRegisterForm({ email: '', code: '', password: '', confirmPassword: '' });
+    setRegisterError('');
+    setRegisterLoading(false);
+    setCountdown(0);
+  };
+
+  const handleSwitchMode = (next: Mode) => {
+    if (next === 'register') {
+      clearLoginState();
+    } else {
+      clearRegisterState();
+    }
+    setMode(next);
+  };
+
   useEffect(() => {
     let timer: number;
     if (countdown > 0) {
@@ -300,7 +322,7 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
 
               <div className="text-center mt-4">
                 <span className="text-gray-600 text-sm">{t('auth.noAccount')} </span>
-                <button type="button" className="text-blue-600 font-medium hover:underline text-sm" onClick={() => setMode('register')}>
+                <button type="button" className="text-blue-600 font-medium hover:underline text-sm" onClick={() => handleSwitchMode('register')}>
                   {t('auth.register')}
                 </button>
               </div>
@@ -423,7 +445,7 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
 
               <div className="text-center mt-4">
                 <span className="text-gray-600 text-sm">{t('auth.hasAccount')} </span>
-                <button type="button" className="text-blue-600 font-medium hover:underline text-sm" onClick={() => setMode('login')}>
+                <button type="button" className="text-blue-600 font-medium hover:underline text-sm" onClick={() => handleSwitchMode('login')}>
                   {t('auth.login')}
                 </button>
               </div>
