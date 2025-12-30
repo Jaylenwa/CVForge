@@ -41,7 +41,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         </button>
       </div>
   <div className="w-full max-w-md space-y-8">
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-8 sm:p-10">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
           {children}
         </div>
       </div>

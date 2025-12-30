@@ -9,7 +9,7 @@ import { getAuthConfig } from '../../services/configService';
 import { AppRoute, AuthConfig } from '../../types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthLayout } from './AuthLayout';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 import { useRef } from 'react';
 
 type Mode = 'login' | 'register';
@@ -25,7 +25,6 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
   const hasMountedRef = useRef(false);
   useEffect(() => { hasMountedRef.current = true; }, []);
   const shouldInitialAnimate = hasMountedRef.current;
-  
 
   useEffect(() => {
     getAuthConfig().then(setAuthConfig);
@@ -166,57 +165,60 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
   };
 
   return (
-    <AuthLayout
-      image="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
-      quote={t('auth.quote')}
-      author={t('auth.quoteAuthor')}
-    >
-      <div className="text-center">
-        <motion.div layout>
+    <AuthLayout image="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" quote={t('auth.quote')} author={t('auth.quoteAuthor')}>
+      <LayoutGroup>
+        <div className="text-center">
+          <motion.div className="min-h-[4.5rem]" layout>
+            <AnimatePresence initial={false} mode="wait">
+              {mode === 'login' ? (
+                <motion.div
+                  key="hdr-login"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16, ease: 'easeOut' }}
+                  style={{ willChange: 'opacity', transform: 'translateZ(0)', WebkitFontSmoothing: 'antialiased', backfaceVisibility: 'hidden', textRendering: 'optimizeLegibility' }}
+                  layout
+                >
+                  <h2 className="text-3xl font-extrabold leading-tight text-gray-900">{t('auth.welcome')}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600">{t('auth.welcomeDesc')}</p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="hdr-register"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.16, ease: 'easeOut' }}
+                  style={{ willChange: 'opacity', transform: 'translateZ(0)', WebkitFontSmoothing: 'antialiased', backfaceVisibility: 'hidden', textRendering: 'optimizeLegibility' }}
+                  layout
+                >
+                  <h2 className="text-3xl font-extrabold leading-tight text-gray-900">{t('auth.createAccount')}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-gray-600 invisible">placeholder</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+
+        <motion.div className="mt-6 relative overflow-hidden" layout>
           <AnimatePresence initial={false} mode="wait">
             {mode === 'login' ? (
-              <motion.div
-                key="hdr-login"
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6 }}
-                transition={{ duration: 0.16, ease: 'easeOut' }}
+              <motion.form
+                key="login"
+                initial={shouldInitialAnimate ? { x: '-100%', opacity: 0.9 } : false}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: '-100%', opacity: 0.9 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                className="space-y-6 w-full"
+                onSubmit={handleLoginSubmit}
+                layout
               >
-                <h2 className="text-3xl font-extrabold text-gray-900">{t('auth.welcome')}</h2>
-                <p className="mt-2 text-sm text-gray-600">{t('auth.welcomeDesc')}</p>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="hdr-register"
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6 }}
-                transition={{ duration: 0.16, ease: 'easeOut' }}
-              >
-                <h2 className="text-3xl font-extrabold text-gray-900">{t('auth.createAccount')}</h2>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
-
-      <div className="mt-6 relative overflow-hidden">
-        <AnimatePresence initial={false} mode="wait">
-          {mode === 'login' ? (
-            <motion.form
-              key="login"
-              initial={shouldInitialAnimate ? { x: '-100%', opacity: 0.9 } : false}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: '-100%', opacity: 0.9 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="space-y-6 w-full"
-              onSubmit={handleLoginSubmit}
-            >
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  {t('auth.email')}
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    {t('auth.email')}
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-gray-400" />
                   </div>
@@ -312,6 +314,7 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
               transition={{ duration: 0.18, ease: 'easeOut' }}
               className="space-y-6 w-full"
               onSubmit={handleRegisterSubmit}
+              layout
             >
               <div>
                 <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700">
@@ -427,7 +430,8 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
             </motion.form>
           )}
         </AnimatePresence>
-      </div>
+        </motion.div>
+      </LayoutGroup>
     </AuthLayout>
   );
 };
