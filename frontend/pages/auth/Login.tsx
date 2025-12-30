@@ -260,39 +260,41 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
                 </Button>
               </div>
 
-              <div className="mt-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300" />
+              {(authConfig?.enableGithubLogin || authConfig?.enableWeChatLogin) && (
+                <div className="mt-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">{t('auth.orContinueWith')}</span>
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">{t('auth.orContinueWith')}</span>
+                  <div className="mt-6 grid grid-cols-2 gap-3">
+                    {authConfig?.enableGithubLogin && (
+                      <div>
+                        <Button variant="outline" className="w-full flex justify-center items-center" onClick={handleGithubLogin} isLoading={loginLoading}>
+                          <Github className="h-5 w-5 mr-2" />
+                          {t('auth.provider.github')}
+                        </Button>
+                      </div>
+                    )}
+                    {authConfig?.enableWeChatLogin && (
+                      <div>
+                        <Button
+                          variant="outline"
+                          className="w-full flex justify-center items-center text-green-600 border-green-200 hover:bg-green-50"
+                          onClick={handleWeChatLogin}
+                          isLoading={loginLoading}
+                        >
+                          <WeChatIcon className="h-5 w-5 mr-2" />
+                          {t('auth.provider.wechat')}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  {authConfig?.enableGithubLogin && (
-                    <div>
-                      <Button variant="outline" className="w-full flex justify-center items-center" onClick={handleGithubLogin} isLoading={loginLoading}>
-                        <Github className="h-5 w-5 mr-2" />
-                        {t('auth.provider.github')}
-                      </Button>
-                    </div>
-                  )}
-                  {authConfig?.enableWeChatLogin && (
-                    <div>
-                      <Button
-                        variant="outline"
-                        className="w-full flex justify-center items-center text-green-600 border-green-200 hover:bg-green-50"
-                        onClick={handleWeChatLogin}
-                        isLoading={loginLoading}
-                      >
-                        <WeChatIcon className="h-5 w-5 mr-2" />
-                        {t('auth.provider.wechat')}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
 
               <div className="text-center mt-4">
                 <span className="text-gray-600 text-sm">{t('auth.noAccount')} </span>
