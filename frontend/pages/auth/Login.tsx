@@ -40,7 +40,6 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
   const [registerForm, setRegisterForm] = useState({ email: '', code: '', password: '', confirmPassword: '' });
   const [registerLoading, setRegisterLoading] = useState(false);
   const [registerError, setRegisterError] = useState('');
-  const [step, setStep] = useState<1 | 2>(1);
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
@@ -122,7 +121,6 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
     setRegisterLoading(true);
     try {
       await sendVerificationCode(registerForm.email);
-      setStep(2);
       setCountdown(60);
     } catch {
       setRegisterError(t('auth.error.sendCodeFailed'));
@@ -174,7 +172,7 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
       author={t('auth.quoteAuthor')}
     >
       <div className="text-center">
-        <div className="min-h-[5.5rem]">
+        <motion.div layout>
           <AnimatePresence initial={false} mode="wait">
             {mode === 'login' ? (
               <motion.div
@@ -196,11 +194,10 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
                 transition={{ duration: 0.16, ease: 'easeOut' }}
               >
                 <h2 className="text-3xl font-extrabold text-gray-900">{t('auth.createAccount')}</h2>
-                <p className="mt-2 text-sm text-gray-600">{t('auth.createDesc')}</p>
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
       </div>
 
       <div className="mt-6 relative overflow-hidden">
@@ -326,13 +323,13 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
                     id="reg-email"
                     type="email"
                     required
-                    disabled={step === 2 && countdown > 0}
-                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none sm:text-sm ${step === 2 ? 'bg-gray-100 text-gray-500 border-gray-200' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
+                    disabled={countdown > 0}
+                    className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none sm:text-sm ${countdown > 0 ? 'bg-gray-100 text-gray-500 border-gray-200' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
                     placeholder={t('auth.placeholder.email')}
                     value={registerForm.email}
                     onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                   />
-                  {step === 2 && (
+                  {countdown > 0 && (
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <CheckCircle className="h-5 w-5 text-green-500" />
                     </div>
@@ -340,9 +337,11 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
                 </div>
               </div>
 
-              {emailVerificationEnabled && step === 2 && (
+              {emailVerificationEnabled && (
                 <div className="space-y-4">
-                  <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm text-center">{t('auth.success.codeSent')}</div>
+                  {countdown > 0 && (
+                    <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm text-center">{t('auth.success.codeSent')}</div>
+                  )}
                   <div>
                     <label htmlFor="code" className="block text-sm font-medium text-gray-700">
                       {t('auth.verificationCode')}
@@ -370,60 +369,52 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
                 </div>
               )}
 
-              {(!emailVerificationEnabled || step === 2) && (
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700">
-                      {t('auth.password')}
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Lock className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        id="reg-password"
-                        type="password"
-                        required
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder={t('auth.placeholder.passwordMin')}
-                        value={registerForm.password}
-                        onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                      />
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700">
+                    {t('auth.password')}
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
                     </div>
-                  </div>
-                  <div>
-                    <label htmlFor="reg-confirm" className="block text-sm font-medium text-gray-700">
-                      {t('auth.confirmPassword')}
-                    </label>
-                    <div className="mt-1 relative rounded-md shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Lock className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        id="reg-confirm"
-                        type="password"
-                        required
-                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder={t('auth.placeholder.reenterPassword')}
-                        value={registerForm.confirmPassword}
-                        onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
-                      />
-                    </div>
+                    <input
+                      id="reg-password"
+                      type="password"
+                      required
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder={t('auth.placeholder.passwordMin')}
+                      value={registerForm.password}
+                      onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                    />
                   </div>
                 </div>
-              )}
+                <div>
+                  <label htmlFor="reg-confirm" className="block text-sm font-medium text-gray-700">
+                    {t('auth.confirmPassword')}
+                  </label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="reg-confirm"
+                      type="password"
+                      required
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder={t('auth.placeholder.reenterPassword')}
+                      value={registerForm.confirmPassword}
+                      onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
 
               {registerError && <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">{registerError}</div>}
 
-              {emailVerificationEnabled && step === 1 ? (
-                <Button type="button" onClick={handleSendCode} className="w-full" size="lg" isLoading={registerLoading}>
-                  {t('auth.sendCode')}
-                </Button>
-              ) : (
-                <Button type="submit" className="w-full" size="lg" isLoading={registerLoading}>
-                  {t('auth.register')}
-                </Button>
-              )}
+              <Button type="submit" className="w-full" size="lg" isLoading={registerLoading}>
+                {t('auth.register')}
+              </Button>
 
               <div className="text-center mt-4">
                 <span className="text-gray-600 text-sm">{t('auth.hasAccount')} </span>
