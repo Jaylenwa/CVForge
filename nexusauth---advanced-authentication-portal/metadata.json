@@ -1,0 +1,7 @@
+{
+  "name": "NexusAuth - Advanced Authentication Portal",
+  "description": "A high-end, responsive authentication system featuring fluid animations, social login integration (WeChat & GitHub), and an intelligent Gemini-powered support assistant.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
