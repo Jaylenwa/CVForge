@@ -62,17 +62,17 @@
   - Frontend Nginx proxies `/api/` and `/public/` to backend; see `frontend/nginx.conf`.
 
 ### Configuration
-Backend process environment (directly loaded at startup):
+Backend process environment (read at startup):
 - `PORT`: HTTP port
-- `DB_DSN`: MySQL DSN
-- `SQLITE_PATH`: Optional SQLite file path (overrides MySQL when set)
+- `DB_DSN`: MySQL DSN; when set, MySQL is used
+- `SQLITE_PATH`: SQLite file path; used when `DB_DSN` is empty
 - `REDIS_ADDR`, `REDIS_PASSWORD`: Redis connection
-- `JWT_SECRET`: HMAC secret for JWT signing
-- `CORS_ORIGINS`: Allowed origins (comma separated)
-- `FRONTEND_BASE_URL`: Public URL for the frontend (used by export)
-- `CHROME_JSON_URL`: DevTools version endpoint, e.g. `http://chrome:3000/json/version`
+- `JWT_SECRET`: JWT signing secret
 
 System configuration keys (stored in DB; seeded from env on first run; editable in Admin → Settings):
+- `CORS_ORIGINS`: Allowed origins (comma separated)
+- `FRONTEND_BASE_URL`: Public frontend URL (used by export and OAuth redirects)
+- `CHROME_API_URL`: Base URL of your Browserless/Chromium service providing `/pdf` and `/screenshot`
 - `enable_email_verification`: Enable email verification during registration (default `false`)
 - SMTP: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_NAME`
 - WeChat OAuth: `WECHAT_APP_ID`, `WECHAT_APP_SECRET`, `WECHAT_REDIRECT_URI`, toggle `enabled_wechat_login`
@@ -81,7 +81,50 @@ System configuration keys (stored in DB; seeded from env on first run; editable 
 
 Environment variables (frontend):
 - `VITE_API_BASE`: Base path or URL for API, default `/api/v1`
-- `VITE_OAUTH_ALLOWED_ORIGINS`: Comma-separated origins used in OAuth flows
+- `VITE_OAUTH_ALLOWED_ORIGINS`: Comma-separated origins allowed for OAuth popup messaging
+
+Configuration examples:
+- Local backend (bash):
+
+```bash
+export PORT=8080
+export DB_DSN=""                            # use SQLite when empty
+export SQLITE_PATH="openresume.db"          # SQLite file path
+export REDIS_ADDR="127.0.0.1:6379"
+export REDIS_PASSWORD=""
+export JWT_SECRET="replace-with-a-strong-secret"
+# Seed system configs on first run (optional; can be edited later in Admin → Settings)
+export CORS_ORIGINS="http://localhost:3000"
+export FRONTEND_BASE_URL="http://localhost:3000"
+export CHROME_API_URL="http://localhost:3000"  # Browserless/Chromium API base providing /pdf and /screenshot
+export SMTP_HOST=""
+export SMTP_PORT=""
+export SMTP_USERNAME=""
+export SMTP_PASSWORD=""
+export SMTP_FROM_NAME=""
+export WECHAT_APP_ID=""
+export WECHAT_APP_SECRET=""
+export WECHAT_REDIRECT_URI=""
+export GITHUB_CLIENT_ID=""
+export GITHUB_CLIENT_SECRET=""
+export GITHUB_REDIRECT_URI=""
+export S3_BUCKET=""
+export S3_REGION=""
+export S3_ENDPOINT=""
+export S3_ACCESS_KEY=""
+export S3_SECRET_KEY=""
+```
+
+- Frontend `.env.local`:
+
+```bash
+VITE_API_BASE=/api/v1
+VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
+```
+
+- Docker Compose:
+  - See `docker-compose.yml` for example values already wired for backend and frontend build args.
+  - Replace `CORS_ORIGINS`, `FRONTEND_BASE_URL`, `CHROME_API_URL` and `VITE_OAUTH_ALLOWED_ORIGINS` with your domain(s).
 
 ### API Overview
 - Public:
@@ -110,7 +153,9 @@ Environment variables (frontend):
 
 ### Export Services
 - Uses a remote Chromium via DevTools WebSocket.
-- `CHROME_JSON_URL` must point to a `json/version` endpoint that returns `webSocketDebuggerUrl`.
+- `CHROME_API_URL` must point to a Browserless/Chromium service that exposes REST endpoints:
+  - `POST /pdf` for PDF generation
+  - `POST /screenshot` for image generation
 - The service navigates to the Print route and executes `page.PrintToPDF` or screenshot; see `internal/module/pdf/service.go:92`.
 - Ensure Chinese fonts are installed in Chromium for CJK content.
 
@@ -132,7 +177,7 @@ Environment variables (frontend):
 ### Deployment
 - Recommended: `docker-compose` with Nginx and Browserless Chromium.
 - Use secrets management for sensitive variables (do not hardcode).
-- For production, point `FRONTEND_BASE_URL` to your domain and set `OAUTH_ALLOWED_ORIGINS`.
+- For production, set `FRONTEND_BASE_URL` to your domain, configure `CORS_ORIGINS`, and pass `VITE_OAUTH_ALLOWED_ORIGINS` to the frontend.
 
 ### Security
 - Store `JWT_SECRET`, SMTP and OAuth secrets securely.

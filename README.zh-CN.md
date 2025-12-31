@@ -62,18 +62,18 @@
   - 前端 Nginx 将 `/api/` 与 `/public/` 代理到后端，详见 `frontend/nginx.conf`。
 
 ### 配置
-后端启动时直接读取的环境变量：
+后端进程环境变量（启动时读取）：
 - `PORT`：HTTP 端口
-- `DB_DSN`：MySQL DSN
-- `SQLITE_PATH`：SQLite 文件路径（设置后优先生效）
+- `DB_DSN`：MySQL DSN；设置后使用 MySQL
+- `SQLITE_PATH`：SQLite 文件路径；当 `DB_DSN` 为空时使用
 - `REDIS_ADDR`、`REDIS_PASSWORD`：Redis 连接
-- `JWT_SECRET`：JWT HMAC 签名密钥
-- `CORS_ORIGINS`：允许的跨域来源（使用逗号分隔）
-- `FRONTEND_BASE_URL`：前端的公共地址（导出功能需要）
-- `CHROME_JSON_URL`：DevTools 版本接口，例如 `http://chrome:3000/json/version`
+- `JWT_SECRET`：JWT 签名密钥
 
-系统配置键（存储于数据库；首次启动从环境变量注入默认值；可在管理后台修改）：
-- `enable_email_verification`：注册时是否启用邮箱验证码（默认 `false`）
+系统配置键（存储于数据库；首启可从环境变量注入；可在管理后台修改）：
+- `CORS_ORIGINS`：允许的跨域来源（逗号分隔）
+- `FRONTEND_BASE_URL`：前端公共地址（用于导出与 OAuth 回跳）
+- `CHROME_API_URL`：Browserless/Chromium 服务的基础地址，需提供 `/pdf` 与 `/screenshot`
+- `enable_email_verification`：注册是否启用邮箱验证码（默认 `false`）
 - SMTP：`SMTP_HOST`、`SMTP_PORT`、`SMTP_USERNAME`、`SMTP_PASSWORD`、`SMTP_FROM_NAME`
 - 微信 OAuth：`WECHAT_APP_ID`、`WECHAT_APP_SECRET`、`WECHAT_REDIRECT_URI`，开关 `enabled_wechat_login`
 - GitHub OAuth：`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`、`GITHUB_REDIRECT_URI`，开关 `enabled_github_login`
@@ -81,7 +81,50 @@
 
 前端环境变量：
 - `VITE_API_BASE`：API 基路径或 URL，默认 `/api/v1`
-- `VITE_OAUTH_ALLOWED_ORIGINS`：OAuth 流程允许来源列表
+- `VITE_OAUTH_ALLOWED_ORIGINS`：允许进行 OAuth 弹窗消息通信的来源（逗号分隔）
+
+配置示例：
+- 本地后端（bash）：
+
+```bash
+export PORT=8080
+export DB_DSN=""                            # 为空时使用 SQLite
+export SQLITE_PATH="openresume.db"          # SQLite 文件路径
+export REDIS_ADDR="127.0.0.1:6379"
+export REDIS_PASSWORD=""
+export JWT_SECRET="请替换为强随机密钥"
+# 首次运行用于注入系统参数（可在后台后续修改）
+export CORS_ORIGINS="http://localhost:3000"
+export FRONTEND_BASE_URL="http://localhost:3000"
+export CHROME_API_URL="http://localhost:3000"  # Browserless/Chromium API 基址，提供 /pdf 与 /screenshot
+export SMTP_HOST=""
+export SMTP_PORT=""
+export SMTP_USERNAME=""
+export SMTP_PASSWORD=""
+export SMTP_FROM_NAME=""
+export WECHAT_APP_ID=""
+export WECHAT_APP_SECRET=""
+export WECHAT_REDIRECT_URI=""
+export GITHUB_CLIENT_ID=""
+export GITHUB_CLIENT_SECRET=""
+export GITHUB_REDIRECT_URI=""
+export S3_BUCKET=""
+export S3_REGION=""
+export S3_ENDPOINT=""
+export S3_ACCESS_KEY=""
+export S3_SECRET_KEY=""
+```
+
+- 前端 `.env.local`：
+
+```bash
+VITE_API_BASE=/api/v1
+VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
+```
+
+- Docker Compose：
+  - 参考 `docker-compose.yml` 中的示例值（已为后端与前端构建参数接好）。
+  - 将 `CORS_ORIGINS`、`FRONTEND_BASE_URL`、`CHROME_API_URL` 与前端的 `VITE_OAUTH_ALLOWED_ORIGINS` 替换为你的域名。
 
 ### API 概览
 - 公共接口：
@@ -110,7 +153,9 @@
 
 ### 导出服务
 - 通过 DevTools WebSocket 控制远程 Chromium。
-- `CHROME_JSON_URL` 必须返回 `webSocketDebuggerUrl`。
+- `CHROME_API_URL` 需指向提供 REST 接口的 Browserless/Chromium 服务：
+  - `POST /pdf` 用于生成 PDF
+  - `POST /screenshot` 用于生成图片
 - 服务会导航到打印路由并执行 PDF 或截图导出；见 `internal/module/pdf/service.go:92`。
 - 确保 Chromium 已安装中文字体以正确显示 CJK 内容。
 
@@ -132,7 +177,7 @@
 ### 部署建议
 - 推荐使用 `docker-compose`，包含 Nginx 与 Browserless Chromium。
 - 通过安全方式管理敏感变量，避免硬编码。
-- 生产环境将 `FRONTEND_BASE_URL` 指向你的域名，并设定 `OAUTH_ALLOWED_ORIGINS`。
+- 生产环境设置 `FRONTEND_BASE_URL` 为你的域名，配置好 `CORS_ORIGINS`，并将前端的 `VITE_OAUTH_ALLOWED_ORIGINS` 传入构建。
 
 ### 安全
 - 妥善保管 `JWT_SECRET`、SMTP 与 OAuth 密钥。
