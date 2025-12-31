@@ -25,10 +25,12 @@ backend: build save upload load
 # ===== 构建镜像 =====
 .PHONY: build
 build:
+	-docker image rm -f $(IMAGE_NAME)
 	docker build --platform=$(PLATFORM) -f $(DOCKERFILE) -t $(IMAGE_NAME) .
 
 .PHONY: build-frontend
 build-frontend:
+	-docker image rm -f $(FRONTEND_IMAGE_NAME)
 	docker build --platform=$(PLATFORM) -f $(FRONTEND_DOCKERFILE) -t $(FRONTEND_IMAGE_NAME) frontend
 
 # ===== 导出镜像 =====
