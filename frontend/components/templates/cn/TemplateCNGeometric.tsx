@@ -15,7 +15,7 @@ export const TemplateCNGeometric: React.FC<{ data: ResumeData; styles: any; disa
   };
 
   return (
-    <div className={`w-full bg-white h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto border-4 border-black`} style={{ fontFamily: '"Helvetica Neue", Arial, sans-serif' }}>
+    <div className={`w-full bg-white h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none border-4 border-black`} style={{ fontFamily: '"Helvetica Neue", Arial, sans-serif' }}>
       {/* 蒙德里安风格网格布局 */}
       <div className="grid grid-cols-12 border-b-4 border-black">
         {/* 头部区域 */}

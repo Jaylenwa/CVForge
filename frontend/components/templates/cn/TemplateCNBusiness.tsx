@@ -18,7 +18,7 @@ export const TemplateCNBusiness: React.FC<{ data: ResumeData; styles: any; disab
   const primaryColor = '#0f172a'; // slate-900
 
   return (
-    <div className={`w-full bg-white h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+    <div className={`w-full bg-white h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
       {/* 顶部几何背景 */}
       <div className="bg-slate-900 text-white p-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 transform rotate-45 translate-x-32 -translate-y-32"></div>
@@ -106,4 +106,3 @@ export const TemplateCNBusiness: React.FC<{ data: ResumeData; styles: any; disab
     </div>
   );
 };
-

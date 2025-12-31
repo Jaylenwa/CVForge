@@ -15,7 +15,7 @@ export const TemplateCNFresh: React.FC<{ data: ResumeData; styles: any; disableS
   };
 
   return (
-    <div className={`w-full bg-[#f0f9f4] text-[#2d3748] h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: '"Nunito", "Microsoft YaHei", sans-serif' }}>
+    <div className={`w-full bg-[#f0f9f4] text-[#2d3748] h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: '"Nunito", "Microsoft YaHei", sans-serif' }}>
        {/* 装饰性背景 */}
        <div className="absolute top-0 right-0 w-64 h-64 bg-[#c6f6d5] rounded-bl-full opacity-50"></div>
        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#9ae6b4] rounded-tr-full opacity-40"></div>

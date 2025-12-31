@@ -16,7 +16,7 @@ export const TemplateCNModern: React.FC<{ data: ResumeData; styles: any; disable
   };
 
   return (
-    <div className={`w-full bg-white h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto relative`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+    <div className={`w-full bg-white h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none relative`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
       {/* 顶部斜切背景 */}
       <div className="absolute top-0 left-0 right-0 h-48 bg-slate-800" style={{ clipPath: 'polygon(0 0, 100% 0, 100% 60%, 0 100%)' }}></div>
       <div className="absolute top-0 right-0 w-64 h-64 bg-slate-700 opacity-20 rounded-full -translate-y-1/2 translate-x-1/4"></div>

@@ -94,6 +94,27 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [measure]);
+  
+  React.useEffect(() => {
+    let ro: ResizeObserver | null = null;
+    const el = rootRef.current;
+    if (el) {
+      ro = new ResizeObserver(() => measure());
+      ro.observe(el);
+      const imgs = Array.from(el.querySelectorAll('img')) as HTMLImageElement[];
+      const handlers: Array<{ el: HTMLImageElement; handler: () => void }> = [];
+      imgs.forEach(img => {
+        const handler = () => measure();
+        handlers.push({ el: img, handler });
+        img.addEventListener('load', handler, { once: true });
+      });
+      document.fonts?.ready?.then(() => measure());
+      return () => {
+        ro && ro.disconnect();
+        handlers.forEach(({ el, handler }) => el.removeEventListener('load', handler));
+      };
+    }
+  }, [measure, data]);
 
   const renderTemplate = () => {
     const Comp = TEMPLATE_COMPONENTS[data.templateId] || TemplateClassic;
@@ -104,7 +125,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
       <div 
         id="resume-export-root"
         ref={rootRef}
-        className={`relative w-[210mm] min-h-[297mm] print:w-full print:min-h-0 print:transform-none bg-white mx-auto ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none border border-gray-200 print:border-0 ${className}`}
+        className={`relative w-[210mm] min-h-[297mm] print:w-[210mm] print:transform-none bg-white mx-auto box-border px-[15mm] py-[20mm] print:px-[15mm] print:py-[20mm] ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none border border-gray-200 print:border-0 ${className}`}
         style={containerStyle}
       >
         {showPageHint && (
@@ -131,7 +152,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 
 export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1, disableShadow = false }) => {
   return (
-    <div className={`w-full flex justify-center bg-white p-8 overflow-auto min-h-0 print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
+    <div className={`w-full flex justify-center bg-white p-0 overflow-auto min-h-0 print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
       <ResumeArtboard data={data} scale={scale} disableShadow={disableShadow} />
     </div>
   );

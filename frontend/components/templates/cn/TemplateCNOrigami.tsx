@@ -15,7 +15,7 @@ export const TemplateCNOrigami: React.FC<{ data: ResumeData; styles: any; disabl
   };
 
   return (
-    <div className={`w-full bg-[#f0f2f5] text-slate-800 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: '"Microsoft YaHei", sans-serif' }}>
+    <div className={`w-full bg-[#f0f2f5] text-slate-800 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: '"Microsoft YaHei", sans-serif' }}>
       <div className="p-8">
         {/* 头部卡片 */}
         <div className="bg-white p-8 rounded-lg shadow-sm mb-8 relative overflow-hidden">
@@ -111,4 +111,3 @@ export const TemplateCNOrigami: React.FC<{ data: ResumeData; styles: any; disabl
     </div>
   );
 };
-

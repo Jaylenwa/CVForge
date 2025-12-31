@@ -15,7 +15,7 @@ export const TemplateCNPixel: React.FC<{ data: ResumeData; styles: any; disableS
   };
 
   return (
-    <div className={`w-full bg-[#e0d5c1] text-[#4a412a] h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto font-mono`} style={{ fontFamily: '"Courier New", monospace', imageRendering: 'pixelated' }}>
+    <div className={`w-full bg-[#e0d5c1] text-[#4a412a] h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none font-mono`} style={{ fontFamily: '"Courier New", monospace', imageRendering: 'pixelated' }}>
       <div className="p-8 border-8 border-double border-[#8b7355] h-full m-4">
         {/* Header */}
         <div className="text-center mb-12 border-b-4 border-[#8b7355] pb-8 bg-[#fdf5e6] p-4 shadow-[4px_4px_0px_0px_#8b7355]">

@@ -8,7 +8,7 @@ export const TemplateBold: React.FC<{ data: ResumeData; styles: any; disableShad
      const { t } = useLanguage();
      const getSectionTitle = useSectionTitle();
      return (
-     <div className={`w-full bg-white h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto flex flex-col`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+     <div className={`w-full bg白 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none flex flex-col`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
         <div className="text-white p-10 print:text-white flex flex-col md:flex-row justify-between items-center gap-6" style={{ backgroundColor: data.themeConfig?.color || '#1d4ed8' }}>
              <div className="order-2 md:order-1 flex-1">
                 <h1 className="text-5xl font-extrabold mb-2 tracking-tight">{data.personalInfo.fullName}</h1>

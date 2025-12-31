@@ -71,8 +71,15 @@ func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, e
 	reqBody := PDFRequest{
 		URL: dest,
 		Options: map[string]any{
-			"format":          "A4",
-			"printBackground": true,
+			"format":            "A4",
+			"printBackground":   true,
+			"preferCSSPageSize": true,
+			"margin": map[string]string{
+				"top":    "0px",
+				"bottom": "0px",
+				"left":   "0px",
+				"right":  "0px",
+			},
 		},
 		EmulateMediaType: "print",
 		GotoOptions: struct {

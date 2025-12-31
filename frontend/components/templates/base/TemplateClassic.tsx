@@ -8,7 +8,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
   const getSectionTitle = useSectionTitle();
   const { t } = useLanguage();
   return (
-  <div className={`w-full p-8 md:p-12 bg-white text-gray-900 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:p-0 print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+  <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
   <div className="border-b-2 pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6" style={{ borderColor: data.themeConfig?.color || '#333' }}>
       <div className="flex-1 text-center md:text-left order-2 md:order-1">
           <h1 className="text-4xl font-bold uppercase tracking-wider" style={{ color: data.themeConfig?.color }}>{data.personalInfo.fullName}</h1>

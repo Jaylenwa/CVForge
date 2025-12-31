@@ -15,7 +15,7 @@ export const TemplateCNBrush: React.FC<{ data: ResumeData; styles: any; disableS
   };
 
   return (
-    <div className={`w-full bg-[#fdfbf7] text-[#2c3e50] h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: '"KaiTi", "STKaiti", serif' }}>
+    <div className={`w-full bg-[#fdfbf7] text-[#2c3e50] h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: '"KaiTi", "STKaiti", serif' }}>
       {/* 水墨背景装饰 */}
       <div className="absolute top-0 right-0 w-64 h-64 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, black 0%, transparent 70%)', filter: 'blur(20px)' }}></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at center, black 0%, transparent 70%)', filter: 'blur(40px)' }}></div>

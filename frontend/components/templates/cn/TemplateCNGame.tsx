@@ -15,7 +15,7 @@ export const TemplateCNGame: React.FC<{ data: ResumeData; styles: any; disableSh
   };
 
   return (
-    <div className={`w-full bg-[#2b2b2b] text-[#dcdcdc] h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: '"Microsoft YaHei", sans-serif' }}>
+    <div className={`w-full bg-[#2b2b2b] text-[#dcdcdc] h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: '"Microsoft YaHei", sans-serif' }}>
       <div className="p-2 h-full border-4 border-[#4a4a4a] m-1 rounded-lg">
         <div className="h-full border-2 border-[#808080] p-6 rounded bg-[#333]">
             {/* 角色面板头部 */}
@@ -87,4 +87,3 @@ export const TemplateCNGame: React.FC<{ data: ResumeData; styles: any; disableSh
     </div>
   );
 };
-

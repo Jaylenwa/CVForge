@@ -15,7 +15,7 @@ export const TemplateCNCloud: React.FC<{ data: ResumeData; styles: any; disableS
   };
 
   return (
-    <div className={`w-full bg-blue-50 text-slate-700 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: '"Nunito", "Microsoft YaHei", sans-serif' }}>
+    <div className={`w-full bg-blue-50 text-slate-700 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily }}>
       {/* 云朵背景装饰 */}
       <div className="absolute top-0 left-0 w-full h-64 bg-white rounded-b-[50%] shadow-sm overflow-hidden">
           <div className="absolute top-10 left-10 w-20 h-20 bg-blue-100 rounded-full opacity-50"></div>

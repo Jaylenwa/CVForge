@@ -15,7 +15,7 @@ export const TemplateCNFinance: React.FC<{ data: ResumeData; styles: any; disabl
   };
 
   return (
-    <div className={`w-full bg-white text-[#0a192f] h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: '"Calibri", "Arial", sans-serif' }}>
+    <div className={`w-full bg-white text-[#0a192f] h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: '"Calibri", "Arial", sans-serif' }}>
       {/* 顶部金线 */}
       <div className="h-2 bg-[#b8860b]"></div>
       

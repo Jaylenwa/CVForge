@@ -15,7 +15,7 @@ export const TemplateCNMedical: React.FC<{ data: ResumeData; styles: any; disabl
   };
 
   return (
-    <div className={`w-full bg-white text-slate-800 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: '"Segoe UI", "Microsoft YaHei", sans-serif' }}>
+    <div className={`w-full bg-white text-slate-800 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: '"Segoe UI", "Microsoft YaHei", sans-serif' }}>
       {/* 顶部蓝色条 */}
       <div className="h-3 bg-[#005eb8]"></div>
       
@@ -134,4 +134,3 @@ export const TemplateCNMedical: React.FC<{ data: ResumeData; styles: any; disabl
     </div>
   );
 };
-

@@ -13,7 +13,7 @@ export const TemplateCNTimeline: React.FC<{ data: ResumeData; styles: any; disab
   };
 
   return (
-    <div className={`w-full bg-slate-50 text-slate-800 h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: '"Segoe UI", "Roboto", sans-serif' }}>
+    <div className={`w-full bg-slate-50 text-slate-800 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: '"Segoe UI", "Roboto", sans-serif' }}>
        <div className="bg-slate-800 text-white p-12 pb-24 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-slate-700 rounded-full mix-blend-overlay opacity-50 -mr-16 -mt-16"></div>
           <div className="relative z-10 flex justify-between items-end">

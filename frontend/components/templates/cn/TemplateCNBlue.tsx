@@ -33,7 +33,7 @@ export const TemplateCNBlue: React.FC<{ data: ResumeData; styles: any; disableSh
     );
   };
   return (
-    <div className={`w-full bg-white h-full min-h-[1123px] ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none print:min-h-0 print:h-auto`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+    <div className={`w-full bg-white h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
       <div className="hidden print:block fixed left-0 top-0 bottom-0 w-[12mm] -z-10" style={{ backgroundColor: '#4b5563' }}></div>
       <div className="px-10 pt-10">
         <div className="text-center mb-6">
@@ -109,4 +109,3 @@ export const TemplateCNBlue: React.FC<{ data: ResumeData; styles: any; disableSh
     </div>
   );
 };
-
