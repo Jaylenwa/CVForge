@@ -4,13 +4,13 @@ import (
 	"strings"
 
 	"openresume/internal/common"
-	"openresume/internal/infra/config"
 	conf "openresume/internal/module/config"
 
 	"github.com/gin-gonic/gin"
 )
 
-func CORS(cfg config.Config, sys *conf.Service) gin.HandlerFunc {
+func CORS() gin.HandlerFunc {
+	sys := conf.NewService()
 	origins := sys.Get(string(common.ConfigKeyCORSOrigins))
 	allowed := strings.Split(origins, ",")
 	return func(c *gin.Context) {

@@ -6,9 +6,6 @@ import (
 	"net/url"
 	"time"
 
-	"openresume/internal/infra/config"
-	conf "openresume/internal/module/config"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -18,8 +15,8 @@ type Handler struct {
 	svc *Service
 }
 
-func NewHandler(cfg config.Config, sysConfig *conf.Service) *Handler {
-	return &Handler{svc: NewService(cfg, sysConfig)}
+func NewHandler() *Handler {
+	return &Handler{svc: NewService()}
 }
 
 func popupHTML(origin, access, refresh string, user map[string]any) string {
@@ -27,7 +24,7 @@ func popupHTML(origin, access, refresh string, user map[string]any) string {
 	return "<!doctype html><html><head><meta charset=\"utf-8\"><title>WeChat Login</title></head><body><script>(function(){try{var data=" + string(b) + ";window.opener&&window.opener.postMessage(data,'" + origin + "');window.close();}catch(e){document.body.innerText='Login succeeded, but messaging failed';}})();</script></body></html>"
 }
 
-func (h *Handler) WeChatRedirect(cfg config.Config) gin.HandlerFunc {
+func (h *Handler) WeChatRedirect() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !h.svc.FeatureWeChatEnabled() {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
@@ -56,7 +53,7 @@ func (h *Handler) WeChatRedirect(cfg config.Config) gin.HandlerFunc {
 	}
 }
 
-func (h *Handler) GithubRedirect(cfg config.Config) gin.HandlerFunc {
+func (h *Handler) GithubRedirect() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !h.svc.FeatureGithubEnabled() {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
@@ -85,7 +82,7 @@ func (h *Handler) GithubRedirect(cfg config.Config) gin.HandlerFunc {
 	}
 }
 
-func (h *Handler) GithubCallback(cfg config.Config) gin.HandlerFunc {
+func (h *Handler) GithubCallback() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !h.svc.FeatureGithubEnabled() {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
@@ -142,7 +139,7 @@ func (h *Handler) GithubCallback(cfg config.Config) gin.HandlerFunc {
 	}
 }
 
-func (h *Handler) WeChatCallback(cfg config.Config) gin.HandlerFunc {
+func (h *Handler) WeChatCallback() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !h.svc.FeatureWeChatEnabled() {
 			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})

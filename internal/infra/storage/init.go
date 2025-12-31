@@ -6,7 +6,8 @@ import (
 	"openresume/internal/infra/database"
 )
 
-func Init(cfg config.Config) error {
+func Init() error {
+	cfg := config.CF
 	_, err := database.InitMySQL(cfg)
 	if err != nil {
 		return err

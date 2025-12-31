@@ -143,21 +143,39 @@ export const Editor: React.FC = () => {
   const handleExportPDF = async (): Promise<void> => {
     const token = localStorage.getItem('token');
     if (!resumeData.id) return;
-    const r = await fetch(`${API_BASE}/resumes/${resumeData.id}/pdf`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-    if (!r.ok) {
+    const submit = await fetch(`${API_BASE}/pdf/exports?resumeId=${encodeURIComponent(resumeData.id)}`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+    if (!submit.ok) {
       let txt = '';
-      try { txt = await r.text(); } catch {}
-      throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
+      try { txt = await submit.text(); } catch {}
+      throw new Error(`HTTP ${submit.status} ${submit.statusText}${txt ? ' - ' + txt : ''}`);
     }
-    const blob = await r.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${resumeData.title || 'resume'}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    const { job_id } = await submit.json();
+    const start = Date.now();
+    while (true) {
+      const st = await fetch(`${API_BASE}/pdf/exports/${job_id}`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await st.json();
+      if (data.status === 'done') {
+        const a = document.createElement('a');
+        const base = API_BASE.replace(/\/+$/, '');
+        let href = `${base}/pdf/exports/${encodeURIComponent(job_id)}/download`;
+        if (data.token) href += `?token=${encodeURIComponent(data.token)}`;
+        a.href = href;
+        a.referrerPolicy = 'no-referrer';
+        a.rel = 'noreferrer';
+        a.download = `${resumeData.title || 'resume'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return;
+      }
+      if (data.status === 'failed') {
+        throw new Error(data.error || 'Export failed');
+      }
+      if (Date.now() - start > 120000) {
+        throw new Error('Export timeout');
+      }
+      await new Promise(res => setTimeout(res, 2000));
+    }
   };
 
   const handleExportImage = async (): Promise<void> => {

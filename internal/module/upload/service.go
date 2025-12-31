@@ -2,7 +2,6 @@ package upload
 
 import (
 	"openresume/internal/common"
-	"openresume/internal/infra/config"
 	conf "openresume/internal/module/config"
 	"openresume/internal/pkg/storage"
 
@@ -10,11 +9,14 @@ import (
 )
 
 type Service struct {
-	cfg config.Config
 	sys *conf.Service
 }
 
-func NewService(cfg config.Config, sys *conf.Service) *Service { return &Service{cfg: cfg, sys: sys} }
+func NewService() *Service {
+	return &Service{
+		sys: conf.NewService(),
+	}
+}
 
 func (s *Service) Upload(c *gin.Context, name string, b []byte) (string, error) {
 	useS3 := s.sys.GetBool(string(common.ConfigKeyEnabledStorageS3), false)

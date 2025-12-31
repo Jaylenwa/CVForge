@@ -24,12 +24,11 @@ import (
 )
 
 type Service struct {
-	cfg       config.Config
 	sysConfig *conf.Service
 }
 
-func NewService(cfg config.Config, sysConfig *conf.Service) *Service {
-	return &Service{cfg: cfg, sysConfig: sysConfig}
+func NewService() *Service {
+	return &Service{sysConfig: conf.NewService()}
 }
 
 func (s *Service) FeatureWeChatEnabled() bool {
@@ -47,7 +46,7 @@ func (s *Service) FrontendBase() string {
 func (s *Service) IssueTokens(uid uint) (string, string) {
 	mk := func(exp time.Duration) string {
 		t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"uid": uid, "exp": time.Now().Add(exp).Unix(), "jti": uuid.NewString()})
-		signed, _ := t.SignedString([]byte(s.cfg.JWTSecret))
+		signed, _ := t.SignedString([]byte(config.CF.JWTSecret))
 		return signed
 	}
 	return mk(2 * time.Hour), mk(7 * 24 * time.Hour)
@@ -120,7 +119,7 @@ func (s *Service) Login(email, password string) (string, string, error) {
 }
 
 func (s *Service) Refresh(refreshToken string) (string, string, error) {
-	t, err := jwt.Parse(refreshToken, func(t *jwt.Token) (interface{}, error) { return []byte(s.cfg.JWTSecret), nil })
+	t, err := jwt.Parse(refreshToken, func(t *jwt.Token) (interface{}, error) { return []byte(config.CF.JWTSecret), nil })
 	if err != nil || !t.Valid {
 		return "", "", gorm.ErrInvalidData
 	}
@@ -137,7 +136,7 @@ func (s *Service) Refresh(refreshToken string) (string, string, error) {
 }
 
 func (s *Service) Logout(refreshToken string) error {
-	t, err := jwt.Parse(refreshToken, func(t *jwt.Token) (interface{}, error) { return []byte(s.cfg.JWTSecret), nil })
+	t, err := jwt.Parse(refreshToken, func(t *jwt.Token) (interface{}, error) { return []byte(config.CF.JWTSecret), nil })
 	if err != nil || !t.Valid {
 		return gorm.ErrInvalidData
 	}

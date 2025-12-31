@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"openresume/internal/common"
-	"openresume/internal/infra/config"
 	"openresume/internal/middleware"
 	"openresume/internal/module/ai"
 	"openresume/internal/module/auth"
@@ -23,19 +22,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Init(cfg config.Config) *gin.Engine {
+func Init() *gin.Engine {
 	router := gin.New()
 	router.Use(middleware.RequestID(), middleware.Logger(), gin.Recovery(), metrics.Middleware())
-
 	api := router.Group("/api/v1")
+	router.Use(middleware.CORS())
 
-	confService := conf.NewService()
 	confHandler := conf.NewHandler()
-	_ = confService.EnsureDefaults(cfg)
-	router.Use(middleware.CORS(cfg, confService))
-
-	authH := auth.NewHandler(cfg, confService)
-	userAuth := middleware.Auth(cfg)
+	authH := auth.NewHandler()
+	userAuth := middleware.Auth()
 	userAdmin := middleware.RequireRole(common.RoleAdmin)
 	templateH := template.NewHandler()
 	api.GET("/templates", templateH.ListAll)
@@ -43,10 +38,10 @@ func Init(cfg config.Config) *gin.Engine {
 
 	authR := api.Group("/auth")
 	authR.GET("/config", confHandler.GetPublic)
-	authR.GET("/wechat/redirect", middleware.RateLimit(10, time.Minute), authH.WeChatRedirect(cfg))
-	authR.GET("/wechat/callback", middleware.RateLimit(30, time.Minute), authH.WeChatCallback(cfg))
-	authR.GET("/github/redirect", middleware.RateLimit(10, time.Minute), authH.GithubRedirect(cfg))
-	authR.GET("/github/callback", middleware.RateLimit(30, time.Minute), authH.GithubCallback(cfg))
+	authR.GET("/wechat/redirect", middleware.RateLimit(10, time.Minute), authH.WeChatRedirect())
+	authR.GET("/wechat/callback", middleware.RateLimit(30, time.Minute), authH.WeChatCallback())
+	authR.GET("/github/redirect", middleware.RateLimit(10, time.Minute), authH.GithubRedirect())
+	authR.GET("/github/callback", middleware.RateLimit(30, time.Minute), authH.GithubCallback())
 	authR.POST("/wechat/consume-ott", authH.ConsumeOTT)
 	authR.POST("/send-code", middleware.RateLimit(3, time.Minute), authH.SendCode)
 	authR.POST("/register", middleware.RateLimit(5, time.Minute), authH.Register)
@@ -66,7 +61,7 @@ func Init(cfg config.Config) *gin.Engine {
 	g.PUT("/resumes/:id", resumeH.Update)
 	g.DELETE("/resumes/:id", resumeH.Delete)
 
-	uploadH := upload.NewHandler(cfg, confService)
+	uploadH := upload.NewHandler()
 	g.POST("/upload/avatar", uploadH.UploadAvatar)
 
 	shareH := share.NewHandler()
@@ -118,9 +113,12 @@ func Init(cfg config.Config) *gin.Engine {
 	healthH := &health.Handler{}
 	api.GET("/healthz", healthH.Healthz)
 	api.GET("/metrics", metrics.Handler())
-	pdfH := pdf.NewHandler(cfg, confService)
+	pdfH := pdf.NewHandler()
 	g.POST("/resumes/:id/pdf", pdfH.GeneratePDF)
 	g.POST("/resumes/:id/image", pdfH.GenerateImage)
+	g.POST("/pdf/exports", pdfH.SubmitExport)
+	g.GET("/pdf/exports/:job_id", pdfH.ExportStatus)
+	api.GET("/pdf/exports/:job_id/download", pdfH.ExportDownload)
 
 	router.Static("/public/uploads", "./uploads")
 	log.Println("router initialized")

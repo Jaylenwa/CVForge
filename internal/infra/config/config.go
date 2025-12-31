@@ -4,6 +4,8 @@ import (
 	"os"
 )
 
+var CF Config
+
 type Config struct {
 	Port          string
 	MySQLDSN      string
@@ -14,7 +16,7 @@ type Config struct {
 }
 
 func Load() Config {
-	return Config{
+	CF = Config{
 		Port:          getenv("PORT", "8080"),
 		MySQLDSN:      getenv("DB_DSN", ""),
 		SQLitePath:    getenv("SQLITE_PATH", "openresume.db"),
@@ -22,6 +24,7 @@ func Load() Config {
 		RedisPassword: getenv("REDIS_PASSWORD", ""),
 		JWTSecret:     getenv("JWT_SECRET", "abcdefghijklmnopqrstuvwxyz"),
 	}
+	return CF
 }
 
 func getenv(key, def string) string {

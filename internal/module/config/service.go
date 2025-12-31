@@ -4,7 +4,6 @@ import (
 	"context"
 	"openresume/internal/common"
 	"openresume/internal/infra/cache"
-	"openresume/internal/infra/config"
 	"openresume/internal/infra/database"
 	"openresume/internal/models"
 	"os"
@@ -22,7 +21,7 @@ func NewService() *Service {
 
 // EnsureDefaults inserts a set of default configuration keys into DB if they don't exist.
 // Values are initialized from environment-backed Config where applicable.
-func (s *Service) EnsureDefaults(cfg config.Config) error {
+func (s *Service) EnsureDefaults() error {
 	type def struct {
 		Key         string
 		Value       string

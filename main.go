@@ -7,18 +7,23 @@ import (
 
 	"openresume/internal/infra/config"
 	"openresume/internal/infra/storage"
+	"openresume/internal/module/pdf"
 	"openresume/internal/router"
 )
 
 func main() {
-	cfg := config.Load()
-	err := storage.Init(cfg)
+	config.Load()
+	err := storage.Init()
 	if err != nil {
 		log.Fatalf("storage init error: %v", err)
 	}
 
-	r := router.Init(cfg)
-	addr := ":" + cfg.Port
+	if err := pdf.StartInProcessWorker(); err != nil {
+		log.Fatalf("pdf worker error: %v", err)
+	}
+
+	r := router.Init()
+	addr := ":" + config.CF.Port
 	if os.Getenv("PORT") != "" {
 		addr = ":" + os.Getenv("PORT")
 	}
