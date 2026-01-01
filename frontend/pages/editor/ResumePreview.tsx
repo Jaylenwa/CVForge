@@ -74,14 +74,8 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const measure = React.useCallback(() => {
     const el = sourceRef.current || rootRef.current;
     if (!el) return;
-    const mmProbe = document.createElement('div');
-    mmProbe.style.position = 'absolute';
-    mmProbe.style.visibility = 'hidden';
-    mmProbe.style.height = '297mm';
-    mmProbe.style.width = '0';
-    document.body.appendChild(mmProbe);
-    const pxHeight = mmProbe.offsetHeight || 1123;
-    document.body.removeChild(mmProbe);
+    const widthPx = el.offsetWidth || el.getBoundingClientRect().width || 794; // 210mm ≈ 794px @96dpi
+    const pxHeight = (widthPx * 297) / 210;
     const contentHeight = el.scrollHeight;
     const count = Math.max(1, Math.ceil(contentHeight / pxHeight));
     setPageInfo({ pageHeight: pxHeight, contentHeight, count });
