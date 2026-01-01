@@ -14,12 +14,9 @@ import { TemplateCNTimeline } from '../../components/templates/cn/TemplateCNTime
 import { TemplateCNBrush } from '../../components/templates/cn/TemplateCNBrush';
 import { TemplateCNCloud } from '../../components/templates/cn/TemplateCNCloud';
 import { TemplateCNFinance } from '../../components/templates/cn/TemplateCNFinance';
-import { TemplateCNGame } from '../../components/templates/cn/TemplateCNGame';
 import { TemplateCNGeometric } from '../../components/templates/cn/TemplateCNGeometric';
 import { TemplateCNMedical } from '../../components/templates/cn/TemplateCNMedical';
 import { TemplateCNOrigami } from '../../components/templates/cn/TemplateCNOrigami';
-import { TemplateCNPixel } from '../../components/templates/cn/TemplateCNPixel';
-import { TemplateCNWave } from '../../components/templates/cn/TemplateCNWave';
 
 interface PreviewProps {
   data: ResumeData;
@@ -56,12 +53,9 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     TemplateCNBrush: TemplateCNBrush,
     TemplateCNCloud: TemplateCNCloud,
     TemplateCNFinance: TemplateCNFinance,
-    TemplateCNGame: TemplateCNGame,
     TemplateCNGeometric: TemplateCNGeometric,
     TemplateCNMedical: TemplateCNMedical,
     TemplateCNOrigami: TemplateCNOrigami,
-    TemplateCNPixel: TemplateCNPixel,
-    TemplateCNWave: TemplateCNWave,
   };
 
   const containerStyle: React.CSSProperties = {
