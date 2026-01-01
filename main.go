@@ -18,7 +18,7 @@ func main() {
 		log.Fatalf("storage init error: %v", err)
 	}
 
-	if err := pdf.StartInProcessWorker(); err != nil {
+	if err := pdf.StartWorker(); err != nil {
 		log.Fatalf("pdf worker error: %v", err)
 	}
 
