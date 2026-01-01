@@ -22,6 +22,8 @@ func NewRepo(db *gorm.DB) *Repo {
 func (r *Repo) ListByUser(uid uint) ([]Resume, error) {
 	var list []Resume
 	err := r.db.Where("user_id = ?", uid).
+		Preload("Personal").
+		Preload("Theme").
 		Preload("Sections.Items").
 		Order("updated_at desc").
 		Find(&list).Error
@@ -32,14 +34,14 @@ func (r *Repo) FindByExternal(externalID string, preload bool) (Resume, error) {
 	var res Resume
 	q := r.db.Where("external_id = ?", externalID)
 	if preload {
-		q = q.Preload("Sections.Items")
+		q = q.Preload("Personal").Preload("Theme").Preload("Sections.Items")
 	}
 	err := q.First(&res).Error
 	return res, err
 }
 
 func (r *Repo) Create(res *Resume) error {
-	return r.db.Create(res).Error
+	return r.db.Session(&gorm.Session{FullSaveAssociations: true}).Create(res).Error
 }
 
 func (r *Repo) DeleteByID(id uint) error {
@@ -58,6 +60,12 @@ func (r *Repo) Replace(existing Resume, updated Resume) error {
 			}
 		}
 		if err := tx.Where("resume_id = ?", existing.ID).Delete(&ResumeSection{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("resume_id = ?", existing.ID).Delete(&ResumePersonal{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("resume_id = ?", existing.ID).Delete(&ResumeTheme{}).Error; err != nil {
 			return err
 		}
 		if err := tx.Session(&gorm.Session{FullSaveAssociations: true}).Omit("CreatedAt").Save(&updated).Error; err != nil {

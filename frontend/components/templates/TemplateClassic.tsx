@@ -1,8 +1,8 @@
 import React from 'react';
-import { ResumeData, ResumeSectionType } from '../../../types';
-import { useSectionTitle } from '../../../hooks/useSectionTitle';
-import { useLanguage } from '../../../contexts/LanguageContext';
-import { hasExtraPersonalInfo, sanitizeHtml } from '../../../utils/resume-helpers';
+import { ResumeData, ResumeSectionType } from '../../types';
+import { useSectionTitle } from '../../hooks/useSectionTitle';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { hasExtraPersonalInfo, sanitizeHtml } from '../../utils/resume-helpers';
 
 export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();

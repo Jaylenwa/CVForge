@@ -57,19 +57,19 @@ func (s *Service) GetPublicPayload(slug string) (string, int, error) {
 		return "", 404, err
 	}
 	var res Resume
-	if err := database.DB.Where("id = ?", sl.ResumeID).Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("id = ?", sl.ResumeID).Preload("Personal").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
 		return "", 404, err
 	}
 	payloadObj := gin.H{
 		"Title":        res.Title,
 		"TemplateID":   res.TemplateID,
-		"ThemeColor":   res.ThemeColor,
-		"ThemeFont":    res.ThemeFont,
-		"ThemeSpacing": res.ThemeSpacing,
-		"FullName":     res.FullName,
-		"Email":        res.Email,
-		"Phone":        res.Phone,
-		"AvatarURL":    res.AvatarURL,
+		"ThemeColor":   res.Theme.Color,
+		"ThemeFont":    res.Theme.Font,
+		"ThemeSpacing": res.Theme.Spacing,
+		"FullName":     res.Personal.FullName,
+		"Email":        res.Personal.Email,
+		"Phone":        res.Personal.Phone,
+		"AvatarURL":    res.Personal.AvatarURL,
 		"Sections":     res.Sections,
 	}
 	b, _ := json.Marshal(payloadObj)

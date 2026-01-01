@@ -3,20 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { ResumeData, ThemeConfig } from '../../types';
 import { getThemeStyles } from '../../utils/resume-helpers';
 
-import { TemplateClassic } from '../../components/templates/base/TemplateClassic';
-import { TemplateBold } from '../../components/templates/base/TemplateBold';
-import { TemplateCNBlue } from '../../components/templates/cn/TemplateCNBlue';
-import { TemplateCNModern } from '../../components/templates/cn/TemplateCNModern';
-import { TemplateCNBusiness } from '../../components/templates/cn/TemplateCNBusiness';
-import { TemplateCNCreative } from '../../components/templates/cn/TemplateCNCreative';
-import { TemplateCNFresh } from '../../components/templates/cn/TemplateCNFresh';
-import { TemplateCNTimeline } from '../../components/templates/cn/TemplateCNTimeline';
-import { TemplateCNBrush } from '../../components/templates/cn/TemplateCNBrush';
-import { TemplateCNCloud } from '../../components/templates/cn/TemplateCNCloud';
-import { TemplateCNFinance } from '../../components/templates/cn/TemplateCNFinance';
-import { TemplateCNGeometric } from '../../components/templates/cn/TemplateCNGeometric';
-import { TemplateCNMedical } from '../../components/templates/cn/TemplateCNMedical';
-import { TemplateCNOrigami } from '../../components/templates/cn/TemplateCNOrigami';
+import { TemplateClassic } from '../../components/templates/TemplateClassic';
 
 interface PreviewProps {
   data: ResumeData;
@@ -43,19 +30,6 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 
   const TEMPLATE_COMPONENTS: Record<string, React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }>> = {
     TemplateClassic: TemplateClassic,
-    TemplateBold: TemplateBold,
-    TemplateCNBlue: TemplateCNBlue,
-    TemplateCNModern: TemplateCNModern,
-    TemplateCNBusiness: TemplateCNBusiness,
-    TemplateCNCreative: TemplateCNCreative,
-    TemplateCNFresh: TemplateCNFresh,
-    TemplateCNTimeline: TemplateCNTimeline,
-    TemplateCNBrush: TemplateCNBrush,
-    TemplateCNCloud: TemplateCNCloud,
-    TemplateCNFinance: TemplateCNFinance,
-    TemplateCNGeometric: TemplateCNGeometric,
-    TemplateCNMedical: TemplateCNMedical,
-    TemplateCNOrigami: TemplateCNOrigami,
   };
 
   const containerStyle: React.CSSProperties = {

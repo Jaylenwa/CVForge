@@ -39,7 +39,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	}
 	var total int64
 	q.Count(&total)
-	if err := q.Order("updated_at desc").Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
+	if err := q.Preload("Personal").Preload("Theme").Order("updated_at desc").Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -74,7 +74,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 			"userName":     nameMap[r.UserID],
 			"title":        r.Title,
 			"templateId":   r.TemplateID,
-			"themeConfig":  gin.H{"color": r.ThemeColor, "fontFamily": r.ThemeFont, "spacing": r.ThemeSpacing},
+			"themeConfig":  gin.H{"color": r.Theme.Color, "fontFamily": r.Theme.Font, "spacing": r.Theme.Spacing},
 			"lastModified": r.LastModified,
 			"createdAt":    r.CreatedAt,
 			"updatedAt":    r.UpdatedAt,
@@ -85,7 +85,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 
 func (h *AdminHandler) AdminGet(c *gin.Context) {
 	var res Resume
-	if err := database.DB.Where("external_id = ?", c.Param("id")).Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("external_id = ?", c.Param("id")).Preload("Personal").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}

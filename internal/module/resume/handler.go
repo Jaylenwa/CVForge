@@ -74,26 +74,26 @@ func (h *Handler) List(c *gin.Context) {
 			"id":           r.ExternalID,
 			"title":        r.Title,
 			"templateId":   r.TemplateID,
-			"themeConfig":  gin.H{"color": r.ThemeColor, "fontFamily": r.ThemeFont, "spacing": r.ThemeSpacing},
+			"themeConfig":  gin.H{"color": r.Theme.Color, "fontFamily": r.Theme.Font, "spacing": r.Theme.Spacing},
 			"lastModified": r.LastModified,
 			"personalInfo": gin.H{
-				"fullName":        r.FullName,
-				"jobTitle":        r.JobTitle,
-				"email":           r.Email,
-				"phone":           r.Phone,
-				"avatarUrl":       r.AvatarURL,
-				"gender":          r.Gender,
-				"age":             r.Age,
-				"maritalStatus":   r.MaritalStatus,
-				"politicalStatus": r.PoliticalStatus,
-				"birthplace":      r.Birthplace,
-				"ethnicity":       r.Ethnicity,
-				"height":          r.Height,
-				"weight":          r.Weight,
+				"fullName":        r.Personal.FullName,
+				"jobTitle":        r.Personal.JobTitle,
+				"email":           r.Personal.Email,
+				"phone":           r.Personal.Phone,
+				"avatarUrl":       r.Personal.AvatarURL,
+				"gender":          r.Personal.Gender,
+				"age":             r.Personal.Age,
+				"maritalStatus":   r.Personal.MaritalStatus,
+				"politicalStatus": r.Personal.PoliticalStatus,
+				"birthplace":      r.Personal.Birthplace,
+				"ethnicity":       r.Personal.Ethnicity,
+				"height":          r.Personal.Height,
+				"weight":          r.Personal.Weight,
 				"customInfo": func() []gin.H {
 					var items []gin.H
-					if r.CustomInfo != "" {
-						if arr, ok := parseCustomInfo(r.CustomInfo); ok {
+					if r.Personal.CustomInfo != "" {
+						if arr, ok := parseCustomInfo(r.Personal.CustomInfo); ok {
 							for _, it := range arr {
 								items = append(items, gin.H{"label": it.Label, "value": it.Value})
 							}
@@ -142,7 +142,7 @@ func (h *Handler) Get(c *gin.Context) {
 		}
 		return
 	}
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, ToDTO(res))
 }
 
 func (h *Handler) Update(c *gin.Context) {

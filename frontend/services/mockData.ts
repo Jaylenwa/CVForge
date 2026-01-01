@@ -2,22 +2,6 @@ import { ResumeData, ResumeSectionType, Template } from '../types';
 
 export const MOCK_TEMPLATES: Template[] = [
   { id: 'TemplateClassic', name: '经典专业版', tags: ['专业', '简洁', 'ATS 友好'], usageCount: 0, isPremium: false, category: 'General' },
-  { id: 'TemplateBold', name: '创意大胆', tags: ['创意', '营销', '色彩'], usageCount: 0, isPremium: true, category: 'Creative' },
-  { id: 'TemplateCNBlue', name: '蓝色简约', tags: ['通用', '中文', 'ATS 友好'], usageCount: 0, isPremium: false, category: 'General' },
-  { id: 'TemplateCNModern', name: '现代中文', tags: ['现代', '中文', '清爽'], usageCount: 0, isPremium: false, category: 'General' },
-  { id: 'TemplateCNBusiness', name: '商务专业', tags: ['商务', '中文', '专业'], usageCount: 0, isPremium: false, category: 'Finance' },
-  { id: 'TemplateCNCreative', name: '中文创意', tags: ['创意', '中文', '设计'], usageCount: 0, isPremium: true, category: 'Creative' },
-  { id: 'TemplateCNFresh', name: '清新绿色', tags: ['清新', '中文', '绿色'], usageCount: 0, isPremium: false, category: 'General' },
-  { id: 'TemplateCNTimeline', name: '时间轴信息图', tags: ['时间轴', '中文', '信息图'], usageCount: 0, isPremium: false, category: 'General' },
-  { id: 'TemplateCNBrush', name: '毛笔艺术', tags: ['毛笔', '中文', '艺术'], usageCount: 0, isPremium: true, category: 'Creative' },
-  { id: 'TemplateCNCloud', name: '云朵柔和', tags: ['云端', '中文', '柔和'], usageCount: 0, isPremium: false, category: 'IT' },
-  { id: 'TemplateCNFinance', name: '金融数据', tags: ['金融', '中文', '数据'], usageCount: 0, isPremium: false, category: 'Finance' },
-  // { id: 'TemplateCNGame', name: '游戏趣味', tags: ['游戏', '中文', '趣味'], usageCount: 0, isPremium: false, category: 'IT' },
-  { id: 'TemplateCNGeometric', name: '几何图形', tags: ['几何', '中文', '造型'], usageCount: 0, isPremium: false, category: 'General' },
-  { id: 'TemplateCNMedical', name: '医疗洁净', tags: ['医疗', '中文', '洁净'], usageCount: 0, isPremium: false, category: 'General' },
-  { id: 'TemplateCNOrigami', name: '折纸艺术', tags: ['折纸', '中文', '纸感'], usageCount: 0, isPremium: true, category: 'Creative' },
-  // { id: 'TemplateCNPixel', name: '像素复古', tags: ['像素', '中文', '复古'], usageCount: 0, isPremium: true, category: 'IT' },
-  // { id: 'TemplateCNWave', name: '流线波纹', tags: ['波纹', '中文', '流线'], usageCount: 0, isPremium: false, category: 'Creative' },
 ];
 
 export const INITIAL_RESUME: ResumeData = {

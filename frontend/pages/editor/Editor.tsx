@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Printer, Share2, Layout, Globe, Eye } from 'lucide-react';
 import { EditorForm } from './EditorForm';
@@ -23,6 +23,7 @@ export const Editor: React.FC = () => {
   const [templates, setTemplates] = useState<Array<{ id: string }>>([]);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [exportError, setExportError] = useState<{ open: boolean; title: string; details: string }>({ open: false, title: '', details: '' });
+  const hasCreatedFromTemplate = useRef(false);
 
   // Initialize data based on URL params
   useEffect(() => {
@@ -92,6 +93,10 @@ export const Editor: React.FC = () => {
     }
 
     if (templateId) {
+        if (hasCreatedFromTemplate.current) {
+          return;
+        }
+        hasCreatedFromTemplate.current = true;
         const token = localStorage.getItem('token');
         const payload = { ...INITIAL_RESUME, templateId };
         fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
