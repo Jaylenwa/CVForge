@@ -125,7 +125,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
       <div 
         id="resume-export-root"
         ref={rootRef}
-        className={`relative w-[210mm] min-h-[297mm] print:w-[210mm] print:transform-none bg-white mx-auto box-border px-[15mm] py-[20mm] print:px-[15mm] print:py-[20mm] ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none border border-gray-200 print:border-0 ${className}`}
+        className={`relative w-[210mm] min-h-[297mm] print:w-[210mm] print:transform-none bg-white mx-auto box-border px-[1.5mm] py-[2mm] print:px-[1.5mm] print:py-[2mm] ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none border border-gray-200 print:border-0 ${className}`}
         style={containerStyle}
       >
         {showPageHint && (
