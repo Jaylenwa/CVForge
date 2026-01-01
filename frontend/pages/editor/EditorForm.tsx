@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trash2, Plus, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate, Briefcase, GraduationCap, Wrench, User } from 'lucide-react';
+import { Trash2, Plus, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate, Briefcase, GraduationCap, Wrench, User, Target, BookOpen, Layers, Award, Heart } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType, ThemeConfig } from '../../types';
@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button';
 import { polishText, generateSummary } from '../../services/geminiService';
 import { API_BASE } from '../../config';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { SortableSection } from './SortableSection';
 import { RichTextEditor } from '../../components/ui/RichTextEditor';
 
@@ -28,6 +29,7 @@ const generateUUID = () => {
 
 export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   const { t } = useLanguage();
+  const confirm = useConfirm();
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor)
@@ -189,13 +191,13 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     }
   }, [data.sections]);
 
-  const removeSection = (sectionId: string) => {
-      if (confirm(t('dashboard.confirm.delete'))) { // Reusing delete confirmation
-          onChange({
-              ...data,
-              sections: data.sections.filter(s => s.id !== sectionId)
-          });
-      }
+  const removeSection = async (sectionId: string) => {
+      const ok = await confirm({ title: t('common.confirmAction'), message: t('editor.removeSection'), variant: 'danger' });
+      if (!ok) return;
+      onChange({
+          ...data,
+          sections: data.sections.filter(s => s.id !== sectionId)
+      });
   };
 
   useEffect(() => {
@@ -486,7 +488,16 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                       section.type === ResumeSectionType.Experience ? <Briefcase size={18}/> :
                       section.type === ResumeSectionType.Education ? <GraduationCap size={18}/> :
                       section.type === ResumeSectionType.Skills ? <Wrench size={18}/> :
+                      section.type === ResumeSectionType.Projects ? <Layers size={18}/> :
+                      section.type === ResumeSectionType.Internships ? <Briefcase size={18}/> :
+                      section.type === ResumeSectionType.Portfolio ? <ImageIcon size={18}/> :
+                      section.type === ResumeSectionType.Awards ? <Award size={18}/> :
+                      section.type === ResumeSectionType.Interests ? <Heart size={18}/> :
+                      section.type === ResumeSectionType.JobApplication ? <Target size={18}/> :
+                      section.type === ResumeSectionType.Exam ? <BookOpen size={18}/> :
+                      section.type === ResumeSectionType.SelfEvaluation ? <User size={18}/> :
                       section.type === ResumeSectionType.Summary ? <Sparkles size={18}/> :
+                      section.type === ResumeSectionType.Custom ? <LayoutTemplate size={18}/> :
                       <Type size={18}/>
                     }
                     onAddItem={section.type !== ResumeSectionType.Summary ? () => addItem(section.id) : undefined}

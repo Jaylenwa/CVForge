@@ -600,7 +600,7 @@ const translations: Translations = {
     'editor.color.customTitle': '自定义颜色',
     'editor.back': '返回',
     'editor.addSection': '添加自定义模块',
-    'editor.removeSection': '删除模块',
+    'editor.removeSection': '删除这个模块',
     'editor.rename': '重命名模块',
     'editor.toggleVisibility': '切换显示',
     'editor.template': '切换模板',

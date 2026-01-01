@@ -136,7 +136,7 @@ export const PublicResume: React.FC = () => {
   }
 
   return (
-    <div className="bg-white min-h-screen p-4 md:p-8">
+    <div className="bg-white min-h-screen p-4 md:p-8 overflow-visible">
       <div className="fixed top-3 right-4 z-50">
         <button 
           onClick={toggleLanguage}
@@ -149,7 +149,7 @@ export const PublicResume: React.FC = () => {
           </div>
         </button>
       </div>
-      {data && <ResumePreview data={data} scale={1} />}
+      {data && <ResumePreview data={data} scale={1} scrollInside={false} />}
     </div>
   );
 };

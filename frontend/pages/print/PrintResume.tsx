@@ -73,8 +73,8 @@ export const PrintResume: React.FC = () => {
   }, [searchParams]);
 
   return (
-    <div className="bg-white print:bg-white min-h-screen p-0 m-0">
-      {data && <ResumePreview data={data} scale={1} />}
+    <div className="bg-white print:bg-white min-h-screen p-0 m-0 overflow-visible">
+      {data && <ResumePreview data={data} scale={1} scrollInside={false} />}
     </div>
   );
 };
