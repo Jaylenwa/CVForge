@@ -82,7 +82,9 @@ export const Editor: React.FC = () => {
                     id: i.ExternalID || i.ID,
                     title: i.Title,
                     subtitle: i.Subtitle,
-                    dateRange: i.DateRange,
+                    timeStart: i.TimeStart,
+                    timeEnd: i.TimeEnd,
+                    today: !!i.Today,
                     description: i.Description
                   }))
                 }))
@@ -136,7 +138,7 @@ export const Editor: React.FC = () => {
         type: s.type,
         title: s.title,
         isVisible: s.isVisible,
-        items: s.items.map(i => ({ id: i.id, title: i.title, subtitle: i.subtitle, dateRange: i.dateRange, description: i.description }))
+        items: s.items.map(i => ({ id: i.id, title: i.title, subtitle: i.subtitle, timeStart: i.timeStart || '', timeEnd: i.today ? '' : (i.timeEnd || ''), today: !!i.today, description: i.description }))
       }))
     };
     fetch(`${API_BASE}/resumes/${resumeData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })

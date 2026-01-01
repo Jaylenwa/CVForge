@@ -58,11 +58,13 @@ type ResumeReq struct {
 			Id          string `json:"id"`
 			Title       string `json:"title"`
 			Subtitle    string `json:"subtitle"`
-			DateRange   string `json:"dateRange"`
+			TimeStart   string `json:"timeStart"`
+			TimeEnd     string `json:"timeEnd"`
+			Today       bool   `json:"today"`
 			Description string `json:"description"`
 		} `json:"items"`
 	} `json:"sections"`
-}
+} 
 
 func (s *Service) ListUserResumes(uid uint) ([]Resume, error) {
 	return s.repo.ListByUser(uid)
@@ -175,7 +177,9 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 				ExternalID:  it.Id,
 				Title:       it.Title,
 				Subtitle:    it.Subtitle,
-				DateRange:   it.DateRange,
+				TimeStart:   it.TimeStart,
+				TimeEnd:     it.TimeEnd,
+				Today:       it.Today,
 				Description: it.Description,
 				OrderNum:    ii,
 			})

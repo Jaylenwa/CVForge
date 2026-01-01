@@ -7,6 +7,8 @@ export interface PageResp<T> {
   page: number;
   pageSize: number;
   total: number;
+  hasNext?: boolean;
+  totalPages?: number;
 }
 
 // Stats
@@ -81,7 +83,20 @@ export const listResumes = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
   const res = await fetch(`${API_BASE}/admin/resumes?${q}`, { headers: authHeader() });
   if (!res.ok) throw new Error('failed');
-  return res.json() as Promise<PageResp<AdminResume>>;
+  const data = await res.json();
+  const items: AdminResume[] = (data.items || []).map((it: any) => {
+    const r = it.resume || {};
+    return {
+      id: r.ExternalID,
+      userId: it.userId,
+      userName: it.userName,
+      title: r.Title,
+      templateId: r.TemplateID,
+      themeConfig: { color: r.ThemeColor, fontFamily: r.ThemeFont, spacing: r.ThemeSpacing },
+      lastModified: r.LastModified,
+    } as AdminResume;
+  });
+  return { items, page: data.page, pageSize: data.pageSize, total: data.total, hasNext: data.hasNext, totalPages: data.totalPages } as PageResp<AdminResume>;
 };
 
 export const deleteResume = async (id: string) => {

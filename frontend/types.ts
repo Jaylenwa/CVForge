@@ -5,6 +5,13 @@ export enum ResumeSectionType {
   Education = 'education',
   Skills = 'skills',
   Projects = 'projects',
+  Internships = 'internships',
+  Portfolio = 'portfolio',
+  Awards = 'awards',
+  Interests = 'interests',
+  JobApplication = 'jobApplication',
+  Exam = 'exam',
+  SelfEvaluation = 'selfEvaluation',
   Custom = 'custom'
 }
 
@@ -12,7 +19,9 @@ export interface ResumeItem {
   id: string;
   title?: string;
   subtitle?: string; // Company or Degree
-  dateRange?: string;
+  timeStart?: string; // YYYY-MM
+  timeEnd?: string;   // YYYY-MM
+  today?: boolean;
   description: string; // HTML or Markdown allowed
 }
 

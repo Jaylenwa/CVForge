@@ -16,6 +16,8 @@ export const ResumesPage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [hasNext, setHasNext] = useState<boolean>(false);
   const [keyword, setKeyword] = useState('');
   const confirm = useConfirm();
   const { showToast } = useToast();
@@ -33,6 +35,8 @@ export const ResumesPage: React.FC = () => {
       const resp = await listResumes({ page: String(page), pageSize: String(pageSize), title: keyword });
       setItems(resp.items);
       setTotal(resp.total);
+      setTotalPages(resp.totalPages || Math.ceil(resp.total / resp.pageSize));
+      setHasNext(!!resp.hasNext && page < (resp.totalPages || Math.ceil(resp.total / resp.pageSize)));
     } catch {
       showToast(t('admin.msg.loadResumesFailed'), 'error');
     } finally { setLoading(false); }
@@ -193,10 +197,11 @@ export const ResumesPage: React.FC = () => {
             </button>
             <div className="flex items-center gap-1 px-4">
               <span className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg font-medium">{page}</span>
+              <span className="text-xs text-slate-500">/ {totalPages}</span>
             </div>
             <button
               onClick={() => setPage((p: number) => p + 1)}
-              disabled={page * pageSize >= total}
+              disabled={!hasNext}
               className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
             >
               {t('admin.next')} <ChevronRight className="w-4 h-4" />

@@ -69,18 +69,23 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	items := make([]gin.H, 0, len(list))
 	for _, r := range list {
 		items = append(items, gin.H{
-			"id":           r.ID,
-			"userId":       r.UserID,
-			"userName":     nameMap[r.UserID],
-			"title":        r.Title,
-			"templateId":   r.TemplateID,
-			"themeConfig":  gin.H{"color": r.Theme.Color, "fontFamily": r.Theme.Font, "spacing": r.Theme.Spacing},
-			"lastModified": r.LastModified,
-			"createdAt":    r.CreatedAt,
-			"updatedAt":    r.UpdatedAt,
+			"resume":    ToDTO(r),
+			"userId":    r.UserID,
+			"userName":  nameMap[r.UserID],
+			"createdAt": r.CreatedAt,
+			"updatedAt": r.UpdatedAt,
 		})
 	}
-	c.JSON(http.StatusOK, gin.H{"items": items, "page": page, "pageSize": size, "total": total})
+	totalPages := (int(total) + size - 1) / size
+	hasNext := page*size < int(total)
+	c.JSON(http.StatusOK, gin.H{
+		"items":      items,
+		"page":       page,
+		"pageSize":   size,
+		"total":      total,
+		"totalPages": totalPages,
+		"hasNext":    hasNext,
+	})
 }
 
 func (h *AdminHandler) AdminGet(c *gin.Context) {
@@ -89,7 +94,7 @@ func (h *AdminHandler) AdminGet(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, ToDTO(res))
 }
 
 func (h *AdminHandler) AdminDelete(c *gin.Context) {

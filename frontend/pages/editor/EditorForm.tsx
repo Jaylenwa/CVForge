@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Trash2, Plus, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate, Briefcase, GraduationCap, Wrench, User } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -157,20 +157,37 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     });
   };
 
-  const addSection = () => {
-      const newSection: ResumeSection = {
+  useEffect(() => {
+    const required: ResumeSectionType[] = [
+      ResumeSectionType.JobApplication,
+      ResumeSectionType.Exam,
+      ResumeSectionType.Education,
+      ResumeSectionType.Experience,
+      ResumeSectionType.Projects,
+      ResumeSectionType.Internships,
+      ResumeSectionType.Portfolio,
+      ResumeSectionType.Skills,
+      ResumeSectionType.Awards,
+      ResumeSectionType.SelfEvaluation,
+      ResumeSectionType.Interests
+    ];
+    const existing = new Set(data.sections.map(s => s.type));
+    const toAdd: ResumeSection[] = [];
+    required.forEach(type => {
+      if (!existing.has(type)) {
+        toAdd.push({
           id: generateUUID(),
-          type: ResumeSectionType.Custom,
-          title: t('section.custom'),
-          items: [],
-          isVisible: true
-      };
-      onChange({
-          ...data,
-          sections: [...data.sections, newSection]
-      });
-      setActiveSection(newSection.id);
-  };
+          type,
+          title: '',
+          isVisible: true,
+          items: type === ResumeSectionType.SelfEvaluation ? [{ id: generateUUID(), description: '' }] : []
+        });
+      }
+    });
+    if (toAdd.length) {
+      onChange({ ...data, sections: [...data.sections, ...toAdd] });
+    }
+  }, [data.sections]);
 
   const removeSection = (sectionId: string) => {
       if (confirm(t('dashboard.confirm.delete'))) { // Reusing delete confirmation
@@ -179,6 +196,71 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
               sections: data.sections.filter(s => s.id !== sectionId)
           });
       }
+  };
+
+  useEffect(() => {
+    const summaries = data.sections.filter(s => s.type === ResumeSectionType.Summary);
+    if (!summaries.length) return;
+    const selfIndex = data.sections.findIndex(s => s.type === ResumeSectionType.SelfEvaluation);
+    const otherSections = data.sections.filter(s => s.type !== ResumeSectionType.Summary);
+    if (selfIndex >= 0) {
+      const self = data.sections[selfIndex];
+      const mergedItems = [...self.items, ...summaries.flatMap(s => s.items.length ? s.items : [{ id: generateUUID(), description: '' }])];
+      const merged = otherSections.map(s => s.type === ResumeSectionType.SelfEvaluation ? { ...s, items: mergedItems, isVisible: true } : s);
+      onChange({ ...data, sections: merged });
+    } else {
+      const newSelf: ResumeSection = {
+        id: generateUUID(),
+        type: ResumeSectionType.SelfEvaluation,
+        title: '',
+        isVisible: true,
+        items: summaries.flatMap(s => s.items.length ? s.items : [{ id: generateUUID(), description: '' }])
+      };
+      onChange({ ...data, sections: [...otherSections, newSelf] });
+    }
+  }, [data.sections]);
+
+  useEffect(() => {
+    const order: ResumeSectionType[] = [
+      ResumeSectionType.JobApplication,
+      ResumeSectionType.Exam,
+      ResumeSectionType.Education,
+      ResumeSectionType.Experience,
+      ResumeSectionType.Projects,
+      ResumeSectionType.Internships,
+      ResumeSectionType.Portfolio,
+      ResumeSectionType.Skills,
+      ResumeSectionType.Awards,
+      ResumeSectionType.Interests,
+      ResumeSectionType.SelfEvaluation
+    ];
+    const orderMap = new Map(order.map((t, i) => [t, i]));
+    const origIndex = new Map(data.sections.map((s, i) => [s.id, i]));
+    const sorted = [...data.sections].sort((a, b) => {
+      const ai = orderMap.get(a.type);
+      const bi = orderMap.get(b.type);
+      const aKnown = ai !== undefined;
+      const bKnown = bi !== undefined;
+      if (aKnown && bKnown) return (ai as number) - (bi as number);
+      if (aKnown && !bKnown) return -1;
+      if (!aKnown && bKnown) return 1;
+      return (origIndex.get(a.id) as number) - (origIndex.get(b.id) as number);
+    });
+    const changed = sorted.some((s, i) => s.id !== data.sections[i]?.id);
+    if (changed) {
+      onChange({ ...data, sections: sorted });
+    }
+  }, [data.sections]);
+
+  const addCustomSection = () => {
+    const newSection: ResumeSection = {
+      id: generateUUID(),
+      type: ResumeSectionType.Custom,
+      title: '',
+      isVisible: true,
+      items: [{ id: generateUUID(), title: '', description: '' }]
+    };
+    onChange({ ...data, sections: [...data.sections, newSection] });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -436,12 +518,31 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                                         value={item.subtitle}
                                         onChange={e => updateItem(section.id, item.id, 'subtitle', e.target.value)}
                                     />
-                                    <input 
-                                        placeholder={t('editor.placeholder.dateRange')} 
+                                    <div className="flex items-center gap-2">
+                                      <input 
+                                        type="month"
                                         className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                        value={item.dateRange}
-                                        onChange={e => updateItem(section.id, item.id, 'dateRange', e.target.value)}
-                                    />
+                                        value={item.timeStart || ''}
+                                        onChange={e => updateItem(section.id, item.id, 'timeStart', e.target.value)}
+                                      />
+                                      <span className="text-xs text-gray-500">-</span>
+                                      <input 
+                                        type="month"
+                                        disabled={item.today}
+                                        className={`w-full text-sm border-b outline-none pb-1 bg-transparent ${item.today ? 'border-gray-200 text-gray-400' : 'border-gray-200 focus:border-blue-500'}`}
+                                        value={item.timeEnd || ''}
+                                        onChange={e => updateItem(section.id, item.id, 'timeEnd', e.target.value)}
+                                      />
+                                      <label className="flex items-center ml-2 text-xs text-gray-600">
+                                        <input 
+                                          type="checkbox" 
+                                          className="mr-1"
+                                          checked={!!item.today}
+                                          onChange={e => updateItem(section.id, item.id, 'today', e.target.checked ? true as any : false as any)}
+                                        />
+                                        {t('common.toPresent') || '至今'}
+                                      </label>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -485,16 +586,19 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
           </SortableContext>
       </DndContext>
 
-      {/* Add Custom Section Button */}
-      <div className="p-4 border-t border-gray-200">
-          <Button 
-            variant="ghost" 
-            className="w-full text-blue-600 hover:bg-blue-50" 
-            onClick={addSection}
-          >
-              <Plus size={16} className="mr-2"/> {t('editor.addSection')}
-          </Button>
+ 
+      <div className="mt-4">
+        <Button
+          variant="outline"
+          size="sm"
+          icon={<Plus size={14} />}
+          onClick={addCustomSection}
+          className="w-full"
+        >
+          {t('editor.addSection')}
+        </Button>
       </div>
+
     </>
   );
 

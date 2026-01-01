@@ -8,8 +8,8 @@ import (
 	"openresume/internal/common"
 	"openresume/internal/infra/cache"
 	"openresume/internal/infra/database"
+	resmod "openresume/internal/module/resume"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -60,19 +60,8 @@ func (s *Service) GetPublicPayload(slug string) (string, int, error) {
 	if err := database.DB.Where("id = ?", sl.ResumeID).Preload("Personal").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
 		return "", 404, err
 	}
-	payloadObj := gin.H{
-		"Title":        res.Title,
-		"TemplateID":   res.TemplateID,
-		"ThemeColor":   res.Theme.Color,
-		"ThemeFont":    res.Theme.Font,
-		"ThemeSpacing": res.Theme.Spacing,
-		"FullName":     res.Personal.FullName,
-		"Email":        res.Personal.Email,
-		"Phone":        res.Personal.Phone,
-		"AvatarURL":    res.Personal.AvatarURL,
-		"Sections":     res.Sections,
-	}
-	b, _ := json.Marshal(payloadObj)
+	payload := resmod.ToDTO(res)
+	b, _ := json.Marshal(payload)
 	val := string(b)
 	if cache.RDB != nil {
 		_ = cache.RDB.Set(context.Background(), cacheKey, val, 10*time.Minute).Err()

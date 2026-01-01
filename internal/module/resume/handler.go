@@ -44,66 +44,9 @@ func (h *Handler) List(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
-	items := make([]gin.H, 0, len(list))
+	items := make([]ResumeDTO, 0, len(list))
 	for _, r := range list {
-		sections := make([]gin.H, 0, len(r.Sections))
-		for _, s := range r.Sections {
-			previewItems := make([]gin.H, 0, len(s.Items))
-			max := 3
-			for i, it := range s.Items {
-				if i >= max {
-					break
-				}
-				previewItems = append(previewItems, gin.H{
-					"id":          it.ExternalID,
-					"title":       it.Title,
-					"subtitle":    it.Subtitle,
-					"dateRange":   it.DateRange,
-					"description": it.Description,
-				})
-			}
-			sections = append(sections, gin.H{
-				"id":        s.ExternalID,
-				"type":      s.Type,
-				"title":     s.Title,
-				"isVisible": s.IsVisible,
-				"items":     previewItems,
-			})
-		}
-		items = append(items, gin.H{
-			"id":           r.ExternalID,
-			"title":        r.Title,
-			"templateId":   r.TemplateID,
-			"themeConfig":  gin.H{"color": r.Theme.Color, "fontFamily": r.Theme.Font, "spacing": r.Theme.Spacing},
-			"lastModified": r.LastModified,
-			"personalInfo": gin.H{
-				"fullName":        r.Personal.FullName,
-				"jobTitle":        r.Personal.JobTitle,
-				"email":           r.Personal.Email,
-				"phone":           r.Personal.Phone,
-				"avatarUrl":       r.Personal.AvatarURL,
-				"gender":          r.Personal.Gender,
-				"age":             r.Personal.Age,
-				"maritalStatus":   r.Personal.MaritalStatus,
-				"politicalStatus": r.Personal.PoliticalStatus,
-				"birthplace":      r.Personal.Birthplace,
-				"ethnicity":       r.Personal.Ethnicity,
-				"height":          r.Personal.Height,
-				"weight":          r.Personal.Weight,
-				"customInfo": func() []gin.H {
-					var items []gin.H
-					if r.Personal.CustomInfo != "" {
-						if arr, ok := parseCustomInfo(r.Personal.CustomInfo); ok {
-							for _, it := range arr {
-								items = append(items, gin.H{"label": it.Label, "value": it.Value})
-							}
-						}
-					}
-					return items
-				}(),
-			},
-			"sections": sections,
-		})
+		items = append(items, ToPreviewDTO(r, 3))
 	}
 	c.JSON(http.StatusOK, gin.H{"items": items})
 }
