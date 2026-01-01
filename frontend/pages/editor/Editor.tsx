@@ -265,12 +265,12 @@ export const Editor: React.FC = () => {
       {/* Main Workspace */}
       <div className="flex-grow flex overflow-hidden relative">
         {/* Left: Form Editor */}
-        <div className={`w-full md:w-1/2 lg:w-5/12 xl:w-1/3 bg-white h-full z-10 transition-transform duration-300 absolute md:relative ${isMobilePreview ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
+        <div className={`w-full md:w-2/5 lg:w-2/5 xl:w-2/5 bg-white h-full z-10 transition-transform duration-300 absolute md:relative ${isMobilePreview ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
             <EditorForm data={resumeData} onChange={setResumeData} />
         </div>
 
         {/* Right: Preview */}
-        <div className={`w-full md:w-1/2 lg:w-7/12 xl:w-2/3 bg-white h-full overflow-auto min-h-0 absolute md:relative transition-transform duration-300 md:border-l md:border-gray-200 ${isMobilePreview ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+        <div className={`w-full md:w-3/5 lg:w-3/5 xl:w-3/5 bg-white h-full overflow-auto min-h-0 absolute md:relative transition-transform duration-300 md:border-l md:border-gray-200 md:px-6 lg:px-8 xl:px-10 ${isMobilePreview ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
              <ResumePreview data={resumeData} scale={scale} disableShadow />
         </div>
       </div>

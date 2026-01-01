@@ -34,7 +34,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 
   const containerStyle: React.CSSProperties = {
     transform: `scale(${scale})`,
-    transformOrigin: 'top left',
+    transformOrigin: 'top center',
     height: pageInfo.pageHeight > 0 ? `${pageInfo.count * pageInfo.pageHeight}px` : '297mm',
     ...style,
   };
@@ -134,7 +134,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 
 export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1, disableShadow = false }) => {
   return (
-    <div className={`w-full flex justify-center bg-white p-0 overflow-auto min-h-0 print:p-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
+    <div className={`w-full flex justify-center bg-white pt-4 md:pt-6 lg:pt-8 xl:pt-10 overflow-auto min-h-0 print:pt-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
       <ResumeArtboard data={data} scale={scale} disableShadow={disableShadow} />
     </div>
   );
