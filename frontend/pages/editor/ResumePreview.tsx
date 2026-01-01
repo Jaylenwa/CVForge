@@ -40,7 +40,9 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const { t } = useLanguage();
   const styles = getThemeStyles(data.themeConfig);
   const rootRef = React.useRef<HTMLDivElement>(null);
+  const sourceRef = React.useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });
+  const [pageOffsets, setPageOffsets] = React.useState<number[]>([0]);
 
   const TEMPLATE_COMPONENTS: Record<string, React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }>> = {
     TemplateClassic: TemplateClassic,
@@ -70,7 +72,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   };
 
   const measure = React.useCallback(() => {
-    const el = rootRef.current;
+    const el = sourceRef.current || rootRef.current;
     if (!el) return;
     const mmProbe = document.createElement('div');
     mmProbe.style.position = 'absolute';
@@ -83,6 +85,12 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     const contentHeight = el.scrollHeight;
     const count = Math.max(1, Math.ceil(contentHeight / pxHeight));
     setPageInfo({ pageHeight: pxHeight, contentHeight, count });
+
+    const offsets: number[] = [];
+    for (let i = 0; i < count; i++) {
+      offsets.push(i * pxHeight);
+    }
+    setPageOffsets(offsets);
   }, []);
 
   React.useEffect(() => {
@@ -97,7 +105,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   
   React.useEffect(() => {
     let ro: ResizeObserver | null = null;
-    const el = rootRef.current;
+    const el = sourceRef.current || rootRef.current;
     if (el) {
       ro = new ResizeObserver(() => measure());
       ro.observe(el);
@@ -125,7 +133,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
       <div 
         id="resume-export-root"
         ref={rootRef}
-        className={`relative w-[210mm] min-h-[297mm] print:w-[210mm] print:transform-none bg-white mx-auto box-border px-[1.5mm] py-[2mm] print:px-[1.5mm] print:py-[2mm] ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none border border-gray-200 print:border-0 ${className}`}
+        className={`relative w-[210mm] min-h-[297mm] print:w-[210mm] print:transform-none bg-white mx-auto box-border ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none border border-gray-200 print:border-0 ${className}`}
         style={containerStyle}
       >
         {showPageHint && (
@@ -133,19 +141,31 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
             {t('preview.pagesHint').replace('{count}', String(pageInfo.count))}
           </div>
         )}
-        {Array.from({ length: Math.max(0, pageInfo.count - 1) }).map((_, i) => {
-          const top = (i + 1) * pageInfo.pageHeight;
-          return (
-            <div
-              key={i}
-              className="absolute left-0 right-0 border-b border-dashed border-red-300 print:hidden z-50 flex items-center justify-end pr-2"
-              style={{ top: `${top}px`, height: '1px' }}
-            >
-              <span className="text-xs text-red-400 bg-white px-1">Page {i + 2}</span>
-            </div>
-          );
-        })}
-        {renderTemplate()}
+
+        <div className="print:hidden">
+          {Array.from({ length: pageInfo.count }).map((_, i) => {
+            const start = pageOffsets[i] ?? i * pageInfo.pageHeight;
+            return (
+              <div
+                key={`page-${i}`}
+                className="w-[210mm] h-[297mm] overflow-hidden bg-white mx-auto border border-gray-200 shadow-sm mb-4"
+              >
+                <div className="px-[1.5mm] py-[2mm]" style={{ transform: `translateY(-${start}px)` }}>
+                  {renderTemplate()}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          ref={sourceRef}
+          className="absolute left-0 top-0 w-[210mm] min-h-[297mm] invisible -z-10 pointer-events-none print:visible print:static print:z-auto print:pointer-events-auto"
+        >
+          <div className="px-[1.5mm] py-[2mm]">
+            {renderTemplate()}
+          </div>
+        </div>
       </div>
   );
 };
