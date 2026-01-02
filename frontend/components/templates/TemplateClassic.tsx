@@ -57,7 +57,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                             {section.items.map(item => (
                               <div key={item.id}>
                                 {item.description && (
-                                  <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                                  <div className="resume-rich-content text-gray-600 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
                                 )}
                               </div>
                             ))}
@@ -85,7 +85,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                                         </div>
                                       )}
                                       {item.description && (
-                                          <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                                          <div className="resume-rich-content text-gray-600 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
                                       )}
                                   </div>
                               ))}

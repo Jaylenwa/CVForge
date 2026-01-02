@@ -1,7 +1,10 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Bold, Italic, List, Wand2, Loader2, Undo, Redo } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Wand2, Loader2 } from 'lucide-react';
+import { Editor, Toolbar } from '@wangeditor/editor-for-react';
+import '@wangeditor/editor/dist/css/style.css';
 import { polishText } from '../../services/geminiService';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { sanitizeHtml } from '../../utils/resume-helpers';
 
 interface RichTextEditorProps {
   value: string;
@@ -11,143 +14,44 @@ interface RichTextEditorProps {
   className?: string;
   minRows?: number;
   maxHeight?: number;
-  valueFormat?: 'text' | 'html';
-  outputFormat?: 'text' | 'html';
-  enableModeToggle?: boolean;
 }
 
-const textToHtml = (text: string) => {
-  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const lines = escaped.split(/\r?\n/);
-  return lines.map(l => `<div>${l || '<br>'}</div>`).join('');
-};
-
 const htmlToText = (html: string) => {
-  const temp = document.createElement('div');
-  temp.innerHTML = html;
-  const out: string[] = [];
-  const walk = (node: Node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      out.push((node as Text).nodeValue || '');
-      return;
-    }
-    const el = node as HTMLElement;
-    const name = (el.tagName || '').toLowerCase();
-    if (name === 'br') {
-      out.push('\n');
-      return;
-    }
-    if (name === 'li') {
-      out.push('• ');
-    }
-    Array.from(node.childNodes).forEach(walk);
-    if (name === 'div' || name === 'p' || name === 'li') {
-      out.push('\n');
-    }
-  };
-  Array.from(temp.childNodes).forEach(walk);
-  return out.join('').replace(/\n{3,}/g, '\n\n').trim();
+  const d = document.createElement('div');
+  d.innerHTML = html || '';
+  return (d.textContent || '').replace(/\u00a0/g, ' ').trim();
 };
 
-export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, label, aiContext, className = '', minRows = 4, maxHeight = 300, valueFormat = 'text', outputFormat = 'text', enableModeToggle = true }) => {
-  const editorRef = useRef<HTMLDivElement>(null);
+export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, label, aiContext, className = '', minRows = 4, maxHeight = 300 }) => {
+  const editorRef = useRef<any>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
-  const [isComposing, setIsComposing] = useState(false);
   const { t } = useLanguage();
-  const [mode, setMode] = useState<'text' | 'html'>(valueFormat);
+  const [html, setHtml] = useState<string>(value || '');
+  const [editor, setEditor] = useState<any>(null);
 
   useEffect(() => {
-    const nextHtml = mode === 'html' ? (value || '') : textToHtml(value || '');
-    if (editorRef.current && editorRef.current.innerHTML !== nextHtml) {
-      editorRef.current.innerHTML = nextHtml;
-    }
-  }, [value, mode]);
+    setHtml(value || '');
+  }, [value]);
 
-  const handleInput = () => {
-    if (editorRef.current) {
-      const nextHtml = editorRef.current.innerHTML;
-      if (isComposing) return;
-      onChange(mode === 'html' ? nextHtml : htmlToText(nextHtml));
-    }
-  };
+  const toolbarConfig = useMemo(() => ({
+    toolbarKeys: ['bold', 'italic', 'underline', 'bulletedList', 'numberedList', 'link', 'undo', 'redo'],
+  }), []);
 
-  const handleCompositionStart = () => {
-    setIsComposing(true);
-  };
-
-  const handleCompositionEnd = () => {
-    setIsComposing(false);
-    if (editorRef.current) {
-      const nextHtml = editorRef.current.innerHTML;
-      onChange(mode === 'html' ? nextHtml : htmlToText(nextHtml));
-    }
-  };
-
-  const sanitizeHtml = (html: string) => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html || '', 'text/html');
-    const allowedTags = new Set(['b','strong','i','em','u','br','p','div','ul','ol','li','span','a']);
-    const escapeText = (s: string) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    const sanitizeNode = (node: Node): string => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        return escapeText(node.textContent || '');
-      }
-      if (node.nodeType !== Node.ELEMENT_NODE) return '';
-      const el = node as HTMLElement;
-      const tag = el.tagName.toLowerCase();
-      if (!allowedTags.has(tag)) {
-        let s = '';
-        el.childNodes.forEach(child => { s += sanitizeNode(child); });
-        return s;
-      }
-      let attrs = '';
-      if (tag === 'a') {
-        const raw = el.getAttribute('href') || '';
-        try {
-          const u = new URL(raw, window.location.origin);
-          const proto = u.protocol.replace(':','');
-          if (['http','https','mailto'].includes(proto)) {
-            attrs = ` href="${escapeText(raw)}" rel="noopener noreferrer nofollow"`;
-          }
-        } catch {}
-      }
-      if (tag === 'br') return '<br/>';
-      let content = '';
-      el.childNodes.forEach(child => { content += sanitizeNode(child); });
-      return `<${tag}${attrs}>${content}</${tag}>`;
-    };
-    let out = '';
-    doc.body.childNodes.forEach(n => { out += sanitizeNode(n); });
-    return out;
-  };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const html = e.clipboardData.getData('text/html');
-    const text = e.clipboardData.getData('text/plain');
-    const source = html || (text ? text.replace(/\r?\n/g, '<br/>') : '');
-    const safe = sanitizeHtml(source);
-    document.execCommand('insertHTML', false, safe);
-    handleInput();
-  };
-
-  const execCommand = (command: string) => {
-    document.execCommand(command, false);
-    handleInput();
-    editorRef.current?.focus();
-  };
+  const editorConfig = useMemo(() => ({
+    placeholder: '',
+    autoFocus: false,
+  }), []);
 
   const handleAiEnhance = async () => {
     if (!aiContext) return;
     setIsEnhancing(true);
     try {
-      const currentHtml = editorRef.current?.innerHTML ?? (valueFormat === 'html' ? (value || '') : textToHtml(value || ''));
-      const improved = await polishText(htmlToText(currentHtml));
-      const nextHtml = textToHtml(improved);
-      if (editorRef.current) {
-        editorRef.current.innerHTML = nextHtml;
-        handleInput();
-      }
+      const currentText = editorRef.current?.getText?.() ?? htmlToText(html || '');
+      const improved = await polishText(currentText);
+      const nextHtml = sanitizeHtml(improved.split(/\r?\n/).map(l => `<p>${l || '<br>'}</p>`).join(''));
+      editorRef.current?.setHtml?.(nextHtml);
+      setHtml(nextHtml);
+      onChange(nextHtml);
     } catch {
     } finally {
       setIsEnhancing(false);
@@ -173,58 +77,22 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
         </div>
       )}
       <div className="border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all bg-white">
-        <div className="flex items-center space-x-1 border-b border-slate-200 bg-slate-50 p-1">
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('bold'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.bold')}>
-            <Bold className="w-4 h-4" />
-          </button>
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('italic'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.italic')}>
-            <Italic className="w-4 h-4" />
-          </button>
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('insertUnorderedList'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.bullets')}>
-            <List className="w-4 h-4" />
-          </button>
-          <div className="w-px h-4 bg-slate-300 mx-2" />
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('undo'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.undo')}>
-            <Undo className="w-4 h-4" />
-          </button>
-          <button type="button" onClick={(e) => { e.preventDefault(); execCommand('redo'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.redo')}>
-            <Redo className="w-4 h-4" />
-          </button>
-          {enableModeToggle && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                const currentHtml = editorRef.current?.innerHTML ?? '';
-                const currentText = htmlToText(currentHtml);
-                if (mode === 'html') {
-                  setMode('text');
-                  editorRef.current && (editorRef.current.innerHTML = textToHtml(currentText));
-                  onChange(currentText);
-                } else {
-                  setMode('html');
-                  const nextHtml = textToHtml(currentText);
-                  editorRef.current && (editorRef.current.innerHTML = nextHtml);
-                  onChange(nextHtml);
-                }
-              }}
-              className="ml-auto p-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs transition-colors"
-              title={mode === 'html' ? '切换到 Markdown/纯文本' : '切换到富文本'}
-            >
-              {mode === 'html' ? 'Markdown' : '富文本'}
-            </button>
-          )}
-        </div>
-        <div
-          ref={editorRef}
-          className="p-3 outline-none prose prose-sm max-w-none text-slate-700 overflow-y-auto"
-          style={{ minHeight: `${minRows * 24}px`, maxHeight }}
-          contentEditable
-          onInput={handleInput}
-          onCompositionStart={handleCompositionStart}
-          onCompositionEnd={handleCompositionEnd}
-          onPaste={handlePaste}
-          suppressContentEditableWarning
+        <Toolbar editor={editor} defaultConfig={toolbarConfig} className="border-b border-slate-200 bg-slate-50" />
+        <Editor
+          defaultConfig={editorConfig}
+          value={html}
+          onCreated={(editor) => {
+            editorRef.current = editor;
+            setEditor(editor);
+          }}
+          onChange={(editor) => {
+            const content = editor.getHtml();
+            const safe = sanitizeHtml(content || '');
+            setHtml(safe);
+            onChange(safe);
+          }}
+          mode="default"
+          style={{ minHeight: `${minRows * 48}px`, maxHeight, overflowY: 'auto', padding: '12px' }}
         />
       </div>
     </div>

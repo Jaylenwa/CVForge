@@ -453,23 +453,25 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                  </div>
              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">{t('editor.fields.fullName')}</label>
-              <input 
-                type="text" 
-                value={data.personalInfo.fullName}
-                onChange={e => updatePersonalInfo('fullName', e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">{t('editor.fields.jobTitle')}</label>
-              <input 
-                type="text" 
-                value={data.personalInfo.jobTitle}
-                onChange={e => updatePersonalInfo('jobTitle', e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">{t('editor.fields.fullName')}</label>
+                <input 
+                  type="text" 
+                  value={data.personalInfo.fullName}
+                  onChange={e => updatePersonalInfo('fullName', e.target.value)}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">{t('editor.fields.jobTitle')}</label>
+                <input 
+                  type="text" 
+                  value={data.personalInfo.jobTitle}
+                  onChange={e => updatePersonalInfo('jobTitle', e.target.value)}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
             </div>
              <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -751,8 +753,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                         <div className="relative mt-2">
                             <RichTextEditor
                                 value={item.description}
-                                valueFormat={/(<\/?[a-z][\s\S]*>)/i.test(item.description || '') ? 'html' : 'text'}
-                                outputFormat="html"
                                 onChange={(val) => updateItem(section.id, item.id, 'description', val)}
                                 aiContext={section.type === ResumeSectionType.Experience ? 'Work Experience' : (section.type === ResumeSectionType.Summary ? 'Resume Summary' : undefined)}
                                 minRows={section.type === ResumeSectionType.Skills ? 3 : 4}

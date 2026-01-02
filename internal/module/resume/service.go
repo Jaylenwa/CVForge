@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/microcosm-cc/bluemonday"
 	"gorm.io/gorm"
 )
 
@@ -166,6 +167,17 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 			Spacing: req.ThemeConfig.Spacing,
 		},
 	}
+	sanitize := func(s string) string {
+		p := bluemonday.NewPolicy()
+		p.AllowElements("p", "ul", "ol", "li", "strong", "em", "br", "span", "a")
+		p.AllowAttrs("href").OnElements("a")
+		p.AllowAttrs("rel").OnElements("a")
+		p.AllowAttrs("target").OnElements("a")
+		p.AllowStandardURLs()
+		p.RequireNoFollowOnLinks(true)
+		p.AddTargetBlankToFullyQualifiedLinks(true)
+		return p.Sanitize(s)
+	}
 	for si, sct := range req.Sections {
 		sec := ResumeSection{
 			ExternalID: sct.Id,
@@ -184,7 +196,7 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 				TimeStart:   it.TimeStart,
 				TimeEnd:     it.TimeEnd,
 				Today:       it.Today,
-				Description: it.Description,
+				Description: sanitize(it.Description),
 				OrderNum:    ii,
 			})
 		}

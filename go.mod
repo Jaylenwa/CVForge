@@ -14,6 +14,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/uuid v1.6.0
+	github.com/microcosm-cc/bluemonday v1.0.26
 	github.com/prometheus/client_golang v1.18.0
 	github.com/redis/go-redis/v9 v9.5.1
 	go.uber.org/zap v1.26.0
@@ -39,6 +40,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.25.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.29.0 // indirect
 	github.com/aws/smithy-go v1.20.2 // indirect
+	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
@@ -52,6 +54,7 @@ require (
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/gorilla/css v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

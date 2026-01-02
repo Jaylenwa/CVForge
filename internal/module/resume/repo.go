@@ -56,20 +56,20 @@ func (r *Repo) Replace(existing Resume, updated Resume) error {
 			return err
 		}
 		if len(secIDs) > 0 {
-			if err := tx.Where("section_id IN ?", secIDs).Delete(&ResumeItem{}).Error; err != nil {
+			if err := tx.Unscoped().Where("section_id IN ?", secIDs).Delete(&ResumeItem{}).Error; err != nil {
 				return err
 			}
 		}
-		if err := tx.Where("resume_id = ?", existing.ID).Delete(&ResumeSection{}).Error; err != nil {
+		if err := tx.Unscoped().Where("resume_id = ?", existing.ID).Delete(&ResumeSection{}).Error; err != nil {
 			return err
 		}
-		if err := tx.Where("resume_id = ?", existing.ID).Delete(&ResumePersonal{}).Error; err != nil {
+		if err := tx.Unscoped().Where("resume_id = ?", existing.ID).Delete(&ResumePersonal{}).Error; err != nil {
 			return err
 		}
-		if err := tx.Where("resume_id = ?", existing.ID).Delete(&ResumeJob{}).Error; err != nil {
+		if err := tx.Unscoped().Where("resume_id = ?", existing.ID).Delete(&ResumeJob{}).Error; err != nil {
 			return err
 		}
-		if err := tx.Where("resume_id = ?", existing.ID).Delete(&ResumeTheme{}).Error; err != nil {
+		if err := tx.Unscoped().Where("resume_id = ?", existing.ID).Delete(&ResumeTheme{}).Error; err != nil {
 			return err
 		}
 		if err := tx.Session(&gorm.Session{FullSaveAssociations: true}).Omit("CreatedAt").Save(&updated).Error; err != nil {
