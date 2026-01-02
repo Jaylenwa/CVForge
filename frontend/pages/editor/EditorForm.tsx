@@ -191,6 +191,55 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     }
   }, [data.sections]);
 
+  useEffect(() => {
+    const job = data.sections.find(s => s.type === ResumeSectionType.JobApplication);
+    if (job && job.items.length === 0) {
+      onChange({
+        ...data,
+        sections: data.sections.map(s =>
+          s.id === job.id
+            ? { ...s, items: [{ id: generateUUID(), title: '', subtitle: '', timeStart: '', description: '' }] }
+            : s
+        ),
+      });
+    }
+  }, [data.sections]);
+
+  useEffect(() => {
+    const needTypesWithTime: ResumeSectionType[] = [
+      ResumeSectionType.Education,
+      ResumeSectionType.Experience,
+      ResumeSectionType.Projects,
+      ResumeSectionType.Internships,
+    ];
+    const needTypesDescOnly: ResumeSectionType[] = [
+      ResumeSectionType.Portfolio,
+      ResumeSectionType.Skills,
+      ResumeSectionType.Interests,
+      ResumeSectionType.Awards,
+    ];
+    let changed = false;
+    const nextSections = data.sections.map(s => {
+      if (s.type === ResumeSectionType.Summary || s.type === ResumeSectionType.SelfEvaluation || s.type === ResumeSectionType.JobApplication) {
+        return s;
+      }
+      if (s.items.length === 0) {
+        changed = true;
+        if (needTypesWithTime.includes(s.type)) {
+          return { ...s, items: [{ id: generateUUID(), title: '', subtitle: '', timeStart: '', timeEnd: '', today: false as any, description: '' }] };
+        }
+        if (needTypesDescOnly.includes(s.type)) {
+          return { ...s, items: [{ id: generateUUID(), description: '' }] };
+        }
+        return { ...s, items: [{ id: generateUUID(), title: '', description: '' }] };
+      }
+      return s;
+    });
+    if (changed) {
+      onChange({ ...data, sections: nextSections });
+    }
+  }, [data.sections]);
+
   const removeSection = async (sectionId: string) => {
       const ok = await confirm({ title: t('common.confirmAction'), message: t('editor.removeSection'), variant: 'danger' });
       if (!ok) return;
@@ -500,11 +549,70 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                       section.type === ResumeSectionType.Custom ? <LayoutTemplate size={18}/> :
                       <Type size={18}/>
                     }
-                    onAddItem={section.type !== ResumeSectionType.Summary ? () => addItem(section.id) : undefined}
+                    onAddItem={
+                      section.type !== ResumeSectionType.Summary && section.type !== ResumeSectionType.JobApplication
+                        ? () => addItem(section.id)
+                        : undefined
+                    }
                 >
                     
+                    {section.type === ResumeSectionType.JobApplication && (
+                      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group transition-all hover:shadow-md">
+                        <div className="mt-2 grid grid-cols-1 gap-4 mb-3">
+                          <input
+                            placeholder="求职岗位"
+                            className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
+                            value={section.items[0]?.title || ''}
+                            onChange={e =>
+                              updateItem(section.id, section.items[0]?.id || '', 'title', e.target.value)
+                            }
+                          />
+                          <div className="grid grid-cols-2 gap-4">
+                            <input
+                              placeholder="意向城市"
+                              className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                              value={section.items[0]?.subtitle || ''}
+                              onChange={e =>
+                                updateItem(section.id, section.items[0]?.id || '', 'subtitle', e.target.value)
+                              }
+                            />
+                            <input
+                              placeholder="期望薪资"
+                              className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                              value={section.items[0]?.description || ''}
+                              onChange={e =>
+                                updateItem(section.id, section.items[0]?.id || '', 'description', e.target.value)
+                              }
+                            />
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="month"
+                                placeholder="入职时间"
+                                className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                value={section.items[0]?.timeStart || ''}
+                                onChange={e =>
+                                  updateItem(section.id, section.items[0]?.id || '', 'timeStart', e.target.value)
+                                }
+                              />
+                              <span className="text-xs text-gray-500">-</span>
+                              <input
+                                type="month"
+                                disabled
+                                className="w-full text-sm border-b outline-none pb-1 bg-transparent border-gray-200 text-gray-400"
+                                value=""
+                                onChange={() => {}}
+                              />
+                              <label className="flex items-center ml-2 text-xs text-gray-600">
+                                <input type="checkbox" className="mr-1" checked={false} readOnly />
+                                {t('common.toPresent') || '至今'}
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                    {section.items.map((item) => (
+                    {section.type !== ResumeSectionType.JobApplication && section.items.map((item) => (
                     <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group transition-all hover:shadow-md">
                         <button 
                             onClick={() => removeItem(section.id, item.id)}
@@ -514,64 +622,89 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             <Trash2 size={14} />
                         </button>
                         
-                        {section.type !== ResumeSectionType.Skills && section.type !== ResumeSectionType.Summary && (
-                            <div className="mt-2 grid grid-cols-1 gap-4 mb-3">
-                                <input 
-                                    placeholder={t('editor.placeholder.titleExample')} 
-                                    className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
-                                    value={item.title}
-                                    onChange={e => updateItem(section.id, item.id, 'title', e.target.value)}
+                        {[
+                          ResumeSectionType.Experience,
+                          ResumeSectionType.Education,
+                          ResumeSectionType.Projects,
+                          ResumeSectionType.Internships,
+                        ].includes(section.type) && (
+                          <div className="mt-2 grid grid-cols-1 gap-4 mb-3">
+                            <input
+                              placeholder={
+                                section.type === ResumeSectionType.Education
+                                  ? '学校名称'
+                                  : section.type === ResumeSectionType.Experience
+                                  ? '公司名称'
+                                  : section.type === ResumeSectionType.Projects
+                                  ? '项目名称'
+                                  : section.type === ResumeSectionType.Internships
+                                  ? '公司名称'
+                                  : t('editor.placeholder.titleExample')
+                              }
+                              className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
+                              value={item.title}
+                              onChange={e => updateItem(section.id, item.id, 'title', e.target.value)}
+                            />
+                            <div className="grid grid-cols-2 gap-4">
+                              <input
+                                placeholder={
+                                  section.type === ResumeSectionType.Education
+                                    ? '院系/学院（可选）'
+                                    : section.type === ResumeSectionType.Experience
+                                    ? '职位'
+                                    : section.type === ResumeSectionType.Projects
+                                    ? '参与角色'
+                                    : section.type === ResumeSectionType.Internships
+                                    ? '职位'
+                                    : t('editor.placeholder.subtitleExample')
+                                }
+                                className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                value={item.subtitle || ''}
+                                onChange={e => updateItem(section.id, item.id, 'subtitle', e.target.value)}
+                              />
+                              {section.type === ResumeSectionType.Education && (
+                                <input
+                                  placeholder="所学专业"
+                                  className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                  value={item.major || ''}
+                                  onChange={e => updateItem(section.id, item.id, 'major', e.target.value)}
                                 />
-                                <div className="grid grid-cols-2 gap-4">
-                                    <input 
-                                        placeholder={t('editor.placeholder.subtitleExample')} 
-                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                        value={item.subtitle}
-                                        onChange={e => updateItem(section.id, item.id, 'subtitle', e.target.value)}
-                                    />
-                                    {section.type === ResumeSectionType.Education && (
-                                      <input
-                                        placeholder={t('editor.placeholder.major')}
-                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                        value={item.major || ''}
-                                        onChange={e => updateItem(section.id, item.id, 'major', e.target.value)}
-                                      />
-                                    )}
-                                    <div className="flex items-center gap-2">
-                                      <input 
-                                        type="month"
-                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                        value={item.timeStart || ''}
-                                        onChange={e => updateItem(section.id, item.id, 'timeStart', e.target.value)}
-                                      />
-                                      <span className="text-xs text-gray-500">-</span>
-                                      <input 
-                                        type="month"
-                                        disabled={item.today}
-                                        className={`w-full text-sm border-b outline-none pb-1 bg-transparent ${item.today ? 'border-gray-200 text-gray-400' : 'border-gray-200 focus:border-blue-500'}`}
-                                        value={item.timeEnd || ''}
-                                        onChange={e => updateItem(section.id, item.id, 'timeEnd', e.target.value)}
-                                      />
-                                      <label className="flex items-center ml-2 text-xs text-gray-600">
-                                        <input 
-                                          type="checkbox" 
-                                          className="mr-1"
-                                          checked={!!item.today}
-                                          onChange={e => updateItem(section.id, item.id, 'today', e.target.checked ? true as any : false as any)}
-                                        />
-                                        {t('common.toPresent') || '至今'}
-                                      </label>
-                                    </div>
-                                    {section.type === ResumeSectionType.Education && (
-                                      <input
-                                        placeholder={t('editor.placeholder.degree')}
-                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                        value={item.degree || ''}
-                                        onChange={e => updateItem(section.id, item.id, 'degree', e.target.value)}
-                                      />
-                                    )}
-                                </div>
+                              )}
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="month"
+                                  className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                  value={item.timeStart || ''}
+                                  onChange={e => updateItem(section.id, item.id, 'timeStart', e.target.value)}
+                                />
+                                <span className="text-xs text-gray-500">-</span>
+                                <input
+                                  type="month"
+                                  disabled={item.today}
+                                  className={`w-full text-sm border-b outline-none pb-1 bg-transparent ${item.today ? 'border-gray-200 text-gray-400' : 'border-gray-200 focus:border-blue-500'}`}
+                                  value={item.timeEnd || ''}
+                                  onChange={e => updateItem(section.id, item.id, 'timeEnd', e.target.value)}
+                                />
+                                <label className="flex items-center ml-2 text-xs text-gray-600">
+                                  <input
+                                    type="checkbox"
+                                    className="mr-1"
+                                    checked={!!item.today}
+                                    onChange={e => updateItem(section.id, item.id, 'today', e.target.checked ? true as any : false as any)}
+                                  />
+                                  {t('common.toPresent') || '至今'}
+                                </label>
+                              </div>
+                              {section.type === ResumeSectionType.Education && (
+                                <input
+                                  placeholder="学历"
+                                  className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                  value={item.degree || ''}
+                                  onChange={e => updateItem(section.id, item.id, 'degree', e.target.value)}
+                                />
+                              )}
                             </div>
+                          </div>
                         )}
 
                         <div className="relative mt-2">

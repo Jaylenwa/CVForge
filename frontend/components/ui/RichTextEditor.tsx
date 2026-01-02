@@ -13,6 +13,7 @@ interface RichTextEditorProps {
   maxHeight?: number;
   valueFormat?: 'text' | 'html';
   outputFormat?: 'text' | 'html';
+  enableModeToggle?: boolean;
 }
 
 const textToHtml = (text: string) => {
@@ -48,24 +49,25 @@ const htmlToText = (html: string) => {
   return out.join('').replace(/\n{3,}/g, '\n\n').trim();
 };
 
-export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, label, aiContext, className = '', minRows = 4, maxHeight = 300, valueFormat = 'text', outputFormat = 'text' }) => {
+export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange, label, aiContext, className = '', minRows = 4, maxHeight = 300, valueFormat = 'text', outputFormat = 'text', enableModeToggle = true }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isComposing, setIsComposing] = useState(false);
   const { t } = useLanguage();
+  const [mode, setMode] = useState<'text' | 'html'>(valueFormat);
 
   useEffect(() => {
-    const nextHtml = valueFormat === 'html' ? (value || '') : textToHtml(value || '');
+    const nextHtml = mode === 'html' ? (value || '') : textToHtml(value || '');
     if (editorRef.current && editorRef.current.innerHTML !== nextHtml) {
       editorRef.current.innerHTML = nextHtml;
     }
-  }, [value, valueFormat]);
+  }, [value, mode]);
 
   const handleInput = () => {
     if (editorRef.current) {
       const nextHtml = editorRef.current.innerHTML;
       if (isComposing) return;
-      onChange(outputFormat === 'html' ? nextHtml : htmlToText(nextHtml));
+      onChange(mode === 'html' ? nextHtml : htmlToText(nextHtml));
     }
   };
 
@@ -77,7 +79,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
     setIsComposing(false);
     if (editorRef.current) {
       const nextHtml = editorRef.current.innerHTML;
-      onChange(outputFormat === 'html' ? nextHtml : htmlToText(nextHtml));
+      onChange(mode === 'html' ? nextHtml : htmlToText(nextHtml));
     }
   };
 
@@ -186,6 +188,30 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
           <button type="button" onClick={(e) => { e.preventDefault(); execCommand('redo'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.redo')}>
             <Redo className="w-4 h-4" />
           </button>
+          {enableModeToggle && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                const currentHtml = editorRef.current?.innerHTML ?? '';
+                const currentText = htmlToText(currentHtml);
+                if (mode === 'html') {
+                  setMode('text');
+                  editorRef.current && (editorRef.current.innerHTML = textToHtml(currentText));
+                  onChange(currentText);
+                } else {
+                  setMode('html');
+                  const nextHtml = textToHtml(currentText);
+                  editorRef.current && (editorRef.current.innerHTML = nextHtml);
+                  onChange(nextHtml);
+                }
+              }}
+              className="ml-auto p-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs transition-colors"
+              title={mode === 'html' ? '切换到 Markdown/纯文本' : '切换到富文本'}
+            >
+              {mode === 'html' ? 'Markdown' : '富文本'}
+            </button>
+          )}
         </div>
         <div
           ref={editorRef}

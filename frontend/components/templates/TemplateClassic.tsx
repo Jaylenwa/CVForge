@@ -62,7 +62,8 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                           <div className="space-y-6">
                               {section.items.map(item => (
                                   <div key={item.id}>
-                                      <div className="flex flex-col md:flex-row md:justify-between md:items-baseline mb-1">
+                                      {section.type !== ResumeSectionType.Awards && (
+                                        <div className="flex flex-col md:flex-row md:justify-between md:items-baseline mb-1">
                                           <h4 className="font-bold text-lg text-gray-800">{item.title}</h4>
                                           {(item.timeStart || item.timeEnd || item.today) && (
                                             <span className="text-sm text-gray-500 font-medium">
@@ -71,8 +72,9 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                                               {item.today ? t('common.toPresent') : (item.timeEnd || '')}
                                             </span>
                                           )}
-                                      </div>
-                                      {item.subtitle && <div className="text-gray-700 font-medium mb-2">{item.subtitle}</div>}
+                                        </div>
+                                      )}
+                                      {section.type !== ResumeSectionType.Awards && item.subtitle && <div className="text-gray-700 font-medium mb-2">{item.subtitle}</div>}
                                       {section.type === ResumeSectionType.Education && (item.major || item.degree) && (
                                         <div className="text-gray-700 text-sm mb-2">
                                           {item.major}{item.major && item.degree ? ' • ' : ''}{item.degree}
