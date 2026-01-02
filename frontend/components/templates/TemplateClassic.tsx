@@ -73,6 +73,11 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                                           )}
                                       </div>
                                       {item.subtitle && <div className="text-gray-700 font-medium mb-2">{item.subtitle}</div>}
+                                      {section.type === ResumeSectionType.Education && (item.major || item.degree) && (
+                                        <div className="text-gray-700 text-sm mb-2">
+                                          {item.major}{item.major && item.degree ? ' • ' : ''}{item.degree}
+                                        </div>
+                                      )}
                                       {item.description && (
                                           <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
                                       )}

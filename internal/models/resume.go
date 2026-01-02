@@ -74,6 +74,8 @@ type ResumeItem struct {
 	ExternalID  string `gorm:"size:64"`
 	Title       string `gorm:"size:128"`
 	Subtitle    string `gorm:"size:128"`
+	Major       string `gorm:"size:128"`
+	Degree      string `gorm:"size:128"`
 	TimeStart   string `gorm:"size:7"`
 	TimeEnd     string `gorm:"size:7"`
 	Today       bool

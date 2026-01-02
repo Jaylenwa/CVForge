@@ -69,6 +69,8 @@ export const PublicResume: React.FC = () => {
               id: i.ExternalID || i.ID,
               title: i.Title,
               subtitle: i.Subtitle,
+              major: i.Major,
+              degree: i.Degree,
               timeStart: i.TimeStart,
               timeEnd: i.TimeEnd,
               today: !!i.Today,

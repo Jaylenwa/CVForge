@@ -19,6 +19,8 @@ export interface ResumeItem {
   id: string;
   title?: string;
   subtitle?: string; // Company or Degree
+  major?: string;
+  degree?: string;
   timeStart?: string; // YYYY-MM
   timeEnd?: string;   // YYYY-MM
   today?: boolean;

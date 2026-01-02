@@ -63,7 +63,11 @@ export const PrintResume: React.FC = () => {
               id: i.ExternalID || i.ID,
               title: i.Title,
               subtitle: i.Subtitle,
-              dateRange: i.DateRange,
+              major: i.Major,
+              degree: i.Degree,
+              timeStart: i.TimeStart,
+              timeEnd: i.TimeEnd,
+              today: !!i.Today,
               description: i.Description
             }))
           }))

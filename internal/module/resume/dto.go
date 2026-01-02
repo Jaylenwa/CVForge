@@ -37,6 +37,8 @@ type ItemDTO struct {
 	ExternalID  string `json:"ExternalID"`
 	Title       string `json:"Title"`
 	Subtitle    string `json:"Subtitle"`
+	Major       string `json:"Major"`
+	Degree      string `json:"Degree"`
 	TimeStart   string `json:"TimeStart"`
 	TimeEnd     string `json:"TimeEnd"`
 	Today       bool   `json:"Today"`
@@ -79,6 +81,8 @@ func ToDTO(r Resume) ResumeDTO {
 				ExternalID:  it.ExternalID,
 				Title:       it.Title,
 				Subtitle:    it.Subtitle,
+				Major:       it.Major,
+				Degree:      it.Degree,
 				TimeStart:   it.TimeStart,
 				TimeEnd:     it.TimeEnd,
 				Today:       it.Today,

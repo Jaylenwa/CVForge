@@ -529,6 +529,14 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                                         value={item.subtitle}
                                         onChange={e => updateItem(section.id, item.id, 'subtitle', e.target.value)}
                                     />
+                                    {section.type === ResumeSectionType.Education && (
+                                      <input
+                                        placeholder={t('editor.placeholder.major')}
+                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                        value={item.major || ''}
+                                        onChange={e => updateItem(section.id, item.id, 'major', e.target.value)}
+                                      />
+                                    )}
                                     <div className="flex items-center gap-2">
                                       <input 
                                         type="month"
@@ -554,6 +562,14 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                                         {t('common.toPresent') || '至今'}
                                       </label>
                                     </div>
+                                    {section.type === ResumeSectionType.Education && (
+                                      <input
+                                        placeholder={t('editor.placeholder.degree')}
+                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                        value={item.degree || ''}
+                                        onChange={e => updateItem(section.id, item.id, 'degree', e.target.value)}
+                                      />
+                                    )}
                                 </div>
                             </div>
                         )}
