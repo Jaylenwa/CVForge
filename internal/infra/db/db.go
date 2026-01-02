@@ -52,6 +52,7 @@ func autoMigrate() error {
 		&models.User{},
 		&models.Template{},
 		&models.Resume{},
+		&models.ResumeJob{},
 		&models.ResumeSection{},
 		&models.ResumeItem{},
 		&models.ShareLink{},

@@ -10,6 +10,7 @@ type Resume struct {
 	TemplateID   string `gorm:"size:64"`
 	LastModified int64
 	Personal     ResumePersonal  `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
+	Job          ResumeJob       `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
 	Theme        ResumeTheme     `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
 	Sections     []ResumeSection `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
 }
@@ -39,6 +40,19 @@ type ResumePersonal struct {
 
 func (ResumePersonal) TableName() string {
 	return "resume_personal"
+}
+
+type ResumeJob struct {
+	gorm.Model
+	ResumeID uint   `gorm:"uniqueIndex"`
+	Job      string `gorm:"size:128"`
+	City     string `gorm:"size:128"`
+	Money    string `gorm:"size:64"`
+	JoinTime string `gorm:"size:64"`
+}
+
+func (ResumeJob) TableName() string {
+	return "resume_job"
 }
 
 type ResumeTheme struct {
