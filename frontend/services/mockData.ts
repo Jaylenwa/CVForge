@@ -35,22 +35,6 @@ export const INITIAL_RESUME: ResumeData = {
   },
   sections: [
     {
-      id: 'summary',
-      type: ResumeSectionType.Summary,
-      title: '个人简介',
-      isVisible: true,
-      items: [
-        {
-          id: 's1',
-          description: '拥有 5 年以上全栈开发经验，专注于 React/TypeScript/Node.js 与 Go，擅长前后端协同与系统性能优化，具备从 0 到 1 搭建企业级项目的实战能力。熟悉微服务架构、CI/CD 与云原生部署，能有效推动跨团队协作与交付。'
-        },
-        {
-          id: 's2',
-          description: '<ul><li>核心页面首屏加载降低 45%，转化率提升 18%</li><li>主导组件库与工程化改造，构建速度提升 35%</li><li>设计并落地日志与监控体系，故障定位时间缩短 60%</li></ul>'
-        }
-      ]
-    },
-    {
       id: 'job',
       type: ResumeSectionType.JobApplication,
       title: '求职岗位',

@@ -350,6 +350,36 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
      setIsAiLoading(false);
   }
 
+  const getLabels = (type: ResumeSectionType) => {
+    return {
+      title:
+        type === ResumeSectionType.Education
+          ? t('editor.labels.education.school')
+          : type === ResumeSectionType.Experience
+          ? t('editor.labels.experience.title')
+          : type === ResumeSectionType.Projects
+          ? t('editor.labels.projects.title')
+          : type === ResumeSectionType.Internships
+          ? t('editor.labels.internships.company')
+          : t('editor.placeholder.titleExample'),
+      subtitle:
+        type === ResumeSectionType.Education
+          ? t('editor.labels.education.department')
+          : type === ResumeSectionType.Experience
+          ? t('editor.labels.experience.role')
+          : type === ResumeSectionType.Projects
+          ? t('editor.labels.projects.role')
+          : type === ResumeSectionType.Internships
+          ? t('editor.labels.experience.role')
+          : t('editor.placeholder.subtitleExample'),
+      major: t('editor.labels.education.major'),
+      degree: t('editor.labels.education.degree'),
+      start: t('editor.labels.common.startDate'),
+      end: t('editor.labels.common.endDate'),
+      desc: t('editor.labels.common.description'),
+    };
+  };
+
   const renderContentTab = () => (
     <>
       <div className="group rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm mb-4">
@@ -611,11 +641,21 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                       </div>
                     )}
 
-                    {section.type !== ResumeSectionType.JobApplication && section.items.map((item) => (
-                    <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group transition-all hover:shadow-md">
+                    {section.type !== ResumeSectionType.JobApplication && section.items.map((item) => {
+                    const isComplex = [
+                      ResumeSectionType.Experience,
+                      ResumeSectionType.Education,
+                      ResumeSectionType.Projects,
+                      ResumeSectionType.Internships,
+                    ].includes(section.type);
+                    const wrapperClass = isComplex 
+                      ? "bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group/item transition-all hover:shadow-md"
+                      : "relative group/item";
+                    return (
+                    <div key={item.id} className={wrapperClass}>
                         <button 
                             onClick={() => removeItem(section.id, item.id)}
-                            className="absolute -top-3 -right-3 p-1.5 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-600 hover:border-red-300 shadow-sm"
+                            className="absolute -top-3 -right-3 p-1.5 rounded-full bg-white border border-gray-200 text-gray-400 hover:text-red-600 hover:border-red-300 shadow-sm opacity-0 group-hover/item:opacity-100 pointer-events-none group-hover/item:pointer-events-auto transition-opacity z-50"
                             title={t('dashboard.confirm.delete')}
                         >
                             <Trash2 size={14} />
@@ -627,105 +667,97 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                           ResumeSectionType.Projects,
                           ResumeSectionType.Internships,
                         ].includes(section.type) && (
-                          <div className="mt-2 grid grid-cols-1 gap-4 mb-3">
-                            <input
-                              placeholder={
-                                section.type === ResumeSectionType.Education
-                                  ? '学校名称'
-                                  : section.type === ResumeSectionType.Experience
-                                  ? '公司名称'
-                                  : section.type === ResumeSectionType.Projects
-                                  ? '项目名称'
-                                  : section.type === ResumeSectionType.Internships
-                                  ? '公司名称'
-                                  : t('editor.placeholder.titleExample')
-                              }
-                              className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
-                              value={item.title}
-                              onChange={e => updateItem(section.id, item.id, 'title', e.target.value)}
-                            />
-                            <div className="grid grid-cols-2 gap-4">
-                              <input
-                                placeholder={
-                                  section.type === ResumeSectionType.Education
-                                    ? '院系/学院（可选）'
-                                    : section.type === ResumeSectionType.Experience
-                                    ? '职位'
-                                    : section.type === ResumeSectionType.Projects
-                                    ? '参与角色'
-                                    : section.type === ResumeSectionType.Internships
-                                    ? '职位'
-                                    : t('editor.placeholder.subtitleExample')
-                                }
-                                className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                value={item.subtitle || ''}
-                                onChange={e => updateItem(section.id, item.id, 'subtitle', e.target.value)}
-                              />
-                              {section.type === ResumeSectionType.Education && (
-                                <input
-                                  placeholder="所学专业"
-                                  className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                  value={item.major || ''}
-                                  onChange={e => updateItem(section.id, item.id, 'major', e.target.value)}
-                                />
-                              )}
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="month"
-                                  className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                  value={item.timeStart || ''}
-                                  onChange={e => updateItem(section.id, item.id, 'timeStart', e.target.value)}
-                                />
-                                <span className="text-xs text-gray-500">-</span>
-                                <input
-                                  type="month"
-                                  disabled={item.today}
-                                  className={`w-full text-sm border-b outline-none pb-1 bg-transparent ${item.today ? 'border-gray-200 text-gray-400' : 'border-gray-200 focus:border-blue-500'}`}
-                                  value={item.timeEnd || ''}
-                                  onChange={e => updateItem(section.id, item.id, 'timeEnd', e.target.value)}
-                                />
-                                <label className="flex items-center ml-2 text-xs text-gray-600">
-                                  <input
-                                    type="checkbox"
-                                    className="mr-1"
-                                    checked={!!item.today}
-                                    onChange={e => updateItem(section.id, item.id, 'today', e.target.checked ? true as any : false as any)}
-                                  />
-                                  {t('common.toPresent') || '至今'}
-                                </label>
-                              </div>
-                              {section.type === ResumeSectionType.Education && (
-                                <input
-                                  placeholder="学历"
-                                  className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                  value={item.degree || ''}
-                                  onChange={e => updateItem(section.id, item.id, 'degree', e.target.value)}
-                                />
-                              )}
-                            </div>
+                          <div className="mt-2 space-y-4 mb-3">
+                            {(() => {
+                              const labels = getLabels(section.type);
+                              return (
+                                <>
+                                  <div>
+                                    <span className="text-xs text-gray-600 mb-1 block">{labels.title}</span>
+                                    <input
+                                      className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
+                                      value={item.title || ''}
+                                      onChange={e => updateItem(section.id, item.id, 'title', e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <span className="text-xs text-gray-600 mb-1 block">{labels.subtitle}</span>
+                                      <input
+                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                        value={item.subtitle || ''}
+                                        onChange={e => updateItem(section.id, item.id, 'subtitle', e.target.value)}
+                                      />
+                                    </div>
+                                    {section.type === ResumeSectionType.Education && (
+                                      <div>
+                                        <span className="text-xs text-gray-600 mb-1 block">{labels.major}</span>
+                                        <input
+                                          className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                          value={item.major || ''}
+                                          onChange={e => updateItem(section.id, item.id, 'major', e.target.value)}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <span className="text-xs text-gray-600 mb-1 block">{labels.start}</span>
+                                      <input
+                                        type="month"
+                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                        value={item.timeStart || ''}
+                                        onChange={e => updateItem(section.id, item.id, 'timeStart', e.target.value)}
+                                      />
+                                    </div>
+                                    <div>
+                                      <span className="text-xs text-gray-600 mb-1 block">{labels.end}</span>
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="month"
+                                          disabled={item.today}
+                                          className={`w-full text-sm border-b outline-none pb-1 bg-transparent ${item.today ? 'border-gray-200 text-gray-400' : 'border-gray-200 focus:border-blue-500'}`}
+                                          value={item.timeEnd || ''}
+                                          onChange={e => updateItem(section.id, item.id, 'timeEnd', e.target.value)}
+                                        />
+                                        <label className="flex items-center text-xs text-gray-600">
+                                          <input
+                                            type="checkbox"
+                                            className="mr-1"
+                                            checked={!!item.today}
+                                            onChange={e => updateItem(section.id, item.id, 'today', e.target.checked ? true as any : false as any)}
+                                          />
+                                          {t('common.toPresent') || '至今'}
+                                        </label>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  {section.type === ResumeSectionType.Education && (
+                                    <div>
+                                      <span className="text-xs text-gray-600 mb-1 block">{labels.degree}</span>
+                                      <input
+                                        className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                        value={item.degree || ''}
+                                        onChange={e => updateItem(section.id, item.id, 'degree', e.target.value)}
+                                      />
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         )}
 
                         <div className="relative mt-2">
-                            {section.type === ResumeSectionType.Skills ? (
-                                <textarea
-                                    rows={2}
-                                    className="w-full text-sm border border-gray-300 rounded p-2 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder={t('editor.placeholder.skills')}
-                                    value={item.description}
-                                    onChange={e => updateItem(section.id, item.id, 'description', e.target.value)}
-                                />
-                            ) : (
-                                <RichTextEditor
-                                    value={item.description}
-                                    valueFormat={/(<\/?[a-z][\s\S]*>)/i.test(item.description || '') ? 'html' : 'text'}
-                                    outputFormat="html"
-                                    onChange={(val) => updateItem(section.id, item.id, 'description', val)}
-                                    aiContext={section.type === ResumeSectionType.Experience ? 'Work Experience' : (section.type === ResumeSectionType.Summary ? 'Resume Summary' : undefined)}
-                                    minRows={4}
-                                    maxHeight={300}
-                                />
-                            )}
+                            <RichTextEditor
+                                value={item.description}
+                                valueFormat={/(<\/?[a-z][\s\S]*>)/i.test(item.description || '') ? 'html' : 'text'}
+                                outputFormat="html"
+                                onChange={(val) => updateItem(section.id, item.id, 'description', val)}
+                                aiContext={section.type === ResumeSectionType.Experience ? 'Work Experience' : (section.type === ResumeSectionType.Summary ? 'Resume Summary' : undefined)}
+                                minRows={section.type === ResumeSectionType.Skills ? 3 : 4}
+                                maxHeight={300}
+                            />
                             {section.type === ResumeSectionType.Experience && (
                                 <button
                                     onClick={() => handleAiPolish(section.id, item.id, item.description)}
@@ -738,7 +770,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             )}
                         </div>
                     </div>
-                    ))}
+                    )})}
 
                 </SortableSection>
             ))}

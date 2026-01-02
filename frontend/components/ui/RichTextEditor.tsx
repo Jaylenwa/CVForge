@@ -156,20 +156,22 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange,
 
   return (
     <div className={`mb-2 ${className}`}>
-      <div className="flex justify-between items-center mb-1">
-        {label && <label className="block text-sm font-medium text-slate-700">{label}</label>}
-        {aiContext && (
-          <button
-            type="button"
-            onClick={handleAiEnhance}
-            disabled={isEnhancing}
-            className="flex items-center text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 transition-colors"
-          >
-            {isEnhancing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Wand2 className="w-3 h-3 mr-1" />}
-            {isEnhancing ? t('editor.ai.polishing') : t('editor.ai_polish')}
-          </button>
-        )}
-      </div>
+      {(label || aiContext) && (
+        <div className="flex justify-between items-center mb-1">
+          {label && <label className="block text-sm font-medium text-slate-700">{label}</label>}
+          {aiContext && (
+            <button
+              type="button"
+              onClick={handleAiEnhance}
+              disabled={isEnhancing}
+              className="flex items-center text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50 transition-colors"
+            >
+              {isEnhancing ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Wand2 className="w-3 h-3 mr-1" />}
+              {isEnhancing ? t('editor.ai.polishing') : t('editor.ai_polish')}
+            </button>
+          )}
+        </div>
+      )}
       <div className="border border-slate-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all bg-white">
         <div className="flex items-center space-x-1 border-b border-slate-200 bg-slate-50 p-1">
           <button type="button" onClick={(e) => { e.preventDefault(); execCommand('bold'); }} className="p-1.5 rounded hover:bg-slate-200 text-slate-600 transition-colors" title={t('rte.tooltip.bold')}>

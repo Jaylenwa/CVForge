@@ -53,10 +53,14 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                       <h3 className="text-lg font-bold uppercase border-b mb-4 pb-2" style={{ borderColor: data.themeConfig?.color || '#e5e7eb', color: data.themeConfig?.color }}>{getSectionTitle(section)}</h3>
                       
                       {section.type === ResumeSectionType.Skills ? (
-                          <div className="flex flex-wrap gap-2">
-                              {section.items.map(item => (
-                                  <span key={item.id} className="px-3 py-1 bg-gray-100 rounded text-sm font-medium text-gray-700">{item.description}</span>
-                              ))}
+                          <div className="space-y-4">
+                            {section.items.map(item => (
+                              <div key={item.id}>
+                                {item.description && (
+                                  <div className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                                )}
+                              </div>
+                            ))}
                           </div>
                       ) : (
                           <div className="space-y-6">

@@ -272,8 +272,8 @@ export const Editor: React.FC = () => {
         </div>
 
         {/* Right: Preview */}
-        <div className={`w-full md:w-3/5 lg:w-3/5 xl:w-3/5 bg-white h-full overflow-auto min-h-0 absolute md:relative transition-transform duration-300 md:border-l md:border-gray-200 md:px-6 lg:px-8 xl:px-10 ${isMobilePreview ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
-             <ResumePreview data={resumeData} scale={scale} disableShadow />
+        <div className={`w-full md:w-3/5 lg:w-3/5 xl:w-3/5 bg-white h-full overflow-auto no-scrollbar min-h-0 absolute md:relative transition-transform duration-300 md:border-l md:border-gray-200 md:px-6 lg:px-8 xl:px-10 ${isMobilePreview ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+             <ResumePreview data={resumeData} scale={scale} disableShadow scrollInside={false} />
         </div>
       </div>
       
