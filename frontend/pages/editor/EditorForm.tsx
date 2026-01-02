@@ -559,53 +559,52 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                     {section.type === ResumeSectionType.JobApplication && (
                       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group transition-all hover:shadow-md">
                         <div className="mt-2 grid grid-cols-1 gap-4 mb-3">
-                          <input
-                            placeholder="求职岗位"
-                            className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
-                            value={section.items[0]?.title || ''}
-                            onChange={e =>
-                              updateItem(section.id, section.items[0]?.id || '', 'title', e.target.value)
-                            }
-                          />
+                          <div className="flex flex-col">
+                            <span className="text-xs text-gray-600 mb-1">求职岗位：</span>
+                            <input
+                              className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
+                              value={section.items[0]?.title || ''}
+                              onChange={e =>
+                                updateItem(section.id, section.items[0]?.id || '', 'title', e.target.value)
+                              }
+                            />
+                          </div>
                           <div className="grid grid-cols-2 gap-4">
-                            <input
-                              placeholder="意向城市"
-                              className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                              value={section.items[0]?.subtitle || ''}
-                              onChange={e =>
-                                updateItem(section.id, section.items[0]?.id || '', 'subtitle', e.target.value)
-                              }
-                            />
-                            <input
-                              placeholder="期望薪资"
-                              className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                              value={section.items[0]?.description || ''}
-                              onChange={e =>
-                                updateItem(section.id, section.items[0]?.id || '', 'description', e.target.value)
-                              }
-                            />
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-col">
+                              <span className="text-xs text-gray-600 mb-1">意向城市：</span>
                               <input
-                                type="month"
-                                placeholder="入职时间"
+                                className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                value={section.items[0]?.subtitle || ''}
+                                onChange={e =>
+                                  updateItem(section.id, section.items[0]?.id || '', 'subtitle', e.target.value)
+                                }
+                              />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs text-gray-600 mb-1">期望薪资：</span>
+                              <input
+                                className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
+                                value={section.items[0]?.description || ''}
+                                onChange={e =>
+                                  updateItem(section.id, section.items[0]?.id || '', 'description', e.target.value)
+                                }
+                              />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs text-gray-600 mb-1">入职时间：</span>
+                              <select
                                 className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
                                 value={section.items[0]?.timeStart || ''}
                                 onChange={e =>
                                   updateItem(section.id, section.items[0]?.id || '', 'timeStart', e.target.value)
                                 }
-                              />
-                              <span className="text-xs text-gray-500">-</span>
-                              <input
-                                type="month"
-                                disabled
-                                className="w-full text-sm border-b outline-none pb-1 bg-transparent border-gray-200 text-gray-400"
-                                value=""
-                                onChange={() => {}}
-                              />
-                              <label className="flex items-center ml-2 text-xs text-gray-600">
-                                <input type="checkbox" className="mr-1" checked={false} readOnly />
-                                {t('common.toPresent') || '至今'}
-                              </label>
+                              >
+                                <option value="">不填</option>
+                                <option value="随时到岗">随时到岗</option>
+                                <option value="一周内到岗">一周内到岗</option>
+                                <option value="一个月内到岗">一个月内到岗</option>
+                                <option value="到岗时间另行商议">到岗时间另行商议</option>
+                              </select>
                             </div>
                           </div>
                         </div>
