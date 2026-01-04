@@ -3,12 +3,14 @@ package upload
 import (
 	"io"
 	"net/http"
+	"openresume/internal/pkg/logger"
 	"path/filepath"
 	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -58,6 +60,7 @@ func (h *Handler) UploadAvatar(c *gin.Context) {
 	name := uuid.NewString() + ext
 	url, err := h.svc.Upload(c, name, b)
 	if err != nil {
+		logger.WithCtx(c).Error("upload avatar error", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "upload error"})
 		return
 	}

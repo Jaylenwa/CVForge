@@ -6,8 +6,11 @@ import (
 	"net/url"
 	"time"
 
+	"openresume/internal/pkg/logger"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -96,6 +99,7 @@ func (h *Handler) GithubCallback() gin.HandlerFunc {
 		}
 		val, err := h.svc.GetOAuthState(state)
 		if err != nil || val == "" {
+			logger.WithCtx(c).Error("auth.github invalid state", zap.Error(err))
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid state"})
 			return
 		}
@@ -109,12 +113,14 @@ func (h *Handler) GithubCallback() gin.HandlerFunc {
 		_ = json.Unmarshal([]byte(val), &st)
 		tokenResp, err := h.svc.ExchangeGithubCode(code)
 		if err != nil {
+			logger.WithCtx(c).Error("auth.github exchange failed", zap.Error(err))
 			c.JSON(http.StatusBadGateway, gin.H{"error": "exchange failed"})
 			return
 		}
 		profile, _ := h.svc.FetchGithubUserInfo(tokenResp.AccessToken)
 		user, err := h.svc.FindOrCreateGithubUser(profile)
 		if err != nil {
+			logger.WithCtx(c).Error("auth.github account error", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "account error"})
 			return
 		}
@@ -153,6 +159,7 @@ func (h *Handler) WeChatCallback() gin.HandlerFunc {
 		}
 		val, err := h.svc.GetOAuthState(state)
 		if err != nil || val == "" {
+			logger.WithCtx(c).Error("auth.wechat invalid state", zap.Error(err))
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid state"})
 			return
 		}
@@ -166,12 +173,14 @@ func (h *Handler) WeChatCallback() gin.HandlerFunc {
 		_ = json.Unmarshal([]byte(val), &st)
 		tokenResp, err := h.svc.ExchangeCode(code)
 		if err != nil {
+			logger.WithCtx(c).Error("auth.wechat exchange failed", zap.Error(err))
 			c.JSON(http.StatusBadGateway, gin.H{"error": "exchange failed"})
 			return
 		}
 		profile, _ := h.svc.FetchUserInfo(tokenResp.AccessToken, tokenResp.OpenID)
 		user, err := h.svc.FindOrCreateWeChatUser(profile, tokenResp)
 		if err != nil {
+			logger.WithCtx(c).Error("auth.wechat account error", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "account error"})
 			return
 		}
@@ -201,11 +210,13 @@ func (h *Handler) ConsumeOTT(c *gin.Context) {
 		OTT string `json:"ott"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || body.OTT == "" {
+		logger.WithCtx(c).Error("auth.consume_ott bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	val, err := h.svc.GetOTT(body.OTT)
 	if err != nil || val == "" {
+		logger.WithCtx(c).Error("auth.consume_ott invalid ott", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid ott"})
 		return
 	}
@@ -220,12 +231,14 @@ func (h *Handler) SendCode(c *gin.Context) {
 		Email string `json:"email"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.Email == "" {
+		logger.WithCtx(c).Error("auth.send_code bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email"})
 		return
 	}
 	code := h.svc.GenerateVerifyCode()
 	_ = h.svc.SaveVerifyCode(req.Email, code)
 	if err := h.svc.SendCode(req.Email, code); err != nil {
+		logger.WithCtx(c).Error("auth.send_code failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "send failed"})
 		return
 	}
@@ -235,11 +248,13 @@ func (h *Handler) SendCode(c *gin.Context) {
 func (h *Handler) Register(c *gin.Context) {
 	var req struct{ Email, Code, Password, Name string }
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.WithCtx(c).Error("auth.register bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	access, refresh, err := h.svc.Register(req.Email, req.Code, req.Password, req.Name)
 	if err != nil {
+		logger.WithCtx(c).Error("auth.register failed", zap.Error(err))
 		if err == gorm.ErrDuplicatedKey {
 			c.JSON(http.StatusConflict, gin.H{"error": "email exists"})
 			return
@@ -253,11 +268,13 @@ func (h *Handler) Register(c *gin.Context) {
 func (h *Handler) Login(c *gin.Context) {
 	var req struct{ Email, Password string }
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.WithCtx(c).Error("auth.login bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	access, refresh, err := h.svc.Login(req.Email, req.Password)
 	if err != nil {
+		logger.WithCtx(c).Error("auth.login failed", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
@@ -269,11 +286,13 @@ func (h *Handler) Refresh(c *gin.Context) {
 		RefreshToken string `json:"refreshToken"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.WithCtx(c).Error("auth.refresh bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	access, refresh, err := h.svc.Refresh(req.RefreshToken)
 	if err != nil {
+		logger.WithCtx(c).Error("auth.refresh failed", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 		return
 	}
@@ -285,10 +304,12 @@ func (h *Handler) Logout(c *gin.Context) {
 		RefreshToken string `json:"refreshToken"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.WithCtx(c).Error("auth.logout bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	if err := h.svc.Logout(req.RefreshToken); err != nil {
+		logger.WithCtx(c).Error("auth.logout failed", zap.Error(err))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 		return
 	}

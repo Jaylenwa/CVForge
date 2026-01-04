@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"openresume/internal/infra/cache"
+	"openresume/internal/pkg/logger"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awscfg "github.com/aws/aws-sdk-go-v2/config"
@@ -16,6 +17,7 @@ import (
 	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -29,6 +31,7 @@ func NewHandler() *Handler {
 func (h *Handler) GeneratePDF(c *gin.Context) {
 	pdf, code, err := h.svc.GeneratePDF(c, c.Param("id"))
 	if err != nil {
+		logger.WithCtx(c).Error("pdf.generate failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
@@ -47,6 +50,7 @@ func (h *Handler) GeneratePDF(c *gin.Context) {
 func (h *Handler) GenerateImage(c *gin.Context) {
 	img, code, err := h.svc.GenerateImage(c, c.Param("id"))
 	if err != nil {
+		logger.WithCtx(c).Error("image.generate failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
@@ -73,6 +77,7 @@ func (h *Handler) SubmitExport(c *gin.Context) {
 		resumeID = c.Param("id")
 	}
 	if resumeID == "" {
+		logger.WithCtx(c).Error("pdf.submit_export bad request")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "resumeId required"})
 		return
 	}
@@ -85,6 +90,7 @@ func (h *Handler) SubmitExport(c *gin.Context) {
 	}
 	repo := NewExportRepo(h.svc)
 	if err := repo.Enqueue(c, job); err != nil {
+		logger.WithCtx(c).Error("pdf.submit_export enqueue failed", zap.Error(err))
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "queue unavailable"})
 		return
 	}
@@ -96,6 +102,7 @@ func (h *Handler) ExportStatus(c *gin.Context) {
 	repo := NewExportRepo(h.svc)
 	st, _, errMsg, err := repo.GetStatus(c, id)
 	if err != nil {
+		logger.WithCtx(c).Error("pdf.export_status not found", zap.Error(err), zap.String("id", id))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
@@ -113,10 +120,12 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 	repo := NewExportRepo(h.svc)
 	st, url, _, err := repo.GetStatus(c, id)
 	if err != nil || st != ExportStatusDone || url == "" {
+		logger.WithCtx(c).Error("pdf.export_download not ready", zap.Error(err), zap.String("id", id), zap.String("url", url))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "not ready"})
 		return
 	}
 	if token == "" || !repo.ValidateOTT(c, id, token) {
+		logger.WithCtx(c).Error("pdf.export_download invalid token", zap.String("id", id))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 		return
 	}
@@ -140,6 +149,7 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 		p := filepath.Join("uploads", filename)
 		f, err := os.Open(p)
 		if err != nil {
+			logger.WithCtx(c).Error("pdf.export_download file not found", zap.Error(err), zap.String("path", p))
 			c.JSON(http.StatusNotFound, gin.H{"error": "file not found"})
 			return
 		}
@@ -172,6 +182,9 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 			if err == nil {
 				defer obj.Body.Close()
 				_, _ = io.Copy(c.Writer, obj.Body)
+			}
+			if err != nil {
+				logger.WithCtx(c).Error("pdf.export_download s3 get failed", zap.Error(err), zap.String("bucket", bucket), zap.String("key", filename))
 			}
 		}
 	}

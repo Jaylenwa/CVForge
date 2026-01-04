@@ -3,8 +3,10 @@ package config
 import (
 	"net/http"
 	"openresume/internal/models"
+	"openresume/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -22,6 +24,7 @@ func (h *Handler) GetPublic(c *gin.Context) {
 func (h *Handler) AdminList(c *gin.Context) {
 	configs, err := h.service.GetAll()
 	if err != nil {
+		logger.WithCtx(c).Error("config.admin_list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch configs"})
 		return
 	}

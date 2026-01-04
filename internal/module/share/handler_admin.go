@@ -8,8 +8,10 @@ import (
 	"openresume/internal/common"
 	"openresume/internal/infra/cache"
 	"openresume/internal/infra/database"
+	"openresume/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type AdminHandler struct{}
@@ -50,6 +52,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	var total int64
 	q.Count(&total)
 	if err := q.Order("id desc").Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
+		logger.WithCtx(c).Error("share.admin_list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -123,16 +126,19 @@ func (h *AdminHandler) AdminUpdate(c *gin.Context) {
 		IsPublic bool `json:"isPublic"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
+		logger.WithCtx(c).Error("share.admin_update bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	var s ShareLink
 	if err := database.DB.Where("slug = ?", c.Param("slug")).First(&s).Error; err != nil {
+		logger.WithCtx(c).Error("share.admin_update not found", zap.Error(err), zap.String("slug", c.Param("slug")))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
 	s.IsPublic = body.IsPublic
 	if err := database.DB.Save(&s).Error; err != nil {
+		logger.WithCtx(c).Error("share.admin_update save failed", zap.Error(err), zap.String("slug", c.Param("slug")))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -145,6 +151,7 @@ func (h *AdminHandler) AdminUpdate(c *gin.Context) {
 func (h *AdminHandler) AdminDelete(c *gin.Context) {
 	slug := c.Param("slug")
 	if err := database.DB.Where("slug = ?", slug).Delete(&ShareLink{}).Error; err != nil {
+		logger.WithCtx(c).Error("share.admin_delete failed", zap.Error(err), zap.String("slug", slug))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}

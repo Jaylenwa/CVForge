@@ -16,11 +16,13 @@ import (
 	"openresume/internal/infra/cache"
 	"openresume/internal/infra/database"
 	conf "openresume/internal/module/config"
+	"openresume/internal/pkg/logger"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awscfg "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
+	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 )
@@ -104,10 +106,13 @@ func (s *Service) deleteJobFile(ctx context.Context, jobID string) {
 						o.BaseEndpoint = aws.String(endpoint)
 					}
 				})
-				_, _ = cli.DeleteObject(ctx, &s3.DeleteObjectInput{
+				_, err := cli.DeleteObject(ctx, &s3.DeleteObjectInput{
 					Bucket: aws.String(bucket),
 					Key:    aws.String(filename),
 				})
+				if err != nil {
+					logger.WithCtx(nil).Error("delete pdf error", zap.Error(err))
+				}
 			}
 		}
 	}

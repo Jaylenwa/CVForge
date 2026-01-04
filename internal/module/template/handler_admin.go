@@ -4,7 +4,10 @@ import (
 	"net/http"
 	"strings"
 
+	"openresume/internal/pkg/logger"
+
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -26,6 +29,7 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 		Category   string `json:"category"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || body.ExternalID == "" || body.Name == "" {
+		logger.WithCtx(c).Error("template.admin_create bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
@@ -42,6 +46,7 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 		mt.IsPremium = *body.IsPremium
 	}
 	if err := h.svc.Create(mt); err != nil {
+		logger.WithCtx(c).Error("template.admin_create conflict", zap.Error(err))
 		c.JSON(http.StatusConflict, gin.H{"error": "conflict"})
 		return
 	}
@@ -57,6 +62,7 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 		Category   *string `json:"category"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
+		logger.WithCtx(c).Error("template.admin_patch bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
@@ -78,6 +84,7 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 		}
 	})
 	if err != nil {
+		logger.WithCtx(c).Error("template.admin_patch failed", zap.Error(err), zap.String("id", c.Param("id")))
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 			return
@@ -90,6 +97,7 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 
 func (h *AdminHandler) AdminDelete(c *gin.Context) {
 	if err := h.svc.Delete(c.Param("id")); err != nil {
+		logger.WithCtx(c).Error("template.admin_delete failed", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}

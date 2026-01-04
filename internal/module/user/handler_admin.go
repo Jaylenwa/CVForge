@@ -7,8 +7,10 @@ import (
 
 	"openresume/internal/common"
 	"openresume/internal/infra/database"
+	"openresume/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -88,6 +90,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 		case "false":
 			q = q.Where("is_active = ?", false)
 		default:
+			logger.WithCtx(c).Error("user.admin_list invalid isActive")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid isActive"})
 			return
 		}
@@ -95,6 +98,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	var total int64
 	q.Count(&total)
 	if err := q.Order("id desc").Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
+		logger.WithCtx(c).Error("user.admin_list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -118,6 +122,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 func (h *AdminHandler) AdminGet(c *gin.Context) {
 	var u User
 	if err := database.DB.First(&u, c.Param("id")).Error; err != nil {
+		logger.WithCtx(c).Error("user.admin_get not found", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
@@ -144,11 +149,13 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 		IsActive  *bool        `json:"isActive"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
+		logger.WithCtx(c).Error("user.admin_patch bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	var u User
 	if err := database.DB.First(&u, c.Param("id")).Error; err != nil {
+		logger.WithCtx(c).Error("user.admin_patch not found", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
@@ -174,6 +181,7 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 		u.IsActive = *body.IsActive
 	}
 	if err := database.DB.Save(&u).Error; err != nil {
+		logger.WithCtx(c).Error("user.admin_patch save failed", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -186,17 +194,20 @@ func (h *AdminHandler) AdminResetPassword(c *gin.Context) {
 		NewPassword string `json:"newPassword"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || body.NewPassword == "" {
+		logger.WithCtx(c).Error("user.admin_reset_password bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	var u User
 	if err := database.DB.First(&u, c.Param("id")).Error; err != nil {
+		logger.WithCtx(c).Error("user.admin_reset_password not found", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
 	hash, _ := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
 	u.PasswordHash = string(hash)
 	if err := database.DB.Save(&u).Error; err != nil {
+		logger.WithCtx(c).Error("user.admin_reset_password save failed", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -206,6 +217,7 @@ func (h *AdminHandler) AdminResetPassword(c *gin.Context) {
 
 func (h *AdminHandler) AdminBan(c *gin.Context) {
 	if err := database.DB.Model(&User{}).Where("id = ?", c.Param("id")).Update("is_active", false).Error; err != nil {
+		logger.WithCtx(c).Error("user.admin_ban failed", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
@@ -215,6 +227,7 @@ func (h *AdminHandler) AdminBan(c *gin.Context) {
 
 func (h *AdminHandler) AdminUnban(c *gin.Context) {
 	if err := database.DB.Model(&User{}).Where("id = ?", c.Param("id")).Update("is_active", true).Error; err != nil {
+		logger.WithCtx(c).Error("user.admin_unban failed", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}

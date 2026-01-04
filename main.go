@@ -1,25 +1,27 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 
 	"openresume/internal/infra/config"
 	"openresume/internal/infra/storage"
+	"openresume/internal/pkg/logger"
 	"openresume/internal/module/pdf"
 	"openresume/internal/router"
+	"go.uber.org/zap"
 )
 
 func main() {
+	logger.Init()
 	config.Load()
 	err := storage.Init()
 	if err != nil {
-		log.Fatalf("storage init error: %v", err)
+		logger.L().Fatal("storage init error", zap.Error(err))
 	}
 
 	if err := pdf.StartWorker(); err != nil {
-		log.Fatalf("pdf worker error: %v", err)
+		logger.L().Fatal("pdf worker error", zap.Error(err))
 	}
 
 	r := router.Init()
@@ -28,8 +30,8 @@ func main() {
 		addr = ":" + os.Getenv("PORT")
 	}
 
-	log.Printf("server listening on %s", addr)
+	logger.L().Info("server listening", zap.String("addr", addr))
 	if err := http.ListenAndServe(addr, r); err != nil {
-		log.Fatalf("server error: %v", err)
+		logger.L().Fatal("server error", zap.Error(err))
 	}
 }

@@ -7,7 +7,10 @@ import (
 	"time"
 
 	"openresume/internal/infra/cache"
+	"openresume/internal/pkg/logger"
 	"openresume/internal/pkg/storage"
+
+	"go.uber.org/zap"
 )
 
 type Worker struct {
@@ -48,6 +51,7 @@ func (w *Worker) Start(ctx context.Context) error {
 			_ = w.repo.SetProcessing(ctx, jobID)
 			job, err := w.repo.GetJob(ctx, jobID)
 			if err != nil {
+				logger.WithCtx(nil).Error("get job error", zap.Error(err))
 				_ = w.repo.SetFailed(ctx, jobID, err.Error())
 				return
 			}
@@ -56,12 +60,14 @@ func (w *Worker) Start(ctx context.Context) error {
 				if err == nil {
 					err = fmt.Errorf("pdf code %d", code)
 				}
+				logger.WithCtx(nil).Error("generate pdf error", zap.Error(err))
 				_ = w.repo.SetFailed(ctx, jobID, err.Error())
 				return
 			}
 			name := fmt.Sprintf("resume-%s-%d.pdf", job.ResumeID, time.Now().UnixMilli())
 			url, err := w.uploader.Upload(ctx, name, buf)
 			if err != nil {
+				logger.WithCtx(nil).Error("upload pdf error", zap.Error(err))
 				_ = w.repo.SetFailed(ctx, jobID, err.Error())
 				return
 			}
