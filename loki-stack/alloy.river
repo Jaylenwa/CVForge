@@ -56,9 +56,6 @@ loki.process "pipeline" {
         level = "",
       }
     }
-    stage.output {
-      source = "msg"
-    }
   }
 }
 
