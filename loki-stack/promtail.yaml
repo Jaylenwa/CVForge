@@ -18,13 +18,16 @@ scrape_configs:
           __path__: /var/lib/docker/containers/*/*.log
 
     pipeline_stages:
-      # 解析 Docker JSON
+      # 1️⃣ 解析 Docker JSON 日志
       - docker: {}
-      # 只保留 openresume-* 容器（不关心 -1 / -2）
-      - drop:
-          source: container_name
-          expression: '^(?!/?openresume-).*'
-      # 仅 backend 容器做 JSON 结构化解析
+
+      # 2️⃣ 只保留 openresume-*，其它全部丢弃（RE2 合法写法）
+      - match:
+          selector: '{container_name!~"/?openresume-.*"}'
+          stages:
+            - drop: {}
+
+      # 3️⃣ 仅 backend 做 JSON 结构化
       - match:
           selector: '{container_name=~"/?openresume-backend.*"}'
           stages:
