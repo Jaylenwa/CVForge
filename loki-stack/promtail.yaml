@@ -9,18 +9,26 @@ clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
-  - job_name: openresume-services
+  - job_name: openresume
     static_configs:
       - targets:
           - localhost
         labels:
           job: openresume
-          __path__: /var/lib/docker/containers/*/*.log   # 抓所有容器日志文件
+          __path__: /var/lib/docker/containers/*/*.log
+
     pipeline_stages:
-      - docker: {}   # 解析 Docker JSON 日志，自动生成 container_name, container_id, image 等标签
+      # 解析 Docker JSON
+      - docker: {}
+      # 只保留 openresume-* 容器（不关心 -1 / -2）
+      - drop:
+          source: container_name
+          expression: '^(?!/?openresume-).*'
+      # 仅 backend 容器做 JSON 结构化解析
       - match:
-          selector: '{container_name=~"openresume-frontend-1|openresume-backend-1|openresume-chrome-1"}'
-      - json:
-          expressions:
-            level: level     # 如果日志 JSON 有 level 字段
-            msg: msg         # 如果日志 JSON 有 msg 字段
+          selector: '{container_name=~"/?openresume-backend.*"}'
+          stages:
+            - json:
+                expressions:
+                  level: level
+                  msg: msg
