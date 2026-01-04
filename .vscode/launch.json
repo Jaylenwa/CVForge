@@ -13,7 +13,8 @@
             "program": "${workspaceFolder}/main.go",
             "env": {
                 "CHROME_API_URL": "http://localhost:3001",
-                "FRONTEND_BASE_URL": "http://host.docker.internal:3000"
+                "FRONTEND_BASE_URL": "http://host.docker.internal:3000",
+                "GORM_LOG": "DEV"
             }
         }
     ]

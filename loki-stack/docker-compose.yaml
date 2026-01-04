@@ -14,9 +14,21 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./alloy.river:/etc/alloy/config.alloy:ro
+    ports:
+      - "12345:12345"
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
 
   grafana:
     image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=wjlroot
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    volumes:
+      - grafana-data:/var/lib/grafana
     ports:
       - "3333:3000"
+
+volumes:
+  grafana-data: {}

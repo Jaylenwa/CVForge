@@ -1,7 +1,6 @@
 package router
 
 import (
-	"log"
 	"time"
 
 	"openresume/internal/common"
@@ -17,6 +16,7 @@ import (
 	"openresume/internal/module/template"
 	"openresume/internal/module/upload"
 	"openresume/internal/module/user"
+	"openresume/internal/pkg/logger"
 	"openresume/internal/pkg/metrics"
 
 	"github.com/gin-gonic/gin"
@@ -121,6 +121,6 @@ func Init() *gin.Engine {
 	api.GET("/pdf/exports/:job_id/download", pdfH.ExportDownload)
 
 	router.Static("/public/uploads", "./uploads")
-	log.Println("router initialized")
+	logger.WithCtx(nil).Info("router initialized")
 	return router
 }

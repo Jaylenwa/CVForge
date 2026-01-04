@@ -1,16 +1,16 @@
 package database
 
 import (
-	"log"
 	"os"
 
 	"openresume/internal/infra/config"
 	"openresume/internal/models"
+	"openresume/internal/pkg/logger"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	gormLogger "gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -18,13 +18,12 @@ var DB *gorm.DB
 func InitMySQL(cfg config.Config) (*gorm.DB, error) {
 	var err error
 	if cfg.MySQLDSN != "" {
-		DB, err = gorm.Open(mysql.Open(cfg.MySQLDSN), &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
-		})
+		DB, err = gorm.Open(mysql.Open(cfg.MySQLDSN))
 	} else {
-		DB, err = gorm.Open(sqlite.Open(cfg.SQLitePath), &gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
-		})
+		DB, err = gorm.Open(sqlite.Open(cfg.SQLitePath))
+	}
+	if os.Getenv("GORM_LOG") == "DEV" {
+		DB.Logger = gormLogger.Default.LogMode(gormLogger.Info)
 	}
 	if err != nil {
 		return nil, err
@@ -43,7 +42,7 @@ func InitMySQL(cfg config.Config) (*gorm.DB, error) {
 			return nil, err
 		}
 	}
-	log.Println("mysql connected")
+	logger.WithCtx(nil).Info("mysql connected")
 	return DB, nil
 }
 

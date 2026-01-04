@@ -3,7 +3,6 @@ package pdf
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"openresume/internal/infra/cache"
@@ -91,14 +90,14 @@ func StartWorker() error {
 	svc := NewService()
 	uploader, err := initWorkerDeps(svc)
 	if err != nil {
-		log.Printf("worker deps error: %v", err)
+		logger.WithCtx(nil).Error("worker deps error", zap.Error(err))
 		return err
 	}
 	w := NewWorker(svc, uploader)
 	go func() {
-		log.Printf("pdf worker started in-process")
+		logger.WithCtx(nil).Info("pdf worker started in-process")
 		if err := w.Start(context.Background()); err != nil {
-			log.Printf("worker error: %v", err)
+			logger.WithCtx(nil).Error("worker error", zap.Error(err))
 		}
 	}()
 	return nil
