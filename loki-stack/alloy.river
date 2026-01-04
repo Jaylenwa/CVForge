@@ -1,0 +1,69 @@
+discovery.docker "docker" {
+  host = "unix:///var/run/docker.sock"
+  refresh_interval = "5s"
+}
+
+discovery.relabel "docker_labels" {
+  targets = discovery.docker.docker.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex = "/(.*)"
+    target_label = "container_name"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_id"]
+    target_label = "container_id"
+  }
+}
+
+loki.source.docker "logs" {
+  host        = "unix:///var/run/docker.sock"
+  targets     = discovery.docker.docker.targets
+  relabel_rules = discovery.relabel.docker_labels.rules
+  forward_to  = [loki.process.pipeline.receiver]
+}
+
+loki.process "pipeline" {
+  forward_to = [loki.write.default.receiver]
+
+  stage.static_labels {
+    values = {
+      job = "openresume",
+    }
+  }
+
+  stage.match {
+    selector = "{container_name!~\"^/?openresume-.*\"}"
+    action = "drop"
+    drop_counter_reason = "non_openresume_container"
+  }
+
+  stage.docker {}
+
+  stage.match {
+    selector = "{container_name=~\"^/?openresume-backend.*\"}"
+    action = "keep"
+    stage.json {
+      expressions = {
+        level = "level",
+        msg   = "msg",
+      }
+    }
+    stage.labels {
+      values = {
+        level = "",
+      }
+    }
+    stage.output {
+      source = "msg"
+    }
+  }
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
