@@ -47,32 +47,10 @@ export const Editor: React.FC = () => {
                 id: res.ExternalID || resumeId,
                 title: res.Title,
                 templateId: res.TemplateID,
-                themeConfig: { color: res.ThemeColor, fontFamily: res.ThemeFont, spacing: res.ThemeSpacing },
                 lastModified: res.LastModified,
-                personalInfo: {
-                  fullName: res.FullName,
-                  jobTitle: res.JobTitle || '',
-                  email: res.Email,
-                  phone: res.Phone,
-                  avatarUrl: res.AvatarURL,
-                  gender: res.Gender,
-                  age: res.Age,
-                  maritalStatus: res.MaritalStatus,
-                  politicalStatus: res.PoliticalStatus,
-                  birthplace: res.Birthplace,
-                  ethnicity: res.Ethnicity,
-                  height: res.Height,
-                  weight: res.Weight,
-                  customInfo: (() => {
-                    try {
-                      if (res.CustomInfo) {
-                        const parsed = JSON.parse(res.CustomInfo);
-                        if (Array.isArray(parsed)) return parsed;
-                      }
-                    } catch {}
-                    return [];
-                  })()
-                },
+                Personal: res.Personal,
+                Job: res.Job,
+                Theme: res.Theme,
                 sections: (res.Sections || []).map((s: any) => ({
                   id: s.ExternalID || s.ID,
                   type: s.Type,
@@ -102,7 +80,30 @@ export const Editor: React.FC = () => {
         }
         hasCreatedFromTemplate.current = true;
         const token = localStorage.getItem('token');
-        const payload = { ...INITIAL_RESUME, templateId };
+        const payload = {
+          Title: INITIAL_RESUME.title,
+          TemplateID: templateId,
+          Personal: INITIAL_RESUME.Personal || {},
+          Job: INITIAL_RESUME.Job || {},
+          Theme: INITIAL_RESUME.Theme || {},
+          Sections: INITIAL_RESUME.sections.map(s => ({
+            ExternalID: s.id,
+            Type: s.type,
+            Title: s.title,
+            IsVisible: s.isVisible,
+            Items: s.items.map(i => ({
+              ExternalID: i.id,
+              Title: i.title || '',
+              Subtitle: i.subtitle || '',
+              Major: i.major || '',
+              Degree: i.degree || '',
+              TimeStart: i.timeStart || '',
+              TimeEnd: i.today ? '' : (i.timeEnd || ''),
+              Today: !!i.today,
+              Description: i.description || ''
+            }))
+          }))
+        };
         fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
           .then(r => r.json())
           .then(({ id }) => {
@@ -131,16 +132,27 @@ export const Editor: React.FC = () => {
   const handleSave = () => {
     const token = localStorage.getItem('token');
     const payload = {
-      title: resumeData.title,
-      templateId: resumeData.templateId,
-      themeConfig: resumeData.themeConfig,
-      personalInfo: resumeData.personalInfo,
-      sections: resumeData.sections.map(s => ({
-        id: s.id,
-        type: s.type,
-        title: s.title,
-        isVisible: s.isVisible,
-        items: s.items.map(i => ({ id: i.id, title: i.title, subtitle: i.subtitle, major: i.major || '', degree: i.degree || '', timeStart: i.timeStart || '', timeEnd: i.today ? '' : (i.timeEnd || ''), today: !!i.today, description: i.description }))
+      Title: resumeData.title,
+      TemplateID: resumeData.templateId,
+      Personal: resumeData.Personal || {},
+      Job: resumeData.Job || {},
+      Theme: resumeData.Theme || {},
+      Sections: resumeData.sections.map(s => ({
+        ExternalID: s.id,
+        Type: s.type,
+        Title: s.title,
+        IsVisible: s.isVisible,
+        Items: s.items.map(i => ({
+          ExternalID: i.id,
+          Title: i.title || '',
+          Subtitle: i.subtitle || '',
+          Major: i.major || '',
+          Degree: i.degree || '',
+          TimeStart: i.timeStart || '',
+          TimeEnd: i.today ? '' : (i.timeEnd || ''),
+          Today: !!i.today,
+          Description: i.description || ''
+        }))
       }))
     };
     fetch(`${API_BASE}/resumes/${resumeData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })

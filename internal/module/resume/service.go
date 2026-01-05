@@ -2,7 +2,6 @@ package resume
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"openresume/internal/common"
@@ -24,49 +23,12 @@ func NewService() *Service {
 }
 
 type ResumeReq struct {
-	Title       string `json:"title"`
-	TemplateId  string `json:"templateId"`
-	ThemeConfig struct {
-		Color      string `json:"color"`
-		FontFamily string `json:"fontFamily"`
-		Spacing    string `json:"spacing"`
-	} `json:"themeConfig"`
-	PersonalInfo struct {
-		FullName        string `json:"fullName"`
-		Email           string `json:"email"`
-		Phone           string `json:"phone"`
-		AvatarURL       string `json:"avatarUrl"`
-		JobTitle        string `json:"jobTitle"`
-		Gender          string `json:"gender"`
-		Age             string `json:"age"`
-		MaritalStatus   string `json:"maritalStatus"`
-		PoliticalStatus string `json:"politicalStatus"`
-		Birthplace      string `json:"birthplace"`
-		Ethnicity       string `json:"ethnicity"`
-		Height          string `json:"height"`
-		Weight          string `json:"weight"`
-		CustomInfo      []struct {
-			Label string `json:"label"`
-			Value string `json:"value"`
-		} `json:"customInfo"`
-	} `json:"personalInfo"`
-	Sections []struct {
-		Id        string `json:"id"`
-		Type      string `json:"type"`
-		Title     string `json:"title"`
-		IsVisible bool   `json:"isVisible"`
-		Items     []struct {
-			Id          string `json:"id"`
-			Title       string `json:"title"`
-			Subtitle    string `json:"subtitle"`
-			Major       string `json:"major"`
-			Degree      string `json:"degree"`
-			TimeStart   string `json:"timeStart"`
-			TimeEnd     string `json:"timeEnd"`
-			Today       bool   `json:"today"`
-			Description string `json:"description"`
-		} `json:"items"`
-	} `json:"sections"`
+	Title      string            `json:"Title"`
+	TemplateID string            `json:"TemplateID"`
+	Personal   ResumePersonalDTO `json:"Personal"`
+	Job        ResumeJobDTO      `json:"Job"`
+	Theme      ResumeThemeDTO    `json:"Theme"`
+	Sections   []SectionDTO      `json:"Sections"`
 }
 
 func (s *Service) ListUserResumes(uid uint) ([]Resume, error) {
@@ -76,8 +38,8 @@ func (s *Service) ListUserResumes(uid uint) ([]Resume, error) {
 func (s *Service) CreateResume(uid uint, req ResumeReq) (Resume, error) {
 	res := s.toModel(uid, req)
 	err := s.repo.Create(&res)
-	if err == nil && req.TemplateId != "" {
-		_ = s.repo.IncrementTemplateUsage(req.TemplateId)
+	if err == nil && req.TemplateID != "" {
+		_ = s.repo.IncrementTemplateUsage(req.TemplateID)
 		_ = cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
 	}
 	return res, err
@@ -143,28 +105,34 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 		ExternalID:   uuid.NewString(),
 		UserID:       uid,
 		Title:        req.Title,
-		TemplateID:   req.TemplateId,
+		TemplateID:   req.TemplateID,
 		LastModified: time.Now().UnixMilli(),
 		Personal: ResumePersonal{
-			FullName:        req.PersonalInfo.FullName,
-			Email:           req.PersonalInfo.Email,
-			Phone:           req.PersonalInfo.Phone,
-			AvatarURL:       req.PersonalInfo.AvatarURL,
-			JobTitle:        req.PersonalInfo.JobTitle,
-			Gender:          req.PersonalInfo.Gender,
-			Age:             req.PersonalInfo.Age,
-			MaritalStatus:   req.PersonalInfo.MaritalStatus,
-			PoliticalStatus: req.PersonalInfo.PoliticalStatus,
-			Birthplace:      req.PersonalInfo.Birthplace,
-			Ethnicity:       req.PersonalInfo.Ethnicity,
-			Height:          req.PersonalInfo.Height,
-			Weight:          req.PersonalInfo.Weight,
-			CustomInfo:      s.formatCustomInfo(req.PersonalInfo.CustomInfo),
+			FullName:        req.Personal.FullName,
+			Email:           req.Personal.Email,
+			Phone:           req.Personal.Phone,
+			AvatarURL:       req.Personal.AvatarURL,
+			JobTitle:        req.Personal.JobTitle,
+			Gender:          req.Personal.Gender,
+			Age:             req.Personal.Age,
+			MaritalStatus:   req.Personal.MaritalStatus,
+			PoliticalStatus: req.Personal.PoliticalStatus,
+			Birthplace:      req.Personal.Birthplace,
+			Ethnicity:       req.Personal.Ethnicity,
+			Height:          req.Personal.Height,
+			Weight:          req.Personal.Weight,
+			CustomInfo:      req.Personal.CustomInfo,
+		},
+		Job: ResumeJob{
+			Job:      req.Job.Job,
+			City:     req.Job.City,
+			Money:    req.Job.Money,
+			JoinTime: req.Job.JoinTime,
 		},
 		Theme: ResumeTheme{
-			Color:   req.ThemeConfig.Color,
-			Font:    req.ThemeConfig.FontFamily,
-			Spacing: req.ThemeConfig.Spacing,
+			Color:   req.Theme.Color,
+			Font:    req.Theme.Font,
+			Spacing: req.Theme.Spacing,
 		},
 	}
 	sanitize := func(s string) string {
@@ -180,7 +148,7 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 	}
 	for si, sct := range req.Sections {
 		sec := ResumeSection{
-			ExternalID: sct.Id,
+			ExternalID: sct.ExternalID,
 			Type:       sct.Type,
 			Title:      sct.Title,
 			IsVisible:  sct.IsVisible,
@@ -188,7 +156,7 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 		}
 		for ii, it := range sct.Items {
 			sec.Items = append(sec.Items, ResumeItem{
-				ExternalID:  it.Id,
+				ExternalID:  it.ExternalID,
 				Title:       it.Title,
 				Subtitle:    it.Subtitle,
 				Major:       it.Major,
@@ -203,18 +171,4 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 		r.Sections = append(r.Sections, sec)
 	}
 	return r
-}
-
-func (s *Service) formatCustomInfo(items []struct {
-	Label string `json:"label"`
-	Value string `json:"value"`
-}) string {
-	if len(items) == 0 {
-		return ""
-	}
-	b, err := json.Marshal(items)
-	if err != nil {
-		return ""
-	}
-	return string(b)
 }

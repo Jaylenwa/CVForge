@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { ResumeData, ThemeConfig } from '../../types';
+import { ResumeData } from '../../types';
 import { getThemeStyles } from '../../utils/resume-helpers';
 
 import { TemplateClassic } from '../../components/templates/TemplateClassic';
@@ -24,7 +24,7 @@ export interface ArtboardProps {
 
 export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disableShadow = false, className = '', style = {}, showPageHint = true, transformOrigin = 'top left' }) => {
   const { t } = useLanguage();
-  const styles = getThemeStyles(data.themeConfig);
+  const styles = getThemeStyles(data.Theme);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const sourceRef = React.useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });

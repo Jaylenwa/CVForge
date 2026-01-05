@@ -1,4 +1,4 @@
-import { ResumeData, ThemeConfig } from '../types';
+import { ResumeData } from '../types';
 
 export const getFontStack = (fontId: string): string => {
     switch (fontId) {
@@ -18,21 +18,31 @@ export const getFontStack = (fontId: string): string => {
     }
 };
 
-export const getThemeStyles = (config?: ThemeConfig) => {
-    const fontFamily = getFontStack(config?.fontFamily || 'inter');
+export const getThemeStyles = (theme?: { Color?: string; Font?: string; Spacing?: string }) => {
+    const fontFamily = getFontStack(theme?.Font || 'inter');
 
     const spacingMultiplier = {
         'compact': '0.85',
         'normal': '1',
         'spacious': '1.25'
-    }[config?.spacing || 'normal'];
+    }[theme?.Spacing || 'normal'];
 
   return { fontFamily, spacingMultiplier };
 };
 
 export const hasExtraPersonalInfo = (data: ResumeData) => {
-    const p = data.personalInfo || ({} as ResumeData['personalInfo']);
-    return !!(p.gender || p.age || p.maritalStatus || p.politicalStatus || p.birthplace || p.ethnicity || p.height || p.weight || (p.customInfo && p.customInfo.length > 0));
+    const p = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
+    const customArr = (() => {
+        try {
+            const raw = p?.CustomInfo;
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) return parsed;
+            }
+        } catch {}
+        return [];
+    })();
+    return !!(p?.Gender || p?.Age || p?.MaritalStatus || p?.PoliticalStatus || p?.Birthplace || p?.Ethnicity || p?.Height || p?.Weight || (customArr && customArr.length > 0));
 };
 
 export const sanitizeHtml = (html: string) => {

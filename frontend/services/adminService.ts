@@ -75,7 +75,7 @@ export interface AdminResume {
   userName?: string;
   title: string;
   templateId: string;
-  themeConfig: { color: string; fontFamily: string; spacing: string };
+  Theme: { Color?: string; Font?: string; Spacing?: string };
   lastModified: number;
 }
 
@@ -92,7 +92,7 @@ export const listResumes = async (params: Record<string, string>) => {
       userName: it.userName,
       title: r.Title,
       templateId: r.TemplateID,
-      themeConfig: { color: r.ThemeColor, fontFamily: r.ThemeFont, spacing: r.ThemeSpacing },
+      Theme: { Color: r.Theme?.Color, Font: r.Theme?.Font, Spacing: r.Theme?.Spacing },
       lastModified: r.LastModified,
     } as AdminResume;
   });

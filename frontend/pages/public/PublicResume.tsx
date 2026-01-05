@@ -34,32 +34,9 @@ export const PublicResume: React.FC = () => {
           id: slug,
           title: res.Title,
           templateId: res.TemplateID,
-          themeConfig: { color: res.ThemeColor, fontFamily: res.ThemeFont, spacing: res.ThemeSpacing },
-          lastModified: Date.now(),
-          personalInfo: {
-            fullName: res.FullName,
-            jobTitle: res.JobTitle || '',
-            email: res.Email,
-            phone: res.Phone,
-            avatarUrl: res.AvatarURL,
-            gender: res.Gender,
-            age: res.Age,
-            maritalStatus: res.MaritalStatus,
-            politicalStatus: res.PoliticalStatus,
-            birthplace: res.Birthplace,
-            ethnicity: res.Ethnicity,
-            height: res.Height,
-            weight: res.Weight,
-            customInfo: (() => {
-              try {
-                if (res.CustomInfo) {
-                  const parsed = JSON.parse(res.CustomInfo);
-                  if (Array.isArray(parsed)) return parsed;
-                }
-              } catch {}
-              return [];
-            })()
-          },
+          Theme: res.Theme,
+          lastModified: res.LastModified || Date.now(),
+          Personal: res.Personal,
           sections: (res.Sections || []).map((s: any) => ({
             id: s.ExternalID || s.ID,
             type: s.Type,

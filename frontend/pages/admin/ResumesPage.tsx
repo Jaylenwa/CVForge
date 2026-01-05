@@ -60,7 +60,7 @@ export const ResumesPage: React.FC = () => {
     return (
       <div className="w-10 h-12 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border border-slate-200 relative">
         <ResumeArtboard
-          data={{ ...INITIAL_RESUME, templateId: r.templateId, themeConfig: r.themeConfig }}
+          data={{ ...INITIAL_RESUME, templateId: r.templateId, Theme: r.Theme }}
           scale={thumbnailScale}
           disableShadow
           style={{ margin: 0 }}
@@ -121,7 +121,7 @@ export const ResumesPage: React.FC = () => {
                       <Thumbnail r={r} />
                       <div>
                         <div className="text-sm font-semibold text-slate-900">{r.title}</div>
-                        <div className="text-[10px] text-slate-400 uppercase tracking-tight">{r.themeConfig?.fontFamily || ''}</div>
+                        <div className="text-[10px] text-slate-400 uppercase tracking-tight">{r.Theme?.Font || ''}</div>
                       </div>
                     </div>
                   </td>

@@ -57,7 +57,7 @@ func (s *Service) GetPublicPayload(slug string) (string, int, error) {
 		return "", 404, err
 	}
 	var res Resume
-	if err := database.DB.Where("id = ?", sl.ResumeID).Preload("Personal").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("id = ?", sl.ResumeID).Preload("Personal").Preload("Job").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
 		return "", 404, err
 	}
 	payload := resmod.ToDTO(res)

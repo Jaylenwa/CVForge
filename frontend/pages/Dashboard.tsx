@@ -34,14 +34,14 @@ export const Dashboard: React.FC = () => {
         id: r.id || r.ExternalID,
         title: r.title || r.Title,
         templateId: r.templateId || r.TemplateID,
-        themeConfig: r.themeConfig || { color: r.ThemeColor, fontFamily: r.ThemeFont, spacing: r.ThemeSpacing },
+        Theme: r.Theme || { Color: r.Theme?.Color, Font: r.Theme?.Font, Spacing: r.Theme?.Spacing },
         lastModified: r.lastModified || r.LastModified || Date.now(),
-        personalInfo: r.personalInfo || {
-          fullName: r.FullName,
-          jobTitle: (r.personalInfo && r.personalInfo.jobTitle) || (r.JobTitle || ''),
-          email: r.Email,
-          phone: r.Phone,
-          avatarUrl: r.AvatarURL,
+        Personal: r.Personal || {
+          FullName: r.Personal?.FullName,
+          JobTitle: r.Personal?.JobTitle || '',
+          Email: r.Personal?.Email,
+          Phone: r.Personal?.Phone,
+          AvatarURL: r.Personal?.AvatarURL,
         },
         sections: (r.sections || []).map((s: any) => ({
           id: s.id || s.ExternalID,
@@ -78,10 +78,34 @@ export const Dashboard: React.FC = () => {
   const handleDuplicate = (resume: ResumeData, e: React.MouseEvent) => {
       e.stopPropagation();
       const token = localStorage.getItem('token');
-      const clone = { ...INITIAL_RESUME, title: `${resume.title}${t('dashboard.copySuffix')}`, templateId: resume.templateId };
-      fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(clone) })
+      const cloneTitle = `${resume.title}${t('dashboard.copySuffix')}`;
+      const payload = {
+        Title: cloneTitle,
+        TemplateID: resume.templateId,
+        Personal: resume.Personal || INITIAL_RESUME.Personal || {},
+        Job: resume.Job || INITIAL_RESUME.Job || {},
+        Theme: resume.Theme || INITIAL_RESUME.Theme || {},
+        Sections: (resume.sections || INITIAL_RESUME.sections).map(s => ({
+          ExternalID: s.id,
+          Type: s.type,
+          Title: s.title,
+          IsVisible: s.isVisible,
+          Items: s.items.map(i => ({
+            ExternalID: i.id,
+            Title: i.title || '',
+            Subtitle: i.subtitle || '',
+            Major: i.major || '',
+            Degree: i.degree || '',
+            TimeStart: i.timeStart || '',
+            TimeEnd: i.today ? '' : (i.timeEnd || ''),
+            Today: !!i.today,
+            Description: i.description || '',
+          })),
+        })),
+      };
+      fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
         .then(r => r.json())
-        .then(({ id }) => setResumes(prev => [{ ...clone, id, lastModified: Date.now() }, ...prev]));
+        .then(({ id }) => setResumes(prev => [{ ...resume, id, title: cloneTitle, lastModified: Date.now() }, ...prev]));
       setActiveMenu(null);
   };
 

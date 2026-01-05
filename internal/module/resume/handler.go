@@ -1,7 +1,6 @@
 package resume
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"openresume/internal/middleware"
@@ -17,22 +16,6 @@ type Handler struct {
 
 func NewHandler() *Handler {
 	return &Handler{svc: NewService()}
-}
-
-type customKV struct {
-	Label string `json:"label"`
-	Value string `json:"value"`
-}
-
-func parseCustomInfo(s string) ([]customKV, bool) {
-	if s == "" {
-		return nil, false
-	}
-	var arr []customKV
-	if err := json.Unmarshal([]byte(s), &arr); err != nil {
-		return nil, false
-	}
-	return arr, true
 }
 
 func (h *Handler) List(c *gin.Context) {

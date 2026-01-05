@@ -8,30 +8,27 @@ export const INITIAL_RESUME: ResumeData = {
   id: 'new',
   title: '我的简历',
   templateId: 'TemplateClassic',
-  themeConfig: {
-    color: '#000000',
-    fontFamily: 'yahei',
-    spacing: 'normal'
+  Theme: {
+    Color: '#000000',
+    Font: 'yahei',
+    Spacing: 'normal'
   },
   lastModified: Date.now(),
-  personalInfo: {
-    fullName: '张伟',
-    email: 'zhangwei@example.com',
-    phone: '13800000000',
-    avatarUrl: '/avator.avif',
-    jobTitle: '高级软件工程师',
-    gender: '男',
-    age: '28',
-    maritalStatus: '未婚',
-    politicalStatus: '中共党员',
-    birthplace: '江苏苏州',
-    ethnicity: '汉族',
-    height: '180cm',
-    weight: '70kg',
-    city: '上海',
-    customInfo: [
-      { label: '期望城市', value: '上海 / 杭州' }
-    ]
+  Personal: {
+    FullName: '张伟',
+    Email: 'zhangwei@example.com',
+    Phone: '13800000000',
+    AvatarURL: '/avator.avif',
+    JobTitle: '高级软件工程师',
+    Gender: '男',
+    Age: '28',
+    MaritalStatus: '未婚',
+    PoliticalStatus: '中共党员',
+    Birthplace: '江苏苏州',
+    Ethnicity: '汉族',
+    Height: '180cm',
+    Weight: '70kg',
+    CustomInfo: JSON.stringify([{ label: '期望城市', value: '上海 / 杭州' }])
   },
   sections: [
     {

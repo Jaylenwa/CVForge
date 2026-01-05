@@ -25,6 +25,7 @@ export interface ResumeItem {
   timeEnd?: string;   // YYYY-MM
   today?: boolean;
   description: string; // HTML or Markdown allowed
+  orderNum?: number;
 }
 
 export interface ResumeSection {
@@ -33,36 +34,40 @@ export interface ResumeSection {
   title: string;
   items: ResumeItem[];
   isVisible: boolean;
-}
-
-export interface ThemeConfig {
-  color: string;
-  fontFamily: string;
-  spacing: 'compact' | 'normal' | 'spacious';
+  orderNum?: number;
 }
 
 export interface ResumeData {
   id: string;
   title: string;
   templateId: string;
-  themeConfig: ThemeConfig;
   lastModified: number;
-  personalInfo: {
-    fullName: string;
-    email: string;
-    phone: string;
-    city?: string;
-    avatarUrl?: string;
-    jobTitle: string;
-    gender?: string;
-    age?: string;
-    maritalStatus?: string;
-    politicalStatus?: string;
-    birthplace?: string;
-    ethnicity?: string;
-    height?: string;
-    weight?: string;
-    customInfo?: Array<{ label: string; value: string }>;
+  Personal?: {
+    FullName?: string;
+    Email?: string;
+    Phone?: string;
+    AvatarURL?: string;
+    JobTitle?: string;
+    Gender?: string;
+    Age?: string;
+    MaritalStatus?: string;
+    PoliticalStatus?: string;
+    Birthplace?: string;
+    Ethnicity?: string;
+    Height?: string;
+    Weight?: string;
+    CustomInfo?: string;
+  };
+  Job?: {
+    Job?: string;
+    City?: string;
+    Money?: string;
+    JoinTime?: string;
+  };
+  Theme?: {
+    Color?: string;
+    Font?: string;
+    Spacing?: string;
   };
   sections: ResumeSection[];
 }

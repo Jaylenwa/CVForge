@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Trash2, Plus, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate, Briefcase, GraduationCap, Wrench, User, Target, BookOpen, Layers, Award, Heart } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType, ThemeConfig } from '../../types';
+import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { polishText, generateSummary } from '../../services/geminiService';
 import { API_BASE } from '../../config';
@@ -51,42 +51,40 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const updatePersonalInfo = (field: string, value: string) => {
-    onChange({
-      ...data,
-      personalInfo: { ...data.personalInfo, [field]: value }
-    });
+  const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
+  const theme = (data.Theme || {}) as NonNullable<ResumeData['Theme']>;
+  const parseCustomList = (): Array<{ label: string; value: string }> => {
+    try {
+      const raw = personal?.CustomInfo;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  };
+  const updatePersonal = (key: keyof NonNullable<ResumeData['Personal']>, value: string) => {
+    onChange({ ...data, Personal: { ...personal, [key]: value } });
   };
 
   const addCustomInfo = () => {
-    const list = data.personalInfo.customInfo || [];
-    onChange({
-      ...data,
-      personalInfo: { ...data.personalInfo, customInfo: [...list, { label: '', value: '' }] }
-    });
+    const list = parseCustomList();
+    const next = [...list, { label: '', value: '' }];
+    onChange({ ...data, Personal: { ...personal, CustomInfo: JSON.stringify(next) } });
   };
 
   const updateCustomInfo = (idx: number, key: 'label' | 'value', value: string) => {
-    const list = (data.personalInfo.customInfo || []).map((item, i) => i === idx ? { ...item, [key]: value } : item);
-    onChange({
-      ...data,
-      personalInfo: { ...data.personalInfo, customInfo: list }
-    });
+    const list = parseCustomList().map((item, i) => i === idx ? { ...item, [key]: value } : item);
+    onChange({ ...data, Personal: { ...personal, CustomInfo: JSON.stringify(list) } });
   };
 
   const removeCustomInfo = (idx: number) => {
-    const list = (data.personalInfo.customInfo || []).filter((_, i) => i !== idx);
-    onChange({
-      ...data,
-      personalInfo: { ...data.personalInfo, customInfo: list }
-    });
+    const list = parseCustomList().filter((_, i) => i !== idx);
+    onChange({ ...data, Personal: { ...personal, CustomInfo: JSON.stringify(list) } });
   };
 
-  const updateTheme = (field: keyof ThemeConfig, value: string) => {
-    onChange({
-        ...data,
-        themeConfig: { ...data.themeConfig, [field]: value }
-    });
+  const updateTheme = (key: keyof NonNullable<ResumeData['Theme']>, value: string) => {
+    onChange({ ...data, Theme: { ...theme, [key]: value } });
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +109,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       }
       if (res.ok) {
         const data = await res.json();
-        updatePersonalInfo('avatarUrl', data.url);
+        updatePersonal('AvatarURL', data.url);
       }
     } catch {}
   };
@@ -338,9 +336,9 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
      setIsAiLoading(true);
      // Find relevant skills for context
      const skillsSection = data.sections.find(s => s.type === ResumeSectionType.Skills);
-     const skills = skillsSection?.items.map(i => i.description).join(', ') || 'General';
+    const skills = skillsSection?.items.map(i => i.description).join(', ') || 'General';
      
-     const summary = await generateSummary(data.personalInfo.jobTitle, skills);
+     const summary = await generateSummary(personal?.JobTitle || '', skills);
      
      // Update summary section
      const summarySection = data.sections.find(s => s.type === ResumeSectionType.Summary);
@@ -408,15 +406,15 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                    {t('editor.profile.label')}
                 </label>
                 <div className="flex items-center space-x-4">
-                   {data.personalInfo.avatarUrl ? (
+            {personal?.AvatarURL ? (
                         <div className="relative group shrink-0">
                             <img 
-                                src={data.personalInfo.avatarUrl} 
+                                src={personal.AvatarURL || ''} 
                                 alt={t('a11y.avatarAlt')} 
                                 className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm"
                             />
                             <button
-                                onClick={() => updatePersonalInfo('avatarUrl', '')}
+                                onClick={() => updatePersonal('AvatarURL', '')}
                                 className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow-sm hover:bg-red-600 transition-colors"
                                 title={t('a11y.removePhoto')}
                             >
@@ -443,13 +441,13 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             onClick={() => fileInputRef.current?.click()}
                             className="w-full"
                         >
-                            {data.personalInfo.avatarUrl ? t('editor.profile.change') : t('editor.profile.upload')}
+                            {personal?.AvatarURL ? t('editor.profile.change') : t('editor.profile.upload')}
                         </Button>
                         <p className="mt-2 text-xs text-gray-500">
                             {t('editor.profile.tipSquare')}<br/>
                             {t('editor.profile.tipMaxSize')}
                         </p>
-                    </div>
+                     </div>
                  </div>
              </div>
 
@@ -458,8 +456,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                 <label className="block text-sm font-medium text-gray-700">{t('editor.fields.fullName')}</label>
                 <input 
                   type="text" 
-                  value={data.personalInfo.fullName}
-                  onChange={e => updatePersonalInfo('fullName', e.target.value)}
+                  value={personal?.FullName || ''}
+                  onChange={e => updatePersonal('FullName', e.target.value)}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -467,8 +465,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                 <label className="block text-sm font-medium text-gray-700">{t('editor.fields.jobTitle')}</label>
                 <input 
                   type="text" 
-                  value={data.personalInfo.jobTitle}
-                  onChange={e => updatePersonalInfo('jobTitle', e.target.value)}
+                  value={personal?.JobTitle || ''}
+                  onChange={e => updatePersonal('JobTitle', e.target.value)}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -476,11 +474,11 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
              <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700">{t('editor.fields.email')}</label>
-                    <input type="email" value={data.personalInfo.email} onChange={e => updatePersonalInfo('email', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                    <input type="email" value={personal?.Email || ''} onChange={e => updatePersonal('Email', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700">{t('editor.fields.phone')}</label>
-                    <input type="tel" value={data.personalInfo.phone} onChange={e => updatePersonalInfo('phone', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                    <input type="tel" value={personal?.Phone || ''} onChange={e => updatePersonal('Phone', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
              </div>
              {/* removed website/linkedin fields */}
@@ -488,35 +486,35 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('editor.fields.gender')}</label>
-                  <input type="text" value={data.personalInfo.gender || ''} onChange={e => updatePersonalInfo('gender', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                  <input type="text" value={personal?.Gender || ''} onChange={e => updatePersonal('Gender', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('editor.fields.age')}</label>
-                  <input type="text" value={data.personalInfo.age || ''} onChange={e => updatePersonalInfo('age', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                  <input type="text" value={personal?.Age || ''} onChange={e => updatePersonal('Age', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('editor.fields.maritalStatus')}</label>
-                  <input type="text" value={data.personalInfo.maritalStatus || ''} onChange={e => updatePersonalInfo('maritalStatus', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                  <input type="text" value={personal?.MaritalStatus || ''} onChange={e => updatePersonal('MaritalStatus', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('editor.fields.politicalStatus')}</label>
-                  <input type="text" value={data.personalInfo.politicalStatus || ''} onChange={e => updatePersonalInfo('politicalStatus', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                  <input type="text" value={personal?.PoliticalStatus || ''} onChange={e => updatePersonal('PoliticalStatus', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('editor.fields.birthplace')}</label>
-                  <input type="text" value={data.personalInfo.birthplace || ''} onChange={e => updatePersonalInfo('birthplace', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                  <input type="text" value={personal?.Birthplace || ''} onChange={e => updatePersonal('Birthplace', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('editor.fields.ethnicity')}</label>
-                  <input type="text" value={data.personalInfo.ethnicity || ''} onChange={e => updatePersonalInfo('ethnicity', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                  <input type="text" value={personal?.Ethnicity || ''} onChange={e => updatePersonal('Ethnicity', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('editor.fields.height')}</label>
-                  <input type="text" value={data.personalInfo.height || ''} onChange={e => updatePersonalInfo('height', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                  <input type="text" value={personal?.Height || ''} onChange={e => updatePersonal('Height', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">{t('editor.fields.weight')}</label>
-                  <input type="text" value={data.personalInfo.weight || ''} onChange={e => updatePersonalInfo('weight', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+                  <input type="text" value={personal?.Weight || ''} onChange={e => updatePersonal('Weight', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
                 </div>
              </div>
 
@@ -526,7 +524,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                  <Button size="sm" variant="outline" icon={<Plus size={14}/>} onClick={addCustomInfo}>{t('editor.customInfo.add')}</Button>
                </div>
                <div className="space-y-3">
-                 {(data.personalInfo.customInfo || []).map((ci, idx) => (
+                 {parseCustomList().map((ci, idx) => (
                    <div key={idx} className="grid grid-cols-12 gap-2 items-center">
                      <div className="col-span-5">
                        <input placeholder={t('editor.customInfo.label')} value={ci.label} onChange={e => updateCustomInfo(idx, 'label', e.target.value)} className="block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
@@ -794,7 +792,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   );
 
   const predefinedColors = ['#2563eb', '#0f172a', '#dc2626', '#16a34a', '#9333ea', '#ea580c', '#0891b2'];
-  const isCustomColor = !predefinedColors.includes(data.themeConfig?.color || '');
+  const isCustomColor = !predefinedColors.includes(theme?.Color || '');
 
   const renderDesignTab = () => (
     <div className="p-6 space-y-8">
@@ -807,8 +805,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                 {predefinedColors.map(color => (
                     <button
                         key={color}
-                        onClick={() => updateTheme('color', color)}
-                        className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${data.themeConfig?.color === color ? 'border-gray-900 scale-110 ring-2 ring-gray-200' : 'border-transparent'}`}
+                        onClick={() => updateTheme('Color', color)}
+                        className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${theme?.Color === color ? 'border-gray-900 scale-110 ring-2 ring-gray-200' : 'border-transparent'}`}
                         style={{ backgroundColor: color }}
                     />
                 ))}
@@ -823,7 +821,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                         }`}
                         style={{ 
                             background: isCustomColor 
-                                ? data.themeConfig?.color 
+                                ? (theme?.Color || '')
                                 : 'conic-gradient(from 180deg, red, yellow, lime, aqua, blue, magenta, red)'
                         }}
                     >
@@ -833,8 +831,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                     </div>
                     <input
                         type="color"
-                        value={data.themeConfig?.color}
-                        onChange={(e) => updateTheme('color', e.target.value)}
+                        value={theme?.Color || ''}
+                        onChange={(e) => updateTheme('Color', e.target.value)}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         title={t('editor.color.customTitle')}
                     />
@@ -849,8 +847,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
             </h3>
             <div className="relative">
               <select
-                value={data.themeConfig.fontFamily}
-                onChange={(e) => updateTheme('fontFamily', e.target.value)}
+                value={theme?.Font || 'inter'}
+                onChange={(e) => updateTheme('Font', e.target.value)}
                 className="block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
               >
                 <optgroup label={t('editor.font.group.englishSans')}>
@@ -892,20 +890,20 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
             </h3>
             <div className="space-y-3">
                 <button 
-                    onClick={() => updateTheme('spacing', 'compact')}
-                    className={`w-full p-2 text-sm border rounded-md transition-colors ${data.themeConfig?.spacing === 'compact' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
+                    onClick={() => updateTheme('Spacing', 'compact')}
+                    className={`w-full p-2 text-sm border rounded-md transition-colors ${theme?.Spacing === 'compact' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
                 >
                     {t('editor.spacing.option.compact')}
                 </button>
                  <button 
-                    onClick={() => updateTheme('spacing', 'normal')}
-                    className={`w-full p-2 text-sm border rounded-md transition-colors ${data.themeConfig?.spacing === 'normal' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
+                    onClick={() => updateTheme('Spacing', 'normal')}
+                    className={`w-full p-2 text-sm border rounded-md transition-colors ${theme?.Spacing === 'normal' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
                 >
                     {t('editor.spacing.option.normal')}
                 </button>
                  <button 
-                    onClick={() => updateTheme('spacing', 'spacious')}
-                    className={`w-full p-2 text-sm border rounded-md transition-colors ${data.themeConfig?.spacing === 'spacious' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
+                    onClick={() => updateTheme('Spacing', 'spacious')}
+                    className={`w-full p-2 text-sm border rounded-md transition-colors ${theme?.Spacing === 'spacious' ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
                 >
                     {t('editor.spacing.option.spacious')}
                 </button>
