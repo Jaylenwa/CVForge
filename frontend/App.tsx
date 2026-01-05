@@ -1,32 +1,32 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { HashRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { MainLayout } from './components/Layout';
-import { Home } from './pages/Home';
-import { Templates } from './pages/Templates';
-import { Dashboard } from './pages/Dashboard';
-import { Editor } from './pages/editor/Editor';
-import { Login } from './pages/auth/Login';
-import { Register } from './pages/auth/Register';
-import { OAuthCallback } from './pages/auth/OAuthCallback';
-import { Settings } from './pages/Settings';
 import { AppRoute } from './types';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import { ConfirmDialogProvider } from './components/ui/ConfirmDialog';
-import { PrintResume } from './pages/print/PrintResume';
-import { Pricing } from './pages/Pricing';
-import { PublicResume } from './pages/public/PublicResume';
+const Home = React.lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const Templates = React.lazy(() => import('./pages/Templates').then(m => ({ default: m.Templates })));
+const Dashboard = React.lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const Editor = React.lazy(() => import('./pages/editor/Editor').then(m => ({ default: m.Editor })));
+const Login = React.lazy(() => import('./pages/auth/Login').then(m => ({ default: m.Login })));
+const Register = React.lazy(() => import('./pages/auth/Register').then(m => ({ default: m.Register })));
+const OAuthCallback = React.lazy(() => import('./pages/auth/OAuthCallback').then(m => ({ default: m.OAuthCallback })));
+const Settings = React.lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })));
+const PrintResume = React.lazy(() => import('./pages/print/PrintResume').then(m => ({ default: m.PrintResume })));
+const Pricing = React.lazy(() => import('./pages/Pricing').then(m => ({ default: m.Pricing })));
+const PublicResume = React.lazy(() => import('./pages/public/PublicResume').then(m => ({ default: m.PublicResume })));
 
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ProtectedAdminRoute } from './components/ProtectedAdminRoute';
-import { AdminLayout } from './pages/admin/AdminLayout';
-import { UsersPage } from './pages/admin/UsersPage';
-import { ResumesPage } from './pages/admin/ResumesPage';
-import { TemplatesPage } from './pages/admin/TemplatesPage';
-import { SharesPage } from './pages/admin/SharesPage';
-import { ConfigPage } from './pages/admin/ConfigPage';
-import { AdminHome } from './pages/admin/AdminHome';
+const AdminLayout = React.lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const UsersPage = React.lazy(() => import('./pages/admin/UsersPage').then(m => ({ default: m.UsersPage })));
+const ResumesPage = React.lazy(() => import('./pages/admin/ResumesPage').then(m => ({ default: m.ResumesPage })));
+const TemplatesPage = React.lazy(() => import('./pages/admin/TemplatesPage').then(m => ({ default: m.TemplatesPage })));
+const SharesPage = React.lazy(() => import('./pages/admin/SharesPage').then(m => ({ default: m.SharesPage })));
+const ConfigPage = React.lazy(() => import('./pages/admin/ConfigPage').then(m => ({ default: m.ConfigPage })));
+const AdminHome = React.lazy(() => import('./pages/admin/AdminHome').then(m => ({ default: m.AdminHome })));
 
 const LayoutWrapper = () => (
     <MainLayout>
@@ -41,7 +41,8 @@ const App: React.FC = () => {
         <ConfirmDialogProvider>
           <AuthProvider>
             <Router>
-          <Routes>
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
+            <Routes>
               {/* Public Routes with Main Navbar/Footer */}
               <Route element={<LayoutWrapper />}>
                   <Route path={AppRoute.Home} element={<Home />} />
@@ -82,7 +83,8 @@ const App: React.FC = () => {
               {/* Standalone Routes */}
               <Route path={AppRoute.Print} element={<PrintResume />} />
               <Route path={AppRoute.Public} element={<PublicResume />} />
-          </Routes>
+            </Routes>
+          </Suspense>
             </Router>
           </AuthProvider>
         </ConfirmDialogProvider>

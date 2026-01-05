@@ -29,6 +29,22 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve(__dirname, '.'),
         },
         dedupe: ['react', 'react-dom']
+      },
+      build: {
+        chunkSizeWarningLimit: 1200,
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              react: ['react', 'react-dom', 'react-router-dom'],
+              editor: ['@tinymce/tinymce-react', 'tinymce', '@wangeditor/editor', '@wangeditor/editor-for-react'],
+              dnd: ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+              motion: ['framer-motion'],
+              icons: ['lucide-react'],
+              charts: ['recharts'],
+              genai: ['@google/genai'],
+            },
+          },
+        },
       }
     };
 });
