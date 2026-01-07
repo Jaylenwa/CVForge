@@ -12,7 +12,8 @@ export const INITIAL_RESUME: ResumeData = {
   Theme: {
     Color: '#14b8a6',
     Font: 'yahei',
-    Spacing: 'normal'
+    Spacing: 'normal',
+    FontSize: '13'
   },
   lastModified: Date.now(),
   Job: {

@@ -116,7 +116,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
                 key={`page-${i}`}
                 className="w-[210mm] h-[297mm] overflow-hidden bg-white mx-auto border border-gray-200 shadow-sm mb-4"
               >
-                <div className="px-[1.5mm] py-[2mm]" style={{ transform: `translateY(-${start}px)` }}>
+                <div style={{ transform: `translateY(-${start}px)` }}>
                   {renderTemplate()}
                 </div>
               </div>
@@ -128,7 +128,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
           ref={sourceRef}
           className="absolute left-0 top-0 w-[210mm] min-h-[297mm] invisible -z-10 pointer-events-none print:visible print:static print:z-auto print:pointer-events-auto"
         >
-          <div className="px-[1.5mm] py-[2mm]">
+          <div>
             {renderTemplate()}
           </div>
         </div>

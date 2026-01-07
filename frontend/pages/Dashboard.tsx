@@ -34,7 +34,7 @@ export const Dashboard: React.FC = () => {
         id: r.id || r.ExternalID,
         title: r.title || r.Title,
         templateId: r.templateId || r.TemplateID,
-        Theme: r.Theme || { Color: r.Theme?.Color, Font: r.Theme?.Font, Spacing: r.Theme?.Spacing },
+        Theme: r.Theme || { Color: r.Theme?.Color, Font: r.Theme?.Font, Spacing: r.Theme?.Spacing, FontSize: r.Theme?.FontSize },
         lastModified: r.lastModified || r.LastModified || Date.now(),
         Personal: r.Personal || {
           FullName: r.Personal?.FullName,

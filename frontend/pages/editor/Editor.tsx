@@ -16,7 +16,7 @@ export const Editor: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_RESUME);
-  const [scale, setScale] = useState(0.8);
+  const [scale, setScale] = useState(1);
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const { t, language, setLanguage } = useLanguage();
   const { showToast } = useToast();

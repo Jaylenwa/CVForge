@@ -8,7 +8,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
   const getSectionTitle = useSectionTitle();
   const { t } = useLanguage();
   return (
-  <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none p-10`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+  <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none p-10`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5, fontSize: styles.fontSize }}>
   <div className="border-b-2 pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6" style={{ borderColor: data.Theme?.Color || '#333' }}>
       <div className="flex-1 text-center md:text-left order-2 md:order-1">
           <h1 className="text-4xl font-bold uppercase tracking-wider" style={{ color: data.Theme?.Color }}>{data.Personal?.FullName}</h1>
@@ -66,7 +66,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                             {section.items.map(item => (
                               <div key={item.id}>
                                 {item.description && (
-                                  <div className="resume-rich-content text-gray-600 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                                  <div className="resume-rich-content text-gray-600 text-sm leading-relaxed" style={{ fontSize: styles.fontSize }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
                                 )}
                               </div>
                             ))}
@@ -79,7 +79,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                                         <div className="flex flex-col md:flex-row md:justify-between md:items-baseline mb-1">
                                           <h4 className="font-bold text-lg text-gray-800">{item.title}</h4>
                                           {(item.timeStart || item.timeEnd || item.today) && (
-                                            <span className="text-sm text-gray-500 font-medium">
+                                            <span className="text-sm text-gray-500 font-medium" style={{ fontSize: styles.fontSize }}>
                                               {item.timeStart || item.timeEnd}
                                               {' ~ '}
                                               {item.today ? t('common.toPresent') : (item.timeEnd || '')}
@@ -89,12 +89,12 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                                       )}
                                       {section.type !== ResumeSectionType.Awards && item.subtitle && <div className="text-gray-700 font-medium mb-2">{item.subtitle}</div>}
                                       {section.type === ResumeSectionType.Education && (item.major || item.degree) && (
-                                        <div className="text-gray-700 text-sm mb-2">
+                                        <div className="text-gray-700 text-sm mb-2" style={{ fontSize: styles.fontSize }}>
                                           {item.major}{item.major && item.degree ? ' • ' : ''}{item.degree}
                                         </div>
                                       )}
                                       {item.description && (
-                                          <div className="resume-rich-content text-gray-600 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                                          <div className="resume-rich-content text-gray-600 text-sm leading-relaxed" style={{ fontSize: styles.fontSize }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
                                       )}
                                   </div>
                               ))}

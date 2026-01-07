@@ -39,12 +39,28 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
   const renderItemTime = (item: any) => {
     if (item?.timeStart || item?.timeEnd || item?.today) {
       return (
-        <span className="text-sm text-gray-600 font-medium">
+        <span className="text-sm text-gray-600 font-medium" style={{ fontSize: styles.fontSize }}>
           {(item.timeStart || item.timeEnd || '').replace('-', '.')}
           {' ~ '}
           {item.today ? t('common.toPresent') : (item.timeEnd || '').replace('-', '.')}
         </span>
       );
+    }
+    return null;
+  };
+
+  const getRightTag = (sectionType: ResumeSectionType, item: any) => {
+    if (sectionType === ResumeSectionType.Experience) {
+      return item?.subtitle || null;
+    }
+    if (sectionType === ResumeSectionType.Education) {
+      if (item?.major || item?.degree) {
+        const major = item?.major || '';
+        const degree = item?.degree || '';
+        if (major && degree) return `${major}（${degree}）`;
+        return major || degree || null;
+      }
+      return null;
     }
     return null;
   };
@@ -62,8 +78,25 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
     return [...main, ...others];
   }, [data.sections]);
 
+  const hasMeaningfulContent = (item: any, type: ResumeSectionType) => {
+    if (!item) return false;
+    if (type === ResumeSectionType.Skills) {
+      return !!(item.description && String(item.description).trim());
+    }
+    return !!(
+      (item.title && String(item.title).trim()) ||
+      (item.subtitle && String(item.subtitle).trim()) ||
+      (item.major && String(item.major).trim()) ||
+      (item.degree && String(item.degree).trim()) ||
+      (item.description && String(item.description).trim()) ||
+      (item.timeStart && String(item.timeStart).trim()) ||
+      (item.timeEnd && String(item.timeEnd).trim()) ||
+      item.today
+    );
+  };
+
   return (
-    <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5 }}>
+    <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5, fontSize: styles.fontSize }}>
       <div className="relative">
         <div className="bg-teal-500" style={{ backgroundColor: color }}>
           <div className="px-10 pt-8 pb-6 flex items-start gap-6">
@@ -124,55 +157,67 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
         </div>
       </div>
 
-      <div className="px-10 pt-6 pb-10 space-y-8">
+      <div className="px-10 pt-6 pb-10 space-y-10">
         {sectionsOrdered.map((section, idx) => (
-          <div key={section.id} className="flex gap-6">
-            <div className="w-10 relative">
-              <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 border-l-2" style={{ borderColor: color }} />
-              <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 w-7 h-7 rounded-full flex items-center justify-center text-white shadow" style={{ backgroundColor: color }}>
-                <SectionIcon type={section.type} />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-bold mb-3 flex items-center justify-between" style={{ color }}>
-                <span>{getSectionTitle(section)}</span>
-              </h3>
-
-              {section.type === ResumeSectionType.Skills ? (
-                <div className="space-y-3">
-                  {section.items.map(item => (
-                    <div key={item.id}>
-                      {item.description && (
-                        <div className="resume-rich-content text-gray-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
-                      )}
-                    </div>
-                  ))}
+          (() => {
+            const items = (section.items || []).filter(it => hasMeaningfulContent(it, section.type));
+            if (items.length === 0) return null;
+            return (
+              <div key={section.id} className="flex gap-8 items-start">
+                <div className="relative" style={{ width: 160 }}>
+                  <div className="text-2xl font-bold tracking-wide" style={{ color }}>
+                    {getSectionTitle(section)}
+                  </div>
+                  <div className="absolute right-0 top-0 bottom-0 border-r-2 border-dashed" style={{ borderColor: color }} />
+                  <div className="absolute right-0 top-0 translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white shadow z-10" style={{ backgroundColor: color }}>
+                    <SectionIcon type={section.type} />
+                  </div>
                 </div>
-              ) : (
-                <div className="space-y-5">
-                  {section.items.map(item => (
-                    <div key={item.id}>
-                      <div className="flex flex-col md:flex-row md:justify-between md:items-baseline mb-1">
-                        <div className="font-semibold text-gray-900 text-base">
-                          {item.title}
-                          {item.subtitle && <span className="text-gray-700 font-medium ml-2"> {item.subtitle}</span>}
-                          {section.type === ResumeSectionType.Education && (item.major || item.degree) && (
-                            <span className="text-gray-700 text-sm ml-2">
-                              {item.major}{item.major && item.degree ? ' • ' : ''}{item.degree}
-                            </span>
-                          )}
-                        </div>
-                        {renderItemTime(item)}
+                <div className="flex-1">
+                  <div className="mt-4 border-t-2 pt-4 pb-4 relative" style={{ borderColor: color }}>
+                    <div className="absolute top-2 bottom-2 border-l-2 border-dashed" style={{ borderColor: color, left: -32 }} />
+                    {section.type === ResumeSectionType.Skills ? (
+                      <div className="space-y-3">
+                        {items.map(item => (
+                          <div key={item.id} className="relative pl-8">
+                            <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
+                            {item.description && (
+                          <div className="resume-rich-content text-gray-700 text-sm leading-relaxed" style={{ fontSize: styles.fontSize }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                        )}
                       </div>
-                      {item.description && (
-                        <div className="resume-rich-content text-gray-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                ) : (
+                      <div className={items.length > 1 ? 'space-y-5' : ''}>
+                        {items.map(item => (
+                          <div key={item.id} className="relative pl-8">
+                            <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
+                            <div className="flex justify-between items-baseline mb-1">
+                              <div className="font-semibold text-gray-900 text-base">
+                                {item.title}
+                                {section.type === ResumeSectionType.Education && (item.major || item.degree) && (
+                                  <span className="text-gray-700 text-sm ml-2">
+                                    {item.major}{item.major && item.degree ? ' • ' : ''}{item.degree}
+                                  </span>
+                                )}
+                              </div>
+                              {getRightTag(section.type, item) && (
+                                <span className="text-gray-900 font-medium">{getRightTag(section.type, item)}</span>
+                              )}
+                            </div>
+                            {renderItemTime(item)}
+                            {item.description && (
+                              <div className="resume-rich-content text-gray-700 text-sm leading-relaxed mt-1" style={{ fontSize: styles.fontSize }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            );
+          })()
         ))}
       </div>
     </div>

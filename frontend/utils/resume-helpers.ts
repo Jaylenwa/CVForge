@@ -18,7 +18,7 @@ export const getFontStack = (fontId: string): string => {
     }
 };
 
-export const getThemeStyles = (theme?: { Color?: string; Font?: string; Spacing?: string }) => {
+export const getThemeStyles = (theme?: { Color?: string; Font?: string; Spacing?: string; FontSize?: string }) => {
     const fontFamily = getFontStack(theme?.Font || 'inter');
 
     const spacingMultiplier = {
@@ -27,7 +27,13 @@ export const getThemeStyles = (theme?: { Color?: string; Font?: string; Spacing?
         'spacious': '1.25'
     }[theme?.Spacing || 'normal'];
 
-  return { fontFamily, spacingMultiplier };
+  const fontSize = (() => {
+    const n = Number(theme?.FontSize);
+    if (!Number.isFinite(n)) return 13;
+    return Math.min(16, Math.max(12, Math.round(n)));
+  })();
+
+  return { fontFamily, spacingMultiplier, fontSize };
 };
 
 export const hasExtraPersonalInfo = (data: ResumeData) => {

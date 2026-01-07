@@ -68,6 +68,7 @@ export interface ResumeData {
     Color?: string;
     Font?: string;
     Spacing?: string;
+    FontSize?: string;
   };
   sections: ResumeSection[];
 }

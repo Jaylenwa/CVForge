@@ -883,6 +883,24 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
             </p>
         </div>
 
+        {/* Font Size */}
+        <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+                <Type size={18} className="mr-2 text-gray-500"/> {t('editor.fontSize')}
+            </h3>
+            <div className="grid grid-cols-5 gap-2">
+                {[12,13,14,15,16].map(fs => (
+                    <button
+                        key={fs}
+                        onClick={() => updateTheme('FontSize', String(fs))}
+                        className={`w-full p-2 text-sm border rounded-md transition-colors ${String(fs) === (theme?.FontSize || '13') ? 'bg-blue-50 border-blue-500 text-blue-700' : 'hover:bg-gray-50'}`}
+                    >
+                        {fs}
+                    </button>
+                ))}
+            </div>
+        </div>
+
         {/* Spacing */}
         <div>
              <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
