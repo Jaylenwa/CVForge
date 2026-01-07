@@ -150,7 +150,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                 <img 
                   src={data.Personal.AvatarURL} 
                   alt={t('a11y.avatarAlt')} 
-                  className="w-28 h-28 rounded-md object-cover ring-2 ring-white/70"
+                  className="w-[105px] h-[147px] rounded-md object-cover ring-2 ring-white/70"
                 />
               </div>
             )}
