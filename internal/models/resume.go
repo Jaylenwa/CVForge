@@ -61,6 +61,7 @@ type ResumeTheme struct {
 	Color    string `gorm:"size:32"`
 	Font     string `gorm:"size:64"`
 	Spacing  string `gorm:"size:32"`
+	FontSize string `gorm:"size:16"`
 }
 
 func (ResumeTheme) TableName() string {

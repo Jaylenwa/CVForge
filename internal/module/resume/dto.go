@@ -39,6 +39,7 @@ type ResumeThemeDTO struct {
 	Color   string `json:"Color"`
 	Font    string `json:"Font"`
 	Spacing string `json:"Spacing"`
+	FontSize string `json:"FontSize"`
 }
 
 type SectionDTO struct {
@@ -95,6 +96,7 @@ func ToDTO(r Resume) ResumeDTO {
 			Color:   r.Theme.Color,
 			Font:    r.Theme.Font,
 			Spacing: r.Theme.Spacing,
+			FontSize: r.Theme.FontSize,
 		},
 	}
 	for _, s := range r.Sections {

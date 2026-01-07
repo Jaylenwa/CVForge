@@ -133,6 +133,7 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 			Color:   req.Theme.Color,
 			Font:    req.Theme.Font,
 			Spacing: req.Theme.Spacing,
+			FontSize: req.Theme.FontSize,
 		},
 	}
 	sanitize := func(s string) string {
