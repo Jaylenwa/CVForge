@@ -4,6 +4,7 @@ import { ResumeData } from '../../types';
 import { getThemeStyles } from '../../utils/resume-helpers';
 
 import { TemplateClassic } from '../../components/templates/TemplateClassic';
+import { TemplateMintTimeline } from '../../components/templates/TemplateMintTimeline';
 
 interface PreviewProps {
   data: ResumeData;
@@ -32,6 +33,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 
   const TEMPLATE_COMPONENTS: Record<string, React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }>> = {
     TemplateClassic: TemplateClassic,
+    TemplateMintTimeline: TemplateMintTimeline,
   };
 
   const containerStyle: React.CSSProperties = {

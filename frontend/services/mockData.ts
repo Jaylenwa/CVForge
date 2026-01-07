@@ -1,19 +1,26 @@
 import { ResumeData, ResumeSectionType, Template } from '../types';
 
 export const MOCK_TEMPLATES: Template[] = [
+  { id: 'TemplateMintTimeline', name: '青色时间轴', tags: ['美观', '中文', 'ATS 友好'], usageCount: 0, isPremium: false, category: 'General' },
   { id: 'TemplateClassic', name: '经典专业版', tags: ['专业', '简洁', 'ATS 友好'], usageCount: 0, isPremium: false, category: 'General' },
 ];
 
 export const INITIAL_RESUME: ResumeData = {
   id: 'new',
   title: '我的简历',
-  templateId: 'TemplateClassic',
+  templateId: 'TemplateMintTimeline',
   Theme: {
-    Color: '#000000',
+    Color: '#14b8a6',
     Font: 'yahei',
     Spacing: 'normal'
   },
   lastModified: Date.now(),
+  Job: {
+    Job: '前端/全栈工程师',
+    City: '上海 / 杭州',
+    Money: '25k-35k·14薪',
+    JoinTime: '2025-03'
+  },
   Personal: {
     FullName: '张伟',
     Email: 'zhangwei@example.com',
@@ -31,21 +38,6 @@ export const INITIAL_RESUME: ResumeData = {
     CustomInfo: JSON.stringify([{ label: '期望城市', value: '上海 / 杭州' }])
   },
   sections: [
-    {
-      id: 'job',
-      type: ResumeSectionType.JobApplication,
-      title: '求职岗位',
-      isVisible: true,
-      items: [
-        {
-          id: 'job1',
-          title: '前端/全栈工程师',
-          subtitle: '上海 / 杭州',
-          description: '25k-35k·14薪',
-          timeStart: '2025-03'
-        }
-      ]
-    },
     {
       id: 'exam',
       type: ResumeSectionType.Exam,

@@ -15,17 +15,18 @@
 - Admin panel for users, resumes, templates, and share links.
 - Built-in internationalization with English and Chinese.
 
-### Highlights
-- Modern frontend with React + Vite + TypeScript.
-- Go backend using Gin, Gorm, Redis, JWT.
-- OAuth login for GitHub and WeChat; email code verification via SMTP.
-- Docker-first deployments; `docker-compose` for production.
-- Circuit breaker around export services for stability.
-
-### Architecture
-- Frontend: `frontend/` (React 19, Vite 6, TypeScript)
-- Backend: `internal/` modules (Gin handlers, services, middleware), `main.go`
-- Storage: MySQL/SQLite + Redis
+ ### Highlights
+ - Modern frontend with React + Vite + TypeScript.
+ - Go backend using Gin, Gorm, Redis, JWT.
+ - OAuth login for GitHub and WeChat; email code verification via SMTP.
+ - Docker-first deployments; `docker-compose` for production.
+ - Circuit breaker around export services for stability.
+ - Logging & monitoring: Zap JSON logs, Prometheus metrics, optional Loki/Grafana.
+ 
+ ### Architecture
+  - Frontend: `frontend/` (React 19, Vite 6, TypeScript)
+  - Backend: `internal/` modules (Gin handlers, services, middleware), `main.go`
+  - Storage: MySQL/SQLite + Redis
 - Export: Remote Chromium (Browserless) via WebSocket DevTools
 - Static assets served via Nginx in the frontend container
  - Public uploads served from `/public/uploads`
@@ -55,16 +56,32 @@
   - `frontend/config.ts` reads `VITE_API_BASE` (default `/api/v1`), which should proxy or point to the backend.
   - Dev proxy forwards `/api` and `/public` to `http://localhost:8080` (see `frontend/vite.config.ts`).
 
-- Docker Compose:
-  - Review and customize `docker-compose.yml` environment variables.
-  - Start: `docker compose up -d`
-  - Services: backend, frontend, mysql, redis, chrome.
-  - Frontend Nginx proxies `/api/` and `/public/` to backend; see `frontend/nginx.conf`.
-
-### Configuration
-Backend process environment (read at startup):
-- `PORT`: HTTP port
-- `DB_DSN`: MySQL DSN; when set, MySQL is used
+ - Docker Compose:
+   - Review and customize `docker-compose.yml` environment variables.
+   - Start: `docker compose up -d`
+   - Services: backend, frontend, mysql, redis, chrome.
+   - Frontend Nginx proxies `/api/` and `/public/` to backend; see `frontend/nginx.conf`.
+ 
+ ### Logging & Monitoring
+ - Request logging: Zap production JSON logs for HTTP access, including method, path, status, duration, request_id. See middleware [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/logger.go#L11-L17) and logger wrapper [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/pkg/logger/logger.go#L10-L34).
+ - Request ID propagation: `X-Request-ID` is generated/forwarded by [requestid.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/requestid.go#L8-L16) and attached to logs for end-to-end tracing.
+ - Metrics: Built-in Prometheus metrics with `http_requests_total` and `http_request_duration_seconds`; endpoint `GET /api/v1/metrics`. See [metrics.go](file:///Users/jaylen/go/src/OpenResume/internal/pkg/metrics/metrics.go#L12-L29).
+ - Optional Loki/Grafana stack: Example setup for container log aggregation and dashboards in [docker-compose.yaml](file:///Users/jaylen/go/src/OpenResume/loki-stack/docker-compose.yaml) and [alloy.river](file:///Users/jaylen/go/src/OpenResume/loki-stack/alloy.river).
+ 
+ ### Middlewares
+ - RequestID: generate/forward `X-Request-ID`, see [requestid.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/requestid.go#L8-L16)
+ - Logger: HTTP access logging, see [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/logger.go#L11-L17)
+ - Recovery: Gin’s built-in panic recovery
+ - CORS: allow origins per system config, see [cors.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/cors.go#L12-L37)
+ - RateLimit (IP-based): Redis-backed limiting, see [ratelimit.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/ratelimit.go#L14-L28)
+ - RateLimitUser (user-based): limits by logged-in user or IP, see [ratelimit_user.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/ratelimit_user.go#L15-L34)
+ - DailyUV: per-day unique visitor counting, see [uv.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/uv.go#L20-L41)
+ - Auth / RequireRole: JWT validation and role gating, see [auth.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/auth.go#L15-L54) and [admin.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/admin.go#L13-L41)
+ 
+ ### Configuration
+ Backend process environment (read at startup):
+ - `PORT`: HTTP port
+ - `DB_DSN`: MySQL DSN; when set, MySQL is used
 - `SQLITE_PATH`: SQLite file path; used when `DB_DSN` is empty
 - `REDIS_ADDR`, `REDIS_PASSWORD`: Redis connection
 - `JWT_SECRET`: JWT signing secret
@@ -126,38 +143,43 @@ VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
   - See `docker-compose.yml` for example values already wired for backend and frontend build args.
   - Replace `CORS_ORIGINS`, `FRONTEND_BASE_URL`, `CHROME_API_URL` and `VITE_OAUTH_ALLOWED_ORIGINS` with your domain(s).
 
-### API Overview
-- Public:
-  - `GET /api/v1/templates` — list templates
-  - `GET /api/v1/public/resumes/:slug` — view public resume
-  - `GET /api/v1/healthz` — health
-  - `GET /api/v1/metrics` — metrics
-- Auth:
-  - `POST /api/v1/auth/send-code` — email verification code
-  - `POST /api/v1/auth/register` — register with email/code/password
-  - `POST /api/v1/auth/login` — email/password login
-  - `POST /api/v1/auth/refresh` — refresh tokens
+ ### API Overview
+ - Public:
+   - `GET /api/v1/templates` — list templates
+   - `GET /api/v1/templates/:id` — template details
+   - `GET /api/v1/public/resumes/:slug` — view public resume
+   - `GET /api/v1/healthz` — health
+   - `GET /api/v1/metrics` — metrics
+   - `GET /api/v1/pdf/exports/:job_id/download` — download export result
+ - Auth:
+   - `POST /api/v1/auth/send-code` — email verification code
+   - `POST /api/v1/auth/register` — register with email/code/password
+   - `POST /api/v1/auth/login` — email/password login
+   - `POST /api/v1/auth/refresh` — refresh tokens
   - `POST /api/v1/auth/logout` — logout
   - `GET /api/v1/auth/github/redirect` / `GET /api/v1/auth/github/callback`
   - `GET /api/v1/auth/wechat/redirect` / `GET /api/v1/auth/wechat/callback`
   - `POST /api/v1/auth/wechat/consume-ott` — consume one-time token from popup/redirect flow
-- Authenticated:
-  - `GET/POST/PUT/DELETE /api/v1/resumes` and `/:id`
-  - `POST /api/v1/resumes/:id/pdf` — generate PDF
-  - `POST /api/v1/resumes/:id/image` — generate PNG
-  - `POST /api/v1/resumes/:id/publish` — create public share link
-  - `GET /api/v1/users/me`, `PUT /api/v1/users/profile`, `PUT /api/v1/users/password`
-- Admin:
-  - Users, Resumes, Templates, Shares management under `/api/v1/admin/...`
-  - System configs editable in UI: `/#/admin/configs`
-
-### Export Services
-- Uses a remote Chromium via DevTools WebSocket.
-- `CHROME_API_URL` must point to a Browserless/Chromium service that exposes REST endpoints:
-  - `POST /pdf` for PDF generation
-  - `POST /screenshot` for image generation
-- The service navigates to the Print route and executes `page.PrintToPDF` or screenshot; see `internal/module/pdf/service.go:92`.
-- Ensure Chinese fonts are installed in Chromium for CJK content.
+ - Authenticated:
+   - `GET/POST/PUT/DELETE /api/v1/resumes` and `/:id`
+   - `POST /api/v1/resumes/:id/pdf` — generate PDF
+   - `POST /api/v1/resumes/:id/image` — generate PNG
+   - `POST /api/v1/resumes/:id/publish` — create public share link
+   - `POST /api/v1/pdf/exports` — submit export job
+   - `GET /api/v1/pdf/exports/:job_id` — check export job status
+   - `GET /api/v1/users/me`, `PUT /api/v1/users/profile`, `PUT /api/v1/users/password`
+ - Admin:
+   - Users, Resumes, Templates, Shares management under `/api/v1/admin/...`
+   - System configs editable in UI: `/#/admin/configs`
+ 
+ ### Export Services
+ - Uses a remote Chromium via DevTools WebSocket.
+ - `CHROME_API_URL` must point to a Browserless/Chromium service that exposes REST endpoints:
+   - `POST /pdf` for PDF generation
+   - `POST /screenshot` for image generation
+ - The service navigates to the Print route and executes `page.PrintToPDF` or screenshot; see `internal/module/pdf/service.go:92`.
+ - Ensure Chinese fonts are installed in Chromium for CJK content.
+ - Asynchronous export queue: submit, query, and download via the endpoints above. Jobs are processed by an in-process worker and uploaded to storage; see [worker.go](file:///Users/jaylen/go/src/OpenResume/internal/module/pdf/worker.go#L35-L76) and [worker.go:StartWorker](file:///Users/jaylen/go/src/OpenResume/internal/module/pdf/worker.go#L89-L104).
 
 ### Internationalization
 - Built-in language switching persists in `localStorage` (`lang` key).

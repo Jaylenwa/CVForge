@@ -30,5 +30,6 @@ func WithCtx(c *gin.Context) *zap.Logger {
 		zap.String("request_id", rid),
 		zap.String("method", c.Request.Method),
 		zap.String("path", c.FullPath()),
+		zap.String("ip", c.ClientIP()),
 	)
 }

@@ -21,6 +21,7 @@
 - 登录：GitHub / 微信 OAuth，邮箱验证码（SMTP）
 - 生产部署：Docker 优先，`docker-compose` 一键启动
 - 导出服务具备断路器以提升稳定性
+- 日志与监控：Zap JSON 日志、Prometheus 指标、Loki/Grafana（可选）
 
 ### 架构说明
 - 前端：`frontend/`（React 19, Vite 6, TypeScript）
@@ -126,12 +127,30 @@ VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
   - 参考 `docker-compose.yml` 中的示例值（已为后端与前端构建参数接好）。
   - 将 `CORS_ORIGINS`、`FRONTEND_BASE_URL`、`CHROME_API_URL` 与前端的 `VITE_OAUTH_ALLOWED_ORIGINS` 替换为你的域名。
 
+### 日志与监控
+- 请求日志：使用 Zap 的生产 JSON 格式记录 HTTP 访问，包含 method、path、status、duration、request_id。参考中间件 [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/logger.go#L11-L17) 与日志封装 [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/pkg/logger/logger.go#L10-L34)。
+- 请求 ID 关联：通过 [requestid.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/requestid.go#L8-L16) 生成/透传 X-Request-ID，并在日志中附带，便于端到端关联。
+- 指标：内置 Prometheus 指标，计数 http_requests_total 与直方图 http_request_duration_seconds；端点为 `GET /api/v1/metrics`，见 [metrics.go](file:///Users/jaylen/go/src/OpenResume/internal/pkg/metrics/metrics.go#L12-L29)。
+- Loki/Grafana（可选）：提供示例栈用于聚合容器日志与可视化，见 [docker-compose.yaml](file:///Users/jaylen/go/src/OpenResume/loki-stack/docker-compose.yaml) 与 [alloy.river](file:///Users/jaylen/go/src/OpenResume/loki-stack/alloy.river)。
+
+### 中间件
+- RequestID：生成/透传 `X-Request-ID`，见 [requestid.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/requestid.go#L8-L16)
+- Logger：HTTP 访问日志，见 [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/logger.go#L11-L17)
+- Recovery：Gin 内置异常恢复
+- CORS：按系统配置允许来源，见 [cors.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/cors.go#L12-L37)
+- RateLimit（IP 级）：基于 Redis 的限流，见 [ratelimit.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/ratelimit.go#L14-L28)
+- RateLimitUser（用户级）：登录用户/匿名身份的限流，见 [ratelimit_user.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/ratelimit_user.go#L15-L34)
+- DailyUV：按日去重的 UV 统计，见 [uv.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/uv.go#L20-L41)
+- Auth / RequireRole：JWT 校验与角色控制，见 [auth.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/auth.go#L15-L54) 与 [admin.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/admin.go#L13-L41)
+
 ### API 概览
 - 公共接口：
   - `GET /api/v1/templates`：模板列表
+  - `GET /api/v1/templates/:id`：模板详情
   - `GET /api/v1/public/resumes/:slug`：查看公开简历
   - `GET /api/v1/healthz`：健康检查
   - `GET /api/v1/metrics`：指标
+  - `GET /api/v1/pdf/exports/:job_id/download`：下载导出结果
 - 认证相关：
   - `POST /api/v1/auth/send-code`：发送邮箱验证码
   - `POST /api/v1/auth/register`：邮箱+验证码+密码注册
@@ -146,6 +165,8 @@ VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
   - `POST /api/v1/resumes/:id/pdf`：生成 PDF
   - `POST /api/v1/resumes/:id/image`：生成 PNG
   - `POST /api/v1/resumes/:id/publish`：创建分享链接
+  - `POST /api/v1/pdf/exports`：提交导出任务
+  - `GET /api/v1/pdf/exports/:job_id`：查询任务状态
   - `GET /api/v1/users/me`、`PUT /api/v1/users/profile`、`PUT /api/v1/users/password`
 - 管理接口：
   - 用户、简历、模板、分享链接管理位于 `/api/v1/admin/...`
@@ -158,6 +179,7 @@ VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
   - `POST /screenshot` 用于生成图片
 - 服务会导航到打印路由并执行 PDF 或截图导出；见 `internal/module/pdf/service.go:92`。
 - 确保 Chromium 已安装中文字体以正确显示 CJK 内容。
+- 提供异步导出队列：提交、查询与下载接口见上方 API；任务由内置工作线程处理与上传，参考 [worker.go](file:///Users/jaylen/go/src/OpenResume/internal/module/pdf/worker.go#L35-L76) 与 [worker.go:StartWorker](file:///Users/jaylen/go/src/OpenResume/internal/module/pdf/worker.go#L89-L104)。
 
 ### 国际化
 - 内置语言切换，语言偏好持久化在 `localStorage`（键名 `lang`）。
