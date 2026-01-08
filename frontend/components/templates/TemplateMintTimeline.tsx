@@ -206,7 +206,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                     return (
                       <div key={section.id} className="flex gap-6 items-start">
                         <div className="relative mt-4 -translate-y-1/2" style={{ width: 140 }}>
-                          <div className="text-base font-bold tracking-wide" style={{ color }}>
+                          <div className="text-base font-bold tracking-wide pl-3" style={{ color }}>
                             {(() => {
                               const title = String(getSectionTitle(section) || '').trim();
                               const parts = title.match(/^([A-Za-z]+)\s+([A-Za-z]+)$/);
