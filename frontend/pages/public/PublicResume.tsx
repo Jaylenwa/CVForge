@@ -37,7 +37,6 @@ export const PublicResume: React.FC = () => {
           Theme: res.Theme,
           lastModified: res.LastModified || Date.now(),
           Personal: res.Personal,
-          Job: res.Job,
           sections: (res.Sections || []).map((s: any) => ({
             id: s.ExternalID || s.ID,
             type: s.Type,

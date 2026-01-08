@@ -6,39 +6,29 @@ type ResumeDTO struct {
 	TemplateID   string            `json:"TemplateID"`
 	LastModified int64             `json:"LastModified"`
 	Personal     ResumePersonalDTO `json:"Personal"`
-	Job          ResumeJobDTO      `json:"Job"`
 	Theme        ResumeThemeDTO    `json:"Theme"`
 	Sections     []SectionDTO      `json:"Sections"`
 }
 
 type ResumePersonalDTO struct {
-	FullName        string `json:"FullName"`
-	Email           string `json:"Email"`
-	Phone           string `json:"Phone"`
-	AvatarURL       string `json:"AvatarURL"`
-	JobTitle        string `json:"JobTitle"`
-	Gender          string `json:"Gender"`
-	Age             string `json:"Age"`
-	MaritalStatus   string `json:"MaritalStatus"`
-	PoliticalStatus string `json:"PoliticalStatus"`
-	Birthplace      string `json:"Birthplace"`
-	Ethnicity       string `json:"Ethnicity"`
-	Height          string `json:"Height"`
-	Weight          string `json:"Weight"`
-	CustomInfo      string `json:"CustomInfo"`
-}
-
-type ResumeJobDTO struct {
-	Job      string `json:"Job"`
-	City     string `json:"City"`
-	Money    string `json:"Money"`
-	JoinTime string `json:"JoinTime"`
+	FullName   string `json:"FullName"`
+	Email      string `json:"Email"`
+	Phone      string `json:"Phone"`
+	AvatarURL  string `json:"AvatarURL"`
+	Job        string `json:"Job"`
+	City       string `json:"City"`
+	Money      string `json:"Money"`
+	JoinTime   string `json:"JoinTime"`
+	Gender     string `json:"Gender"`
+	Age        string `json:"Age"`
+	Degree     string `json:"Degree"`
+	CustomInfo string `json:"CustomInfo"`
 }
 
 type ResumeThemeDTO struct {
-	Color   string `json:"Color"`
-	Font    string `json:"Font"`
-	Spacing string `json:"Spacing"`
+	Color    string `json:"Color"`
+	Font     string `json:"Font"`
+	Spacing  string `json:"Spacing"`
 	FontSize string `json:"FontSize"`
 }
 
@@ -71,31 +61,23 @@ func ToDTO(r Resume) ResumeDTO {
 		TemplateID:   r.TemplateID,
 		LastModified: r.LastModified,
 		Personal: ResumePersonalDTO{
-			FullName:        r.Personal.FullName,
-			Email:           r.Personal.Email,
-			Phone:           r.Personal.Phone,
-			AvatarURL:       r.Personal.AvatarURL,
-			JobTitle:        r.Personal.JobTitle,
-			Gender:          r.Personal.Gender,
-			Age:             r.Personal.Age,
-			MaritalStatus:   r.Personal.MaritalStatus,
-			PoliticalStatus: r.Personal.PoliticalStatus,
-			Birthplace:      r.Personal.Birthplace,
-			Ethnicity:       r.Personal.Ethnicity,
-			Height:          r.Personal.Height,
-			Weight:          r.Personal.Weight,
-			CustomInfo:      r.Personal.CustomInfo,
-		},
-		Job: ResumeJobDTO{
-			Job:      r.Job.Job,
-			City:     r.Job.City,
-			Money:    r.Job.Money,
-			JoinTime: r.Job.JoinTime,
+			FullName:   r.Personal.FullName,
+			Email:      r.Personal.Email,
+			Phone:      r.Personal.Phone,
+			AvatarURL:  r.Personal.AvatarURL,
+			Job:        r.Personal.Job,
+			City:       r.Personal.City,
+			Money:      r.Personal.Money,
+			JoinTime:   r.Personal.JoinTime,
+			Gender:     r.Personal.Gender,
+			Age:        r.Personal.Age,
+			Degree:     r.Personal.Degree,
+			CustomInfo: r.Personal.CustomInfo,
 		},
 		Theme: ResumeThemeDTO{
-			Color:   r.Theme.Color,
-			Font:    r.Theme.Font,
-			Spacing: r.Theme.Spacing,
+			Color:    r.Theme.Color,
+			Font:     r.Theme.Font,
+			Spacing:  r.Theme.Spacing,
 			FontSize: r.Theme.FontSize,
 		},
 	}

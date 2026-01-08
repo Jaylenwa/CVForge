@@ -26,7 +26,6 @@ type ResumeReq struct {
 	Title      string            `json:"Title"`
 	TemplateID string            `json:"TemplateID"`
 	Personal   ResumePersonalDTO `json:"Personal"`
-	Job        ResumeJobDTO      `json:"Job"`
 	Theme      ResumeThemeDTO    `json:"Theme"`
 	Sections   []SectionDTO      `json:"Sections"`
 }
@@ -108,31 +107,23 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 		TemplateID:   req.TemplateID,
 		LastModified: time.Now().UnixMilli(),
 		Personal: ResumePersonal{
-			FullName:        req.Personal.FullName,
-			Email:           req.Personal.Email,
-			Phone:           req.Personal.Phone,
-			AvatarURL:       req.Personal.AvatarURL,
-			JobTitle:        req.Personal.JobTitle,
-			Gender:          req.Personal.Gender,
-			Age:             req.Personal.Age,
-			MaritalStatus:   req.Personal.MaritalStatus,
-			PoliticalStatus: req.Personal.PoliticalStatus,
-			Birthplace:      req.Personal.Birthplace,
-			Ethnicity:       req.Personal.Ethnicity,
-			Height:          req.Personal.Height,
-			Weight:          req.Personal.Weight,
-			CustomInfo:      req.Personal.CustomInfo,
-		},
-		Job: ResumeJob{
-			Job:      req.Job.Job,
-			City:     req.Job.City,
-			Money:    req.Job.Money,
-			JoinTime: req.Job.JoinTime,
+			FullName:   req.Personal.FullName,
+			Email:      req.Personal.Email,
+			Phone:      req.Personal.Phone,
+			AvatarURL:  req.Personal.AvatarURL,
+			Job:        req.Personal.Job,
+			City:       req.Personal.City,
+			Money:      req.Personal.Money,
+			JoinTime:   req.Personal.JoinTime,
+			Gender:     req.Personal.Gender,
+			Age:        req.Personal.Age,
+			Degree:     req.Personal.Degree,
+			CustomInfo: req.Personal.CustomInfo,
 		},
 		Theme: ResumeTheme{
-			Color:   req.Theme.Color,
-			Font:    req.Theme.Font,
-			Spacing: req.Theme.Spacing,
+			Color:    req.Theme.Color,
+			Font:     req.Theme.Font,
+			Spacing:  req.Theme.Spacing,
 			FontSize: req.Theme.FontSize,
 		},
 	}

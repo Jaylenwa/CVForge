@@ -38,7 +38,6 @@ export const Dashboard: React.FC = () => {
         lastModified: r.lastModified || r.LastModified || Date.now(),
         Personal: r.Personal || {
           FullName: r.Personal?.FullName,
-          JobTitle: r.Personal?.JobTitle || '',
           Email: r.Personal?.Email,
           Phone: r.Personal?.Phone,
           AvatarURL: r.Personal?.AvatarURL,
@@ -83,7 +82,6 @@ export const Dashboard: React.FC = () => {
         Title: cloneTitle,
         TemplateID: resume.templateId,
         Personal: resume.Personal || INITIAL_RESUME.Personal || {},
-        Job: resume.Job || INITIAL_RESUME.Job || {},
         Theme: resume.Theme || INITIAL_RESUME.Theme || {},
         Sections: (resume.sections || INITIAL_RESUME.sections).map(s => ({
           ExternalID: s.id,

@@ -23,7 +23,6 @@ func (r *Repo) ListByUser(uid uint) ([]Resume, error) {
 	var list []Resume
 	err := r.db.Where("user_id = ?", uid).
 		Preload("Personal").
-		Preload("Job").
 		Preload("Theme").
 		Preload("Sections.Items").
 		Order("updated_at desc").
@@ -35,7 +34,7 @@ func (r *Repo) FindByExternal(externalID string, preload bool) (Resume, error) {
 	var res Resume
 	q := r.db.Where("external_id = ?", externalID)
 	if preload {
-		q = q.Preload("Personal").Preload("Job").Preload("Theme").Preload("Sections.Items")
+		q = q.Preload("Personal").Preload("Theme").Preload("Sections.Items")
 	}
 	err := q.First(&res).Error
 	return res, err
@@ -64,9 +63,6 @@ func (r *Repo) Replace(existing Resume, updated Resume) error {
 			return err
 		}
 		if err := tx.Unscoped().Where("resume_id = ?", existing.ID).Delete(&ResumePersonal{}).Error; err != nil {
-			return err
-		}
-		if err := tx.Unscoped().Where("resume_id = ?", existing.ID).Delete(&ResumeJob{}).Error; err != nil {
 			return err
 		}
 		if err := tx.Unscoped().Where("resume_id = ?", existing.ID).Delete(&ResumeTheme{}).Error; err != nil {

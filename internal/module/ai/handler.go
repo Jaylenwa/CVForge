@@ -19,8 +19,8 @@ type polishReq struct {
 	Tone string `json:"tone"`
 }
 type summaryReq struct {
-	JobTitle string `json:"jobTitle"`
-	Skills   string `json:"skills"`
+	Job    string `json:"job"`
+	Skills string `json:"skills"`
 }
 
 func (h *Handler) Polish(c *gin.Context) {
@@ -39,6 +39,6 @@ func (h *Handler) Summary(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	text := h.svc.Summary(req.JobTitle, req.Skills)
+	text := h.svc.Summary(req.Job, req.Skills)
 	c.JSON(http.StatusOK, gin.H{"text": text})
 }

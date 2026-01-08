@@ -9,7 +9,6 @@ export enum ResumeSectionType {
   Portfolio = 'portfolio',
   Awards = 'awards',
   Interests = 'interests',
-  JobApplication = 'jobApplication',
   Exam = 'exam',
   SelfEvaluation = 'selfEvaluation',
   Custom = 'custom'
@@ -47,22 +46,14 @@ export interface ResumeData {
     Email?: string;
     Phone?: string;
     AvatarURL?: string;
-    JobTitle?: string;
     Gender?: string;
     Age?: string;
-    MaritalStatus?: string;
-    PoliticalStatus?: string;
-    Birthplace?: string;
-    Ethnicity?: string;
-    Height?: string;
-    Weight?: string;
-    CustomInfo?: string;
-  };
-  Job?: {
+    Degree?: string;
     Job?: string;
     City?: string;
     Money?: string;
     JoinTime?: string;
+    CustomInfo?: string;
   };
   Theme?: {
     Color?: string;

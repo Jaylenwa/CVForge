@@ -14,12 +14,12 @@ export const polishText = async (text: string, tone: 'professional' | 'creative'
   }
 };
 
-export const generateSummary = async (jobTitle: string, skills: string): Promise<string> => {
+export const generateSummary = async (job: string, skills: string): Promise<string> => {
   try {
     const res = await fetch(`${API_BASE}/ai/summary`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jobTitle, skills })
+      body: JSON.stringify({ job, skills })
     });
     const data = await res.json();
     return (data.text as string) || "";

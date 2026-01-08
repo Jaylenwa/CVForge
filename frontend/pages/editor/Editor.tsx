@@ -43,15 +43,16 @@ export const Editor: React.FC = () => {
         fetch(`${API_BASE}/resumes/${resumeId}`, { headers: { Authorization: `Bearer ${token}` } })
           .then(r => r.json())
           .then((res: any) => {
+              const incoming = res || {};
+              const sectionsRaw = (incoming.Sections || []);
               const mapped: ResumeData = {
-                id: res.ExternalID || resumeId,
-                title: res.Title,
-                templateId: res.TemplateID,
-                lastModified: res.LastModified,
-                Personal: res.Personal,
-                Job: res.Job,
-                Theme: res.Theme,
-                sections: (res.Sections || []).map((s: any) => ({
+                id: incoming.ExternalID || resumeId,
+                title: incoming.Title,
+                templateId: incoming.TemplateID,
+                lastModified: incoming.LastModified,
+                Personal: { ...(INITIAL_RESUME.Personal || {}), ...(resumeData.Personal || {}), ...(incoming.Personal || {}) },
+                Theme: incoming.Theme,
+                sections: sectionsRaw.map((s: any) => ({
                   id: s.ExternalID || s.ID,
                   type: s.Type,
                   title: s.Title,
@@ -84,7 +85,6 @@ export const Editor: React.FC = () => {
           Title: INITIAL_RESUME.title,
           TemplateID: templateId,
           Personal: INITIAL_RESUME.Personal || {},
-          Job: INITIAL_RESUME.Job || {},
           Theme: INITIAL_RESUME.Theme || {},
           Sections: INITIAL_RESUME.sections.map(s => ({
             ExternalID: s.id,
@@ -135,7 +135,6 @@ export const Editor: React.FC = () => {
       Title: resumeData.title,
       TemplateID: resumeData.templateId,
       Personal: resumeData.Personal || {},
-      Job: resumeData.Job || {},
       Theme: resumeData.Theme || {},
       Sections: resumeData.sections.map(s => ({
         ExternalID: s.id,

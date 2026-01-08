@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trash2, Plus, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate, Briefcase, GraduationCap, Wrench, User, Target, BookOpen, Layers, Award, Heart } from 'lucide-react';
+import { Trash2, Plus, Sparkles, ChevronDown, ChevronUp, Upload, X, Image as ImageIcon, Palette, Type, LayoutTemplate, Briefcase, GraduationCap, Wrench, User, BookOpen, Layers, Award, Heart } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType } from '../../types';
@@ -159,7 +159,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
 
   useEffect(() => {
     const required: ResumeSectionType[] = [
-      ResumeSectionType.JobApplication,
       ResumeSectionType.Exam,
       ResumeSectionType.Education,
       ResumeSectionType.Experience,
@@ -189,19 +188,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     }
   }, [data.sections]);
 
-  useEffect(() => {
-    const job = data.sections.find(s => s.type === ResumeSectionType.JobApplication);
-    if (job && job.items.length === 0) {
-      onChange({
-        ...data,
-        sections: data.sections.map(s =>
-          s.id === job.id
-            ? { ...s, items: [{ id: generateUUID(), title: '', subtitle: '', timeStart: '', description: '' }] }
-            : s
-        ),
-      });
-    }
-  }, [data.sections]);
+  
 
   useEffect(() => {
     const needTypesWithTime: ResumeSectionType[] = [
@@ -218,7 +205,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     ];
     let changed = false;
     const nextSections = data.sections.map(s => {
-      if (s.type === ResumeSectionType.Summary || s.type === ResumeSectionType.SelfEvaluation || s.type === ResumeSectionType.JobApplication) {
+      if (s.type === ResumeSectionType.Summary || s.type === ResumeSectionType.SelfEvaluation) {
         return s;
       }
       if (s.items.length === 0) {
@@ -271,7 +258,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
 
   useEffect(() => {
     const order: ResumeSectionType[] = [
-      ResumeSectionType.JobApplication,
       ResumeSectionType.Exam,
       ResumeSectionType.Education,
       ResumeSectionType.Experience,
@@ -338,7 +324,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
      const skillsSection = data.sections.find(s => s.type === ResumeSectionType.Skills);
     const skills = skillsSection?.items.map(i => i.description).join(', ') || 'General';
      
-     const summary = await generateSummary(personal?.JobTitle || '', skills);
+    const summary = await generateSummary(personal?.Job || '', skills);
      
      // Update summary section
      const summarySection = data.sections.find(s => s.type === ResumeSectionType.Summary);
@@ -462,11 +448,11 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">{t('editor.fields.jobTitle')}</label>
+                <label className="block text-sm font-medium text-gray-700">{t('editor.fields.degree')}</label>
                 <input 
                   type="text" 
-                  value={personal?.JobTitle || ''}
-                  onChange={e => updatePersonal('JobTitle', e.target.value)}
+                  value={personal?.Degree || ''}
+                  onChange={e => updatePersonal('Degree', e.target.value)}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -484,40 +470,57 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
              {/* removed website/linkedin fields */}
 
              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.gender')}</label>
-                  <input type="text" value={personal?.Gender || ''} onChange={e => updatePersonal('Gender', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.age')}</label>
-                  <input type="text" value={personal?.Age || ''} onChange={e => updatePersonal('Age', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.maritalStatus')}</label>
-                  <input type="text" value={personal?.MaritalStatus || ''} onChange={e => updatePersonal('MaritalStatus', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.politicalStatus')}</label>
-                  <input type="text" value={personal?.PoliticalStatus || ''} onChange={e => updatePersonal('PoliticalStatus', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.birthplace')}</label>
-                  <input type="text" value={personal?.Birthplace || ''} onChange={e => updatePersonal('Birthplace', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.ethnicity')}</label>
-                  <input type="text" value={personal?.Ethnicity || ''} onChange={e => updatePersonal('Ethnicity', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.height')}</label>
-                  <input type="text" value={personal?.Height || ''} onChange={e => updatePersonal('Height', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.weight')}</label>
-                  <input type="text" value={personal?.Weight || ''} onChange={e => updatePersonal('Weight', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
-                </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700">{t('editor.fields.gender')}</label>
+                 <input type="text" value={personal?.Gender || ''} onChange={e => updatePersonal('Gender', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+               </div>
+               <div>
+                 <label className="block text-sm font-medium text-gray-700">{t('editor.fields.age')}</label>
+                 <input type="text" value={personal?.Age || ''} onChange={e => updatePersonal('Age', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"/>
+               </div>
              </div>
 
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.jobApplication')}</label>
+                  <input 
+                    type="text" 
+                    value={personal?.Job || ''} 
+                    onChange={e => updatePersonal('Job', e.target.value)} 
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.city')}</label>
+                  <input 
+                    type="text" 
+                    value={personal?.City || ''} 
+                    onChange={e => updatePersonal('City', e.target.value)} 
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.expectedSalary')}</label>
+                  <input 
+                    type="text" 
+                    value={personal?.Money || ''} 
+                    onChange={e => updatePersonal('Money', e.target.value)} 
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t('editor.fields.joinTime')}</label>
+                  <input
+                    type="text"
+                    value={personal?.JoinTime || ''}
+                    onChange={e => updatePersonal('JoinTime', e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                  />
+                </div>
+             </div>
+             
+            
+ 
              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                <div className="flex items-center justify-between mb-3">
                  <span className="text-sm font-medium text-gray-700">{t('editor.customInfo.title')}</span>
@@ -572,7 +575,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                       section.type === ResumeSectionType.Portfolio ? <ImageIcon size={18}/> :
                       section.type === ResumeSectionType.Awards ? <Award size={18}/> :
                       section.type === ResumeSectionType.Interests ? <Heart size={18}/> :
-                      section.type === ResumeSectionType.JobApplication ? <Target size={18}/> :
                       section.type === ResumeSectionType.Exam ? <BookOpen size={18}/> :
                       section.type === ResumeSectionType.SelfEvaluation ? <User size={18}/> :
                       section.type === ResumeSectionType.Summary ? <Sparkles size={18}/> :
@@ -580,68 +582,13 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                       <Type size={18}/>
                     }
                     onAddItem={
-                      section.type !== ResumeSectionType.Summary && section.type !== ResumeSectionType.JobApplication
+                      section.type !== ResumeSectionType.Summary
                         ? () => addItem(section.id)
                         : undefined
                     }
                 >
-                    
-                    {section.type === ResumeSectionType.JobApplication && (
-                      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group transition-all hover:shadow-md">
-                        <div className="mt-2 grid grid-cols-1 gap-4 mb-3">
-                          <div className="flex flex-col">
-                            <span className="text-xs text-gray-600 mb-1">求职岗位：</span>
-                            <input
-                              className="w-full font-medium border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent transition-colors"
-                              value={section.items[0]?.title || ''}
-                              onChange={e =>
-                                updateItem(section.id, section.items[0]?.id || '', 'title', e.target.value)
-                              }
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col">
-                              <span className="text-xs text-gray-600 mb-1">意向城市：</span>
-                              <input
-                                className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                value={section.items[0]?.subtitle || ''}
-                                onChange={e =>
-                                  updateItem(section.id, section.items[0]?.id || '', 'subtitle', e.target.value)
-                                }
-                              />
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs text-gray-600 mb-1">期望薪资：</span>
-                              <input
-                                className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                value={section.items[0]?.description || ''}
-                                onChange={e =>
-                                  updateItem(section.id, section.items[0]?.id || '', 'description', e.target.value)
-                                }
-                              />
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-xs text-gray-600 mb-1">入职时间：</span>
-                              <select
-                                className="w-full text-sm border-b border-gray-200 focus:border-blue-500 outline-none pb-1 bg-transparent"
-                                value={section.items[0]?.timeStart || ''}
-                                onChange={e =>
-                                  updateItem(section.id, section.items[0]?.id || '', 'timeStart', e.target.value)
-                                }
-                              >
-                                <option value="">不填</option>
-                                <option value="随时到岗">随时到岗</option>
-                                <option value="一周内到岗">一周内到岗</option>
-                                <option value="一个月内到岗">一个月内到岗</option>
-                                <option value="到岗时间另行商议">到岗时间另行商议</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
-                    {section.type !== ResumeSectionType.JobApplication && section.items.map((item) => {
+                    {section.items.map((item) => {
                     const isComplex = [
                       ResumeSectionType.Experience,
                       ResumeSectionType.Education,

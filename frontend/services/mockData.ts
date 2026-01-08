@@ -16,27 +16,19 @@ export const INITIAL_RESUME: ResumeData = {
     FontSize: '13'
   },
   lastModified: Date.now(),
-  Job: {
-    Job: '前端/全栈工程师',
-    City: '上海 / 杭州',
-    Money: '25k-35k·14薪',
-    JoinTime: '2025-03'
-  },
   Personal: {
     FullName: '张伟',
     Email: 'zhangwei@example.com',
     Phone: '13800000000',
     AvatarURL: '/avator.avif',
-    JobTitle: '高级软件工程师',
+    Job: '前端/全栈工程师',
+    City: '上海 / 杭州',
+    Money: '25k-35k·14薪',
+    JoinTime: '随时到岗',
     Gender: '男',
     Age: '28',
-    MaritalStatus: '未婚',
-    PoliticalStatus: '中共党员',
-    Birthplace: '江苏苏州',
-    Ethnicity: '汉族',
-    Height: '180cm',
-    Weight: '70kg',
-    CustomInfo: JSON.stringify([{ label: '期望城市', value: '上海 / 杭州' }])
+    Degree: '硕士',
+    CustomInfo: JSON.stringify([{ label: '政治面貌', value: '党员' }])
   },
   sections: [
     {

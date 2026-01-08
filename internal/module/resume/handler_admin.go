@@ -41,7 +41,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	}
 	var total int64
 	q.Count(&total)
-	if err := q.Preload("Personal").Preload("Job").Preload("Theme").Order("updated_at desc").Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
+	if err := q.Preload("Personal").Preload("Theme").Order("updated_at desc").Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
 		logger.WithCtx(c).Error("resume.admin_list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
@@ -93,7 +93,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 
 func (h *AdminHandler) AdminGet(c *gin.Context) {
 	var res Resume
-	if err := database.DB.Where("external_id = ?", c.Param("id")).Preload("Personal").Preload("Job").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("external_id = ?", c.Param("id")).Preload("Personal").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
 		logger.WithCtx(c).Error("resume.admin_get not found", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return

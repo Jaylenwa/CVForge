@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, ChevronDown, ChevronUp, Trash2, Edit2 } from 'lucide-react';
 import { ResumeSection } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useSectionTitle } from '../../hooks/useSectionTitle';
 
 interface SortableSectionProps {
   section: ResumeSection;
@@ -43,6 +44,7 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
   };
 
   const { t } = useLanguage();
+  const getSectionTitle = useSectionTitle();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(section.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,13 +55,7 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
     }
   }, [isEditingTitle]);
 
-  const getDisplayTitle = () => {
-    const defaultTitles = ['Professional Summary', 'Work Experience', 'Education', 'Skills', 'Projects'];
-    if (defaultTitles.includes(section.title) || !section.title) {
-        return t(`section.${section.type}`);
-    }
-    return section.title;
-  };
+  const getDisplayTitle = () => getSectionTitle(section);
 
   const handleSaveTitle = (e?: React.FormEvent) => {
     e?.preventDefault();

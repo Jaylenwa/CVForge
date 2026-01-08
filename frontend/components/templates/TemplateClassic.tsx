@@ -12,7 +12,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
   <div className="border-b-2 pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6" style={{ borderColor: data.Theme?.Color || '#333' }}>
       <div className="flex-1 text-center md:text-left order-2 md:order-1">
           <h1 className="text-4xl font-bold uppercase tracking-wider" style={{ color: data.Theme?.Color }}>{data.Personal?.FullName}</h1>
-          <p className="text-xl mt-2 text-gray-600">{data.Personal?.JobTitle}</p>
+          <p className="text-xl mt-2 text-gray-600">{data.Personal?.Job}</p>
           <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-600">
             {data.Personal?.Email && <span>{data.Personal.Email}</span>}
             {data.Personal?.Phone && <span>• {data.Personal.Phone}</span>}
@@ -21,12 +21,9 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
               {data.Personal?.Gender && <span>{t('editor.fields.gender')}: {data.Personal.Gender}</span>}
               {data.Personal?.Age && <span>{t('editor.fields.age')}: {data.Personal.Age}</span>}
-              {data.Personal?.MaritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.Personal.MaritalStatus}</span>}
-              {data.Personal?.PoliticalStatus && <span>{t('editor.fields.politicalStatus')}: {data.Personal.PoliticalStatus}</span>}
-              {data.Personal?.Birthplace && <span>{t('editor.fields.birthplace')}: {data.Personal.Birthplace}</span>}
-              {data.Personal?.Ethnicity && <span>{t('editor.fields.ethnicity')}: {data.Personal.Ethnicity}</span>}
-              {data.Personal?.Height && <span>{t('editor.fields.height')}: {data.Personal.Height}</span>}
-              {data.Personal?.Weight && <span>{t('editor.fields.weight')}: {data.Personal.Weight}</span>}
+              {data.Personal?.Degree && <span>{t('editor.fields.degree')}: {data.Personal.Degree}</span>}
+              
+              
               {(() => {
                 try {
                   const raw = data.Personal?.CustomInfo;

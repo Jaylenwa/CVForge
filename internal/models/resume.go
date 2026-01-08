@@ -10,7 +10,6 @@ type Resume struct {
 	TemplateID   string `gorm:"size:64"`
 	LastModified int64
 	Personal     ResumePersonal  `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
-	Job          ResumeJob       `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
 	Theme        ResumeTheme     `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
 	Sections     []ResumeSection `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
 }
@@ -21,38 +20,23 @@ func (Resume) TableName() string {
 
 type ResumePersonal struct {
 	gorm.Model
-	ResumeID        uint   `gorm:"uniqueIndex"`
-	FullName        string `gorm:"size:128"`
-	Email           string `gorm:"size:191"`
-	Phone           string `gorm:"size:64"`
-	AvatarURL       string `gorm:"size:512"`
-	JobTitle        string `gorm:"size:128"`
-	Gender          string `gorm:"size:32"`
-	Age             string `gorm:"size:32"`
-	MaritalStatus   string `gorm:"size:64"`
-	PoliticalStatus string `gorm:"size:64"`
-	Birthplace      string `gorm:"size:128"`
-	Ethnicity       string `gorm:"size:64"`
-	Height          string `gorm:"size:32"`
-	Weight          string `gorm:"size:32"`
-	CustomInfo      string `gorm:"type:text"`
+	ResumeID   uint   `gorm:"uniqueIndex"`
+	FullName   string `gorm:"size:128"`
+	Email      string `gorm:"size:191"`
+	Phone      string `gorm:"size:64"`
+	AvatarURL  string `gorm:"size:512"`
+	Job        string `gorm:"size:128"`
+	City       string `gorm:"size:128"`
+	Money      string `gorm:"size:64"`
+	JoinTime   string `gorm:"size:64"`
+	Gender     string `gorm:"size:32"`
+	Age        string `gorm:"size:32"`
+	Degree     string `gorm:"size:64"`
+	CustomInfo string `gorm:"type:text"`
 }
 
 func (ResumePersonal) TableName() string {
 	return "resume_personal"
-}
-
-type ResumeJob struct {
-	gorm.Model
-	ResumeID uint   `gorm:"uniqueIndex"`
-	Job      string `gorm:"size:128"`
-	City     string `gorm:"size:128"`
-	Money    string `gorm:"size:64"`
-	JoinTime string `gorm:"size:64"`
-}
-
-func (ResumeJob) TableName() string {
-	return "resume_job"
 }
 
 type ResumeTheme struct {

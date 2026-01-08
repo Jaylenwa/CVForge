@@ -14,7 +14,6 @@ func (s *Service) Polish(text, tone string) string {
 	return out
 }
 
-func (s *Service) Summary(jobTitle, skills string) string {
-	return "Experienced " + jobTitle + " with skills in " + skills + ". Delivers impact through collaboration and ownership."
+func (s *Service) Summary(job, skills string) string {
+	return "Experienced " + job + " with skills in " + skills + ". Delivers impact through collaboration and ownership."
 }
-

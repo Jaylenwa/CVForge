@@ -11,19 +11,19 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
   const color = data.Theme?.Color || '#14b8a6';
 
   const findJobTarget = () => {
-    const jobSection = (data.sections || []).find(s => s.type === ResumeSectionType.JobApplication);
-    const first = jobSection?.items?.[0];
-    return first?.title || data.Job?.Job || data.Personal?.JobTitle || '';
+    return data.Personal?.Job || '';
   };
   const findCity = () => {
-    const jobSection = (data.sections || []).find(s => s.type === ResumeSectionType.JobApplication);
-    const first = jobSection?.items?.[0];
-    return data.Job?.City || first?.subtitle || '';
+    return data.Personal?.City || '';
+  };
+  const findMoney = () => {
+    return data.Personal?.Money || '';
+  };
+  const findJoinTime = () => {
+    return data.Personal?.JoinTime || '';
   };
   const findDegree = () => {
-    const edu = (data.sections || []).find(s => s.type === ResumeSectionType.Education);
-    const first = edu?.items?.[0];
-    return first?.degree || '';
+    return data.Personal?.Degree || '';
   };
 
   const SectionIcon: React.FC<{ type: ResumeSectionType }> = ({ type }) => {
@@ -70,6 +70,15 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
     }
     return null;
   };
+  
+  const showMarkerForSection = (sectionType: ResumeSectionType) => {
+    return [
+      ResumeSectionType.Experience,
+      ResumeSectionType.Education,
+      ResumeSectionType.Projects,
+      ResumeSectionType.Internships
+    ].includes(sectionType);
+  };
 
   const sectionsOrdered = React.useMemo(() => {
     const order = [
@@ -107,8 +116,8 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
         <div className="bg-teal-500" style={{ backgroundColor: color }}>
           <div className="px-10 pt-8 pb-6 flex items-start gap-6">
             <div className="flex-1">
-              <h1 className="text-4xl font-bold tracking-wide text-white">{data.Personal?.FullName}</h1>
-              {findJobTarget() && <p className="text-lg mt-2 text-white/90">求职目标：{findJobTarget()}</p>}
+              <h1 className="text-3xl font-bold tracking-wide text-white">{data.Personal?.FullName}</h1>
+              {findJobTarget() && <p className="text-base mt-2 text-white/90">{t('editor.fields.jobApplication')}：{findJobTarget()}</p>}
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-white/90">
                 {data.Personal?.Age && (
                   <span className="inline-flex items-center gap-1">
@@ -118,6 +127,11 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                 {data.Personal?.Phone && (
                   <span className="inline-flex items-center gap-1">
                     <Phone size={16} /> {data.Personal.Phone}
+                  </span>
+                )}
+                {data.Personal?.Gender && (
+                  <span className="inline-flex items-center gap-1">
+                    <User size={16} /> {data.Personal.Gender}
                   </span>
                 )}
                 {data.Personal?.Email && (
@@ -135,15 +149,33 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                     <MapPin size={16} /> {findCity()}
                   </span>
                 )}
+                {findMoney() && (
+                  <span className="inline-flex items-center gap-1">
+                    {t('editor.fields.expectedSalary')}：{findMoney()}
+                  </span>
+                )}
+                {findJoinTime() && (
+                  <span className="inline-flex items-center gap-1">
+                    {t('editor.fields.joinTime')}：{findJoinTime()}
+                  </span>
+                )}
               </div>
-              {hasExtraPersonalInfo(data) && (
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/90">
-                  {data.Personal?.Gender && <span>{t('editor.fields.gender')}: {data.Personal.Gender}</span>}
-                  {data.Personal?.MaritalStatus && <span>{t('editor.fields.maritalStatus')}: {data.Personal.MaritalStatus}</span>}
-                  {data.Personal?.PoliticalStatus && <span>{t('editor.fields.politicalStatus')}: {data.Personal.PoliticalStatus}</span>}
-                  {data.Personal?.Birthplace && <span>{t('editor.fields.birthplace')}: {data.Personal.Birthplace}</span>}
-                </div>
-              )}
+              {(() => {
+                try {
+                  const raw = data.Personal?.CustomInfo;
+                  if (raw) {
+                    const arr = JSON.parse(raw);
+                    if (Array.isArray(arr) && arr.length > 0) {
+                      return (
+                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/90">
+                          {arr.map((ci: any, idx: number) => <span key={idx}>{ci.label}: {ci.value}</span>)}
+                        </div>
+                      );
+                    }
+                  }
+                } catch {}
+                return null;
+              })()}
             </div>
             {data.Personal?.AvatarURL && (
               <div className="flex-shrink-0">
@@ -163,7 +195,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
         </div>
       </div>
 
-      <div className="px-10 pt-6 pb-10 space-y-10">
+      <div className="px-10 pt-6 pb-10 space-y-1">
                 {sectionsOrdered.map((section, idx) => (
                   (() => {
                     const items = (section.items || []).filter(it => hasMeaningfulContent(it, section.type));
@@ -173,11 +205,22 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                     const dashBottom = isLast ? 2 : -55;
                     return (
                       <div key={section.id} className="flex gap-6 items-start">
-                        <div className="relative" style={{ width: 140 }}>
-                          {/* 标题字体大小 */}
-                          <div className="text-xl font-bold tracking-wide" style={{ color }}>
-                            {getSectionTitle(section)}
-                          </div>                  
+                        <div className="relative mt-4 -translate-y-1/2" style={{ width: 140 }}>
+                          <div className="text-base font-bold tracking-wide" style={{ color }}>
+                            {(() => {
+                              const title = String(getSectionTitle(section) || '').trim();
+                              const parts = title.match(/^([A-Za-z]+)\s+([A-Za-z]+)$/);
+                              if (parts) {
+                                return (
+                                  <span className="inline-block leading-tight">
+                                    <span className="block">{parts[1]}</span>
+                                    <span className="block">{parts[2]}</span>
+                                  </span>
+                                );
+                              }
+                              return title;
+                            })()}
+                          </div>
                         </div>
                         <div className="flex-1">
                           <div className="mt-4 border-t-2 pt-4 pb-4 relative" style={{ borderColor: color }}>
@@ -189,7 +232,9 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                       <div className="space-y-3">
                         {items.map(item => (
                           <div key={item.id} className="relative pl-1">
-                            <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
+                            {showMarkerForSection(section.type) && (
+                              <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
+                            )}
                             {item.description && (
                           <div className="resume-rich-content text-gray-700 text-sm leading-relaxed" style={{ fontSize: styles.fontSize }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
                         )}
@@ -200,7 +245,9 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                       <div className={items.length > 1 ? 'space-y-5' : ''}>
                         {items.map(item => (
                           <div key={item.id} className="relative pl-1">
-                            <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
+                            {showMarkerForSection(section.type) && (
+                              <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
+                            )}
                             {renderItemTime(item) && (
                               <div className="absolute -translate-y-1/2 text-gray-600 text-sm whitespace-nowrap" style={{ left: -164, top: 14 }}>
                                 {renderItemTime(item)}

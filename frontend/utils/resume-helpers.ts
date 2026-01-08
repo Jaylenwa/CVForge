@@ -48,7 +48,7 @@ export const hasExtraPersonalInfo = (data: ResumeData) => {
         } catch {}
         return [];
     })();
-    return !!(p?.Gender || p?.Age || p?.MaritalStatus || p?.PoliticalStatus || p?.Birthplace || p?.Ethnicity || p?.Height || p?.Weight || (customArr && customArr.length > 0));
+    return !!(p?.Gender || p?.Age || p?.Degree || (customArr && customArr.length > 0));
 };
 
 export const sanitizeHtml = (html: string) => {
