@@ -39,7 +39,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
   const renderItemTime = (item: any) => {
     if (item?.timeStart || item?.timeEnd || item?.today) {
       return (
-        <span className="text-sm text-gray-600 font-medium" style={{ fontSize: styles.fontSize }}>
+        <span className="text-sm text-gray-600 font-bold" style={{ fontSize: styles.fontSize }}>
           {(item.timeStart || item.timeEnd || '').replace('-', '.')}
           {' ~ '}
           {item.today ? t('common.toPresent') : (item.timeEnd || '').replace('-', '.')}
