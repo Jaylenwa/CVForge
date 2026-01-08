@@ -159,23 +159,23 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                     {t('editor.fields.joinTime')}：{findJoinTime()}
                   </span>
                 )}
-              </div>
-              {(() => {
-                try {
-                  const raw = data.Personal?.CustomInfo;
-                  if (raw) {
-                    const arr = JSON.parse(raw);
-                    if (Array.isArray(arr) && arr.length > 0) {
-                      return (
-                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-white/90">
-                          {arr.map((ci: any, idx: number) => <span key={idx}>{ci.label}: {ci.value}</span>)}
-                        </div>
-                      );
+                {(() => {
+                  try {
+                    const raw = data.Personal?.CustomInfo;
+                    if (raw) {
+                      const arr = JSON.parse(raw);
+                      if (Array.isArray(arr) && arr.length > 0) {
+                        return arr.map((ci: any, idx: number) => (
+                          <span key={idx} className="inline-flex items-center gap-1">
+                            {ci.label}: {ci.value}
+                          </span>
+                        ));
+                      }
                     }
-                  }
-                } catch {}
-                return null;
-              })()}
+                  } catch {}
+                  return null;
+                })()}
+              </div>
             </div>
             {data.Personal?.AvatarURL && (
               <div className="flex-shrink-0">
