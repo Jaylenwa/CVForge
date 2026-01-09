@@ -36,15 +36,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   );
 
   const fontOptions = [
-    { group: t('editor.font.group.englishSans'), id: 'inter', label: t('font.inter') },
-    { group: t('editor.font.group.englishSans'), id: 'roboto', label: t('font.roboto') },
-    { group: t('editor.font.group.englishSerif'), id: 'merriweather', label: t('font.merriweather') },
-    { group: t('editor.font.group.englishSerif'), id: 'playfair', label: t('font.playfair') },
-    { group: t('editor.font.group.englishMono'), id: 'mono', label: t('font.mono') },
-    { group: t('editor.font.group.chineseSans'), id: 'yahei', label: t('font.yahei') },
     { group: t('editor.font.group.chineseSans'), id: 'notosans', label: t('font.notosans') },
-    { group: t('editor.font.group.chineseSerif'), id: 'simsun', label: t('font.simsun') },
-    { group: t('editor.font.group.chineseSerif'), id: 'kaiti', label: t('font.kaiti') },
   ];
   const [activeTab, setActiveTab] = useState<'content' | 'design'>('content');
   const [activeSection, setActiveSection] = useState<string | null>('personal');
@@ -794,32 +786,12 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
             </h3>
             <div className="relative">
               <select
-                value={theme?.Font || 'inter'}
+                value={fontOptions.some(f => f.id === (theme?.Font || '')) ? (theme?.Font as string) : 'notosans'}
                 onChange={(e) => updateTheme('Font', e.target.value)}
                 className="block w-full pl-3 pr-10 py-2.5 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border"
               >
-                <optgroup label={t('editor.font.group.englishSans')}>
-                  {fontOptions.filter(f => f.group === t('editor.font.group.englishSans')).map(f => (
-                    <option key={f.id} value={f.id}>{f.label}</option>
-                  ))}
-                </optgroup>
-                <optgroup label={t('editor.font.group.englishSerif')}>
-                  {fontOptions.filter(f => f.group === t('editor.font.group.englishSerif')).map(f => (
-                    <option key={f.id} value={f.id}>{f.label}</option>
-                  ))}
-                </optgroup>
-                <optgroup label={t('editor.font.group.englishMono')}>
-                  {fontOptions.filter(f => f.group === t('editor.font.group.englishMono')).map(f => (
-                    <option key={f.id} value={f.id}>{f.label}</option>
-                  ))}
-                </optgroup>
                 <optgroup label={t('editor.font.group.chineseSans')}>
                   {fontOptions.filter(f => f.group === t('editor.font.group.chineseSans')).map(f => (
-                    <option key={f.id} value={f.id}>{f.label}</option>
-                  ))}
-                </optgroup>
-                <optgroup label={t('editor.font.group.chineseSerif')}>
-                  {fontOptions.filter(f => f.group === t('editor.font.group.chineseSerif')).map(f => (
                     <option key={f.id} value={f.id}>{f.label}</option>
                   ))}
                 </optgroup>

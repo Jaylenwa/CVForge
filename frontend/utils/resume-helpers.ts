@@ -2,24 +2,13 @@ import { ResumeData } from '../types';
 
 export const getFontStack = (fontId: string): string => {
     switch (fontId) {
-        case 'inter': return '"Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        case 'roboto': return '"Roboto", "Helvetica Neue", Arial, sans-serif';
-        case 'merriweather': return '"Merriweather", "Georgia", serif';
-        case 'playfair': return '"Playfair Display", "Times New Roman", serif';
-        case 'mono': return '"Roboto Mono", "Courier New", monospace';
-        
-        // Chinese Fonts
-        case 'yahei': return '"Microsoft YaHei", "Heiti SC", "PingFang SC", sans-serif';
         case 'notosans': return '"Noto Sans SC", "Microsoft YaHei", sans-serif';
-        case 'simsun': return '"SimSun", "Songti SC", "Noto Serif SC", serif';
-        case 'kaiti': return '"KaiTi", "STKaiti", "Kai", serif';
-        
-        default: return '"Inter", sans-serif';
+        default: return '"Noto Sans SC", sans-serif';
     }
 };
 
 export const getThemeStyles = (theme?: { Color?: string; Font?: string; Spacing?: string; FontSize?: string }) => {
-    const fontFamily = getFontStack(theme?.Font || 'inter');
+    const fontFamily = getFontStack(theme?.Font || 'notosans');
 
     const spacingMultiplier = {
         'compact': '0.85',
