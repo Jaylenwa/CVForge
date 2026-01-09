@@ -75,6 +75,7 @@ export interface AdminResume {
   userName?: string;
   title: string;
   templateId: string;
+  language?: 'en' | 'zh';
   Theme: { Color?: string; Font?: string; Spacing?: string; FontSize?: string };
   lastModified: number;
 }
@@ -92,6 +93,7 @@ export const listResumes = async (params: Record<string, string>) => {
       userName: it.userName,
       title: r.Title,
       templateId: r.TemplateID,
+      language: (r.Language || '') === 'en' ? 'en' : 'zh',
       Theme: { Color: r.Theme?.Color, Font: r.Theme?.Font, Spacing: r.Theme?.Spacing, FontSize: r.Theme?.FontSize },
       lastModified: r.LastModified,
     } as AdminResume;

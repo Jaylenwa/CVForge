@@ -4,6 +4,7 @@ type ResumeDTO struct {
 	ExternalID   string            `json:"ExternalID"`
 	Title        string            `json:"Title"`
 	TemplateID   string            `json:"TemplateID"`
+	Language     string            `json:"Language"`
 	LastModified int64             `json:"LastModified"`
 	Personal     ResumePersonalDTO `json:"Personal"`
 	Theme        ResumeThemeDTO    `json:"Theme"`
@@ -59,6 +60,7 @@ func ToDTO(r Resume) ResumeDTO {
 		ExternalID:   r.ExternalID,
 		Title:        r.Title,
 		TemplateID:   r.TemplateID,
+		Language:     r.Language,
 		LastModified: r.LastModified,
 		Personal: ResumePersonalDTO{
 			FullName:   r.Personal.FullName,

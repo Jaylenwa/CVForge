@@ -34,6 +34,7 @@ export const PublicResume: React.FC = () => {
           id: slug,
           title: res.Title,
           templateId: res.TemplateID,
+          language: (res.Language || '') === 'en' ? 'en' : 'zh',
           Theme: res.Theme,
           lastModified: res.LastModified || Date.now(),
           Personal: res.Personal,
@@ -56,6 +57,9 @@ export const PublicResume: React.FC = () => {
           }))
         };
         setData(mapped);
+        try {
+          if (mapped.language) setLanguage(mapped.language);
+        } catch {}
       } catch (err: any) {
         setError(err?.message ? String(err.message) : String(err));
       }

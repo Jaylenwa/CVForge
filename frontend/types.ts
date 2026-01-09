@@ -41,6 +41,7 @@ export interface ResumeData {
   title: string;
   templateId: string;
   lastModified: number;
+  language?: Language;
   Personal?: {
     FullName?: string;
     Email?: string;

@@ -9,6 +9,7 @@ export const INITIAL_RESUME: ResumeData = {
   id: 'new',
   title: '我的简历',
   templateId: 'TemplateMintTimeline',
+  language: 'zh',
   Theme: {
     Color: '#14b8a6',
     Font: 'yahei',

@@ -8,6 +8,7 @@ type Resume struct {
 	UserID       uint
 	Title        string `gorm:"size:191"`
 	TemplateID   string `gorm:"size:64"`
+	Language     string `gorm:"size:8"`
 	LastModified int64
 	Personal     ResumePersonal  `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`
 	Theme        ResumeTheme     `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"`

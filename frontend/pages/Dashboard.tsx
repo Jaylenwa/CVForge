@@ -34,6 +34,7 @@ export const Dashboard: React.FC = () => {
         id: r.id || r.ExternalID,
         title: r.title || r.Title,
         templateId: r.templateId || r.TemplateID,
+        language: (r.language || r.Language) === 'en' ? 'en' : 'zh',
         Theme: r.Theme || { Color: r.Theme?.Color, Font: r.Theme?.Font, Spacing: r.Theme?.Spacing, FontSize: r.Theme?.FontSize },
         lastModified: r.lastModified || r.LastModified || Date.now(),
         Personal: r.Personal || {
@@ -83,6 +84,7 @@ export const Dashboard: React.FC = () => {
       const payload = {
         Title: cloneTitle,
         TemplateID: resume.templateId,
+        Language: resume.language || 'zh',
         Personal: resume.Personal || INITIAL_RESUME.Personal || {},
         Theme: resume.Theme || INITIAL_RESUME.Theme || {},
         Sections: (resume.sections || INITIAL_RESUME.sections).map(s => ({

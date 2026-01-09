@@ -4,10 +4,12 @@ import { ResumeData } from '../../types';
 import { API_BASE } from '../../config';
 import { ResumePreview } from '../editor/ResumePreview';
 import { INITIAL_RESUME } from '../../services/mockData';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export const PrintResume: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<ResumeData | null>(null);
+  const { setLanguage } = useLanguage();
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -28,6 +30,7 @@ export const PrintResume: React.FC = () => {
           id: res.ExternalID || id,
           title: res.Title,
           templateId: res.TemplateID,
+          language: (res.Language || '') === 'en' ? 'en' : 'zh',
           Theme: res.Theme,
           lastModified: res.LastModified,
           Personal: res.Personal,
@@ -50,6 +53,9 @@ export const PrintResume: React.FC = () => {
           }))
         };
         setData(mapped);
+        try {
+          if (mapped.language) setLanguage(mapped.language);
+        } catch {}
       });
   }, [searchParams]);
 

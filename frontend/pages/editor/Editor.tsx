@@ -15,7 +15,21 @@ import { useToast } from '../../components/ui/Toast';
 export const Editor: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [resumeData, setResumeData] = useState<ResumeData>(INITIAL_RESUME);
+  const resumeIdParam = searchParams.get('id');
+  const savedThemeStr = resumeIdParam ? localStorage.getItem(`resume:${resumeIdParam}:theme`) : null;
+  const initialTheme = (() => {
+    if (savedThemeStr) {
+      try {
+        const obj = JSON.parse(savedThemeStr);
+        if (obj && typeof obj === 'object') {
+          return { ...(INITIAL_RESUME.Theme || {}), ...obj };
+        }
+      } catch {}
+    }
+    return INITIAL_RESUME.Theme;
+  })();
+  const initialResumeData: ResumeData = { ...INITIAL_RESUME, Theme: initialTheme };
+  const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
   const [scale, setScale] = useState(1);
   const [isMobilePreview, setIsMobilePreview] = useState(false);
   const { t, language, setLanguage } = useLanguage();
@@ -24,6 +38,7 @@ export const Editor: React.FC = () => {
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [exportError, setExportError] = useState<{ open: boolean; title: string; details: string }>({ open: false, title: '', details: '' });
   const hasCreatedFromTemplate = useRef(false);
+  const [loading, setLoading] = useState<boolean>(!!resumeIdParam);
 
   // Initialize data based on URL params
   useEffect(() => {
@@ -49,6 +64,7 @@ export const Editor: React.FC = () => {
                 id: incoming.ExternalID || resumeId,
                 title: incoming.Title,
                 templateId: incoming.TemplateID,
+                language: (incoming.Language || '') === 'en' ? 'en' : 'zh',
                 lastModified: incoming.LastModified,
                 Personal: { ...(INITIAL_RESUME.Personal || {}), ...(resumeData.Personal || {}), ...(incoming.Personal || {}) },
                 Theme: incoming.Theme,
@@ -71,6 +87,10 @@ export const Editor: React.FC = () => {
                 }))
               }
               setResumeData(mapped);
+              try {
+                if (mapped.language) setLanguage(mapped.language);
+              } catch {}
+              setLoading(false);
           });
         return;
     }
@@ -84,6 +104,7 @@ export const Editor: React.FC = () => {
         const payload = {
           Title: INITIAL_RESUME.title,
           TemplateID: templateId,
+          Language: language,
           Personal: INITIAL_RESUME.Personal || {},
           Theme: INITIAL_RESUME.Theme || {},
           Sections: INITIAL_RESUME.sections.map(s => ({
@@ -107,11 +128,28 @@ export const Editor: React.FC = () => {
         fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
           .then(r => r.json())
           .then(({ id }) => {
-            setResumeData(prev => ({ ...prev, templateId, id }));
+            setResumeData(prev => ({ ...prev, templateId, id, language }));
             window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}`);
+            setLoading(false);
           });
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const id = resumeData.id;
+    const theme = resumeData.Theme;
+    if (id && theme) {
+      try {
+        localStorage.setItem(`resume:${id}:theme`, JSON.stringify(theme));
+      } catch {}
+    }
+  }, [
+    resumeData.id,
+    resumeData.Theme?.Color,
+    resumeData.Theme?.Font,
+    resumeData.Theme?.Spacing,
+    resumeData.Theme?.FontSize
+  ]);
 
   const handlePrint = () => {
     window.print();
@@ -134,6 +172,7 @@ export const Editor: React.FC = () => {
     const payload = {
       Title: resumeData.title,
       TemplateID: resumeData.templateId,
+      Language: resumeData.language || language,
       Personal: resumeData.Personal || {},
       Theme: resumeData.Theme || {},
       Sections: resumeData.sections.map(s => ({
@@ -249,7 +288,11 @@ export const Editor: React.FC = () => {
             <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => setLanguage(language === 'en' ? 'zh' : 'en')}
+                onClick={() => {
+                  const next = language === 'en' ? 'zh' : 'en';
+                  setLanguage(next);
+                  setResumeData(prev => ({ ...prev, language: next }));
+                }}
                 title={t('lang.switchTitle')}
             >
                 <Globe size={16} className="mr-2"/>
@@ -275,17 +318,21 @@ export const Editor: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Workspace */}
       <div className="flex-grow flex overflow-hidden relative">
-        {/* Left: Form Editor */}
-        <div className={`w-full md:w-2/5 lg:w-2/5 xl:w-2/5 bg-white h-full z-10 transition-transform duration-300 absolute md:relative ${isMobilePreview ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
-            <EditorForm data={resumeData} onChange={setResumeData} />
-        </div>
-
-        {/* Right: Preview */}
-        <div className={`w-full md:w-3/5 lg:w-3/5 xl:w-3/5 bg-white h-full overflow-auto no-scrollbar min-h-0 absolute md:relative transition-transform duration-300 md:border-l md:border-gray-200 md:px-6 lg:px-8 xl:px-10 ${isMobilePreview ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
-             <ResumePreview data={resumeData} scale={scale} disableShadow scrollInside={false} />
-        </div>
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center bg-white">
+            <div className="text-sm text-gray-500">{t('common.loading')}</div>
+          </div>
+        ) : (
+          <>
+            <div className={`w-full md:w-2/5 lg:w-2/5 xl:w-2/5 bg-white h-full z-10 transition-transform duration-300 absolute md:relative ${isMobilePreview ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
+              <EditorForm data={resumeData} onChange={setResumeData} />
+            </div>
+            <div className={`w-full md:w-3/5 lg:w-3/5 xl:w-3/5 bg-white h-full overflow-auto no-scrollbar min-h-0 absolute md:relative transition-transform duration-300 md:border-l md:border-gray-200 md:px-6 lg:px-8 xl:px-10 ${isMobilePreview ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}>
+              <ResumePreview data={resumeData} scale={scale} disableShadow scrollInside={false} />
+            </div>
+          </>
+        )}
       </div>
       
       <Modal isOpen={exportError.open} onClose={() => setExportError(prev => ({ ...prev, open: false }))} title={exportError.title || t('editor.export.failed')}>

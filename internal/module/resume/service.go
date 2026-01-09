@@ -25,6 +25,7 @@ func NewService() *Service {
 type ResumeReq struct {
 	Title      string            `json:"Title"`
 	TemplateID string            `json:"TemplateID"`
+	Language   string            `json:"Language"`
 	Personal   ResumePersonalDTO `json:"Personal"`
 	Theme      ResumeThemeDTO    `json:"Theme"`
 	Sections   []SectionDTO      `json:"Sections"`
@@ -105,6 +106,7 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 		UserID:       uid,
 		Title:        req.Title,
 		TemplateID:   req.TemplateID,
+		Language:     req.Language,
 		LastModified: time.Now().UnixMilli(),
 		Personal: ResumePersonal{
 			FullName:   req.Personal.FullName,
