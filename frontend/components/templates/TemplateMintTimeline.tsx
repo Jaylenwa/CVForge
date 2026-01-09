@@ -237,7 +237,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                     {section.type === ResumeSectionType.Skills ? (
                       <div className="space-y-3">
                         {items.map(item => (
-                          <div key={item.id} className="relative pl-1">
+                          <div key={item.id} className="relative">
                             {showMarkerForSection(section.type) && (
                               <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
                             )}
@@ -250,16 +250,16 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                 ) : (
                       <div className={items.length > 1 ? 'space-y-5' : ''}>
                         {items.map(item => (
-                          <div key={item.id} className="relative pl-1">
-                            {showMarkerForSection(section.type) && (
-                              <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
-                            )}
-                            {renderItemTime(item) && (
-                              <div className="absolute -translate-y-1/2 text-gray-600 text-sm whitespace-nowrap" style={{ left: -164, top: 14 }}>
-                                {renderItemTime(item)}
-                              </div>
-                            )}
-                            <div className="flex justify-between items-baseline mb-1">
+                          <div key={item.id} className="relative">
+                            <div className="relative flex justify-between items-baseline mb-1">
+                              {showMarkerForSection(section.type) && (
+                                <div className="absolute -translate-x-1/2 top-1/2 -translate-y-1/2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
+                              )}
+                              {renderItemTime(item) && (
+                                <div className="absolute -translate-y-1/2 text-gray-600 text-sm whitespace-nowrap" style={{ left: -164, top: '50%' }}>
+                                  {renderItemTime(item)}
+                                </div>
+                              )}
                               <div className="font-semibold text-gray-900 text-sm">
                                 {item.title}
                               </div>
