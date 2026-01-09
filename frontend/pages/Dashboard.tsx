@@ -42,15 +42,17 @@ export const Dashboard: React.FC = () => {
           Phone: r.Personal?.Phone,
           AvatarURL: r.Personal?.AvatarURL,
         },
-        sections: (r.sections || []).map((s: any) => ({
+        sections: (r.sections || r.Sections || []).map((s: any) => ({
           id: s.id || s.ExternalID,
           type: s.type || s.Type,
           title: s.title || s.Title,
-          isVisible: s.isVisible ?? s.IsVisible,
-          items: (s.items || []).map((it: any) => ({
+          isVisible: (s.isVisible ?? s.IsVisible) ?? true,
+          items: (s.items || s.Items || []).map((it: any) => ({
             id: it.id || it.ExternalID,
             title: it.title || it.Title,
             subtitle: it.subtitle || it.Subtitle,
+            major: it.major || it.Major,
+            degree: it.degree || it.Degree,
             timeStart: it.timeStart || it.TimeStart,
             timeEnd: it.timeEnd || it.TimeEnd,
             today: !!(it.today ?? it.Today),

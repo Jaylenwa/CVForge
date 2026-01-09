@@ -105,7 +105,7 @@ export const Navbar: React.FC = () => {
                                 <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
                             </div>
                             
-                            <Link to={AppRoute.Dashboard} onClick={() => setIsProfileOpen(false)} className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+                            <Link to={AppRoute.Dashboard} target="_blank" rel="noopener noreferrer" onClick={() => setIsProfileOpen(false)} className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
                                 <FileText size={16} className="mr-3 text-gray-400 group-hover:text-gray-500"/>
                                 {t('nav.dashboard')}
                             </Link>
@@ -197,7 +197,7 @@ export const Navbar: React.FC = () => {
                                 className="w-full justify-start mt-2" 
                                 variant="ghost" 
                                 icon={<FileText size={16}/>}
-                                onClick={() => { navigate(AppRoute.Dashboard); setIsOpen(false); }}
+                                onClick={() => { window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Dashboard}`, '_blank'); setIsOpen(false); }}
                             >
                                 {t('nav.dashboard')}
                             </Button>

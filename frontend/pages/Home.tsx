@@ -156,13 +156,6 @@ export const Home: React.FC = () => {
                       </Button>
                     </Link>
                   </div>
-                  <div className="mt-3 sm:mt-0 sm:ml-3">
-                     <Link to={AppRoute.Dashboard}>
-                        <Button size="lg" variant="outline" className="w-full">
-                            {t('hero.cta_secondary')}
-                        </Button>
-                    </Link>
-                  </div>
                 </div>
               </div>
             </main>
