@@ -3,7 +3,7 @@ import { ResumeData, ResumeSectionType } from '../../types';
 import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { hasExtraPersonalInfo, sanitizeHtml } from '../../utils/resume-helpers';
-import { Mail, Phone, MapPin, GraduationCap, User, Briefcase, Wrench, Layers } from 'lucide-react';
+import { Mail, Phone, MapPin, GraduationCap, User, Briefcase, Wrench, Layers, BookOpen, Award, Heart, Image as ImageIcon } from 'lucide-react';
 
 export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
@@ -32,6 +32,12 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
       case ResumeSectionType.Education: return <GraduationCap size={18} />;
       case ResumeSectionType.Skills: return <Wrench size={18} />;
       case ResumeSectionType.Projects: return <Layers size={18} />;
+      case ResumeSectionType.Internships: return <Briefcase size={18} />;
+      case ResumeSectionType.Portfolio: return <ImageIcon size={18} />;
+      case ResumeSectionType.Awards: return <Award size={18} />;
+      case ResumeSectionType.Interests: return <Heart size={18} />;
+      case ResumeSectionType.Exam: return <BookOpen size={18} />;
+      case ResumeSectionType.SelfEvaluation: return <User size={18} />;
       default: return <User size={18} />;
     }
   };
