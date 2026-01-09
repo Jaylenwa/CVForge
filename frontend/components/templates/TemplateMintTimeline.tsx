@@ -231,9 +231,9 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                         <div className="flex-1">
                           <div className="mt-4 border-t-2 pt-4 pb-4 relative" style={{ borderColor: color }}>
                     <div className="absolute border-l border-dashed" style={{ borderColor: color, left: -32, top: dashTop, bottom: dashBottom }} />
-        <div className="absolute left-[-32px] -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white ring-2 ring-white/70 z-10" style={{ backgroundColor: color, top: -1 }}>
-          <SectionIcon type={section.type} />
-        </div>
+                    <div className="absolute left-[-32px] -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center text-white shadow z-10" style={{ backgroundColor: color, top: -1 }}>
+                      <SectionIcon type={section.type} />
+                    </div>
                     {section.type === ResumeSectionType.Skills ? (
                       <div className="space-y-3">
                         {items.map(item => (
