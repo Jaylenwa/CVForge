@@ -76,11 +76,11 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
       ref={setNodeRef}
       style={style}
       className="group rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm mb-4"
-      layout
+      layout="position"
       transition={{ type: 'spring', stiffness: 220, damping: 30 }}
     >
       <div
-        className={`flex items-center justify-between px-5 py-4 ${isActive ? 'bg-gray-50' : 'bg-white'}`}
+        className={`flex items-center justify-between px-5 py-4 min-h-[56px] ${isActive ? 'bg-gray-50' : 'bg-white'}`}
         onClick={onToggle}
       >
         <div className="flex items-center flex-grow mr-4">
