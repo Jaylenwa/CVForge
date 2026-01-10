@@ -59,9 +59,6 @@ export const PublicResume: React.FC = () => {
           })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
         };
         setData(mapped);
-        try {
-          if (mapped.language) setLanguage(mapped.language);
-        } catch {}
       } catch (err: any) {
         setError(err?.message ? String(err.message) : String(err));
       }

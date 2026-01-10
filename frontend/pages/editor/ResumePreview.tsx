@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage, LanguageProvider } from '../../contexts/LanguageContext';
 import { ResumeData } from '../../types';
 import { getThemeStyles } from '../../utils/resume-helpers';
 
@@ -139,7 +139,9 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 export const ResumePreview: React.FC<PreviewProps> = ({ data, scale = 1, disableShadow = false, scrollInside = true }) => {
   return (
     <div className={`w-full flex justify-center bg-white pt-4 md:pt-6 lg:pt-8 xl:pt-10 ${scrollInside ? 'overflow-auto' : 'overflow-visible'} min-h-0 print:pt-0 print:bg-white h-full scrollbar-thin scrollbar-thumb-gray-300 ${disableShadow ? 'shadow-none' : ''} print:shadow-none`}>
-      <ResumeArtboard data={data} scale={scale} disableShadow={disableShadow} transformOrigin="top center" />
+      <LanguageProvider languageOverride={data.language}>
+        <ResumeArtboard data={data} scale={scale} disableShadow={disableShadow} transformOrigin="top center" />
+      </LanguageProvider>
     </div>
   );
 };

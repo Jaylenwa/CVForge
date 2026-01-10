@@ -215,6 +215,8 @@ const translations: Translations = {
     'editor.toggleVisibility': 'Toggle Visibility',
     'editor.template': 'Template',
     'editor.actions.changeTemplate': 'Change Template',
+    'editor.language': 'Language',
+    'editor.language.select': 'Select Language',
     'editor.save': 'Save',
     'editor.export.pdf': 'PDF',
     'editor.export.png': 'PNG',
@@ -632,6 +634,8 @@ const translations: Translations = {
     'editor.toggleVisibility': '切换显示',
     'editor.template': '切换模板',
     'editor.actions.changeTemplate': '更换模板',
+    'editor.language': '语言',
+    'editor.language.select': '选择语言',
     'editor.save': '保存',
     'editor.export.pdf': '导出 PDF',
     'editor.export.png': '导出图片',
@@ -854,7 +858,7 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const LanguageProvider: React.FC<{ children: ReactNode; languageOverride?: Language }> = ({ children, languageOverride }) => {
   const [languageState, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('lang') as Language | null;
     return saved || 'en';
@@ -866,11 +870,12 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
   const t = (key: string): string => {
-    return translations[languageState][key] || key;
+    const usedLang = languageOverride || languageState;
+    return translations[usedLang][key] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language: languageState, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language: languageOverride || languageState, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, Printer, Share2, Layout, Globe, Eye } from 'lucide-react';
+import { ArrowLeft, Download, Printer, Share2, Layout, Globe, Eye, CheckCircle } from 'lucide-react';
 import { EditorForm } from './EditorForm';
 import { ResumePreview, ResumeArtboard } from './ResumePreview';
 import { API_BASE } from '../../config';
@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { DownloadModal } from '../../components/ui/DownloadModal';
 import { INITIAL_RESUME } from '../../services/mockData';
-import { ResumeData, AppRoute } from '../../types';
+import { ResumeData, AppRoute, Language } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useToast } from '../../components/ui/Toast';
 
@@ -40,6 +40,7 @@ export const Editor: React.FC = () => {
   const hasCreatedFromTemplate = useRef(false);
   const [loading, setLoading] = useState<boolean>(!!resumeIdParam);
   const [templateOpen, setTemplateOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
 
   // Initialize data based on URL params
   useEffect(() => {
@@ -90,9 +91,6 @@ export const Editor: React.FC = () => {
                 })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
               }
               setResumeData(mapped);
-              try {
-                if (mapped.language) setLanguage(mapped.language);
-              } catch {}
               setLoading(false);
           });
         return;
@@ -298,6 +296,40 @@ export const Editor: React.FC = () => {
       });
   };
 
+  const handleSaveLanguage = (lang: Language) => {
+    const token = localStorage.getItem('token');
+    const payload = {
+      Title: resumeData.title,
+      TemplateID: resumeData.templateId,
+      Language: lang,
+      Personal: resumeData.Personal || {},
+      Theme: resumeData.Theme || {},
+      Sections: resumeData.sections.map((s, si) => ({
+        ExternalID: s.id,
+        Type: s.type,
+        Title: s.title,
+        IsVisible: s.isVisible,
+        OrderNum: si,
+        Items: s.items.map((i, ii) => ({
+          ExternalID: i.id,
+          Title: i.title || '',
+          Subtitle: i.subtitle || '',
+          Major: i.major || '',
+          Degree: i.degree || '',
+          TimeStart: i.timeStart || '',
+          TimeEnd: i.today ? '' : (i.timeEnd || ''),
+          Today: !!i.today,
+          Description: i.description || '',
+          OrderNum: ii
+        }))
+      }))
+    };
+    fetch(`${API_BASE}/resumes/${resumeData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+      .then(() => {
+        showToast(t('editor.success.saved'), 'success');
+      });
+  };
+
   const handleExportPDF = async (): Promise<void> => {
     const token = localStorage.getItem('token');
     if (!resumeData.id) return;
@@ -385,17 +417,13 @@ export const Editor: React.FC = () => {
             </Button>
 
             <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="sm" 
-                onClick={() => {
-                  const next = language === 'en' ? 'zh' : 'en';
-                  setLanguage(next);
-                  setResumeData(prev => ({ ...prev, language: next }));
-                }}
+                onClick={() => setLanguageOpen(true)}
                 title={t('lang.switchTitle')}
+                icon={<Globe size={16}/>}
             >
-                <Globe size={16} className="mr-2"/>
-                {language === 'en' ? t('lang.en_short') : t('lang.zh_short')}
+                {t('editor.language')}
             </Button>
 
             <Button variant="outline" size="sm" icon={<Eye size={16}/>} onClick={handlePreview}>
@@ -451,6 +479,24 @@ export const Editor: React.FC = () => {
         onExportImage={handleExportImage}
         onError={(err) => setExportError({ open: true, title: t('editor.export.failed'), details: err?.message ? String(err.message) : String(err) })}
       />
+      <Modal isOpen={languageOpen} onClose={() => setLanguageOpen(false)} title={t('editor.language.select')} size="sm">
+        <div className="flex items-center justify-center space-x-4">
+          <Button 
+            variant={resumeData.language === 'zh' ? 'primary' : 'outline'} 
+            icon={resumeData.language === 'zh' ? <CheckCircle size={16} /> : undefined}
+            onClick={() => { setResumeData(prev => ({ ...prev, language: 'zh' })); handleSaveLanguage('zh'); setLanguageOpen(false); }}
+          >
+            {t('lang.zh')}
+          </Button>
+          <Button 
+            variant={resumeData.language === 'en' ? 'primary' : 'outline'} 
+            icon={resumeData.language === 'en' ? <CheckCircle size={16} /> : undefined}
+            onClick={() => { setResumeData(prev => ({ ...prev, language: 'en' })); handleSaveLanguage('en'); setLanguageOpen(false); }}
+          >
+            {t('lang.en')}
+          </Button>
+        </div>
+      </Modal>
       <Modal isOpen={templateOpen} onClose={() => setTemplateOpen(false)} title={t('editor.template')} size="full">
         <div className="max-h-[80vh] overflow-y-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
