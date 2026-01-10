@@ -403,7 +403,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             {personal?.AvatarURL ? t('editor.profile.change') : t('editor.profile.upload')}
                         </Button>
                         <p className="mt-2 text-xs text-gray-500">
-                            {t('editor.profile.tipSquare')}<br/>
                             {t('editor.profile.tipMaxSize')}
                         </p>
                      </div>
