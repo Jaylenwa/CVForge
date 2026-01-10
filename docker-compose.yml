@@ -10,7 +10,7 @@ services:
       REDIS_ADDR: "redis:6379"
       REDIS_PASSWORD: ""
       JWT_SECRET: "abcdefghijklmnopqrstuvwxyz"
-      CORS_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn"
+      CORS_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn,http://frontend"
       FRONTEND_BASE_URL: "http://frontend"
       CHROME_API_URL: "http://chrome:3000"
     volumes:
