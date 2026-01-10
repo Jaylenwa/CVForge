@@ -6,13 +6,21 @@ import { Button } from '../components/ui/Button';
 export const Pricing: React.FC = () => {
     const { t } = useLanguage();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    React.useEffect(() => {
+        document.body.classList.add('no-scrollbar');
+        document.documentElement.classList.add('no-scrollbar');
+        return () => {
+            document.body.classList.remove('no-scrollbar');
+            document.documentElement.classList.remove('no-scrollbar');
+        };
+    }, []);
 
     const handleBuy = () => {
         setIsModalOpen(true);
     };
 
     return (
-        <div className="bg-white h-[calc(100vh-4rem-1px)] overflow-hidden flex items-center">
+        <div className="bg-white min-h-[calc(100vh-4rem-1px)] flex items-center">
             <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 -translate-y-6 md:-translate-y-12">
                 <div className="text-center">
                     <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">{t('pricing.title')}</h2>
