@@ -132,8 +132,18 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       title: '',
       description: ''
     };
+    const isSingleItemSection = (type: ResumeSectionType) => [
+      ResumeSectionType.Interests,
+      ResumeSectionType.SelfEvaluation,
+      ResumeSectionType.Summary,
+      ResumeSectionType.Portfolio,
+      ResumeSectionType.Skills,
+      ResumeSectionType.Awards,
+      ResumeSectionType.Exam,
+    ].includes(type);
     const nextSections = data.sections.map(s => {
       if (s.id !== sectionId) return s;
+      if (isSingleItemSection(s.type) && s.items.length >= 1) return s;
       const items = [...s.items, newItem].map((it, idx) => ({ ...it, orderNum: idx }));
       return { ...s, items };
     });
@@ -545,9 +555,9 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                       <Type size={18}/>
                     }
                     onAddItem={
-                      section.type !== ResumeSectionType.Summary
-                        ? () => addItem(section.id)
-                        : undefined
+                      [ResumeSectionType.Interests, ResumeSectionType.SelfEvaluation, ResumeSectionType.Summary, ResumeSectionType.Portfolio, ResumeSectionType.Skills, ResumeSectionType.Awards, ResumeSectionType.Exam].includes(section.type)
+                        ? undefined
+                        : () => addItem(section.id)
                     }
                 >
 
