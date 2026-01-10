@@ -1,8 +1,8 @@
- import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Printer, Share2, Layout, Globe, Eye } from 'lucide-react';
 import { EditorForm } from './EditorForm';
-import { ResumePreview } from './ResumePreview';
+import { ResumePreview, ResumeArtboard } from './ResumePreview';
 import { API_BASE } from '../../config';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
@@ -39,6 +39,7 @@ export const Editor: React.FC = () => {
   const [exportError, setExportError] = useState<{ open: boolean; title: string; details: string }>({ open: false, title: '', details: '' });
   const hasCreatedFromTemplate = useRef(false);
   const [loading, setLoading] = useState<boolean>(!!resumeIdParam);
+  const [templateOpen, setTemplateOpen] = useState(false);
 
   // Initialize data based on URL params
   useEffect(() => {
@@ -165,10 +166,102 @@ export const Editor: React.FC = () => {
   };
 
   const handleChangeTemplate = () => {
-      if (!templates.length) return;
-      const currentIdx = templates.findIndex(t => t.id === resumeData.templateId);
-      const nextIdx = currentIdx >= 0 ? (currentIdx + 1) % templates.length : 0;
-      setResumeData({ ...resumeData, templateId: templates[nextIdx].id });
+      setTemplateOpen(true);
+  };
+
+  const applyTemplate = (templateId: string) => {
+      setResumeData(prev => ({ ...prev, templateId }));
+      setTemplateOpen(false);
+  };
+
+  const TemplateCard: React.FC<{ templateId: string }> = ({ templateId }) => {
+      const containerRef = useRef<HTMLDivElement | null>(null);
+      const rafRef = useRef<number | null>(null);
+      const roRef = useRef<ResizeObserver | null>(null);
+      const stableTimerRef = useRef<number | null>(null);
+      const lastWidthRef = useRef<number>(0);
+      const initializedRef = useRef(false);
+      const [scale, setScale] = useState<number | null>(null);
+      const [ready, setReady] = useState(false);
+      useLayoutEffect(() => {
+        const mmToPx = 96 / 25.4;
+        const a4w = 210 * mmToPx;
+        const scheduleUpdate = () => {
+          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          rafRef.current = requestAnimationFrame(() => {
+            const el = containerRef.current;
+            if (!el) return;
+            lastWidthRef.current = el.clientWidth;
+            if (stableTimerRef.current) {
+              clearTimeout(stableTimerRef.current);
+            }
+            stableTimerRef.current = window.setTimeout(() => {
+              const s = lastWidthRef.current / a4w;
+              setScale(prev => (prev === null || Math.abs(prev - s) > 0.002) ? s : prev);
+              setReady(true);
+            }, 120);
+          });
+        };
+        if (!initializedRef.current) {
+          const el = containerRef.current;
+          if (el) {
+            const s = el.clientWidth / a4w;
+            setScale(s);
+            setReady(true);
+            initializedRef.current = true;
+          }
+        } else {
+          scheduleUpdate();
+        }
+        const onResize = () => scheduleUpdate();
+        window.addEventListener('resize', onResize);
+        if (containerRef.current) {
+          roRef.current = new ResizeObserver(onResize);
+          roRef.current.observe(containerRef.current);
+        }
+        return () => {
+          window.removeEventListener('resize', onResize);
+          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          if (stableTimerRef.current) {
+            clearTimeout(stableTimerRef.current);
+          }
+          if (roRef.current) {
+            roRef.current.disconnect();
+          }
+        };
+      }, []);
+      const mmToPx = 96 / 25.4;
+      const a4w = 210 * mmToPx;
+      const a4h = 297 * mmToPx;
+      return (
+        <div className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-lg">
+          <div ref={containerRef} className="aspect-[210/297] w-full bg-gray-200 overflow-hidden relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              {ready && scale !== null ? (
+                <div
+                  style={{ width: a4w * scale, height: a4h * scale }}
+                  className="relative select-none pointer-events-none shadow-sm bg-white"
+                >
+                  <ResumeArtboard
+                    data={{ ...resumeData, templateId }}
+                    scale={scale}
+                    disableShadow={true}
+                    showPageHint={false}
+                    style={{ margin: 0 }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-full bg-white" />
+              )}
+            </div>
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="flex flex-col items-center space-y-3">
+                <Button className="w-40" onClick={() => applyTemplate(templateId)}>{t('editor.actions.changeTemplate') || t('templates.actions.useTemplate')}</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
   };
 
   const handleSave = () => {
@@ -358,6 +451,15 @@ export const Editor: React.FC = () => {
         onExportImage={handleExportImage}
         onError={(err) => setExportError({ open: true, title: t('editor.export.failed'), details: err?.message ? String(err.message) : String(err) })}
       />
+      <Modal isOpen={templateOpen} onClose={() => setTemplateOpen(false)} title={t('editor.template')} size="full">
+        <div className="max-h-[80vh] overflow-y-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {templates.filter((t) => t.id !== resumeData.templateId).map((t) => (
+              <TemplateCard key={t.id} templateId={t.id} />
+            ))}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
