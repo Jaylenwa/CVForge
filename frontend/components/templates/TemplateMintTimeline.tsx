@@ -196,8 +196,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
       <div className="px-10 pt-6 pb-10 space-y-1">
                 {sectionsOrdered.map((section, idx) => (
                   (() => {
-                    const items = (section.items || []).slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0)).filter(it => hasMeaningfulContent(it, section.type));
-                    if (items.length === 0) return null;
+                    const items = (section.items || []).slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
                     const isLast = idx === sectionsOrdered.length - 1;
                     const dashTop = 24;
                     const dashBottom = isLast ? 2 : -55;
