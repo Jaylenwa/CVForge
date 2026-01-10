@@ -262,8 +262,8 @@ export const Footer: React.FC = () => {
     const { t, setLanguage } = useLanguage();
 
     return (
-        <footer className="bg-slate-900 text-white py-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+        <footer className="bg-slate-900 text-white py-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
                     <h3 className="text-xl font-bold mb-4">CVForge</h3>
                     <p className="text-slate-400 text-sm">{t('hero.desc')}</p>
@@ -291,7 +291,7 @@ export const Footer: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="max-w-7xl mx-auto px-4 mt-8 pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
+            <div className="max-w-7xl mx-auto px-4 mt-4 pt-4 border-t border-slate-800 text-center text-slate-500 text-sm">
                 &copy; {new Date().getFullYear()} CVForge. {t('footer.rights')}
             </div>
         </footer>
