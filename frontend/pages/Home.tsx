@@ -13,6 +13,14 @@ export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [popularTemplates, setPopularTemplates] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    document.body.classList.add('no-scrollbar');
+    document.documentElement.classList.add('no-scrollbar');
+    return () => {
+      document.body.classList.remove('no-scrollbar');
+      document.documentElement.classList.remove('no-scrollbar');
+    };
+  }, []);
   // preview moved to dedicated print page via router
   React.useEffect(() => {
     (async () => {

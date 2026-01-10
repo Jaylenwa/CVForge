@@ -8,10 +8,17 @@ import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ResumeArtboard } from './editor/ResumePreview';
 import { INITIAL_RESUME, MOCK_TEMPLATES } from '../services/mockData';
- 
-
+  
 export const Templates: React.FC = () => {
   const navigate = useNavigate();
+  React.useEffect(() => {
+    document.body.classList.add('no-scrollbar');
+    document.documentElement.classList.add('no-scrollbar');
+    return () => {
+      document.body.classList.remove('no-scrollbar');
+      document.documentElement.classList.remove('no-scrollbar');
+    };
+  }, []);
   const [searchParams] = useSearchParams();
   const { t } = useLanguage();
   
