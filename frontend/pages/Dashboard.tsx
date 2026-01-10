@@ -154,7 +154,7 @@ export const Dashboard: React.FC = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Create New Placeholder Card - Move to the front */}
         <div 
             onClick={() => navigate(AppRoute.Templates)}
@@ -229,17 +229,17 @@ export const Dashboard: React.FC = () => {
                             </button>
                             
                             {activeMenu === resume.id && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-30 border border-gray-100" onClick={e => e.stopPropagation()}>
-                                    <button onClick={(e) => startRename(resume, e)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
+                                <div className="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg py-1 z-30 border border-gray-100" onClick={e => e.stopPropagation()}>
+                                    <button onClick={(e) => startRename(resume, e)} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
                                         <Edit2 size={14} className="mr-2"/> {t('common.rename')}
                                     </button>
-                                    <button onClick={(e) => handleShare(resume.id, e)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
+                                    <button onClick={(e) => handleShare(resume.id, e)} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
                                         <Share2 size={14} className="mr-2"/> {t('common.share')}
                                     </button>
-                                    <button onClick={(e) => handleDuplicate(resume, e)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
+                                    <button onClick={(e) => handleDuplicate(resume, e)} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center">
                                         <Copy size={14} className="mr-2"/> {t('common.duplicate')}
                                     </button>
-                                    <button onClick={(e) => handleDelete(resume.id, e)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center">
+                                    <button onClick={(e) => handleDelete(resume.id, e)} className="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center">
                                         <Trash2 size={14} className="mr-2"/> {t('common.delete')}
                                     </button>
                                 </div>
