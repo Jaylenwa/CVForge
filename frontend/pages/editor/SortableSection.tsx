@@ -5,6 +5,7 @@ import { GripVertical, ChevronDown, ChevronUp, Trash2, Edit2 } from 'lucide-reac
 import { ResumeSection } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useSectionTitle } from '../../hooks/useSectionTitle';
+import { AnimatePresence, motion, LayoutGroup } from 'framer-motion';
 
 interface SortableSectionProps {
   section: ResumeSection;
@@ -71,7 +72,13 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="group rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm mb-4">
+    <motion.div
+      ref={setNodeRef}
+      style={style}
+      className="group rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm mb-4"
+      layout
+      transition={{ type: 'spring', stiffness: 220, damping: 30 }}
+    >
       <div
         className={`flex items-center justify-between px-5 py-4 ${isActive ? 'bg-gray-50' : 'bg-white'}`}
         onClick={onToggle}
@@ -169,11 +176,23 @@ export const SortableSection: React.FC<SortableSectionProps> = ({
           </button>
         </div>
       </div>
-      {isActive && (
-        <div className="px-6 pt-4 pb-6 space-y-6 bg-gray-50/50 border-t border-gray-100">
-          {children}
-        </div>
-      )}
-    </div>
+      <LayoutGroup>
+        <AnimatePresence initial={false} mode="popLayout">
+          {isActive && (
+            <motion.div
+              layout
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 30 }}
+              style={{ overflow: 'hidden' }}
+              className="px-6 pt-4 pb-6 space-y-6 bg-gray-50/50 border-t border-gray-100"
+            >
+              {children}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </LayoutGroup>
+    </motion.div>
   );
 };

@@ -10,6 +10,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { SortableSection } from './SortableSection';
 import { RichTextEditor } from '../../components/ui/RichTextEditor';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface EditorFormProps {
   data: ResumeData;
@@ -355,8 +356,17 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
               {activeSection === 'personal' ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
             </button>
         </div>
+        <AnimatePresence initial={false} mode="popLayout">
         {activeSection === 'personal' && (
-          <div className="px-6 pb-6 space-y-5">
+          <motion.div
+            layout
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 30 }}
+            style={{ overflow: 'hidden' }}
+            className="px-6 pb-6 space-y-5"
+          >
              
              {/* Avatar Upload */}
              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -516,8 +526,9 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                  ))}
                </div>
              </div>
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
 
       {/* Dynamic Sections */}
