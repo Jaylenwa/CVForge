@@ -12,7 +12,7 @@ export const INITIAL_RESUME: ResumeData = {
   language: 'zh',
   Theme: {
     Color: '#14b8a6',
-    Font: 'yahei',
+    Font: 'notosans',
     Spacing: 'normal',
     FontSize: '13'
   },

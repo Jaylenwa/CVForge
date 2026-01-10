@@ -2,8 +2,8 @@ import { ResumeData } from '../types';
 
 export const getFontStack = (fontId: string): string => {
     switch (fontId) {
-        case 'notosans': return '"Noto Sans SC", "Microsoft YaHei", sans-serif';
-        default: return '"Noto Sans SC", sans-serif';
+        case 'notosans': return '"Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif';
+        default: return '"Noto Sans SC", "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif';
     }
 };
 
