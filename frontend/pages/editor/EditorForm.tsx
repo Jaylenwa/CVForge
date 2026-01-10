@@ -132,21 +132,21 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       title: '',
       description: ''
     };
-    onChange({
-      ...data,
-      sections: data.sections.map(s => 
-        s.id === sectionId ? { ...s, items: [...s.items, newItem] } : s
-      )
+    const nextSections = data.sections.map(s => {
+      if (s.id !== sectionId) return s;
+      const items = [...s.items, newItem].map((it, idx) => ({ ...it, orderNum: idx }));
+      return { ...s, items };
     });
+    onChange({ ...data, sections: nextSections.map((s, idx) => ({ ...s, orderNum: idx })) });
   };
 
   const removeItem = (sectionId: string, itemId: string) => {
-    onChange({
-      ...data,
-      sections: data.sections.map(s => 
-        s.id === sectionId ? { ...s, items: s.items.filter(i => i.id !== itemId) } : s
-      )
+    const nextSections = data.sections.map(s => {
+      if (s.id !== sectionId) return s;
+      const items = s.items.filter(i => i.id !== itemId).map((it, idx) => ({ ...it, orderNum: idx }));
+      return { ...s, items };
     });
+    onChange({ ...data, sections: nextSections.map((s, idx) => ({ ...s, orderNum: idx })) });
   };
 
   useEffect(() => {
@@ -220,10 +220,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   const removeSection = async (sectionId: string) => {
       const ok = await confirm({ title: t('common.confirmAction'), message: t('editor.removeSection'), variant: 'danger' });
       if (!ok) return;
-      onChange({
-          ...data,
-          sections: data.sections.filter(s => s.id !== sectionId)
-      });
+      const next = data.sections.filter(s => s.id !== sectionId).map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
+      onChange({ ...data, sections: next });
   };
 
   useEffect(() => {
@@ -249,34 +247,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   }, [data.sections]);
 
   useEffect(() => {
-    const order: ResumeSectionType[] = [
-      ResumeSectionType.Exam,
-      ResumeSectionType.Education,
-      ResumeSectionType.Experience,
-      ResumeSectionType.Projects,
-      ResumeSectionType.Internships,
-      ResumeSectionType.Portfolio,
-      ResumeSectionType.Skills,
-      ResumeSectionType.Awards,
-      ResumeSectionType.Interests,
-      ResumeSectionType.SelfEvaluation
-    ];
-    const orderMap = new Map(order.map((t, i) => [t, i]));
-    const origIndex = new Map(data.sections.map((s, i) => [s.id, i]));
-    const sorted = [...data.sections].sort((a, b) => {
-      const ai = orderMap.get(a.type);
-      const bi = orderMap.get(b.type);
-      const aKnown = ai !== undefined;
-      const bKnown = bi !== undefined;
-      if (aKnown && bKnown) return (ai as number) - (bi as number);
-      if (aKnown && !bKnown) return -1;
-      if (!aKnown && bKnown) return 1;
-      return (origIndex.get(a.id) as number) - (origIndex.get(b.id) as number);
-    });
-    const changed = sorted.some((s, i) => s.id !== data.sections[i]?.id);
-    if (changed) {
-      onChange({ ...data, sections: sorted });
-    }
   }, [data.sections]);
 
   const addCustomSection = () => {
@@ -285,9 +255,11 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       type: ResumeSectionType.Custom,
       title: '',
       isVisible: true,
-      items: [{ id: generateUUID(), title: '', description: '' }]
+      items: [{ id: generateUUID(), title: '', description: '', orderNum: 0 }],
+      orderNum: (data.sections.length || 0)
     };
-    onChange({ ...data, sections: [...data.sections, newSection] });
+    const next = [...data.sections, newSection].map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
+    onChange({ ...data, sections: next });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -295,10 +267,9 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     if (active.id !== over?.id) {
         const oldIndex = data.sections.findIndex((s) => s.id === active.id);
         const newIndex = data.sections.findIndex((s) => s.id === over?.id);
-        onChange({
-            ...data,
-            sections: arrayMove(data.sections, oldIndex, newIndex),
-        });
+        const movedArr = arrayMove(data.sections, oldIndex, newIndex) as ResumeSection[];
+        const moved = movedArr.map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
+        onChange({ ...data, sections: moved });
     }
   };
 

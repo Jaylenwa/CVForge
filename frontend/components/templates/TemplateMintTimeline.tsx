@@ -47,7 +47,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
       return (
         <span className="text-sm text-gray-600 font-bold" style={{ fontSize: styles.fontSize }}>
           {(item.timeStart || item.timeEnd || '').replace('-', '.')}
-          {' ~ '}
+          {' - '}
           {item.today ? t('common.toPresent') : (item.timeEnd || '').replace('-', '.')}
         </span>
       );
@@ -87,16 +87,8 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
   };
 
   const sectionsOrdered = React.useMemo(() => {
-    const order = [
-      ResumeSectionType.Experience,
-      ResumeSectionType.Education,
-      ResumeSectionType.Skills,
-      ResumeSectionType.Projects
-    ];
     const visible = (data.sections || []).filter(s => s.isVisible);
-    const main = visible.filter(s => order.includes(s.type)).sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
-    const others = visible.filter(s => !order.includes(s.type));
-    return [...main, ...others];
+    return visible.slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
   }, [data.sections]);
 
   const hasMeaningfulContent = (item: any, type: ResumeSectionType) => {
@@ -204,7 +196,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
       <div className="px-10 pt-6 pb-10 space-y-1">
                 {sectionsOrdered.map((section, idx) => (
                   (() => {
-                    const items = (section.items || []).filter(it => hasMeaningfulContent(it, section.type));
+                    const items = (section.items || []).slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0)).filter(it => hasMeaningfulContent(it, section.type));
                     if (items.length === 0) return null;
                     const isLast = idx === sectionsOrdered.length - 1;
                     const dashTop = 24;

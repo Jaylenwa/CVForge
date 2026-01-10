@@ -54,13 +54,13 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
   <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           <div className="md:col-span-12">
-              {data.sections.filter(s => s.isVisible).map(section => (
+              {[...data.sections].filter(s => s.isVisible).sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0)).map(section => (
                   <div key={section.id} className="mb-8">
                       <h3 className="text-lg font-bold uppercase border-b mb-4 pb-2" style={{ borderColor: data.Theme?.Color || '#e5e7eb', color: data.Theme?.Color }}>{getSectionTitle(section)}</h3>
                       
                       {section.type === ResumeSectionType.Skills ? (
                           <div className="space-y-4">
-                            {section.items.map(item => (
+                            {section.items.slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0)).map(item => (
                               <div key={item.id}>
                                 {item.description && (
                                   <div className="resume-rich-content text-gray-600 text-sm leading-relaxed" style={{ fontSize: styles.fontSize }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
@@ -70,7 +70,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
                           </div>
                       ) : (
                           <div className="space-y-6">
-                              {section.items.map(item => (
+                              {section.items.slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0)).map(item => (
                                   <div key={item.id}>
                                       {section.type !== ResumeSectionType.Awards && (
                                         <div className="flex flex-col md:flex-row md:justify-between md:items-baseline mb-1">

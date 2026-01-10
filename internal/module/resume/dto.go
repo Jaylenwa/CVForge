@@ -1,5 +1,7 @@
 package resume
 
+import "sort"
+
 type ResumeDTO struct {
 	ExternalID   string            `json:"ExternalID"`
 	Title        string            `json:"Title"`
@@ -83,7 +85,9 @@ func ToDTO(r Resume) ResumeDTO {
 			FontSize: r.Theme.FontSize,
 		},
 	}
-	for _, s := range r.Sections {
+	secs := append([]ResumeSection(nil), r.Sections...)
+	sort.SliceStable(secs, func(i, j int) bool { return secs[i].OrderNum < secs[j].OrderNum })
+	for _, s := range secs {
 		sec := SectionDTO{
 			ExternalID: s.ExternalID,
 			Type:       s.Type,
@@ -91,7 +95,9 @@ func ToDTO(r Resume) ResumeDTO {
 			IsVisible:  s.IsVisible,
 			OrderNum:   s.OrderNum,
 		}
-		for _, it := range s.Items {
+		items := append([]ResumeItem(nil), s.Items...)
+		sort.SliceStable(items, func(i, j int) bool { return items[i].OrderNum < items[j].OrderNum })
+		for _, it := range items {
 			sec.Items = append(sec.Items, ItemDTO{
 				ExternalID:  it.ExternalID,
 				Title:       it.Title,

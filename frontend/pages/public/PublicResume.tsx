@@ -43,6 +43,7 @@ export const PublicResume: React.FC = () => {
             type: s.Type,
             title: s.Title,
             isVisible: s.IsVisible,
+            orderNum: s.OrderNum,
             items: (s.Items || []).map((i: any) => ({
               id: i.ExternalID || i.ID,
               title: i.Title,
@@ -52,9 +53,10 @@ export const PublicResume: React.FC = () => {
               timeStart: i.TimeStart,
               timeEnd: i.TimeEnd,
               today: !!i.Today,
-              description: i.Description
-            }))
-          }))
+              description: i.Description,
+              orderNum: i.OrderNum
+            })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
+          })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
         };
         setData(mapped);
         try {

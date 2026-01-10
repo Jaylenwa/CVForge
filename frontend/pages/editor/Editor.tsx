@@ -73,6 +73,7 @@ export const Editor: React.FC = () => {
                   type: s.Type,
                   title: s.Title,
                   isVisible: s.IsVisible,
+                  orderNum: s.OrderNum,
                   items: (s.Items || []).map((i: any) => ({
                     id: i.ExternalID || i.ID,
                     title: i.Title,
@@ -82,9 +83,10 @@ export const Editor: React.FC = () => {
                     timeStart: i.TimeStart,
                     timeEnd: i.TimeEnd,
                     today: !!i.Today,
-                    description: i.Description
-                  }))
-                }))
+                    description: i.Description,
+                    orderNum: i.OrderNum
+                  })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
+                })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
               }
               setResumeData(mapped);
               try {
@@ -107,12 +109,13 @@ export const Editor: React.FC = () => {
           Language: language,
           Personal: INITIAL_RESUME.Personal || {},
           Theme: INITIAL_RESUME.Theme || {},
-          Sections: INITIAL_RESUME.sections.map(s => ({
+          Sections: INITIAL_RESUME.sections.map((s, si) => ({
             ExternalID: s.id,
             Type: s.type,
             Title: s.title,
             IsVisible: s.isVisible,
-            Items: s.items.map(i => ({
+            OrderNum: si,
+            Items: s.items.map((i, ii) => ({
               ExternalID: i.id,
               Title: i.title || '',
               Subtitle: i.subtitle || '',
@@ -121,7 +124,8 @@ export const Editor: React.FC = () => {
               TimeStart: i.timeStart || '',
               TimeEnd: i.today ? '' : (i.timeEnd || ''),
               Today: !!i.today,
-              Description: i.description || ''
+              Description: i.description || '',
+              OrderNum: ii
             }))
           }))
         };
@@ -175,12 +179,13 @@ export const Editor: React.FC = () => {
       Language: resumeData.language || language,
       Personal: resumeData.Personal || {},
       Theme: resumeData.Theme || {},
-      Sections: resumeData.sections.map(s => ({
+      Sections: resumeData.sections.map((s, si) => ({
         ExternalID: s.id,
         Type: s.type,
         Title: s.title,
         IsVisible: s.isVisible,
-        Items: s.items.map(i => ({
+        OrderNum: si,
+        Items: s.items.map((i, ii) => ({
           ExternalID: i.id,
           Title: i.title || '',
           Subtitle: i.subtitle || '',
@@ -189,7 +194,8 @@ export const Editor: React.FC = () => {
           TimeStart: i.timeStart || '',
           TimeEnd: i.today ? '' : (i.timeEnd || ''),
           Today: !!i.today,
-          Description: i.description || ''
+          Description: i.description || '',
+          OrderNum: ii
         }))
       }))
     };
