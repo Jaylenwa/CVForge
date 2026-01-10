@@ -28,10 +28,10 @@ const SharesPage = React.lazy(() => import('./pages/admin/SharesPage').then(m =>
 const ConfigPage = React.lazy(() => import('./pages/admin/ConfigPage').then(m => ({ default: m.ConfigPage })));
 const AdminHome = React.lazy(() => import('./pages/admin/AdminHome').then(m => ({ default: m.AdminHome })));
 
-const LayoutWrapper = () => (
-    <MainLayout>
-        <Outlet />
-    </MainLayout>
+const LayoutWithFooter = () => (
+  <MainLayout>
+    <Outlet />
+  </MainLayout>
 );
 
 const App: React.FC = () => {
@@ -43,19 +43,19 @@ const App: React.FC = () => {
             <Router>
           <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
             <Routes>
-              {/* Public Routes with Main Navbar/Footer */}
-              <Route element={<LayoutWrapper />}>
-                  <Route path={AppRoute.Home} element={<Home />} />
-                  <Route path={AppRoute.Templates} element={<Templates />} />
-                  <Route path={AppRoute.Pricing} element={<Pricing />} />
+              <Route element={<LayoutWithFooter />}>
+                <Route path={AppRoute.Home} element={<Home />} />
+              </Route>
+              <Route element={<MainLayout hideFooter><Outlet /></MainLayout>}>
+                <Route path={AppRoute.Templates} element={<Templates />} />
+                <Route path={AppRoute.Pricing} element={<Pricing />} />
               </Route>
 
-              {/* Protected Routes with Main Navbar/Footer */}
               <Route element={<ProtectedRoute />}>
-                  <Route element={<LayoutWrapper />}>
-                      <Route path={AppRoute.Dashboard} element={<Dashboard />} />
-                      <Route path={AppRoute.Settings} element={<Settings />} />
-                  </Route>
+                <Route element={<MainLayout hideFooter><Outlet /></MainLayout>}>
+                  <Route path={AppRoute.Dashboard} element={<Dashboard />} />
+                  <Route path={AppRoute.Settings} element={<Settings />} />
+                </Route>
               </Route>
               
               {/* Auth Routes */}

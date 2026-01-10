@@ -12,8 +12,8 @@ export const Pricing: React.FC = () => {
     };
 
     return (
-        <div className="py-12 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white h-[calc(100vh-4rem-1px)] overflow-hidden flex items-center">
+            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 -translate-y-4 md:-translate-y-6">
                 <div className="text-center">
                     <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">{t('pricing.title')}</h2>
                     <p className="mt-4 text-lg text-gray-500">{t('pricing.subtitle')}</p>
