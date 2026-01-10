@@ -55,6 +55,7 @@ export const PrintResume: React.FC = () => {
           })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
         };
         setData(mapped);
+        setLanguage(mapped.language);
       });
   }, [searchParams]);
 

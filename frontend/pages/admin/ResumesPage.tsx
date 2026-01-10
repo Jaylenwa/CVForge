@@ -5,6 +5,7 @@ import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ResumeArtboard } from '../editor/ResumePreview';
+import { LanguageProvider } from '../../contexts/LanguageContext';
 import { INITIAL_RESUME } from '../../services/mockData';
 import { RefreshCw, Search, ChevronLeft, ChevronRight, Eye, Trash2, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -59,14 +60,16 @@ export const ResumesPage: React.FC = () => {
   const Thumbnail: React.FC<{ r: AdminResume }> = ({ r }) => {
     return (
       <div className="w-10 h-12 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border border-slate-200 relative">
-        <ResumeArtboard
-          data={{ ...INITIAL_RESUME, templateId: r.templateId, Theme: r.Theme }}
-          scale={thumbnailScale}
-          disableShadow
-          style={{ margin: 0 }}
-          className="absolute top-0 left-0"
-          showPageHint={false}
-        />
+        <LanguageProvider languageOverride={r.language || 'zh'}>
+          <ResumeArtboard
+            data={{ ...INITIAL_RESUME, templateId: r.templateId, Theme: r.Theme, language: r.language || 'zh' }}
+            scale={thumbnailScale}
+            disableShadow
+            style={{ margin: 0 }}
+            className="absolute top-0 left-0"
+            showPageHint={false}
+          />
+        </LanguageProvider>
       </div>
     );
   };

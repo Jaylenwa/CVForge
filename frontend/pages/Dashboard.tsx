@@ -7,6 +7,7 @@ import { AppRoute, ResumeData } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../config';
 import { ResumeArtboard } from './editor/ResumePreview';
+import { LanguageProvider } from '../contexts/LanguageContext';
 import { Modal } from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
  
@@ -174,20 +175,27 @@ export const Dashboard: React.FC = () => {
                 <div className="h-36 bg-gray-50 rounded-t-lg flex justify-center items-start border-b border-gray-100 relative overflow-hidden">
                      {/* Resume Thumbnail */}
                      <div style={{ width: 'calc(210mm * 0.25)', height: 'calc(297mm * 0.25)' }} className="relative select-none pointer-events-none shadow-sm bg-white">
-                        <ResumeArtboard 
-                            data={resume} 
-                            scale={0.25} 
-                            disableShadow={true} 
-                            style={{ margin: 0 }}
-                        />
+                        <LanguageProvider languageOverride={resume.language || 'zh'}>
+                          <ResumeArtboard 
+                              data={resume} 
+                              scale={0.25} 
+                              disableShadow={true} 
+                              style={{ margin: 0 }}
+                          />
+                        </LanguageProvider>
                      </div>
                      
                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors z-10" />
 
                      <div className="absolute inset-0 hidden group-hover:flex items-center justify-center z-20">
-                        <Button size="sm">
-                            {t('common.edit')}
-                        </Button>
+                        <div className="flex flex-col gap-2">
+                          <Button size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(resume.id); }}>
+                              {t('common.edit')}
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?id=${resume.id}`, '_blank'); }}>
+                              {t('common.preview')}
+                          </Button>
+                        </div>
                      </div>
                 </div>
                 <div className="p-4">
