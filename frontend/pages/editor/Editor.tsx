@@ -132,7 +132,8 @@ export const Editor: React.FC = () => {
           .then(r => r.json())
           .then(({ id }) => {
             setResumeData(prev => ({ ...prev, templateId, id, language }));
-            window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}`);
+            const rt = searchParams.get('returnTo');
+            window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}${rt ? `&returnTo=${encodeURIComponent(rt)}` : ''}`);
             setLoading(false);
           });
     }
@@ -161,6 +162,19 @@ export const Editor: React.FC = () => {
   const handlePreview = () => {
     if (!resumeData.id) return;
     window.open(`#${AppRoute.Print}?id=${resumeData.id}`, '_blank');
+  };
+
+  const handleBack = () => {
+    const rt = searchParams.get('returnTo');
+    if (rt) {
+      navigate(rt);
+      return;
+    }
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate(AppRoute.Templates);
   };
 
   const handleChangeTemplate = () => {
@@ -393,7 +407,7 @@ export const Editor: React.FC = () => {
       {/* Editor Toolbar */}
       <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 z-20 print:hidden">
         <div className="flex items-center">
-            <Button variant="ghost" size="sm" className="mr-4" onClick={() => navigate(AppRoute.Templates)}>
+            <Button variant="ghost" size="sm" className="mr-4" onClick={handleBack}>
                 <ArrowLeft size={18} className="mr-2"/> {t('editor.back')}
             </Button>
             <div className="hidden md:block h-6 w-px bg-gray-300 mx-2"></div>

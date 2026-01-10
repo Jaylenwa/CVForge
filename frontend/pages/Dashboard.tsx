@@ -67,7 +67,7 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   const handleEdit = (id: string) => {
-    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?id=${id}`, '_blank');
+    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?id=${id}&returnTo=${encodeURIComponent(AppRoute.Dashboard)}`, '_blank');
   };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {

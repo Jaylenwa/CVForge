@@ -211,7 +211,7 @@ export const Home: React.FC = () => {
                   <HomeTemplateCard
                       key={template.id}
                       template={template}
-                      onUse={() => window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${template.id}`, '_blank')}
+                      onUse={() => window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${template.id}&returnTo=${encodeURIComponent(AppRoute.Home)}`, '_blank')}
                       onPreview={() => window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${template.id}`, '_blank')}
                     />
                 ))}

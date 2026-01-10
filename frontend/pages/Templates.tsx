@@ -73,7 +73,7 @@ export const Templates: React.FC = () => {
   });
 
   const handleUseTemplate = (templateId: string) => {
-    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${templateId}`, '_blank');
+    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${templateId}&returnTo=${encodeURIComponent(AppRoute.Templates)}`, '_blank');
   };
   const handlePreviewTemplate = (templateId: string) => {
     window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${templateId}`, '_blank');
