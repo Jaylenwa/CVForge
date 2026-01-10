@@ -15,6 +15,7 @@ export const Navbar: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
   const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const hoverCloseTimerRef = useRef<number | null>(null);
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'zh' : 'en');
@@ -69,7 +70,7 @@ export const Navbar: React.FC = () => {
               ))}
             </div>
           </div>
-          <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+          <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4 sm:-mr-2 md:-mr-4">
             <button 
                onClick={toggleLanguage}
                className="p-2 text-gray-500 hover:text-gray-900 focus:outline-none"
@@ -82,28 +83,34 @@ export const Navbar: React.FC = () => {
             </button>
 
             {isAuthenticated && user ? (
-                <div className="relative ml-3" ref={profileMenuRef}>
+                <div 
+                    className="relative ml-3" 
+                    ref={profileMenuRef}
+                    onMouseEnter={() => {
+                      if (hoverCloseTimerRef.current) { clearTimeout(hoverCloseTimerRef.current); hoverCloseTimerRef.current = null; }
+                      setIsProfileOpen(true);
+                    }}
+                    onMouseLeave={() => {
+                      if (hoverCloseTimerRef.current) { clearTimeout(hoverCloseTimerRef.current); }
+                      hoverCloseTimerRef.current = window.setTimeout(() => setIsProfileOpen(false), 120);
+                    }}
+                    onTouchStart={() => setIsProfileOpen(true)}
+                >
                     <div>
                         <button 
-                            onClick={() => setIsProfileOpen(!isProfileOpen)}
-                            className="flex items-center max-w-xs text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
+                            className="flex items-center max-w-xs text-sm rounded-full focus:outline-none" 
                             id="user-menu-button"
                         >
                             <span className="sr-only">{t('a11y.openUserMenu')}</span>
                             <Avatar className="h-8 w-8 rounded-full text-sm" src={user.avatarUrl} name={user.name} />
-                            <span className="ml-2 font-medium text-gray-700 hidden md:block">{user.name}</span>
                         </button>
                     </div>
                     
                     {isProfileOpen && (
                         <div 
-                            className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-fadeIn" 
+                            className="origin-top absolute left-1/2 -translate-x-1/2 mt-2 w-auto min-w-[122px] rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-fadeIn" 
                             role="menu"
                         >
-                            <div className="px-4 py-3 border-b border-gray-100">
-                                <p className="text-sm text-gray-500">{t('a11y.signedInAs')}</p>
-                                <p className="text-sm font-medium text-gray-900 truncate">{user.email}</p>
-                            </div>
                             
                             <Link to={AppRoute.Dashboard} target="_blank" rel="noopener noreferrer" onClick={() => setIsProfileOpen(false)} className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
                                 <FileText size={16} className="mr-3 text-gray-400 group-hover:text-gray-500"/>
