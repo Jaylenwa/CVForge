@@ -6,6 +6,7 @@ import { Avatar } from './ui/Avatar';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { getAuthConfig } from '../services/configService';
 
 export const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +17,7 @@ export const Navbar: React.FC = () => {
   const { user, isAuthenticated, logout, isAdmin } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const hoverCloseTimerRef = useRef<number | null>(null);
+  const [showPricing, setShowPricing] = useState(false);
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'zh' : 'en');
@@ -38,10 +40,14 @@ export const Navbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    getAuthConfig().then(cfg => setShowPricing(!!cfg.enablePricingPage));
+  }, []);
+
   // Standard nav items
   const navItems = [
     { label: t('nav.templates'), href: AppRoute.Templates, icon: <Grid size={18} /> },
-    { label: t('nav.pricing'), href: AppRoute.Pricing, icon: <Star size={18} /> },
+    ...(showPricing ? [{ label: t('nav.pricing'), href: AppRoute.Pricing, icon: <Star size={18} /> }] : []),
   ];
 
   // Dashboard 入口仅保留在头像下拉菜单，不在顶部主导航显示
@@ -260,6 +266,8 @@ export const Navbar: React.FC = () => {
 
 export const Footer: React.FC = () => {
     const { t, setLanguage } = useLanguage();
+    const [showPricing, setShowPricing] = useState(false);
+    useEffect(() => { getAuthConfig().then(cfg => setShowPricing(!!cfg.enablePricingPage)); }, []);
 
     return (
         <footer className="bg-slate-900 text-white py-6">
@@ -272,7 +280,7 @@ export const Footer: React.FC = () => {
                     <h4 className="font-semibold mb-4">{t('footer.product')}</h4>
                     <ul className="space-y-2 text-slate-400 text-sm">
                         <li><Link to="/templates" className="hover:text-white">{t('nav.templates')}</Link></li>
-                        <li><Link to="/pricing" className="hover:text-white">{t('nav.pricing')}</Link></li>
+                        {showPricing && <li><Link to="/pricing" className="hover:text-white">{t('nav.pricing')}</Link></li>}
                     </ul>
                 </div>
                 <div>

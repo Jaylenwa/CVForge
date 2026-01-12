@@ -107,6 +107,7 @@ export interface AuthConfig {
   enableEmailVerification: boolean;
   enableWeChatLogin: boolean;
   enableGithubLogin: boolean;
+  enablePricingPage: boolean;
   weChatAppID: string;
   githubClientID: string;
 }

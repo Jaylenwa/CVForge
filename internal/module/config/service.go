@@ -31,6 +31,7 @@ func (s *Service) EnsureDefaults() error {
 	defaults := []def{
 		// Registration
 		{string(common.ConfigKeyEnableEmailVerification), "false", "Enable email verification during registration", "bool"},
+		{string(common.ConfigKeyEnabledPricingPage), "false", "Enable Pricing page", "bool"},
 		{string(common.ConfigKeySMTPHost), os.Getenv("SMTP_HOST"), "SMTP host", "string"},
 		{string(common.ConfigKeySMTPPort), os.Getenv("SMTP_PORT"), "SMTP port", "string"},
 		{string(common.ConfigKeySMTPUsername), os.Getenv("SMTP_USERNAME"), "SMTP username", "string"},
@@ -164,6 +165,7 @@ type PublicConfig struct {
 	EnableEmailVerification bool `json:"enableEmailVerification"`
 	EnableWeChatLogin       bool `json:"enableWeChatLogin"`
 	EnableGithubLogin       bool `json:"enableGithubLogin"`
+	EnablePricingPage       bool `json:"enablePricingPage"`
 }
 
 func (s *Service) GetPublicConfig() PublicConfig {
@@ -172,6 +174,7 @@ func (s *Service) GetPublicConfig() PublicConfig {
 		enableEmailVerification bool
 		enableWeChatLogin       bool
 		enableGithubLogin       bool
+		enablePricingPage       bool
 	)
 	configs, err := s.GetAll()
 	if err == nil {
@@ -189,6 +192,10 @@ func (s *Service) GetPublicConfig() PublicConfig {
 				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableGithubLogin = b
 				}
+			case string(common.ConfigKeyEnabledPricingPage):
+				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
+					enablePricingPage = b
+				}
 			}
 		}
 	}
@@ -196,5 +203,6 @@ func (s *Service) GetPublicConfig() PublicConfig {
 		EnableEmailVerification: enableEmailVerification,
 		EnableWeChatLogin:       enableWeChatLogin,
 		EnableGithubLogin:       enableGithubLogin,
+		EnablePricingPage:       enablePricingPage,
 	}
 }

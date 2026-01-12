@@ -6,6 +6,7 @@ const (
 	ConfigKeyEnableEmailVerification ConfigKey = "enable_email_verification"
 	ConfigKeyEnabledWechatLogin      ConfigKey = "enabled_wechat_login"
 	ConfigKeyEnabledGithubLogin      ConfigKey = "enabled_github_login"
+	ConfigKeyEnabledPricingPage      ConfigKey = "enabled_pricing_page"
 	ConfigKeySMTPHost                ConfigKey = "smtp_host"
 	ConfigKeySMTPPort                ConfigKey = "smtp_port"
 	ConfigKeySMTPUsername            ConfigKey = "smtp_username"

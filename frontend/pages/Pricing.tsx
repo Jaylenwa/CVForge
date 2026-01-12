@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Modal } from '../components/ui/Modal';
 import { Button } from '../components/ui/Button';
+import { getAuthConfig } from '../services/configService';
+import { useNavigate } from 'react-router-dom';
+import { AppRoute } from '../types';
 
 export const Pricing: React.FC = () => {
     const { t } = useLanguage();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    React.useEffect(() => {
+    const navigate = useNavigate();
+    useEffect(() => {
+        getAuthConfig().then(cfg => {
+            if (!cfg.enablePricingPage) {
+                navigate(AppRoute.Home, { replace: true });
+            }
+        });
+    }, []);
+    useEffect(() => {
         document.body.classList.add('no-scrollbar');
         document.documentElement.classList.add('no-scrollbar');
         return () => {

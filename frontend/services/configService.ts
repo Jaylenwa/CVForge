@@ -12,6 +12,7 @@ export const getAuthConfig = async (): Promise<AuthConfig> => {
       enableEmailVerification: false,
       enableWeChatLogin: true,
       enableGithubLogin: true,
+      enablePricingPage: false,
       weChatAppID: '',
       githubClientID: ''
     };

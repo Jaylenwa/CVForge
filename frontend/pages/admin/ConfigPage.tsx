@@ -45,6 +45,7 @@ export const ConfigPage: React.FC = () => {
       oauth_allowed_origins: 'admin.config.key.oauthAllowedOrigins',
       cors_origins: 'admin.config.key.corsOrigins',
       frontend_base_url: 'admin.config.key.frontendBaseUrl',
+      enabled_pricing_page: 'admin.config.key.enablePricingPage',
       enabled_storage_s3: 'admin.config.key.storageS3Enabled',
       storage_s3_bucket: 'admin.config.key.storageS3Bucket',
       storage_s3_region: 'admin.config.key.storageS3Region',
@@ -99,7 +100,7 @@ export const ConfigPage: React.FC = () => {
       'Chrome': []
     };
     configs.forEach(c => {
-      if (c.key === 'enable_email_verification' || c.key.startsWith('feature_') || c.key.startsWith('smtp_')) {
+      if (c.key === 'enable_email_verification' || c.key === 'enabled_pricing_page' || c.key.startsWith('smtp_')) {
         g['General'].push(c);
       } else if (
         c.key === 'oauth_allowed_origins' ||
