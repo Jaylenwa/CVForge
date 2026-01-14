@@ -6,8 +6,8 @@ services:
     restart: unless-stopped
     environment:
       PORT: "8080"
-      DB_DSN: "openresume:!@!$&#!^@tcp(mysql:33066)/openresume?charset=utf8mb4&parseTime=True&loc=Local"
-      REDIS_ADDR: "redis:63799"
+      DB_DSN: "openresume:!@!$&#!^@tcp(mysql:3306)/openresume?charset=utf8mb4&parseTime=True&loc=Local"
+      REDIS_ADDR: "redis:6379"
       REDIS_PASSWORD: "!@!$&#!^"
       JWT_SECRET: "abcdefghijklmnopqrstuvwxyz"
       CORS_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn,http://frontend"
