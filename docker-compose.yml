@@ -6,9 +6,9 @@ services:
     restart: unless-stopped
     environment:
       PORT: "8080"
-      DB_DSN: "root:password@tcp(mysql:3306)/openresume?charset=utf8mb4&parseTime=True&loc=Local"
-      REDIS_ADDR: "redis:6379"
-      REDIS_PASSWORD: ""
+      DB_DSN: "openresume:!@!$&#!^@tcp(mysql:33306)/openresume?charset=utf8mb4&parseTime=True&loc=Local"
+      REDIS_ADDR: "redis:66379"
+      REDIS_PASSWORD: "!@!$&#!^"
       JWT_SECRET: "abcdefghijklmnopqrstuvwxyz"
       CORS_ORIGINS: "http://vfoy.cn,https://vfoy.cn,http://www.vfoy.cn,https://www.vfoy.cn,http://frontend"
       FRONTEND_BASE_URL: "http://frontend"
@@ -42,10 +42,10 @@ services:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: "!@!$&#!^"
       MYSQL_DATABASE: openresume
       MYSQL_USER: openresume
-      MYSQL_PASSWORD: openresume
+      MYSQL_PASSWORD: "!@!$&#!^"
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
       - /var/lib/openresume/mysql:/var/lib/mysql
@@ -55,14 +55,17 @@ services:
       timeout: 5s
       retries: 20
     ports:
-      - "3306:3306"
+      - "33306:3306"
 
   redis:
     image: redis:7-alpine
+    environment:
+      REDIS_PASSWORD: "!@!$&#!^"
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "!@!$&#!^"]
     volumes:
       - /var/lib/openresume/redis:/data
     ports:
-      - "6379:6379"
+      - "66379:6379"
 
   chrome:
     build:
