@@ -558,7 +558,7 @@ const translations: Translations = {
     'preview.pageBreakTip.badge': '分页小贴士',
     'preview.pageBreakTip.modalTitle': '分页小贴士',
     'preview.pageBreakTip.modalDesc': '此处为分页栏，用于提示预览的分页位置。若内容被分页栏遮挡，可在上方按回车换行，或适当调整字号/间距。',
-    'preview.pageBreakTip.close': '退出',
+    'preview.pageBreakTip.close': '关闭',
     'public.unavailable.title': '链接不可用',
     'public.unavailable.desc': '该简历的公开分享已关闭或链接已失效。',
     'rte.tooltip.bold': '加粗',

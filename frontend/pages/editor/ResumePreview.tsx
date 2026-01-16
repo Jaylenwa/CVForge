@@ -32,6 +32,20 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });
   const [tipOpen, setTipOpen] = React.useState(false);
+  const themeColor = data.Theme?.Color || '#2563eb';
+
+  const hexToRgb = React.useCallback((hex: string): { r: number; g: number; b: number } | null => {
+    const raw = String(hex || '').trim().replace(/^#/, '');
+    const normalized = raw.length === 3 ? raw.split('').map(c => c + c).join('') : raw;
+    if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return null;
+    const num = parseInt(normalized, 16);
+    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+  }, []);
+
+  const rgb = hexToRgb(themeColor) || { r: 37, g: 99, b: 235 };
+  const rgba = React.useCallback((alpha: number) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`, [rgb.r, rgb.g, rgb.b]);
+  const isLight = ((rgb.r * 0.2126 + rgb.g * 0.7152 + rgb.b * 0.0722) / 255) > 0.72;
+  const pillTextColor = isLight ? '#0f172a' : '#ffffff';
 
   const TEMPLATE_COMPONENTS: Record<string, React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }>> = {
     TemplateClassic: TemplateClassic,
@@ -105,20 +119,31 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
             <div className="absolute inset-0 pointer-events-none print:hidden">
               {Array.from({ length: pageInfo.count - 1 }).map((_, idx) => {
                 const pageIndex = idx + 1;
-                const barHeight = 36;
+                const barHeight = 34;
                 const top = pageIndex * pageInfo.pageHeight - barHeight / 2;
                 return (
                   <div key={`page-break-${pageIndex}`} className="absolute left-0 w-full" style={{ top }}>
-                    <div className="h-9 w-full bg-gradient-to-b from-slate-800/90 to-slate-700/70 shadow-[0_0_24px_rgba(0,0,0,0.35)] flex items-center justify-between px-3">
+                    <div
+                      className="h-[34px] w-full backdrop-blur-[1px] shadow-[0_10px_22px_rgba(15,23,42,0.10)] flex items-center justify-between px-3 border-y"
+                      style={{
+                        borderColor: rgba(0.28),
+                        backgroundColor: isLight ? 'rgba(255,255,255,0.24)' : rgba(0.10),
+                      }}
+                    >
+                      <div className="absolute left-0 top-0 h-full w-1" style={{ backgroundColor: rgba(0.55) }} />
                       <button
                         type="button"
                         onClick={() => setTipOpen(true)}
-                        className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500 text-white text-xs font-semibold shadow-sm hover:bg-rose-600"
+                        className="pointer-events-auto relative inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold shadow-sm border hover:brightness-95 active:brightness-90"
+                        style={{ backgroundColor: themeColor, color: pillTextColor, borderColor: rgba(0.18) }}
                       >
                         {t('preview.pageBreakTip.badge')}
-                        <AlertCircle size={14} className="text-white" />
+                        <AlertCircle size={14} />
                       </button>
-                      <div className="text-white/90 text-xs font-semibold">
+                      <div
+                        className="relative text-xs font-semibold"
+                        style={{ color: isLight ? '#0f172a' : themeColor }}
+                      >
                         {pageIndex}/{pageInfo.count}
                       </div>
                     </div>
@@ -130,7 +155,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
         </div>
 
         <Modal isOpen={tipOpen} onClose={() => setTipOpen(false)} title={t('preview.pageBreakTip.modalTitle')}>
-          <div className="space-y-4 text-sm text-slate-700">
+          <div className="space-y-4 text-sm text-slate-700 leading-relaxed">
             <p>{t('preview.pageBreakTip.modalDesc')}</p>
             <div className="flex justify-end">
               <Button onClick={() => setTipOpen(false)}>{t('preview.pageBreakTip.close')}</Button>
