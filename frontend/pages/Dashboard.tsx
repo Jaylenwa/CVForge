@@ -180,6 +180,7 @@ export const Dashboard: React.FC = () => {
                               data={resume} 
                               scale={0.25} 
                               disableShadow={true} 
+                              showPageHint={false}
                               style={{ margin: 0 }}
                           />
                         </LanguageProvider>

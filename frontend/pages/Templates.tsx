@@ -153,6 +153,7 @@ export const Templates: React.FC = () => {
                   data={{ ...INITIAL_RESUME, templateId: template.id }}
                   scale={scale}
                   disableShadow={true}
+                  showPageHint={false}
                   style={{ margin: 0 }}
                 />
               </div>

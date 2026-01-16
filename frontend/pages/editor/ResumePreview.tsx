@@ -2,9 +2,12 @@ import React from 'react';
 import { useLanguage, LanguageProvider } from '../../contexts/LanguageContext';
 import { ResumeData } from '../../types';
 import { getThemeStyles } from '../../utils/resume-helpers';
+import { AlertCircle } from 'lucide-react';
 
 import { TemplateClassic } from '../../components/templates/TemplateClassic';
 import { TemplateMintTimeline } from '../../components/templates/TemplateMintTimeline';
+import { Modal } from '../../components/ui/Modal';
+import { Button } from '../../components/ui/Button';
 
 interface PreviewProps {
   data: ResumeData;
@@ -27,9 +30,8 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const { t } = useLanguage();
   const styles = getThemeStyles(data.Theme);
   const rootRef = React.useRef<HTMLDivElement>(null);
-  const sourceRef = React.useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });
-  const [pageOffsets, setPageOffsets] = React.useState<number[]>([0]);
+  const [tipOpen, setTipOpen] = React.useState(false);
 
   const TEMPLATE_COMPONENTS: Record<string, React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }>> = {
     TemplateClassic: TemplateClassic,
@@ -39,24 +41,18 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const containerStyle: React.CSSProperties = {
     transform: `scale(${scale})`,
     transformOrigin,
-    height: pageInfo.pageHeight > 0 ? `${pageInfo.count * pageInfo.pageHeight}px` : '297mm',
+    height: pageInfo.pageHeight > 0 ? `${pageInfo.pageHeight * pageInfo.count}px` : '297mm',
     ...style,
   };
 
   const measure = React.useCallback(() => {
-    const el = sourceRef.current || rootRef.current;
+    const el = rootRef.current;
     if (!el) return;
     const widthPx = el.offsetWidth || el.getBoundingClientRect().width || 794; // 210mm ≈ 794px @96dpi
     const pxHeight = (widthPx * 297) / 210;
     const contentHeight = el.scrollHeight;
     const count = Math.max(1, Math.ceil(contentHeight / pxHeight));
     setPageInfo({ pageHeight: pxHeight, contentHeight, count });
-
-    const offsets: number[] = [];
-    for (let i = 0; i < count; i++) {
-      offsets.push(i * pxHeight);
-    }
-    setPageOffsets(offsets);
   }, []);
 
   React.useEffect(() => {
@@ -71,7 +67,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   
   React.useEffect(() => {
     let ro: ResizeObserver | null = null;
-    const el = sourceRef.current || rootRef.current;
+    const el = rootRef.current;
     if (el) {
       ro = new ResizeObserver(() => measure());
       ro.observe(el);
@@ -92,47 +88,56 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 
   const renderTemplate = () => {
     const Comp = TEMPLATE_COMPONENTS[data.templateId] || TemplateClassic;
-    return <Comp data={data} styles={styles} disableShadow={disableShadow} />;
+    return <Comp data={data} styles={styles} disableShadow={true} />;
   };
 
   return (
+    <>
       <div 
-        id="resume-export-root"
-        ref={rootRef}
-        className={`relative w-[210mm] min-h-[297mm] print:w-[210mm] print:transform-none bg-white mx-auto box-border ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none border border-gray-200 print:border-0 ${className}`}
-        style={containerStyle}
-      >
-        {showPageHint && (
-          <div className="absolute left-2 top-2 px-2 py-1 text-xs rounded bg-amber-100 text-amber-800 shadow-sm print:hidden">
-            {t('preview.pagesHint').replace('{count}', String(pageInfo.count))}
-          </div>
-        )}
-
-        <div className="print:hidden">
-          {Array.from({ length: pageInfo.count }).map((_, i) => {
-            const start = pageOffsets[i] ?? i * pageInfo.pageHeight;
-            return (
-              <div
-                key={`page-${i}`}
-                className="w-[210mm] h-[297mm] overflow-hidden bg-white mx-auto border border-gray-200 shadow-sm mb-4"
-              >
-                <div style={{ transform: `translateY(-${start}px)` }}>
-                  {renderTemplate()}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div
-          ref={sourceRef}
-          className="absolute left-0 top-0 w-[210mm] min-h-[297mm] invisible -z-10 pointer-events-none print:visible print:static print:z-auto print:pointer-events-auto"
+          id="resume-export-root"
+          ref={rootRef}
+          className={`relative w-[210mm] min-h-[297mm] print:w-[210mm] print:transform-none bg-white mx-auto box-border ${disableShadow ? 'shadow-none' : 'shadow-md'} print:shadow-none border border-gray-200 print:border-0 ${className}`}
+          style={containerStyle}
         >
-          <div>
-            {renderTemplate()}
-          </div>
+          {renderTemplate()}
+
+          {showPageHint && pageInfo.count > 1 && pageInfo.pageHeight > 0 && (
+            <div className="absolute inset-0 pointer-events-none print:hidden">
+              {Array.from({ length: pageInfo.count - 1 }).map((_, idx) => {
+                const pageIndex = idx + 1;
+                const barHeight = 36;
+                const top = pageIndex * pageInfo.pageHeight - barHeight / 2;
+                return (
+                  <div key={`page-break-${pageIndex}`} className="absolute left-0 w-full" style={{ top }}>
+                    <div className="h-9 w-full bg-gradient-to-b from-slate-800/90 to-slate-700/70 shadow-[0_0_24px_rgba(0,0,0,0.35)] flex items-center justify-between px-3">
+                      <button
+                        type="button"
+                        onClick={() => setTipOpen(true)}
+                        className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500 text-white text-xs font-semibold shadow-sm hover:bg-rose-600"
+                      >
+                        {t('preview.pageBreakTip.badge')}
+                        <AlertCircle size={14} className="text-white" />
+                      </button>
+                      <div className="text-white/90 text-xs font-semibold">
+                        {pageIndex}/{pageInfo.count}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      </div>
+
+        <Modal isOpen={tipOpen} onClose={() => setTipOpen(false)} title={t('preview.pageBreakTip.modalTitle')}>
+          <div className="space-y-4 text-sm text-slate-700">
+            <p>{t('preview.pageBreakTip.modalDesc')}</p>
+            <div className="flex justify-end">
+              <Button onClick={() => setTipOpen(false)}>{t('preview.pageBreakTip.close')}</Button>
+            </div>
+          </div>
+        </Modal>
+      </>
   );
 };
 

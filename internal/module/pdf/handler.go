@@ -3,6 +3,7 @@ package pdf
 import (
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"strings"
 
@@ -142,10 +143,10 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 		c.JSON(http.StatusGone, gin.H{"error": "already downloaded"})
 		return
 	}
-	filename := cache.RDB.Get(c, jobKey(id)+":filename").Val()
-	if filename == "" {
+	jobFilename := cache.RDB.Get(c, jobKey(id)+":filename").Val()
+	if jobFilename == "" {
 		if idx := strings.LastIndex(url, "/"); idx >= 0 && idx+1 < len(url) {
-			filename = url[idx+1:]
+			jobFilename = url[idx+1:]
 		}
 	}
 	job, _ := repo.GetJob(c, id)
@@ -156,9 +157,15 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 	c.Header("Content-Type", "application/pdf")
 	disp := sanitizeFilename(r.Title)
 	if disp == "" {
+		disp = sanitizeFilename(jobFilename)
+	}
+	if disp == "" {
 		disp = "resume"
 	}
-	c.Header("Content-Disposition", "attachment; filename="+disp)
+	if !strings.HasSuffix(strings.ToLower(disp), ".pdf") {
+		disp += ".pdf"
+	}
+	c.Header("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": disp}))
 	c.Header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, private")
 	c.Header("Pragma", "no-cache")
 	c.Header("Expires", "0")
