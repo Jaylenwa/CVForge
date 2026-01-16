@@ -1,7 +1,10 @@
 package user
 
 import (
+	"context"
 	"errors"
+	conf "openresume/internal/module/config"
+	"openresume/internal/pkg/storage"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -24,6 +27,7 @@ func (s *Service) UpdateProfile(id any, name, avatar, lang string) error {
 	if err != nil {
 		return err
 	}
+	oldAvatar := u.AvatarURL
 	if name != "" {
 		u.Name = name
 	}
@@ -33,7 +37,17 @@ func (s *Service) UpdateProfile(id any, name, avatar, lang string) error {
 	if lang != "" {
 		u.Language = lang
 	}
-	return s.repo.Save(&u)
+	if err := s.repo.Save(&u); err != nil {
+		return err
+	}
+	if avatar != "" && oldAvatar != "" && avatar != oldAvatar {
+		sys := conf.NewService()
+		cfg := sys.GetStorageSettings()
+		if up, e := storage.NewFromSettings(cfg); e == nil {
+			_ = up.Delete(context.Background(), oldAvatar)
+		}
+	}
+	return nil
 }
 
 func (s *Service) UpdatePassword(id any, current, newpw string) error {

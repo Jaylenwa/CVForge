@@ -162,7 +162,6 @@ VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
   - `POST /api/v1/auth/wechat/consume-ott`：消费弹窗/重定向的一次性令牌
 - 需登录：
   - `GET/POST/PUT/DELETE /api/v1/resumes` 及 `/:id`
-  - `POST /api/v1/resumes/:id/pdf`：生成 PDF
   - `POST /api/v1/resumes/:id/image`：生成 PNG
   - `POST /api/v1/resumes/:id/publish`：创建分享链接
   - `POST /api/v1/pdf/exports`：提交导出任务

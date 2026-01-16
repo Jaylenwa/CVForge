@@ -77,13 +77,8 @@ func (w *Worker) Start(ctx context.Context) error {
 }
 
 func initWorkerDeps(sys *Service) (storage.Uploader, error) {
-	useS3 := sys.sysConfig.Get("enabled_storage_s3") == "true"
-	bucket := sys.sysConfig.Get("storage_s3_bucket")
-	region := sys.sysConfig.Get("storage_s3_region")
-	endpoint := sys.sysConfig.Get("storage_s3_endpoint")
-	ak := sys.sysConfig.Get("storage_s3_access_key")
-	sk := sys.sysConfig.Get("storage_s3_secret_key")
-	return storage.New(useS3, bucket, region, endpoint, ak, sk)
+	cfg := sys.sysConfig.GetStorageSettings()
+	return storage.NewFromSettings(cfg)
 }
 
 func StartWorker() error {

@@ -6,6 +6,7 @@ import (
 	"openresume/internal/infra/cache"
 	"openresume/internal/infra/database"
 	"openresume/internal/models"
+	"openresume/internal/pkg/storage"
 	"os"
 	"strconv"
 	"time"
@@ -204,5 +205,16 @@ func (s *Service) GetPublicConfig() PublicConfig {
 		EnableWeChatLogin:       enableWeChatLogin,
 		EnableGithubLogin:       enableGithubLogin,
 		EnablePricingPage:       enablePricingPage,
+	}
+}
+
+func (s *Service) GetStorageSettings() storage.Settings {
+	return storage.Settings{
+		Enabled:   s.GetBool(string(common.ConfigKeyEnabledStorageS3), false),
+		Bucket:    s.Get(string(common.ConfigKeyStorageS3Bucket)),
+		Region:    s.Get(string(common.ConfigKeyStorageS3Region)),
+		Endpoint:  s.Get(string(common.ConfigKeyStorageS3Endpoint)),
+		AccessKey: s.Get(string(common.ConfigKeyStorageS3AccessKey)),
+		SecretKey: s.Get(string(common.ConfigKeyStorageS3SecretKey)),
 	}
 }

@@ -3,6 +3,9 @@ package storage
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"io"
+	"path"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -61,4 +64,34 @@ func (s *S3Uploader) Upload(ctx context.Context, name string, content []byte) (s
 	}
 
 	return "https://" + s.bucket + ".s3.amazonaws.com/" + name, nil
+}
+
+func (s *S3Uploader) Delete(ctx context.Context, urlStr string) error {
+	if urlStr == "" {
+		return nil
+	}
+	key := path.Base(urlStr)
+	if key == "" || key == "/" || key == "." {
+		return nil
+	}
+	_, _ = s.cli.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	})
+	return nil
+}
+
+func (s *S3Uploader) Download(ctx context.Context, urlStr string) (io.ReadCloser, error) {
+	key := path.Base(urlStr)
+	if key == "" || key == "/" || key == "." {
+		return nil, fmt.Errorf("invalid key")
+	}
+	out, err := s.cli.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return out.Body, nil
 }

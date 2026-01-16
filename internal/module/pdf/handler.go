@@ -4,17 +4,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"openresume/internal/infra/cache"
+	"openresume/internal/infra/database"
+	"openresume/internal/models"
 	"openresume/internal/pkg/logger"
+	"openresume/internal/pkg/storage"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	awscfg "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -28,23 +25,34 @@ func NewHandler() *Handler {
 	return &Handler{svc: NewService()}
 }
 
-func (h *Handler) GeneratePDF(c *gin.Context) {
-	pdf, code, err := h.svc.GeneratePDF(c, c.Param("id"))
-	if err != nil {
-		logger.WithCtx(c).Error("pdf.generate failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
-		switch code {
-		case 404:
-			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
-		case 503:
-			c.JSON(http.StatusNotImplemented, gin.H{"error": "pdf service unavailable"})
-		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "pdf service unavailable"})
-		}
-		return
+func sanitizeFilename(s string) string {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return "resume"
 	}
-	c.Header("Content-Type", "application/pdf")
-	c.Header("Content-Disposition", "attachment; filename=resume.pdf")
-	c.Writer.Write(pdf)
+	out := make([]rune, 0, len(s))
+	for _, r := range s {
+		if r == ' ' || r == '-' || r == '_' || r == '.' || r == '(' || r == ')' || r == '（' || r == '）' {
+			out = append(out, r)
+			continue
+		}
+		if r >= '0' && r <= '9' {
+			out = append(out, r)
+			continue
+		}
+		if r >= 'A' && r <= 'Z' || r >= 'a' && r <= 'z' {
+			out = append(out, r)
+			continue
+		}
+		if r >= 0x4E00 && r <= 0x9FFF {
+			out = append(out, r)
+			continue
+		}
+	}
+	if len(out) == 0 {
+		return "resume"
+	}
+	return strings.TrimSpace(string(out))
 }
 
 func (h *Handler) GenerateImage(c *gin.Context) {
@@ -140,53 +148,34 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 			filename = url[idx+1:]
 		}
 	}
+	job, _ := repo.GetJob(c, id)
+	var r models.Resume
+	if job.ResumeID != "" {
+		_ = database.DB.Where("external_id = ?", job.ResumeID).First(&r).Error
+	}
 	c.Header("Content-Type", "application/pdf")
-	c.Header("Content-Disposition", "attachment; filename=resume.pdf")
+	disp := sanitizeFilename(r.Title)
+	if disp == "" {
+		disp = "resume"
+	}
+	c.Header("Content-Disposition", "attachment; filename="+disp)
 	c.Header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, private")
 	c.Header("Pragma", "no-cache")
 	c.Header("Expires", "0")
-	if strings.Contains(url, "/public/uploads/") {
-		p := filepath.Join("uploads", filename)
-		f, err := os.Open(p)
-		if err != nil {
-			logger.WithCtx(c).Error("pdf.export_download file not found", zap.Error(err), zap.String("path", p))
-			c.JSON(http.StatusNotFound, gin.H{"error": "file not found"})
-			return
-		}
-		defer f.Close()
-		_, _ = io.Copy(c.Writer, f)
-		h.svc.deleteJobFile(c, id)
+	cfg := h.svc.sysConfig.GetStorageSettings()
+	up, err := storage.NewFromSettings(cfg)
+	if err != nil {
+		logger.WithCtx(c).Error("pdf.export_download storage init failed", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "storage unavailable"})
 		return
 	}
-	bucket := h.svc.sysConfig.Get("storage_s3_bucket")
-	region := h.svc.sysConfig.Get("storage_s3_region")
-	endpoint := h.svc.sysConfig.Get("storage_s3_endpoint")
-	ak := h.svc.sysConfig.Get("storage_s3_access_key")
-	sk := h.svc.sysConfig.Get("storage_s3_secret_key")
-	if bucket != "" && region != "" && filename != "" {
-		opts := []func(*awscfg.LoadOptions) error{awscfg.WithRegion(region)}
-		if ak != "" && sk != "" {
-			opts = append(opts, awscfg.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(ak, sk, "")))
-		}
-		cfg, err := awscfg.LoadDefaultConfig(c, opts...)
-		if err == nil {
-			cli := s3.NewFromConfig(cfg, func(o *s3.Options) {
-				if endpoint != "" {
-					o.BaseEndpoint = aws.String(endpoint)
-				}
-			})
-			obj, err := cli.GetObject(c, &s3.GetObjectInput{
-				Bucket: aws.String(bucket),
-				Key:    aws.String(filename),
-			})
-			if err == nil {
-				defer obj.Body.Close()
-				_, _ = io.Copy(c.Writer, obj.Body)
-			}
-			if err != nil {
-				logger.WithCtx(c).Error("pdf.export_download s3 get failed", zap.Error(err), zap.String("bucket", bucket), zap.String("key", filename))
-			}
-		}
+	rc, err := up.Download(c, url)
+	if err != nil {
+		logger.WithCtx(c).Error("pdf.export_download download failed", zap.Error(err), zap.String("url", url))
+		c.JSON(http.StatusNotFound, gin.H{"error": "file not found"})
+		return
 	}
+	defer rc.Close()
+	_, _ = io.Copy(c.Writer, rc)
 	h.svc.deleteJobFile(c, id)
 }

@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -16,13 +14,7 @@ import (
 	"openresume/internal/infra/cache"
 	"openresume/internal/infra/database"
 	conf "openresume/internal/module/config"
-	"openresume/internal/pkg/logger"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	awscfg "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	s3 "github.com/aws/aws-sdk-go-v2/service/s3"
-	"go.uber.org/zap"
+	"openresume/internal/pkg/storage"
 
 	"github.com/gin-gonic/gin"
 )
@@ -78,58 +70,15 @@ func (s *Service) deleteJobFile(ctx context.Context, jobID string) {
 	if resultURL == "" {
 		return
 	}
-	filename := cache.RDB.Get(ctx, jobKey(jobID)+":filename").Val()
-	if filename == "" {
-		if idx := strings.LastIndex(resultURL, "/"); idx >= 0 && idx+1 < len(resultURL) {
-			filename = resultURL[idx+1:]
-		}
-	}
-	if filename == "" {
-		return
-	}
-	if strings.Contains(resultURL, "/public/uploads/") {
-		_ = os.Remove(filepath.Join("uploads", filename))
-	} else {
-		bucket := s.sysConfig.Get("storage_s3_bucket")
-		region := s.sysConfig.Get("storage_s3_region")
-		endpoint := s.sysConfig.Get("storage_s3_endpoint")
-		ak := s.sysConfig.Get("storage_s3_access_key")
-		sk := s.sysConfig.Get("storage_s3_secret_key")
-		if bucket != "" && region != "" {
-			opts := []func(*awscfg.LoadOptions) error{awscfg.WithRegion(region)}
-			if ak != "" && sk != "" {
-				opts = append(opts, awscfg.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(ak, sk, "")))
-			}
-			if cfg, err := awscfg.LoadDefaultConfig(ctx, opts...); err == nil {
-				cli := s3.NewFromConfig(cfg, func(o *s3.Options) {
-					if endpoint != "" {
-						o.BaseEndpoint = aws.String(endpoint)
-					}
-				})
-				_, err := cli.DeleteObject(ctx, &s3.DeleteObjectInput{
-					Bucket: aws.String(bucket),
-					Key:    aws.String(filename),
-				})
-				if err != nil {
-					logger.WithCtx(nil).Error("delete pdf error", zap.Error(err))
-				}
-			}
-		}
+	cfg := s.sysConfig.GetStorageSettings()
+	if up, err := storage.NewFromSettings(cfg); err == nil {
+		_ = up.Delete(ctx, resultURL)
 	}
 	_ = cache.RDB.Del(ctx, jobKey(jobID)+":result").Err()
 	_ = cache.RDB.Del(ctx, jobKey(jobID)+":status").Err()
 	_ = cache.RDB.Del(ctx, jobKey(jobID)+":data").Err()
 	_ = cache.RDB.Del(ctx, jobKey(jobID)+":filename").Err()
 	_ = cache.RDB.Del(ctx, jobKey(jobID)+":consumed").Err()
-}
-
-func (s *Service) GeneratePDF(c *gin.Context, externalID string) ([]byte, int, error) {
-	if s.cbOpen(common.CBCircuitPDF) {
-		return nil, 503, fmt.Errorf("cb")
-	}
-	authHeader := c.GetHeader("Authorization")
-	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
-	return s.GeneratePDFWithToken(externalID, token)
 }
 
 func (s *Service) GeneratePDFWithToken(externalID string, token string) ([]byte, int, error) {

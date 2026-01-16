@@ -114,7 +114,6 @@ func Init() *gin.Engine {
 	api.GET("/healthz", healthH.Healthz)
 	api.GET("/metrics", metrics.Handler())
 	pdfH := pdf.NewHandler()
-	g.POST("/resumes/:id/pdf", pdfH.GeneratePDF)
 	g.POST("/resumes/:id/image", pdfH.GenerateImage)
 	g.POST("/pdf/exports", pdfH.SubmitExport)
 	g.GET("/pdf/exports/:job_id", pdfH.ExportStatus)

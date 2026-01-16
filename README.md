@@ -162,7 +162,6 @@ VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
   - `POST /api/v1/auth/wechat/consume-ott` — consume one-time token from popup/redirect flow
  - Authenticated:
    - `GET/POST/PUT/DELETE /api/v1/resumes` and `/:id`
-   - `POST /api/v1/resumes/:id/pdf` — generate PDF
    - `POST /api/v1/resumes/:id/image` — generate PNG
    - `POST /api/v1/resumes/:id/publish` — create public share link
    - `POST /api/v1/pdf/exports` — submit export job

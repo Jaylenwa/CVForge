@@ -1,7 +1,6 @@
 package upload
 
 import (
-	"openresume/internal/common"
 	conf "openresume/internal/module/config"
 	"openresume/internal/pkg/storage"
 
@@ -19,13 +18,8 @@ func NewService() *Service {
 }
 
 func (s *Service) Upload(c *gin.Context, name string, b []byte) (string, error) {
-	useS3 := s.sys.GetBool(string(common.ConfigKeyEnabledStorageS3), false)
-	bucket := s.sys.Get(string(common.ConfigKeyStorageS3Bucket))
-	region := s.sys.Get(string(common.ConfigKeyStorageS3Region))
-	endpoint := s.sys.Get(string(common.ConfigKeyStorageS3Endpoint))
-	accessKey := s.sys.Get(string(common.ConfigKeyStorageS3AccessKey))
-	secretKey := s.sys.Get(string(common.ConfigKeyStorageS3SecretKey))
-	up, e := storage.New(useS3, bucket, region, endpoint, accessKey, secretKey)
+	cfg := s.sys.GetStorageSettings()
+	up, e := storage.NewFromSettings(cfg)
 	if e != nil {
 		return "", e
 	}
