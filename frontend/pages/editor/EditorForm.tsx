@@ -140,7 +140,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       ResumeSectionType.Portfolio,
       ResumeSectionType.Skills,
       ResumeSectionType.Awards,
-      ResumeSectionType.Exam,
     ].includes(type);
     const nextSections = data.sections.map(s => {
       if (s.id !== sectionId) return s;
@@ -213,6 +212,9 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       }
       if (s.items.length === 0) {
         changed = true;
+        if (s.type === ResumeSectionType.Exam) {
+          return { ...s, items: [{ id: generateUUID(), title: '', subtitle: '', description: '' }] };
+        }
         if (needTypesWithTime.includes(s.type)) {
           return { ...s, items: [{ id: generateUUID(), title: '', subtitle: '', timeStart: '', timeEnd: '', today: false as any, description: '' }] };
         }
@@ -571,7 +573,108 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                     }
                 >
 
-                    {section.items.map((item) => {
+                    {section.type === ResumeSectionType.Exam ? (
+                      (() => {
+                        const items = section.items.slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
+                        const meta = items[0];
+                        const scores = items.slice(1);
+
+                        const upsertMeta = (field: 'title' | 'subtitle' | 'description', value: string) => {
+                          if (!meta) {
+                            const metaNew: ResumeItem = { id: generateUUID(), title: '', subtitle: '', description: '' };
+                            const nextItems = [metaNew, ...scores].map((it, idx) => ({ ...it, orderNum: idx }));
+                            updateSection(section.id, { items: nextItems });
+                            return;
+                          }
+                          updateItem(section.id, meta.id, field, value);
+                        };
+
+                        const addScoreRow = () => {
+                          const metaItem: ResumeItem = meta || { id: generateUUID(), title: '', subtitle: '', description: '' };
+                          const nextItems = [metaItem, ...scores, { id: generateUUID(), title: '', subtitle: '', description: '' }]
+                            .map((it, idx) => ({ ...it, orderNum: idx }));
+                          updateSection(section.id, { items: nextItems });
+                        };
+
+                        const removeScoreRow = (itemId: string) => {
+                          if (!meta) return;
+                          const nextItems = [meta, ...scores.filter(s => s.id !== itemId)].map((it, idx) => ({ ...it, orderNum: idx }));
+                          updateSection(section.id, { items: nextItems });
+                        };
+
+                        return (
+                          <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700">{t('exam.school')}</label>
+                                <input
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                  placeholder={t('exam.placeholder.school')}
+                                  value={meta?.title || ''}
+                                  onChange={e => upsertMeta('title', e.target.value)}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700">{t('exam.major')}</label>
+                                <input
+                                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                  placeholder={t('exam.placeholder.major')}
+                                  value={meta?.subtitle || ''}
+                                  onChange={e => upsertMeta('subtitle', e.target.value)}
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700">{t('exam.scoreType')}</label>
+                              <input
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                placeholder={t('exam.placeholder.scoreType')}
+                                value={meta?.description || ''}
+                                onChange={e => upsertMeta('description', e.target.value)}
+                              />
+                            </div>
+
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-sm font-medium text-gray-700">{(meta?.description && String(meta.description).trim()) ? String(meta.description).trim() : t('exam.scoreLabel')}</span>
+                                <Button size="sm" variant="outline" icon={<Plus size={14}/>} onClick={addScoreRow}>
+                                  {t('exam.addScore')}
+                                </Button>
+                              </div>
+                              <div className="space-y-3">
+                                {scores.map((it) => (
+                                  <div key={it.id} className="grid grid-cols-12 gap-2 items-center">
+                                    <div className="col-span-5">
+                                      <input
+                                        placeholder={t('exam.placeholder.subject')}
+                                        value={it.title || ''}
+                                        onChange={e => updateItem(section.id, it.id, 'title', e.target.value)}
+                                        className="block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                      />
+                                    </div>
+                                    <div className="col-span-6">
+                                      <input
+                                        placeholder={t('exam.placeholder.score')}
+                                        value={it.subtitle || ''}
+                                        onChange={e => updateItem(section.id, it.id, 'subtitle', e.target.value)}
+                                        className="block w-full border border-gray-300 rounded-md shadow-sm p-2 sm:text-sm"
+                                      />
+                                    </div>
+                                    <div className="col-span-1 flex justify-end">
+                                      <button onClick={() => removeScoreRow(it.id)} className="p-2 text-gray-400 hover:text-red-500 rounded hover:bg-red-50">
+                                        <Trash2 size={16}/>
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()
+                    ) : (
+                      section.items.map((item) => {
                     const isComplex = [
                       ResumeSectionType.Experience,
                       ResumeSectionType.Education,
@@ -698,7 +801,8 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             )}
                         </div>
                     </div>
-                    )})}
+                    )})
+                    )}
 
                 </SortableSection>
             ))}

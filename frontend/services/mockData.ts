@@ -38,7 +38,11 @@ export const INITIAL_RESUME: ResumeData = {
       title: '报考信息',
       isVisible: true,
       items: [
-        { id: 'ex1', title: '报考方向', description: '计算机类' }
+        { id: 'ex_meta', title: '浙江大学', subtitle: '计算机科学与技术', description: '考研成绩' },
+        { id: 'ex_s1', title: '政治', subtitle: '70', description: '' },
+        { id: 'ex_s2', title: '英语', subtitle: '78', description: '' },
+        { id: 'ex_s3', title: '数学', subtitle: '120', description: '' },
+        { id: 'ex_s4', title: '专业课', subtitle: '130', description: '' }
       ]
     },
     {

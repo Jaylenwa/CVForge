@@ -4,6 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { hasExtraPersonalInfo, sanitizeHtml } from '../../utils/resume-helpers';
 import { Mail, Phone, MapPin, GraduationCap, User, Briefcase, Wrench, Layers, BookOpen, Award, Heart, Image as ImageIcon } from 'lucide-react';
+import { ExamScoreTable } from './ExamScoreTable';
 
 export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
@@ -225,7 +226,23 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                     <div className="absolute left-[-48px] w-8 h-8 rounded-full flex items-center justify-center text-white ring-2 ring-white/60 print:ring-0 z-10" style={{ backgroundColor: color, top: -17 }}>
                       <SectionIcon type={section.type} />
                     </div>
-                    {section.type === ResumeSectionType.Skills ? (
+                    {section.type === ResumeSectionType.Exam ? (
+                      (() => {
+                        const meta = items[0];
+                        const scores = items.slice(1);
+                        return (
+                          <ExamScoreTable
+                            color={color}
+                            schoolLabel={t('exam.school')}
+                            majorLabel={t('exam.major')}
+                            scoreLabel={(meta?.description && String(meta.description).trim()) ? String(meta.description).trim() : t('exam.scoreLabel')}
+                            school={meta?.title || ''}
+                            major={meta?.subtitle || ''}
+                            items={scores.map(s => ({ subject: s.title || '', score: s.subtitle || '' }))}
+                          />
+                        );
+                      })()
+                    ) : section.type === ResumeSectionType.Skills ? (
                       <div className="space-y-3">
                         {items.map(item => (
                           <div key={item.id} className="relative">
