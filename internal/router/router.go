@@ -7,6 +7,7 @@ import (
 	"openresume/internal/middleware"
 	"openresume/internal/module/ai"
 	"openresume/internal/module/auth"
+	"openresume/internal/module/catalog"
 	conf "openresume/internal/module/config"
 	"openresume/internal/module/health"
 	"openresume/internal/module/pdf"
@@ -35,6 +36,12 @@ func Init() *gin.Engine {
 	templateH := template.NewHandler()
 	api.GET("/templates", templateH.ListAll)
 	api.GET("/templates/:id", templateH.GetByID)
+
+	catalogH := catalog.NewHandler()
+	api.GET("/job-categories", catalogH.ListJobCategories)
+	api.GET("/job-roles", catalogH.ListJobRoles)
+	api.GET("/template-variants", catalogH.ListTemplateVariants)
+	api.GET("/content-presets/:id", catalogH.GetContentPreset)
 
 	authR := api.Group("/auth")
 	authR.GET("/config", confHandler.GetPublic)

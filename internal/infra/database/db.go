@@ -50,6 +50,10 @@ func autoMigrate() error {
 	if err := DB.AutoMigrate(
 		&models.User{},
 		&models.Template{},
+		&models.JobCategory{},
+		&models.JobRole{},
+		&models.ContentPreset{},
+		&models.TemplateVariant{},
 		&models.Resume{},
 		&models.ResumePersonal{},
 		&models.ResumeTheme{},

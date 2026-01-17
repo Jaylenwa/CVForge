@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { DownloadModal } from '../../components/ui/DownloadModal';
 import { INITIAL_RESUME } from '../../services/mockData';
+import { CONTENT_PRESETS_SEED } from '../../services/catalogSeeds';
 import { ResumeData, AppRoute, Language } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useToast } from '../../components/ui/Toast';
@@ -101,41 +102,69 @@ export const Editor: React.FC = () => {
           return;
         }
         hasCreatedFromTemplate.current = true;
+        const presetId = searchParams.get('preset') || '';
         const token = localStorage.getItem('token');
-        const payload = {
-          Title: INITIAL_RESUME.title,
-          TemplateID: templateId,
-          Language: language,
-          Personal: INITIAL_RESUME.Personal || {},
-          Theme: INITIAL_RESUME.Theme || {},
-          Sections: INITIAL_RESUME.sections.map((s, si) => ({
-            ExternalID: s.id,
-            Type: s.type,
-            Title: s.title,
-            IsVisible: s.isVisible,
-            OrderNum: si,
-            Items: s.items.map((i, ii) => ({
-              ExternalID: i.id,
-              Title: i.title || '',
-              Subtitle: i.subtitle || '',
-              Major: i.major || '',
-              Degree: i.degree || '',
-              TimeStart: i.timeStart || '',
-              TimeEnd: i.today ? '' : (i.timeEnd || ''),
-              Today: !!i.today,
-              Description: i.description || '',
-              OrderNum: ii
-            }))
-          }))
+        const localPreset = presetId ? CONTENT_PRESETS_SEED.find(p => p.id === presetId)?.data : null;
+        const baseSeed: ResumeData = { ...(INITIAL_RESUME as any), ...(localPreset as any) };
+        const resolveSeed = () => {
+          if (!presetId || localPreset) return Promise.resolve(baseSeed);
+          return fetch(`${API_BASE}/content-presets/${presetId}`)
+            .then(r => r.ok ? r.json() : null)
+            .then((p: any) => {
+              const dataJson = p?.DataJSON || p?.dataJSON || p?.dataJson;
+              if (typeof dataJson === 'string' && dataJson.trim()) {
+                try {
+                  const parsed = JSON.parse(dataJson);
+                  if (parsed && typeof parsed === 'object') {
+                    return { ...(INITIAL_RESUME as any), ...(parsed as any) };
+                  }
+                } catch {}
+              }
+              return baseSeed;
+            })
+            .catch(() => baseSeed);
         };
-        fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
-          .then(r => r.json())
-          .then(({ id }) => {
-            setResumeData(prev => ({ ...prev, templateId, id, language }));
-            const rt = searchParams.get('returnTo');
-            window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}${rt ? `&returnTo=${encodeURIComponent(rt)}` : ''}`);
-            setLoading(false);
-          });
+        resolveSeed().then((seed: ResumeData) => {
+          const seedTitle = seed.title || INITIAL_RESUME.title;
+          const seedPersonal = seed.Personal || INITIAL_RESUME.Personal || ({} as any);
+          const seedTheme = seed.Theme || INITIAL_RESUME.Theme || ({} as any);
+          const seedSections = Array.isArray(seed.sections) ? seed.sections : INITIAL_RESUME.sections;
+          const payload = {
+            Title: seedTitle,
+            TemplateID: templateId,
+            Language: language,
+            Personal: seedPersonal,
+            Theme: seedTheme,
+            Sections: seedSections.map((s: any, si: number) => ({
+              ExternalID: s.id,
+              Type: s.type,
+              Title: s.title,
+              IsVisible: s.isVisible,
+              OrderNum: si,
+              Items: (s.items || []).map((i: any, ii: number) => ({
+                ExternalID: i.id,
+                Title: i.title || '',
+                Subtitle: i.subtitle || '',
+                Major: i.major || '',
+                Degree: i.degree || '',
+                TimeStart: i.timeStart || '',
+                TimeEnd: i.today ? '' : (i.timeEnd || ''),
+                Today: !!i.today,
+                Description: i.description || '',
+                OrderNum: ii
+              }))
+            }))
+          };
+          fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
+            .then(r => r.json())
+            .then(({ id }) => {
+              const nextTheme = { ...(INITIAL_RESUME.Theme || {}), ...(seedTheme || {}) };
+              setResumeData({ ...(INITIAL_RESUME as any), ...(seed as any), templateId, id, language, Theme: nextTheme });
+              const rt = searchParams.get('returnTo');
+              window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}${rt ? `&returnTo=${encodeURIComponent(rt)}` : ''}`);
+              setLoading(false);
+            });
+        });
     }
   }, [searchParams]);
 
