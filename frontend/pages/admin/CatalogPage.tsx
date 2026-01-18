@@ -249,6 +249,17 @@ export const CatalogPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<any>({});
+  const formatPresetDataJson = () => {
+    const raw = String(form.dataJson || '');
+    if (!raw.trim()) return;
+    try {
+      const parsed = JSON.parse(raw);
+      const pretty = JSON.stringify(parsed, null, 2);
+      setForm((p: any) => ({ ...p, dataJson: `${pretty}\n` }));
+    } catch {
+      showToast(t('admin.catalog.msg.invalidJson'), 'error');
+    }
+  };
   const openCreateCategory = () => {
     setEditingId(null);
     setFormKind('category');
@@ -526,7 +537,19 @@ export const CatalogPage: React.FC = () => {
             <SectionTitle>{t('admin.catalog.section.data') || 'Data'}</SectionTitle>
             <div>
               <Label
-                right={String(form.dataJson || '').trim() ? (parseJSON(String(form.dataJson || '')) ? t('admin.catalog.msg.jsonOk') : t('admin.catalog.msg.invalidJson')) : null}
+                right={(() => {
+                  const raw = String(form.dataJson || '');
+                  const trimmed = raw.trim();
+                  const status = trimmed ? (parseJSON(raw) ? t('admin.catalog.msg.jsonOk') : t('admin.catalog.msg.invalidJson')) : null;
+                  return (
+                    <div className="flex items-center gap-2">
+                      {status ? <span>{status}</span> : null}
+                      <Button type="button" variant="outline" size="sm" onClick={formatPresetDataJson} disabled={!trimmed}>
+                        {t('admin.catalog.actions.formatJson') || '格式化 JSON'}
+                      </Button>
+                    </div>
+                  );
+                })()}
               >
                 {t('admin.catalog.form.dataJson')}
               </Label>
