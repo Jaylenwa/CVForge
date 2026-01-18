@@ -516,7 +516,7 @@ func (h *AdminHandler) AdminGenerateTemplateVariants(c *gin.Context) {
 				continue
 			}
 
-			tplOk, err := h.svc.repo.existsActive(&Template{}, tplID)
+			tplOk, err := h.svc.repo.exists(&Template{}, tplID)
 			if err != nil || !tplOk {
 				item.Action = "failed"
 				item.Error = "invalid template"
@@ -592,4 +592,3 @@ func (h *AdminHandler) AdminGenerateTemplateVariants(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true, "result": result})
 }
-

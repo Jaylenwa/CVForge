@@ -203,6 +203,15 @@ func (r *Repo) existsActive(model any, externalID string) (bool, error) {
 	return cnt > 0, err
 }
 
+func (r *Repo) exists(model any, externalID string) (bool, error) {
+	if externalID == "" {
+		return false, nil
+	}
+	var cnt int64
+	err := r.db.Model(model).Where("external_id = ?", externalID).Count(&cnt).Error
+	return cnt > 0, err
+}
+
 func (r *Repo) getTemplateName(externalID string) (string, error) {
 	var t struct {
 		Name string
@@ -253,4 +262,3 @@ func (r *Repo) upsertVariant(tx *gorm.DB, v *TemplateVariant, mode GenerateMode)
 	}
 	return "", err
 }
-
