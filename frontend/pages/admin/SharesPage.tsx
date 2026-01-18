@@ -47,14 +47,14 @@ export const SharesPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto px-10 pb-10">
         <TableCard>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.columns.slug')}</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.columns.user')}</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.columns.url')}</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.columns.status')}</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">{t('admin.columns.actions')}</th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-600">{t('admin.columns.slug')}</th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-600">{t('admin.columns.user')}</th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-600">{t('admin.columns.url')}</th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-600">{t('admin.columns.status')}</th>
+                <th className="px-4 py-2 text-right font-semibold text-gray-600">{t('admin.columns.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">

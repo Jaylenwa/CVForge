@@ -722,7 +722,7 @@ export const CatalogPage: React.FC = () => {
 
           <TableCard>
             <div className="overflow-x-auto">
-              <table className="w-full text-left table-fixed">
+              <table className="w-full text-left table-fixed text-sm">
                 <colgroup>
                   <col className="w-[300px]" />
                   <col className="w-[320px]" />
@@ -731,12 +731,12 @@ export const CatalogPage: React.FC = () => {
                   <col className="w-[140px]" />
                 </colgroup>
                 <thead className="sticky top-0 z-20 bg-gray-50 shadow-sm">
-                  <tr className="text-gray-500 text-xs font-semibold uppercase tracking-wider">
-                    <th className="px-4 py-4">{t('admin.catalog.jobs.name') || '岗位'}</th>
-                    <th className="px-4 py-4">{t('admin.form.tags')}</th>
-                    <th className="px-4 py-4">{t('admin.catalog.form.order')}</th>
-                    <th className="px-4 py-4">{t('admin.catalog.form.active')}</th>
-                    <th className="px-4 py-4 text-right sticky right-0 bg-gray-50">{t('admin.columns.actions')}</th>
+                  <tr>
+                    <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.jobs.name') || '岗位'}</th>
+                    <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.form.tags')}</th>
+                    <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.form.order')}</th>
+                    <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.form.active')}</th>
+                    <th className="px-4 py-4 font-semibold text-gray-600 text-right sticky right-0 bg-gray-50">{t('admin.columns.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -1268,13 +1268,13 @@ export const CatalogPage: React.FC = () => {
               created={generateResult.created} updated={generateResult.updated} skipped={generateResult.skipped} failed={generateResult.failed}
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider">
-                    <th className="px-4 py-3">{t('admin.catalog.form.template')}</th>
-                    <th className="px-4 py-3">ExternalID</th>
-                    <th className="px-4 py-3">{t('admin.catalog.generate.action')}</th>
-                    <th className="px-4 py-3">{t('admin.catalog.generate.error')}</th>
+                  <tr className="bg-gray-50">
+                    <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.form.template')}</th>
+                    <th className="px-4 py-3 font-semibold text-gray-600">ExternalID</th>
+                    <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.action')}</th>
+                    <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.error')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">

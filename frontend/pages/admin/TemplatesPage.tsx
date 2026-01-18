@@ -228,16 +228,16 @@ export const TemplatesPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto px-10 pb-10">
         <TableCard>
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200">
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.form.name')}</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('templates.filter.industry')}</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.form.usageCount')}</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.form.isPremium')}</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.form.tags')}</th>
-                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('admin.columns.actions')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">ID</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.form.name')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('templates.filter.industry')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.form.usageCount')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.form.isPremium')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.form.tags')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600 text-right">{t('admin.columns.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

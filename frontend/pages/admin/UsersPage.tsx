@@ -96,15 +96,15 @@ export const UsersPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto px-10 pb-10">
         <TableCard>
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="w-full text-left text-sm">
             <thead>
-              <tr className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider">
-                <th className="px-6 py-4">{t('admin.columns.id')}</th>
-                <th className="px-6 py-4">{t('admin.columns.userDetails')}</th>
-                <th className="px-6 py-4">{t('admin.columns.role')}</th>
-                <th className="px-6 py-4">{t('admin.columns.status')}</th>
-                <th className="px-6 py-4">{t('admin.columns.lastActivity')}</th>
-                <th className="px-6 py-4 text-right">{t('admin.columns.actions')}</th>
+              <tr className="bg-gray-50">
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.id')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.userDetails')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.role')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.status')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.lastActivity')}</th>
+                <th className="px-6 py-4 font-semibold text-gray-600 text-right">{t('admin.columns.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">

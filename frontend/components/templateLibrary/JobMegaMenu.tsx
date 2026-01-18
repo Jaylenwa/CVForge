@@ -31,7 +31,7 @@ export const JobMegaMenu: React.FC<{
           animate={{ opacity: 1, x: 0, y: 0 }}
           exit={{ opacity: 0, x: -8, y: -2 }}
           transition={{ duration: 0.16, ease: 'easeOut' }}
-          className="absolute left-full top-0 ml-4 w-[640px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-[80] p-8"
+          className="absolute left-full top-0 ml-4 w-[640px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-40 p-8"
         >
           <div className="space-y-6">
             {title ? (

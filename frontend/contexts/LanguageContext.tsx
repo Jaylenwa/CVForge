@@ -889,7 +889,7 @@ const translations: Translations = {
     'admin.form.externalId': 'External ID',
     'admin.form.name': '名称',
     'admin.form.thumbnail': '缩略图 URL',
-    'admin.form.tags': '标签（逗号分隔）',
+    'admin.form.tags': '标签',
     'admin.form.category': '分类',
     'admin.form.level': '等级',
     'admin.form.usageCount': '使用次数',
