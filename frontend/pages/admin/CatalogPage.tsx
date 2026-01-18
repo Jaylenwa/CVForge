@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Checkbox, Input, Label, Select, TagInput, Textarea } from '../../components/ui/Form';
+import { MultiSelect } from '../../components/ui/MultiSelect';
 import { DataTable } from '../../components/ui/DataTable';
 import { TableCard } from '../../components/ui/TableCard';
 import { Modal } from '../../components/ui/Modal';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { FileText, Layers, LayoutTemplate } from 'lucide-react';
 import {
   adminCreateContentPreset,
   adminCreateJobCategory,
@@ -162,6 +164,7 @@ export const CatalogPage: React.FC = () => {
   });
   const [generateResult, setGenerateResult] = useState<any>(null);
   const [generating, setGenerating] = useState(false);
+  const [variantCreateMode, setVariantCreateMode] = useState<'single' | 'batch'>('single');
 
   const resetPaging = () => {
     setPage(1);
@@ -199,9 +202,9 @@ export const CatalogPage: React.FC = () => {
 
   const tabs = useMemo(
     () => [
-      { key: 'jobs' as const, label: t('admin.catalog.tab.jobs') },
-      { key: 'presets' as const, label: t('admin.catalog.tab.presets') },
-      { key: 'variants' as const, label: t('admin.catalog.tab.variants') },
+      { key: 'jobs' as const, label: t('admin.catalog.tab.jobs'), Icon: Layers },
+      { key: 'presets' as const, label: t('admin.catalog.tab.presets'), Icon: FileText },
+      { key: 'variants' as const, label: t('admin.catalog.tab.variants'), Icon: LayoutTemplate },
     ],
     [t]
   );
@@ -281,7 +284,7 @@ export const CatalogPage: React.FC = () => {
   const openCreatePreset = () => {
     setEditingId(null);
     setFormKind('preset');
-    setForm({ externalId: '', name: '', language: 'zh', roleExternalId: '', tags: [] as string[], dataJson: '{\n  \"title\": \"\",\n  \"language\": \"zh\",\n  \"Personal\": {},\n  \"Theme\": {},\n  \"sections\": []\n}\n', isActive: true });
+    setForm({ externalId: '', name: '', language: '', roleExternalId: '', tags: [] as string[], dataJson: '{\n  \"title\": \"\",\n  \"language\": \"zh\",\n  \"Personal\": {},\n  \"Theme\": {},\n  \"sections\": []\n}\n', isActive: true });
     setShowForm(true);
   };
   const openCreateVariant = () => {
@@ -317,15 +320,73 @@ export const CatalogPage: React.FC = () => {
   };
 
   const openCreate = () => {
-    if (tab === 'jobs') openCreateCategory();
-    else if (tab === 'presets') openCreatePreset();
-    else openCreateVariant();
+    if (tab === 'jobs') {
+      openCreateCategory();
+      return;
+    }
+    if (tab === 'presets') {
+      openCreatePreset();
+      return;
+    }
+    setVariantCreateMode('single');
+    setGenerateResult(null);
+    openCreateVariant();
+  };
+
+  const runGenerateVariants = async () => {
+    if (!String(generateForm.roleId || '').trim() || !String(generateForm.presetId || '').trim() || (generateForm.layoutTemplateIds || []).length === 0) {
+      showToast(t('auth.error.fillAll'), 'error');
+      return;
+    }
+    if (generating) return;
+    setGenerating(true);
+    setGenerateResult(null);
+    try {
+      const res = await adminGenerateTemplateVariants({
+        roleId: generateForm.roleId,
+        presetId: generateForm.presetId,
+        layoutTemplateIds: generateForm.layoutTemplateIds,
+        namePrefix: generateForm.namePrefix,
+        tags: generateForm.tags,
+        isPremium: generateForm.isPremium,
+        isActive: generateForm.isActive,
+        mode: generateForm.mode,
+      });
+      setGenerateResult(res?.result || null);
+      showToast(t('admin.catalog.generate.done'), 'success');
+      await load();
+    } catch {
+      showToast(t('admin.catalog.generate.failed'), 'error');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const save = async () => {
     if (saving) return;
     setSaving(true);
     try {
+      if (formKind === 'role') {
+        if (!String(form.externalId || '').trim() || !String(form.categoryExternalId || '').trim() || !String(form.name || '').trim()) {
+          showToast(t('auth.error.fillAll'), 'error');
+          setSaving(false);
+          return;
+        }
+      }
+      if (formKind === 'preset') {
+        if (!String(form.externalId || '').trim() || !String(form.name || '').trim() || !String(form.language || '').trim() || !String(form.roleExternalId || '').trim()) {
+          showToast(t('auth.error.fillAll'), 'error');
+          setSaving(false);
+          return;
+        }
+      }
+      if (formKind === 'variant') {
+        if (!String(form.externalId || '').trim() || !String(form.name || '').trim() || !String(form.layoutTemplateExternalId || '').trim() || !String(form.presetExternalId || '').trim() || !String(form.roleExternalId || '').trim()) {
+          showToast(t('auth.error.fillAll'), 'error');
+          setSaving(false);
+          return;
+        }
+      }
       if (formKind === 'preset') {
         const dj = String(form.dataJson || '').trim();
         if (dj && !parseJSON(dj)) {
@@ -348,25 +409,25 @@ export const CatalogPage: React.FC = () => {
         else await adminPatchTemplateVariant(editingId, { ...body, tags: joinTags(body.tags) });
       }
       setShowForm(false);
-      showToast(t('admin.msg.saveSuccess') || 'Saved', 'success');
+      showToast(t('admin.msg.saveSuccess'), 'success');
       await refreshRefs();
       await load();
     } catch (e: any) {
-      showToast(t('admin.msg.saveFailed') || 'Failed', 'error');
+      showToast(t('admin.msg.saveFailed'), 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const removeItem = async (kind: FormKind, id: string) => {
-    const ok = await confirm({ title: t('admin.confirm.delete') || 'Delete?', message: t('admin.confirm.deleteMsg') || 'This action cannot be undone.' });
+    const ok = await confirm({ title: t('admin.confirm.delete'), message: t('admin.confirm.deleteMsg') });
     if (!ok) return;
     try {
       if (kind === 'category') await adminDeleteJobCategory(id);
       else if (kind === 'role') await adminDeleteJobRole(id);
       else if (kind === 'preset') await adminDeleteContentPreset(id);
       else await adminDeleteTemplateVariant(id);
-      showToast(t('admin.msg.deleteSuccess') || 'Deleted', 'success');
+      showToast(t('admin.msg.deleteSuccess'), 'success');
       await refreshRefs();
       await load();
     } catch {
@@ -412,7 +473,7 @@ export const CatalogPage: React.FC = () => {
                     value={form.parentExternalId || ''}
                     onChange={(e) => setForm((p: any) => ({ ...p, parentExternalId: e.target.value }))}
                     options={[
-                      { label: t('admin.catalog.none') || 'None', value: '' },
+                      { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
                       ...allCategories.map(c => ({ label: c.Name, value: c.ExternalID })),
                     ]}
                   />
@@ -456,7 +517,7 @@ export const CatalogPage: React.FC = () => {
                     value={form.categoryExternalId || ''}
                     onChange={(e) => setForm((p: any) => ({ ...p, categoryExternalId: e.target.value }))}
                     options={[
-                      { label: t('admin.catalog.none') || 'None', value: '' },
+                      { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
                       ...allCategories.map(c => ({ label: c.Name, value: c.ExternalID })),
                     ]}
                   />
@@ -502,23 +563,24 @@ export const CatalogPage: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="preset-language">{t('admin.catalog.form.language')}</Label>
+                <Label required htmlFor="preset-language">{t('admin.catalog.form.language')}</Label>
                 <Select
-                  value={form.language || 'zh'}
+                  value={form.language || ''}
                   onChange={(e) => setForm((p: any) => ({ ...p, language: e.target.value }))}
                   options={[
+                    { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
                     { label: 'zh', value: 'zh' },
                     { label: 'en', value: 'en' },
                   ]}
                 />
               </div>
               <div>
-                <Label htmlFor="preset-role">{t('admin.catalog.form.role')}</Label>
+                <Label required htmlFor="preset-role">{t('admin.catalog.form.role')}</Label>
                 <Select
                   value={form.roleExternalId || ''}
                   onChange={(e) => setForm((p: any) => ({ ...p, roleExternalId: e.target.value }))}
                   options={[
-                    { label: t('admin.catalog.none') || 'None', value: '' },
+                    { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
                     ...allRoles.map(r => ({ label: r.Name, value: r.ExternalID })),
                   ]}
                 />
@@ -561,6 +623,140 @@ export const CatalogPage: React.FC = () => {
     }
     return (
       <div className="space-y-8">
+        {!editingId ? (
+          <nav className="inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
+            <button
+              type="button"
+              aria-pressed={variantCreateMode === 'single'}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${variantCreateMode === 'single' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/60'}`}
+              onClick={() => setVariantCreateMode('single')}
+            >
+              {t('admin.catalog.generate.modeSingle')}
+            </button>
+            <button
+              type="button"
+              aria-pressed={variantCreateMode === 'batch'}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${variantCreateMode === 'batch' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/60'}`}
+              onClick={() => setVariantCreateMode('batch')}
+            >
+              {t('admin.catalog.generate.title') || '批量生成'}
+            </button>
+          </nav>
+        ) : null}
+
+        {!editingId && variantCreateMode === 'batch' ? (
+          <div className="space-y-8">
+            <section className="space-y-4">
+              <SectionTitle>{t('admin.catalog.section.config') || 'Config'}</SectionTitle>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <Label required htmlFor="generate-role">{t('admin.catalog.form.role')}</Label>
+                  <Select
+                    value={generateForm.roleId}
+                    onChange={(e) => setGenerateForm(p => ({ ...p, roleId: e.target.value }))}
+                    options={[
+                      { label: t('admin.form.selectPlaceholder'), value: '' },
+                      ...allRoles.map(r => ({ label: r.Name, value: r.ExternalID })),
+                    ]}
+                  />
+                </div>
+                <div>
+                  <Label required htmlFor="generate-preset">{t('admin.catalog.form.preset')}</Label>
+                  <Select
+                    value={generateForm.presetId}
+                    onChange={(e) => setGenerateForm(p => ({ ...p, presetId: e.target.value }))}
+                    options={[
+                      { label: t('admin.form.selectPlaceholder'), value: '' },
+                      ...allPresets.map(p => ({ label: p.Name, value: p.ExternalID })),
+                    ]}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="generate-mode">{t('admin.catalog.generate.title')}</Label>
+                  <Select
+                    value={generateForm.mode}
+                    onChange={(e) => setGenerateForm(p => ({ ...p, mode: e.target.value as any }))}
+                    options={[
+                      { label: t('admin.catalog.generate.modeSkip'), value: 'skip' },
+                      { label: t('admin.catalog.generate.modeUpdate'), value: 'update' },
+                    ]}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="generate-namePrefix">{t('admin.catalog.generate.namePrefix')}</Label>
+                  <Input id="generate-namePrefix" value={generateForm.namePrefix} onChange={(e) => setGenerateForm(p => ({ ...p, namePrefix: e.target.value }))} />
+                </div>
+                <div>
+                  <Label htmlFor="generate-tags">{t('admin.form.tags')}</Label>
+                  <Input id="generate-tags" value={generateForm.tags} onChange={(e) => setGenerateForm(p => ({ ...p, tags: e.target.value }))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <Label required right={<span>{generateForm.layoutTemplateIds.length}</span>}>
+                    {t('admin.catalog.form.template')}
+                  </Label>
+                  <MultiSelect
+                    options={allTemplates.map((tp) => ({ value: tp.id, label: tp.name }))}
+                    value={generateForm.layoutTemplateIds}
+                    onChange={(vals) => setGenerateForm((p) => ({ ...p, layoutTemplateIds: vals }))}
+                    placeholder={t('admin.form.selectPlaceholder')}
+                    searchPlaceholder={t('admin.form.multiSelect.searchPlaceholder')}
+                    selectAllLabel={t('admin.form.multiSelect.selectAll')}
+                    unselectAllLabel={t('admin.form.multiSelect.unselectAll')}
+                    availableSuffix={t('admin.form.multiSelect.availableSuffix')}
+                    noResultsLabel={(q) => `${t('admin.form.multiSelect.noResults')}: “${q}”`}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-8">
+                <Checkbox label={t('admin.form.isPremium')} checked={!!generateForm.isPremium} onChange={(checked) => setGenerateForm(p => ({ ...p, isPremium: checked }))} />
+                <Checkbox label={t('admin.catalog.form.active')} checked={!!generateForm.isActive} onChange={(checked) => setGenerateForm(p => ({ ...p, isActive: checked }))} />
+              </div>
+            </section>
+
+            {generateResult ? (
+              <section className="space-y-4">
+                <SectionTitle>{t('admin.catalog.generate.result')}</SectionTitle>
+                <div className="text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-1">
+                  <span>{t('admin.catalog.generate.created')}: {generateResult.created}</span>
+                  <span>{t('admin.catalog.generate.updated')}: {generateResult.updated}</span>
+                  <span>{t('admin.catalog.generate.skipped')}: {generateResult.skipped}</span>
+                  <span>{t('admin.catalog.generate.failedCount')}: {generateResult.failed}</span>
+                </div>
+                <div className="overflow-x-auto border border-slate-200 rounded-2xl bg-white">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="bg-slate-50/80 border-b border-slate-200">
+                        <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.form.template')}</th>
+                        <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.form.externalId')}</th>
+                        <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.action')}</th>
+                        <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.error')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {(generateResult.items || []).map((it: any, idx: number) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-3">
+                            <NameCell name={templateNameById.get(it.layoutTemplateId)} id={it.layoutTemplateId} />
+                          </td>
+                          <td className="px-4 py-3 text-sm font-mono text-gray-600">{it.externalId}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{it.action}</td>
+                          <td className="px-4 py-3 text-sm text-rose-600">{it.error || ''}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            ) : null}
+          </div>
+        ) : null}
+
+        {!editingId && variantCreateMode === 'batch' ? null : (
+          <>
         <section className="space-y-4">
           <SectionTitle>{t('admin.catalog.section.basic') || 'Basic'}</SectionTitle>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -583,7 +779,7 @@ export const CatalogPage: React.FC = () => {
                 value={form.layoutTemplateExternalId || ''}
                 onChange={(e) => setForm((p: any) => ({ ...p, layoutTemplateExternalId: e.target.value }))}
                 options={[
-                  { label: t('admin.catalog.none') || 'None', value: '' },
+                  { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
                   ...allTemplates.map(x => ({ label: x.name, value: x.id })),
                 ]}
               />
@@ -594,7 +790,7 @@ export const CatalogPage: React.FC = () => {
                 value={form.presetExternalId || ''}
                 onChange={(e) => setForm((p: any) => ({ ...p, presetExternalId: e.target.value }))}
                 options={[
-                  { label: t('admin.catalog.none') || 'None', value: '' },
+                  { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
                   ...allPresets.map(x => ({ label: x.Name, value: x.ExternalID })),
                 ]}
               />
@@ -605,7 +801,7 @@ export const CatalogPage: React.FC = () => {
                 value={form.roleExternalId || ''}
                 onChange={(e) => setForm((p: any) => ({ ...p, roleExternalId: e.target.value }))}
                 options={[
-                  { label: t('admin.catalog.none') || 'None', value: '' },
+                  { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
                   ...allRoles.map(x => ({ label: x.Name, value: x.ExternalID })),
                 ]}
               />
@@ -629,6 +825,8 @@ export const CatalogPage: React.FC = () => {
             <TagInput tags={parseTags(form.tags)} onChange={(tags) => setForm((p: any) => ({ ...p, tags }))} />
           </div>
         </section>
+          </>
+        )}
       </div>
     );
   };
@@ -1076,100 +1274,7 @@ export const CatalogPage: React.FC = () => {
       );
     }
     return (
-      <div className="space-y-6">
-        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5">
-          <div className="text-sm font-semibold text-gray-800 mb-4">{t('admin.catalog.generate.title')}</div>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
-            <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm" value={generateForm.roleId} onChange={(e) => setGenerateForm(p => ({ ...p, roleId: e.target.value }))}>
-              <option value="">{t('admin.catalog.form.role')}</option>
-              {allRoles.map(r => (
-                <option key={r.ExternalID} value={r.ExternalID}>{r.Name}</option>
-              ))}
-            </select>
-            <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm" value={generateForm.presetId} onChange={(e) => setGenerateForm(p => ({ ...p, presetId: e.target.value }))}>
-              <option value="">{t('admin.catalog.form.preset')}</option>
-              {allPresets.map(p => (
-                <option key={p.ExternalID} value={p.ExternalID}>{p.Name}</option>
-              ))}
-            </select>
-            <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm" value={generateForm.mode} onChange={(e) => setGenerateForm(p => ({ ...p, mode: e.target.value as any }))}>
-              <option value="skip">{t('admin.catalog.generate.modeSkip')}</option>
-              <option value="update">{t('admin.catalog.generate.modeUpdate')}</option>
-            </select>
-            <input className="border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder={t('admin.catalog.generate.namePrefix')} value={generateForm.namePrefix} onChange={(e) => setGenerateForm(p => ({ ...p, namePrefix: e.target.value }))} />
-            <input className="border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder={t('admin.form.tags')} value={generateForm.tags} onChange={(e) => setGenerateForm(p => ({ ...p, tags: e.target.value }))} />
-          </div>
-          <div className="mt-3 grid grid-cols-1 lg:grid-cols-5 gap-3 items-center">
-            <div className="lg:col-span-3 border border-gray-200 rounded-lg p-3 bg-white">
-              <div className="text-xs font-semibold text-gray-500 mb-2">{t('admin.catalog.form.template')}</div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-auto">
-                {allTemplates.map(tp => {
-                  const checked = generateForm.layoutTemplateIds.includes(tp.id);
-                  return (
-                    <label key={tp.id} className="flex items-center gap-2 text-xs text-gray-700">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={(e) => {
-                          setGenerateForm(p => {
-                            const next = new Set(p.layoutTemplateIds);
-                            if (e.target.checked) next.add(tp.id);
-                            else next.delete(tp.id);
-                            return { ...p, layoutTemplateIds: Array.from(next) };
-                          });
-                        }}
-                      />
-                      <span className="truncate">{tp.name}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="flex items-center gap-4 lg:col-span-1">
-              <label className="flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" checked={generateForm.isPremium} onChange={(e) => setGenerateForm(p => ({ ...p, isPremium: e.target.checked }))} />
-                {t('admin.form.isPremium')}
-              </label>
-              <label className="flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" checked={generateForm.isActive} onChange={(e) => setGenerateForm(p => ({ ...p, isActive: e.target.checked }))} />
-                {t('admin.catalog.form.active')}
-              </label>
-            </div>
-            <div className="lg:col-span-1 flex justify-end">
-              <Button
-                onClick={async () => {
-                  if (generating) return;
-                  setGenerating(true);
-                  setGenerateResult(null);
-                  try {
-                    const res = await adminGenerateTemplateVariants({
-                      roleId: generateForm.roleId,
-                      presetId: generateForm.presetId,
-                      layoutTemplateIds: generateForm.layoutTemplateIds,
-                      namePrefix: generateForm.namePrefix,
-                      tags: generateForm.tags,
-                      isPremium: generateForm.isPremium,
-                      isActive: generateForm.isActive,
-                      mode: generateForm.mode,
-                    });
-                    setGenerateResult(res?.result || null);
-                    showToast(t('admin.catalog.generate.done'), 'success');
-                    await load();
-                  } catch {
-                    showToast(t('admin.catalog.generate.failed'), 'error');
-                  } finally {
-                    setGenerating(false);
-                  }
-                }}
-                disabled={generating}
-              >
-                {t('admin.catalog.generate.submit')}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <TableCard>
+      <TableCard>
           <DataTable<AdminTemplateVariant>
             data={variants}
             getRowKey={(row) => row.ExternalID}
@@ -1282,41 +1387,7 @@ export const CatalogPage: React.FC = () => {
               },
             ]}
           />
-        </TableCard>
-
-        {generateResult ? (
-          <div className="bg-white border border-gray-100 rounded-2xl p-5">
-            <div className="text-sm font-semibold text-gray-800 mb-3">{t('admin.catalog.generate.result')}</div>
-            <div className="text-sm text-gray-600 mb-3">
-              created={generateResult.created} updated={generateResult.updated} skipped={generateResult.skipped} failed={generateResult.failed}
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.form.template')}</th>
-                    <th className="px-4 py-3 font-semibold text-gray-600">ExternalID</th>
-                    <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.action')}</th>
-                    <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.error')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {(generateResult.items || []).map((it: any, idx: number) => (
-                    <tr key={idx}>
-                      <td className="px-4 py-3">
-                        <NameCell name={templateNameById.get(it.layoutTemplateId)} id={it.layoutTemplateId} />
-                      </td>
-                      <td className="px-4 py-3 text-sm font-mono text-gray-600">{it.externalId}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{it.action}</td>
-                      <td className="px-4 py-3 text-sm text-rose-600">{it.error || ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : null}
-      </div>
+      </TableCard>
     );
   };
 
@@ -1330,25 +1401,30 @@ export const CatalogPage: React.FC = () => {
             <Button onClick={openCreate}>{t('admin.actions.create') || 'Create'}</Button>
           </div>
         </div>
-        <div className="flex items-center gap-2 mt-6">
-          {tabs.map(x => (
-            <button
-              key={x.key}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold border ${tab === x.key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
-              onClick={() => setTab(x.key)}
-            >
-              {x.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-3 border-b border-gray-100 mt-6 pb-4">
-          <input
-            type="text"
-            placeholder={t('admin.keyword')}
-            className="w-full max-w-md px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 mt-6 pb-4">
+          <nav className="inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start">
+            {tabs.map(x => (
+              <button
+                key={x.key}
+                type="button"
+                aria-pressed={tab === x.key}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${tab === x.key ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/60'}`}
+                onClick={() => setTab(x.key)}
+              >
+                <x.Icon className="w-4 h-4" />
+                {x.label}
+              </button>
+            ))}
+          </nav>
+          <div className="flex w-full md:w-auto md:justify-end">
+            <input
+              type="text"
+              placeholder={t('admin.keyword')}
+              className="w-full md:w-[360px] px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </div>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-10 pb-10">
@@ -1362,15 +1438,22 @@ export const CatalogPage: React.FC = () => {
         isOpen={showForm}
         onClose={() => setShowForm(false)}
         title={editingId ? (t('common.edit') || 'Edit') : (t('admin.actions.create') || 'Create')}
-        size="xl"
+        size="lg"
+        compact
       >
-        <div className="flex flex-col max-h-[75vh]">
-          <div className="flex-1 overflow-y-auto pr-1 space-y-6">
+        <div className="flex flex-col max-h-[70vh]">
+          <div className="flex-1 overflow-y-auto pr-1 space-y-5">
             {renderFormFields()}
           </div>
-          <div className="mt-6 pt-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3">
-            <Button variant="outline" onClick={() => setShowForm(false)} disabled={saving}>{t('common.cancel') || 'Cancel'}</Button>
-            <Button onClick={save} disabled={saving}>{t('common.save') || 'Save'}</Button>
+          <div className="mt-4 pt-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowForm(false)} disabled={saving || generating}>{t('common.cancel') || 'Cancel'}</Button>
+            {formKind === 'variant' && !editingId && variantCreateMode === 'batch' ? (
+              <Button onClick={runGenerateVariants} disabled={generating}>
+                {t('admin.catalog.generate.submit')}
+              </Button>
+            ) : (
+              <Button onClick={save} disabled={saving}>{t('common.save') || 'Save'}</Button>
+            )}
           </div>
         </div>
       </Modal>

@@ -10,9 +10,10 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  compact?: boolean;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md', compact }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
@@ -41,6 +42,10 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
     xl: 'max-w-6xl',
     full: 'max-w-[90vw]',
   }[size]);
+  const headerClass = compact ? 'p-3' : 'p-4';
+  const titleClass = compact ? 'text-base' : 'text-lg';
+  const bodyClass = compact ? 'p-4' : 'p-6';
+  const closeSize = compact ? 18 : 20;
 
   return ReactDOM.createPortal(
     <AnimatePresence>
@@ -63,8 +68,8 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
               role="dialog"
               aria-modal="true"
             >
-              <div className="flex items-center justify-between p-4 border-b">
-                <h3 className="text-lg font-semibold text-gray-900">
+              <div className={`flex items-center justify-between border-b ${headerClass}`}>
+                <h3 className={`${titleClass} font-semibold text-gray-900`}>
                   {title}
                 </h3>
                 <button
@@ -72,10 +77,10 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
                   className="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none"
                   aria-label={t('common.close')}
                 >
-                  <X size={20} />
+                  <X size={closeSize} />
                 </button>
               </div>
-              <div className="p-6">
+              <div className={bodyClass}>
                 {children}
               </div>
             </motion.div>
