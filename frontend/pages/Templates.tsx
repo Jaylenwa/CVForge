@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { API_BASE } from '../config';
@@ -9,6 +9,14 @@ import { CONTENT_PRESETS_SEED, JOB_CATEGORIES_SEED, JOB_ROLES_SEED, TEMPLATE_VAR
 import { JobSidebar } from '../components/templateLibrary/JobSidebar';
 import { ResumeTemplateCard } from '../components/templateLibrary/ResumeTemplateCard';
   
+const buildSeedPresetMap = () => {
+  const presetMap: Record<string, any> = {};
+  for (const p of CONTENT_PRESETS_SEED) {
+    presetMap[p.id] = p.data;
+  }
+  return presetMap;
+};
+
 export const Templates: React.FC = () => {
   React.useEffect(() => {
     document.body.classList.add('no-scrollbar');
@@ -40,7 +48,8 @@ export const Templates: React.FC = () => {
   const [jobCategories, setJobCategories] = useState<Array<{ id: string; name: string; parentId?: string; orderNum?: number }>>([]);
   const [jobRoles, setJobRoles] = useState<Array<{ id: string; categoryId: string; name: string; tags?: string[]; orderNum?: number }>>([]);
   const [variants, setVariants] = useState<Array<{ id: string; name: string; layoutTemplateId: string; presetId: string; roleId: string; tags?: string[]; usageCount?: number; isPremium?: boolean }>>([]);
-  const [presetDataMap, setPresetDataMap] = useState<Record<string, any>>({});
+  const [presetDataMap, setPresetDataMap] = useState<Record<string, any>>(() => buildSeedPresetMap());
+  const inFlightPresetIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     (async () => {
@@ -107,20 +116,11 @@ export const Templates: React.FC = () => {
         setJobCategories(cats);
         setJobRoles(roles);
         setVariants(vars);
-        const presetMap: Record<string, any> = {};
-        for (const p of CONTENT_PRESETS_SEED) {
-          presetMap[p.id] = p.data;
-        }
-        setPresetDataMap(presetMap);
       } catch {
         setJobCategories(JOB_CATEGORIES_SEED);
         setJobRoles(JOB_ROLES_SEED);
         setVariants(TEMPLATE_VARIANTS_SEED);
-        const presetMap: Record<string, any> = {};
-        for (const p of CONTENT_PRESETS_SEED) {
-          presetMap[p.id] = p.data;
-        }
-        setPresetDataMap(presetMap);
+        setPresetDataMap(buildSeedPresetMap());
       }
     })();
   }, []);
@@ -134,12 +134,6 @@ export const Templates: React.FC = () => {
     if (!rootId) return new Set<string>();
     return new Set(jobCategories.filter(c => c.parentId === rootId).map(c => c.id));
   }, [jobCategories, selectedJobCategory]);
-
-  useEffect(() => {
-    if (!selectedJobCategory && rootJobCategories.length > 0) {
-      setSelectedJobCategory(rootJobCategories.slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0))[0].id);
-    }
-  }, [rootJobCategories, selectedJobCategory]);
 
   const roleMap = useMemo(() => {
     const m: Record<string, any> = {};
@@ -186,11 +180,74 @@ export const Templates: React.FC = () => {
     qs.set('returnTo', AppRoute.Templates);
     window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?${qs.toString()}`, '_blank');
   };
-  const handlePreviewTemplate = (templateId: string) => {
-    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${templateId}`, '_blank');
+  const handlePreviewTemplate = (templateId: string, presetId?: string, variantId?: string) => {
+    const qs = new URLSearchParams();
+    qs.set('template', templateId);
+    if (presetId) qs.set('preset', presetId);
+    if (variantId) qs.set('variant', variantId);
+    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?${qs.toString()}`, '_blank');
   };
 
   const useVariantMode = !!selectedJobCategory || !!selectedJobRole;
+
+  useEffect(() => {
+    if (!useVariantMode) return;
+
+    const uniquePresetIds: string[] = [];
+    const seen = new Set<string>();
+    for (const v of filteredVariants) {
+      const id = v.presetId;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      uniquePresetIds.push(id);
+      if (uniquePresetIds.length >= 24) break;
+    }
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const fetchOne = async (presetId: string) => {
+      if (signal.aborted) return;
+      if (presetDataMap[presetId]) return;
+      if (inFlightPresetIdsRef.current.has(presetId)) return;
+      inFlightPresetIdsRef.current.add(presetId);
+      try {
+        const r = await fetch(`${API_BASE}/content-presets/${presetId}`, { signal });
+        if (!r.ok) return;
+        const p: any = await r.json();
+        const dataJson = p?.DataJSON || p?.dataJSON || p?.dataJson;
+        if (typeof dataJson !== 'string' || !dataJson.trim()) return;
+        let parsed: any = null;
+        try {
+          parsed = JSON.parse(dataJson);
+        } catch {
+          return;
+        }
+        if (!parsed || typeof parsed !== 'object') return;
+        setPresetDataMap((prev) => (prev[presetId] ? prev : { ...prev, [presetId]: parsed }));
+      } catch {
+      } finally {
+        inFlightPresetIdsRef.current.delete(presetId);
+      }
+    };
+
+    const run = async () => {
+      const queue = uniquePresetIds.slice();
+      const workers = Array.from({ length: Math.min(6, queue.length) }, async () => {
+        while (queue.length && !signal.aborted) {
+          const next = queue.shift();
+          if (!next) return;
+          await fetchOne(next);
+        }
+      });
+      await Promise.all(workers);
+    };
+
+    run();
+
+    return () => controller.abort();
+  }, [useVariantMode, filteredVariants, presetDataMap]);
+
   const sidebarCategories = useMemo(() => {
     return jobCategories;
   }, [jobCategories]);
@@ -199,12 +256,15 @@ export const Templates: React.FC = () => {
     return jobRoles.slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
   }, [jobRoles]);
 
-  const selectedCategoryIdForSidebar = selectedJobCategory || (rootJobCategories[0]?.id ?? '');
+  const selectedCategoryIdForSidebar = useMemo(() => {
+    if (!selectedJobCategory) return '';
+    const cat = jobCategories.find(c => c.id === selectedJobCategory);
+    if (cat?.parentId) return cat.parentId;
+    return selectedJobCategory;
+  }, [jobCategories, selectedJobCategory]);
 
   const clearAll = () => {
-    if (rootJobCategories.length > 0) {
-      setSelectedJobCategory(rootJobCategories.slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0))[0].id);
-    }
+    setSelectedJobCategory('');
     setSelectedJobRole('');
     setSortMode('hot');
   };
@@ -272,6 +332,7 @@ export const Templates: React.FC = () => {
                     }}
                     className="w-full bg-white border-2 border-slate-200 rounded-xl py-3 px-4 text-sm font-medium outline-none focus:border-blue-500 transition-all"
                   >
+                    <option value="">{t('templates.category.all')}</option>
                     {jobCategories
                       .slice()
                       .filter(c => !c.parentId)
@@ -319,7 +380,7 @@ export const Templates: React.FC = () => {
                     tag={roleName}
                     presetData={presetDataMap[variant.presetId] || null}
                     onUse={() => handleUseTemplate(variant.layoutTemplateId, variant.presetId, variant.id)}
-                    onPreview={() => handlePreviewTemplate(variant.layoutTemplateId)}
+                    onPreview={() => handlePreviewTemplate(variant.layoutTemplateId, variant.presetId, variant.id)}
                   />
                 );
               }

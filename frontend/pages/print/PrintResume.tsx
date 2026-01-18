@@ -4,6 +4,7 @@ import { ResumeData } from '../../types';
 import { API_BASE } from '../../config';
 import { ResumePreview } from '../editor/ResumePreview';
 import { INITIAL_RESUME } from '../../services/mockData';
+import { CONTENT_PRESETS_SEED } from '../../services/catalogSeeds';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 export const PrintResume: React.FC = () => {
@@ -14,10 +15,40 @@ export const PrintResume: React.FC = () => {
   useEffect(() => {
     const id = searchParams.get('id');
     const template = searchParams.get('template');
+    const presetId = searchParams.get('preset') || '';
+    searchParams.get('variant');
+
     if (template && !id) {
-      const demo: ResumeData = { ...INITIAL_RESUME, templateId: template };
-      setData(demo);
-      return;
+      let cancelled = false;
+      const localPreset = presetId ? CONTENT_PRESETS_SEED.find(p => p.id === presetId)?.data : null;
+
+      const resolveSeed = () => {
+        if (!presetId || localPreset) return Promise.resolve({ ...(INITIAL_RESUME as any), ...(localPreset as any) });
+        return fetch(`${API_BASE}/content-presets/${presetId}`)
+          .then(r => r.ok ? r.json() : null)
+          .then((p: any) => {
+            const dataJson = p?.DataJSON || p?.dataJSON || p?.dataJson;
+            if (typeof dataJson === 'string' && dataJson.trim()) {
+              try {
+                const parsed = JSON.parse(dataJson);
+                if (parsed && typeof parsed === 'object') {
+                  return { ...(INITIAL_RESUME as any), ...(parsed as any) };
+                }
+              } catch {}
+            }
+            return INITIAL_RESUME as any;
+          })
+          .catch(() => INITIAL_RESUME as any);
+      };
+
+      resolveSeed().then((seed: ResumeData) => {
+        if (cancelled) return;
+        const demo: ResumeData = { ...(seed as any), templateId: template };
+        setData(demo);
+        setLanguage(demo.language);
+      });
+
+      return () => { cancelled = true; };
     }
     if (!id) return;
     const token = localStorage.getItem('token');
