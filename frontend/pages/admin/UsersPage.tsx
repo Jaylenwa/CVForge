@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TableCard } from '../../components/ui/TableCard';
 import { Search, RefreshCw, Mail, ChevronLeft, ChevronRight, Lock, Ban, ShieldAlert } from 'lucide-react';
 
 export const UsersPage: React.FC = () => {
@@ -93,8 +94,9 @@ export const UsersPage: React.FC = () => {
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-10 pb-10">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
+        <TableCard>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-xs font-semibold uppercase tracking-wider">
                 <th className="px-6 py-4">{t('admin.columns.id')}</th>
@@ -187,7 +189,8 @@ export const UsersPage: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </TableCard>
         <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
           <div>
             {t('admin.total')} {total}

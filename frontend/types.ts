@@ -91,7 +91,8 @@ export enum AppRoute {
   AdminResumes = '/admin/resumes',
   AdminTemplates = '/admin/templates',
   AdminShares = '/admin/shares',
-  AdminConfigs = '/admin/configs'
+  AdminConfigs = '/admin/configs',
+  AdminCatalog = '/admin/catalog'
 }
 
 export type Language = 'en' | 'zh';

@@ -7,16 +7,16 @@ import (
 )
 
 type Template struct {
-	ID         uint `gorm:"primarykey"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	DeletedAt  gorm.DeletedAt `gorm:"uniqueIndex:uk_external_id_deleted_at,priority:10"`
-	ExternalID string         `gorm:"uniqueIndex:uk_external_id_deleted_at,priority:1;size:64"`
-	Name       string         `gorm:"size:128"`
-	Tags       string         `gorm:"size:256"` // comma-separated for简单实现
-	UsageCount int            `gorm:"default:0"`
-	IsPremium  bool           `gorm:"default:false"`
-	Category   string         `gorm:"size:64"`
+	ID         uint           `gorm:"primarykey"` // 主键
+	CreatedAt  time.Time      // 创建时间
+	UpdatedAt  time.Time      // 更新时间
+	DeletedAt  gorm.DeletedAt `gorm:"uniqueIndex:uk_template_external_id_deleted_at,priority:10"`        // 软删除时间（与 ExternalID 共同唯一）
+	ExternalID string         `gorm:"uniqueIndex:uk_template_external_id_deleted_at,priority:1;size:64"` // 业务外部 ID（模板唯一标识）
+	Name       string         `gorm:"size:128"`                                                          // 模板名称
+	Tags       string         `gorm:"size:256"`                                                          // 标签（逗号分隔）
+	UsageCount int            `gorm:"default:0"`                                                         // 使用次数
+	IsPremium  bool           `gorm:"default:false"`                                                     // 是否付费模板
+	Category   string         `gorm:"size:64"`                                                           // 行业分类（如 IT/Finance/Creative/General）
 }
 
 func (Template) TableName() string {

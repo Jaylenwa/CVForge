@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TableCard } from '../../components/ui/TableCard';
 import { RefreshCw } from 'lucide-react';
 
 export const SharesPage: React.FC = () => {
@@ -44,8 +45,9 @@ export const SharesPage: React.FC = () => {
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-10 pb-10">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+        <TableCard>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">{t('admin.columns.slug')}</th>
@@ -88,7 +90,8 @@ export const SharesPage: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </TableCard>
         <div className="flex justify-between items-center mt-4">
           <div className="text-sm text-gray-500">{t('admin.total')} {total}</div>
           <div className="space-x-2">

@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { TableCard } from '../../components/ui/TableCard';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { LanguageProvider } from '../../contexts/LanguageContext';
 import { INITIAL_RESUME } from '../../services/mockData';
@@ -104,8 +105,9 @@ export const ResumesPage: React.FC = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto px-10 pb-10">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <TableCard>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200">
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
@@ -184,7 +186,8 @@ export const ResumesPage: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </TableCard>
 
         <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
           <div>

@@ -1,14 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { getAdminStats, AdminStats } from '../../services/adminService';
+import { getAdminStats, AdminStats, importCatalogSeed } from '../../services/adminService';
 import { RefreshCw, Users, FileText, LayoutGrid, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useToast } from '../../components/ui/Toast';
 
 export const AdminHome: React.FC = () => {
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [importingCatalog, setImportingCatalog] = useState(false);
 
   const reload = async () => {
     setLoading(true);
@@ -108,9 +111,33 @@ export const AdminHome: React.FC = () => {
       <div className="px-10 pt-10 pb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.dashboard')}</h1>
-          <Button variant="outline" onClick={reload} disabled={loading}>
-            <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
-          </Button>
+          <div className="flex items-center space-x-3">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (importingCatalog) return;
+                setImportingCatalog(true);
+                try {
+                  const r = await importCatalogSeed();
+                  if (r?.success) {
+                    showToast(t('admin.msg.catalogImported'), 'success');
+                  } else {
+                    showToast(t('admin.msg.catalogImportFailed'), 'error');
+                  }
+                } catch {
+                  showToast(t('admin.msg.catalogImportFailed'), 'error');
+                } finally {
+                  setImportingCatalog(false);
+                }
+              }}
+              disabled={importingCatalog}
+            >
+              {t('admin.actions.importCatalogSeed')}
+            </Button>
+            <Button variant="outline" onClick={reload} disabled={loading}>
+              <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
+            </Button>
+          </div>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-10 pb-10">

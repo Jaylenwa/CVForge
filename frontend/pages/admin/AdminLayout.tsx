@@ -14,6 +14,7 @@ export const AdminLayout: React.FC = () => {
     { to: AppRoute.AdminResumes, label: t('admin.menu.resumes'), icon: <FileText size={18} /> },
     { to: AppRoute.AdminTemplates, label: t('admin.menu.templates'), icon: <LayoutGrid size={18} /> },
     { to: AppRoute.AdminShares, label: t('admin.menu.shares'), icon: <Share size={18} /> },
+    { to: AppRoute.AdminCatalog, label: t('admin.menu.catalog'), icon: <LayoutGrid size={18} /> },
     { to: AppRoute.AdminConfigs, label: t('admin.menu.settings'), icon: <Settings size={18} /> },
   ];
 

@@ -6,6 +6,8 @@ import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { Checkbox, Input, Label, Select, TagInput } from '../../components/ui/Form';
+import { TableCard } from '../../components/ui/TableCard';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { INITIAL_RESUME, MOCK_TEMPLATES } from '../../services/mockData';
 import { RefreshCw } from 'lucide-react';
@@ -37,7 +39,8 @@ export const TemplatesPage: React.FC = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ externalId: '', name: '', tags: '', category: '', usageCount: 0, isPremium: false });
+  const [form, setForm] = useState<{ externalId: string; name: string; tags: string[]; category: string; usageCount: number; isPremium: boolean }>({ externalId: '', name: '', tags: [], category: '', usageCount: 0, isPremium: false });
+  const [saving, setSaving] = useState(false);
 
   const [syncing, setSyncing] = useState(false);
   const [syncDone, setSyncDone] = useState(0);
@@ -111,7 +114,7 @@ export const TemplatesPage: React.FC = () => {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ externalId: '', name: '', tags: '', category: '', usageCount: 0, isPremium: false });
+    setForm({ externalId: '', name: '', tags: [], category: '', usageCount: 0, isPremium: false });
     setShowForm(true);
   };
   const openEdit = (row: Row) => {
@@ -119,26 +122,31 @@ export const TemplatesPage: React.FC = () => {
     setForm({
       externalId: row.id,
       name: row.name,
-      tags: (row.tags || []).join(','),
+      tags: row.tags || [],
       category: row.category || '',
       usageCount: row.usageCount || 0,
       isPremium: !!row.isPremium,
     });
     setShowForm(true);
   };
+  const joinTags = (tags: string[]) => tags.map(t => t.trim()).filter(Boolean).join(',');
   const submitForm = async () => {
+    if (saving) return;
+    setSaving(true);
     try {
       if (editingId) {
-        await updateTemplate(editingId, { name: form.name, tags: form.tags, category: form.category, usageCount: form.usageCount, isPremium: form.isPremium });
+        await updateTemplate(editingId, { name: form.name, tags: joinTags(form.tags), category: form.category, usageCount: form.usageCount, isPremium: form.isPremium });
         showToast(t('admin.msg.templateUpdated'), 'success');
       } else {
-        await createTemplate({ externalId: form.externalId, name: form.name, tags: form.tags, category: form.category, usageCount: form.usageCount, isPremium: form.isPremium });
+        await createTemplate({ externalId: form.externalId, name: form.name, tags: joinTags(form.tags), category: form.category, usageCount: form.usageCount, isPremium: form.isPremium });
         showToast(t('admin.msg.templateCreated'), 'success');
       }
       setShowForm(false);
       await load();
     } catch {
       showToast(editingId ? t('admin.msg.templateUpdateFailed') : t('admin.msg.templateCreateFailed'), 'error');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -218,8 +226,9 @@ export const TemplatesPage: React.FC = () => {
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-10 pb-10">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <TableCard>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200">
                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
@@ -297,7 +306,8 @@ export const TemplatesPage: React.FC = () => {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </TableCard>
         <div className="flex justify-between items-center mt-4">
           <div className="text-sm text-gray-500">{t('admin.total')} {total}</div>
           <div className="space-x-2">
@@ -312,46 +322,73 @@ export const TemplatesPage: React.FC = () => {
         </div>
       </div>
 
-      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingId ? t('admin.actions.update') : t('admin.actions.create')}>
-        <div className="space-y-3">
-          {!editingId && (
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">{t('admin.form.externalId')}</label>
-              <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.externalId')} value={form.externalId} onChange={e => setForm({ ...form, externalId: e.target.value })} />
-            </div>
-          )}
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">{t('admin.form.name')}</label>
-            <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.name')} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingId ? t('admin.actions.update') : t('admin.actions.create')} size="xl">
+        <div className="flex flex-col max-h-[75vh]">
+          <div className="flex-1 overflow-y-auto pr-1 space-y-8">
+            <section className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-1 h-5 bg-blue-600 rounded-full"></div>
+                <div className="text-sm font-semibold text-slate-900 uppercase tracking-wider">{t('admin.catalog.section.basic')}</div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {!editingId ? (
+                  <div>
+                    <Label required htmlFor="tpl-external">{t('admin.form.externalId')}</Label>
+                    <Input id="tpl-external" placeholder={t('admin.form.externalId')} value={form.externalId} onChange={e => setForm({ ...form, externalId: e.target.value })} />
+                  </div>
+                ) : (
+                  <div>
+                    <Label htmlFor="tpl-external">{t('admin.form.externalId')}</Label>
+                    <Input id="tpl-external" value={form.externalId} disabled />
+                  </div>
+                )}
+                <div>
+                  <Label required htmlFor="tpl-name">{t('admin.form.name')}</Label>
+                  <Input id="tpl-name" placeholder={t('admin.form.name')} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                </div>
+              </div>
+            </section>
+
+            <section className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-1 h-5 bg-blue-600 rounded-full"></div>
+                <div className="text-sm font-semibold text-slate-900 uppercase tracking-wider">{t('admin.catalog.section.config')}</div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="tpl-category">{t('admin.form.category')}</Label>
+                  <Select
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    options={[
+                      { label: t('admin.filter.allCategories'), value: '' },
+                      ...categories.filter(c => c !== 'All').map(c => ({ label: c, value: c })),
+                    ]}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="tpl-usage">{t('admin.form.usageCount')}</Label>
+                  <Input id="tpl-usage" type="number" min={0} placeholder={t('admin.form.usageCount')} value={String(form.usageCount)} onChange={e => setForm({ ...form, usageCount: parseInt(e.target.value || '0') })} />
+                </div>
+              </div>
+              <Checkbox label={t('admin.form.isPremium')} checked={form.isPremium} onChange={(checked) => setForm({ ...form, isPremium: checked })} />
+            </section>
+
+            <section className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-1 h-5 bg-blue-600 rounded-full"></div>
+                <div className="text-sm font-semibold text-slate-900 uppercase tracking-wider">{t('admin.catalog.section.tags')}</div>
+              </div>
+              <div>
+                <Label>{t('admin.form.tags')}</Label>
+                <TagInput tags={form.tags} onChange={(tags) => setForm({ ...form, tags })} />
+              </div>
+            </section>
           </div>
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">{t('admin.form.tags')}</label>
-            <input className="border rounded-md px-3 py-2 text-sm w-full" placeholder={t('admin.form.tags')} value={form.tags} onChange={e => setForm({ ...form, tags: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">{t('admin.form.category')}</label>
-              <input
-                className="border rounded-md px-3 py-2 text-sm w-full"
-                placeholder={t('admin.form.category')}
-                value={form.category}
-                onChange={e => setForm({ ...form, category: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">{t('admin.form.usageCount')}</label>
-              <input className="border rounded-md px-3 py-2 text-sm w-full" type="number" min={0} placeholder={t('admin.form.usageCount')} value={form.usageCount} onChange={e => setForm({ ...form, usageCount: parseInt(e.target.value || '0') })} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">{t('admin.form.isPremium')}</label>
-            <label className="inline-flex items-center space-x-2 text-sm">
-              <input type="checkbox" checked={form.isPremium} onChange={e => setForm({ ...form, isPremium: e.target.checked })} />
-              <span>{form.isPremium ? t('admin.value.yes') : t('admin.value.no')}</span>
-            </label>
-          </div>
-          <div className="pt-2 flex justify-end space-x-2">
-            <Button onClick={submitForm}>{editingId ? t('admin.actions.update') : t('admin.actions.create')}</Button>
+
+          <div className="mt-6 pt-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end space-x-3">
+            <Button variant="outline" onClick={() => setShowForm(false)} disabled={saving}>{t('common.cancel')}</Button>
+            <Button onClick={submitForm} disabled={saving}>{editingId ? t('admin.actions.update') : t('admin.actions.create')}</Button>
           </div>
         </div>
       </Modal>

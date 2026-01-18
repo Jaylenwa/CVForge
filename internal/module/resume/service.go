@@ -2,11 +2,14 @@ package resume
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"time"
 
 	"openresume/internal/common"
 	"openresume/internal/infra/cache"
 	"openresume/internal/middleware"
+	"openresume/internal/module/catalog"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -25,6 +28,9 @@ func NewService() *Service {
 type ResumeReq struct {
 	Title      string            `json:"Title"`
 	TemplateID string            `json:"TemplateID"`
+	VariantID  string            `json:"VariantID"`
+	PresetID   string            `json:"PresetID"`
+	RoleID     string            `json:"RoleID"`
 	Language   string            `json:"Language"`
 	Personal   ResumePersonalDTO `json:"Personal"`
 	Theme      ResumeThemeDTO    `json:"Theme"`
@@ -42,6 +48,111 @@ func (s *Service) CreateResume(uid uint, req ResumeReq) (Resume, error) {
 		_ = s.repo.IncrementTemplateUsage(req.TemplateID)
 		_ = cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
 	}
+	if err == nil && req.VariantID != "" {
+		_ = catalog.DefaultRepo().IncrementTemplateVariantUsage(req.VariantID)
+	}
+	return res, err
+}
+
+type CreateFromVariantReq struct {
+	VariantID string `json:"VariantID"`
+	Language  string `json:"Language"`
+	Title     string `json:"Title"`
+}
+
+func (s *Service) CreateResumeFromVariant(uid uint, req CreateFromVariantReq) (Resume, error) {
+	if req.VariantID == "" {
+		return Resume{}, errors.New("variant required")
+	}
+	cRepo := catalog.DefaultRepo()
+	variant, err := cRepo.GetTemplateVariantByExternal(req.VariantID)
+	if err != nil {
+		return Resume{}, err
+	}
+	preset, err := cRepo.GetContentPresetByExternal(variant.PresetExternalID)
+	if err != nil {
+		return Resume{}, err
+	}
+
+	type presetPayload struct {
+		Title    string            `json:"title"`
+		Language string            `json:"language"`
+		Personal ResumePersonalDTO `json:"Personal"`
+		Theme    ResumeThemeDTO    `json:"Theme"`
+		Sections []struct {
+			ID        string `json:"id"`
+			Type      string `json:"type"`
+			Title     string `json:"title"`
+			IsVisible bool   `json:"isVisible"`
+			Items     []struct {
+				ID          string `json:"id"`
+				Title       string `json:"title"`
+				Subtitle    string `json:"subtitle"`
+				Major       string `json:"major"`
+				Degree      string `json:"degree"`
+				TimeStart   string `json:"timeStart"`
+				TimeEnd     string `json:"timeEnd"`
+				Today       bool   `json:"today"`
+				Description string `json:"description"`
+			} `json:"items"`
+		} `json:"sections"`
+	}
+
+	payload := presetPayload{}
+	if preset.DataJSON != "" {
+		_ = json.Unmarshal([]byte(preset.DataJSON), &payload)
+	}
+
+	lang := req.Language
+	if lang == "" {
+		lang = payload.Language
+	}
+	if lang == "" {
+		lang = "zh"
+	}
+
+	title := req.Title
+	if title == "" {
+		title = payload.Title
+	}
+	if title == "" {
+		title = variant.Name
+	}
+
+	out := ResumeReq{
+		Title:      title,
+		TemplateID: variant.LayoutTemplateExternalID,
+		VariantID:  variant.ExternalID,
+		PresetID:   preset.ExternalID,
+		RoleID:     variant.RoleExternalID,
+		Language:   lang,
+		Personal:   payload.Personal,
+		Theme:      payload.Theme,
+	}
+	for _, sct := range payload.Sections {
+		sec := SectionDTO{
+			ExternalID: sct.ID,
+			Type:       sct.Type,
+			Title:      sct.Title,
+			IsVisible:  sct.IsVisible,
+		}
+		for _, it := range sct.Items {
+			sec.Items = append(sec.Items, ItemDTO{
+				ExternalID:  it.ID,
+				Title:       it.Title,
+				Subtitle:    it.Subtitle,
+				Major:       it.Major,
+				Degree:      it.Degree,
+				TimeStart:   it.TimeStart,
+				TimeEnd:     it.TimeEnd,
+				Today:       it.Today,
+				Description: it.Description,
+			})
+		}
+		out.Sections = append(out.Sections, sec)
+	}
+
+	res, err := s.CreateResume(uid, out)
 	return res, err
 }
 
@@ -106,6 +217,9 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 		UserID:       uid,
 		Title:        req.Title,
 		TemplateID:   req.TemplateID,
+		VariantID:    req.VariantID,
+		PresetID:     req.PresetID,
+		RoleID:       req.RoleID,
 		Language:     req.Language,
 		LastModified: time.Now().UnixMilli(),
 		Personal: ResumePersonal{

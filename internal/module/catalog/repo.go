@@ -1,6 +1,7 @@
 package catalog
 
 import (
+	"errors"
 	"strings"
 
 	"openresume/internal/infra/database"
@@ -79,9 +80,104 @@ func (r *Repo) ListTemplateVariants(roleExternalID string, categoryExternalID st
 	return list, err
 }
 
+func (r *Repo) GetTemplateVariantByExternal(externalID string) (TemplateVariant, error) {
+	var v TemplateVariant
+	err := r.db.Where("external_id = ?", externalID).Where("is_active = ?", true).First(&v).Error
+	return v, err
+}
+
 func (r *Repo) GetContentPresetByExternal(id string) (ContentPreset, error) {
 	var p ContentPreset
 	err := r.db.Where("external_id = ?", id).Where("is_active = ?", true).First(&p).Error
 	return p, err
 }
 
+func (r *Repo) UpsertJobCategory(db *gorm.DB, c *JobCategory) error {
+	if c == nil || c.ExternalID == "" {
+		return errors.New("invalid job category")
+	}
+	var existing JobCategory
+	err := db.Where("external_id = ?", c.ExternalID).First(&existing).Error
+	if err == nil {
+		existing.Name = c.Name
+		existing.ParentExternalID = c.ParentExternalID
+		existing.OrderNum = c.OrderNum
+		existing.IsActive = c.IsActive
+		return db.Save(&existing).Error
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return db.Create(c).Error
+	}
+	return err
+}
+
+func (r *Repo) UpsertJobRole(db *gorm.DB, rr *JobRole) error {
+	if rr == nil || rr.ExternalID == "" {
+		return errors.New("invalid job role")
+	}
+	var existing JobRole
+	err := db.Where("external_id = ?", rr.ExternalID).First(&existing).Error
+	if err == nil {
+		existing.CategoryExternalID = rr.CategoryExternalID
+		existing.Name = rr.Name
+		existing.Tags = rr.Tags
+		existing.OrderNum = rr.OrderNum
+		existing.IsActive = rr.IsActive
+		return db.Save(&existing).Error
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return db.Create(rr).Error
+	}
+	return err
+}
+
+func (r *Repo) UpsertContentPreset(db *gorm.DB, p *ContentPreset) error {
+	if p == nil || p.ExternalID == "" {
+		return errors.New("invalid content preset")
+	}
+	var existing ContentPreset
+	err := db.Where("external_id = ?", p.ExternalID).First(&existing).Error
+	if err == nil {
+		existing.Name = p.Name
+		existing.Language = p.Language
+		existing.RoleExternalID = p.RoleExternalID
+		existing.Tags = p.Tags
+		existing.DataJSON = p.DataJSON
+		existing.IsActive = p.IsActive
+		return db.Save(&existing).Error
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return db.Create(p).Error
+	}
+	return err
+}
+
+func (r *Repo) UpsertTemplateVariant(db *gorm.DB, v *TemplateVariant) error {
+	if v == nil || v.ExternalID == "" {
+		return errors.New("invalid template variant")
+	}
+	var existing TemplateVariant
+	err := db.Where("external_id = ?", v.ExternalID).First(&existing).Error
+	if err == nil {
+		existing.Name = v.Name
+		existing.LayoutTemplateExternalID = v.LayoutTemplateExternalID
+		existing.PresetExternalID = v.PresetExternalID
+		existing.RoleExternalID = v.RoleExternalID
+		existing.Tags = v.Tags
+		existing.UsageCount = v.UsageCount
+		existing.IsPremium = v.IsPremium
+		existing.IsActive = v.IsActive
+		return db.Save(&existing).Error
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return db.Create(v).Error
+	}
+	return err
+}
+
+func (r *Repo) IncrementTemplateVariantUsage(externalID string) error {
+	if externalID == "" {
+		return nil
+	}
+	return r.db.Model(&TemplateVariant{}).Where("external_id = ?", externalID).UpdateColumn("usage_count", gorm.Expr("usage_count + 1")).Error
+}

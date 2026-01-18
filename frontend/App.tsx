@@ -26,6 +26,7 @@ const ResumesPage = React.lazy(() => import('./pages/admin/ResumesPage').then(m 
 const TemplatesPage = React.lazy(() => import('./pages/admin/TemplatesPage').then(m => ({ default: m.TemplatesPage })));
 const SharesPage = React.lazy(() => import('./pages/admin/SharesPage').then(m => ({ default: m.SharesPage })));
 const ConfigPage = React.lazy(() => import('./pages/admin/ConfigPage').then(m => ({ default: m.ConfigPage })));
+const CatalogPage = React.lazy(() => import('./pages/admin/CatalogPage').then(m => ({ default: m.CatalogPage })));
 const AdminHome = React.lazy(() => import('./pages/admin/AdminHome').then(m => ({ default: m.AdminHome })));
 
 const LayoutWithFooter = () => (
@@ -76,6 +77,7 @@ const App: React.FC = () => {
                   <Route path={AppRoute.AdminResumes} element={<ResumesPage />} />
                   <Route path={AppRoute.AdminTemplates} element={<TemplatesPage />} />
                   <Route path={AppRoute.AdminShares} element={<SharesPage />} />
+                  <Route path={AppRoute.AdminCatalog} element={<CatalogPage />} />
                   <Route path={AppRoute.AdminConfigs} element={<ConfigPage />} />
                 </Route>
               </Route>
