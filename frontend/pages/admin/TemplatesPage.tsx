@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { API_BASE } from '../../config';
 import {
   AdminContentPreset,
@@ -31,6 +31,7 @@ import { ResumeArtboard } from '../editor/ResumePreview';
 import { INITIAL_RESUME, MOCK_TEMPLATES } from '../../services/mockData';
 import { FileText, Layers, LayoutGrid, RefreshCw, Search } from 'lucide-react';
 import { AppRoute } from '../../types';
+import { motion } from 'framer-motion';
 
 type Row = {
   id: string;
@@ -45,6 +46,9 @@ export const TemplatesPage: React.FC = () => {
 
   type TabKey = 'templates' | 'presets' | 'variants';
   const [tab, setTab] = useState<TabKey>('templates');
+  const tabNavRef = useRef<HTMLDivElement | null>(null);
+  const tabButtonRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({ templates: null, presets: null, variants: null });
+  const [tabIndicator, setTabIndicator] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
 
   const parseJSON = (s: string) => {
     try {
@@ -213,6 +217,28 @@ export const TemplatesPage: React.FC = () => {
     ],
     [t]
   );
+
+  const updateTabIndicator = useCallback(() => {
+    const nav = tabNavRef.current;
+    const btn = tabButtonRefs.current[tab];
+    if (!nav || !btn) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const left = btnRect.left - navRect.left + nav.scrollLeft;
+    const width = btnRect.width;
+    setTabIndicator({ left, width });
+  }, [tab]);
+
+  useLayoutEffect(() => {
+    updateTabIndicator();
+  }, [updateTabIndicator, tabs.length]);
+
+  useEffect(() => {
+    const handler = () => updateTabIndicator();
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, [updateTabIndicator]);
 
   const Thumbnail: React.FC<{ templateId: string }> = ({ templateId }) => {
     return (
@@ -754,7 +780,7 @@ export const TemplatesPage: React.FC = () => {
                     {t('admin.catalog.generate.failedCount')}: {generateResult.failed}
                   </span>
                 </div>
-                <div className="overflow-x-auto border border-slate-200 rounded-2xl bg-white">
+                <div className="overflow-x-auto no-scrollbar border border-slate-200 rounded-2xl bg-white">
                   <table className="w-full text-left text-sm">
                     <thead>
                       <tr className="bg-slate-50/80 border-b border-slate-200">
@@ -1015,14 +1041,27 @@ export const TemplatesPage: React.FC = () => {
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4">
-          <nav className="inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start">
+          <nav
+            ref={tabNavRef}
+            className="relative inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start overflow-x-auto no-scrollbar"
+            onScroll={updateTabIndicator}
+          >
+            <motion.div
+              className="absolute top-1 bottom-1 left-0 bg-white rounded-lg shadow-sm pointer-events-none"
+              initial={false}
+              animate={{ x: tabIndicator.left, width: tabIndicator.width, opacity: tabIndicator.width ? 1 : 0 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 40, mass: 0.4 }}
+            />
             {tabs.map((x) => (
               <button
                 key={x.key}
                 type="button"
                 aria-pressed={tab === x.key}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                  tab === x.key ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/60'
+                ref={(el) => {
+                  tabButtonRefs.current[x.key] = el;
+                }}
+                className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                  tab === x.key ? 'text-blue-600' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/60'
                 }`}
                 onClick={() => {
                   setTab(x.key);
@@ -1074,7 +1113,7 @@ export const TemplatesPage: React.FC = () => {
 
             <div className="mt-6">
               <TableCard>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto no-scrollbar">
                   <table className="w-full text-left border-collapse text-sm">
                     <thead>
                       <tr className="bg-slate-50/80 border-b border-slate-200">
@@ -1235,7 +1274,7 @@ export const TemplatesPage: React.FC = () => {
               </div>
             </div>
             <div className="mt-6">
-              <div className="overflow-x-auto">{renderCatalogTable()}</div>
+              <div className="overflow-x-auto no-scrollbar">{renderCatalogTable()}</div>
               <CatalogPagination />
             </div>
 
@@ -1287,7 +1326,7 @@ export const TemplatesPage: React.FC = () => {
               </div>
             </div>
             <div className="mt-6">
-              <div className="overflow-x-auto">{renderCatalogTable()}</div>
+              <div className="overflow-x-auto no-scrollbar">{renderCatalogTable()}</div>
               <CatalogPagination />
             </div>
 

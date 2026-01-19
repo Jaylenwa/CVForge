@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { SystemConfig } from '../../types';
 import { getSystemConfigs, updateSystemConfigs } from '../../services/configService';
 import { Button } from '../../components/ui/Button';
-import { Save, RefreshCw, ChevronDown } from 'lucide-react';
+import { Save, RefreshCw } from 'lucide-react';
 import { useToast } from '../../components/ui/Toast';
+import { motion } from 'framer-motion';
 
 export const ConfigPage: React.FC = () => {
   const { t } = useLanguage();
@@ -13,6 +14,9 @@ export const ConfigPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('General');
+  const tabNavRef = useRef<HTMLDivElement | null>(null);
+  const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [tabIndicator, setTabIndicator] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
 
   const getTabLabel = (name: string) => {
     const code = name.toLowerCase();
@@ -120,17 +124,52 @@ export const ConfigPage: React.FC = () => {
     return g;
   }, [configs]);
 
+  const tabKeys = useMemo(() => Object.keys(groups), [groups]);
+
+  const updateTabIndicator = useCallback(() => {
+    const nav = tabNavRef.current;
+    const btn = tabButtonRefs.current[activeTab];
+    if (!nav || !btn) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const left = btnRect.left - navRect.left + nav.scrollLeft;
+    const width = btnRect.width;
+    setTabIndicator({ left, width });
+  }, [activeTab]);
+
+  useLayoutEffect(() => {
+    updateTabIndicator();
+  }, [updateTabIndicator, tabKeys.length]);
+
+  useEffect(() => {
+    const handler = () => updateTabIndicator();
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, [updateTabIndicator]);
+
   return (
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4">
-          <nav className="inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start overflow-x-auto">
-            {Object.keys(groups).map((name) => (
+          <nav
+            ref={tabNavRef}
+            className="relative inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start overflow-x-auto no-scrollbar"
+            onScroll={updateTabIndicator}
+          >
+            <motion.div
+              className="absolute top-1 bottom-1 left-0 bg-white rounded-lg shadow-sm pointer-events-none"
+              initial={false}
+              animate={{ x: tabIndicator.left, width: tabIndicator.width, opacity: tabIndicator.width ? 1 : 0 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 40, mass: 0.4 }}
+            />
+            {tabKeys.map((name) => (
               <button
                 key={name}
                 type="button"
                 aria-pressed={activeTab === name}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                ref={(el) => { tabButtonRefs.current[name] = el; }}
+                className={`relative z-10 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
                   activeTab === name ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/60'
                 }`}
                 onClick={() => setActiveTab(name)}

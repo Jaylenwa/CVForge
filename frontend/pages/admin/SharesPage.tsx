@@ -62,7 +62,7 @@ export const SharesPage: React.FC = () => {
       </div>
       <div className="flex-1 overflow-y-auto px-10 pb-10">
         <TableCard>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto no-scrollbar">
             <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>

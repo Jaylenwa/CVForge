@@ -99,7 +99,7 @@ export const ResumesPage: React.FC = () => {
 
       <div className="flex-1 overflow-y-auto px-10 pb-10">
         <TableCard>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto no-scrollbar">
             <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="bg-slate-50/80 border-b border-slate-200">

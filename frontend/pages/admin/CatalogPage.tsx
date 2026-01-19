@@ -401,7 +401,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
         </div>
 
         <TableCard>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto no-scrollbar">
             <table className="w-full text-left table-fixed text-sm">
               <colgroup>
                 <col className="w-[300px]" />
@@ -734,7 +734,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
         )}
       </div>
       <div className={embedded ? 'flex-1 overflow-y-auto pb-10' : 'flex-1 overflow-y-auto px-10 pb-10'}>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto no-scrollbar">
           {renderTable()}
         </div>
       </div>
