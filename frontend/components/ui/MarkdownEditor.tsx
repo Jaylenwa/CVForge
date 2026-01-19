@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { polishText } from '../../services/geminiService';
 
 interface MarkdownEditorProps {
   value: string;

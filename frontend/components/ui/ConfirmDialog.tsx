@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useRef, useCallback } from 
 import { Modal } from './Modal';
 import { Button } from './Button';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { AlertTriangle, HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 
 interface ConfirmOptions {
   title?: string;
@@ -49,8 +49,6 @@ export const ConfirmDialogProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsOpen(false);
     resolveRef.current(true);
   };
-
-  const isDanger = options.variant === 'danger';
 
   return (
     <DialogContext.Provider value={{ confirm }}>

@@ -207,11 +207,41 @@ export const ConfigPage: React.FC = () => {
               if (activeTab === 'General') {
                 const ev = (configs.find(c => c.key === 'enable_email_verification')?.value || 'false');
                 const isOn = ev === 'true' || ev === 'on';
-                return items.filter(c => {
+                const visible = items.filter(c => {
                   if (c.key === 'enable_email_verification') return true;
                   if (c.key.startsWith('smtp_')) return isOn;
                   return true;
                 });
+                const smtpOrder: Record<string, number> = {
+                  smtp_host: 0,
+                  smtp_port: 1,
+                  smtp_user: 2,
+                  smtp_username: 2,
+                  smtp_pass: 3,
+                  smtp_password: 3,
+                  smtp_from_name: 4,
+                  smtp_secure: 5,
+                };
+                return visible
+                  .map((c, idx) => ({ c, idx }))
+                  .sort((a, b) => {
+                    const rank = (k: string) => {
+                      if (k === 'enable_email_verification') return 0;
+                      if (k.startsWith('smtp_')) return 1;
+                      if (k === 'enabled_pricing_page') return 2;
+                      return 3;
+                    };
+                    const ra = rank(a.c.key);
+                    const rb = rank(b.c.key);
+                    if (ra !== rb) return ra - rb;
+                    if (ra === 1) {
+                      const oa = smtpOrder[a.c.key] ?? 999;
+                      const ob = smtpOrder[b.c.key] ?? 999;
+                      if (oa !== ob) return oa - ob;
+                    }
+                    return a.idx - b.idx;
+                  })
+                  .map(x => x.c);
               }
               if (activeTab === 'OAuth') {
                 const wechatVal = (configs.find(c => c.key === 'enabled_wechat_login')?.value || 'false');

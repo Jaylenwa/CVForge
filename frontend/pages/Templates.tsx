@@ -65,10 +65,6 @@ export const Templates: React.FC = () => {
     })();
   }, []);
 
-  const rootJobCategories = useMemo(() => {
-    return jobCategories.filter(c => !c.parentId);
-  }, [jobCategories]);
-
   const childCategoryIdsForSelectedRoot = useMemo(() => {
     const rootId = selectedJobCategory;
     if (!rootId) return new Set<string>();
