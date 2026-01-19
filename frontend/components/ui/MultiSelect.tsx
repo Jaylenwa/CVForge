@@ -81,7 +81,7 @@ export const MultiSelect: React.FC<{
 
   const selectedLabels = useMemo(() => {
     const labelByValue = new Map(options.map((o) => [o.value, o.label]));
-    return value.map((v) => labelByValue.get(v)).filter(Boolean) as string[];
+    return value.map((v) => ({ value: v, label: labelByValue.get(v) || v }));
   }, [options, value]);
 
   const filteredOptions = useMemo(() => {
@@ -142,18 +142,18 @@ export const MultiSelect: React.FC<{
             <span className="text-slate-400 text-sm">{placeholder}</span>
           ) : (
             <>
-              {selectedLabels.slice(0, displayLimit).map((label, idx) => (
+              {selectedLabels.slice(0, displayLimit).map((opt) => (
                 <span
-                  key={label}
+                  key={opt.value}
                   className="inline-flex items-center px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100"
                 >
-                  <span className="max-w-[220px] truncate" title={label}>
-                    {label}
+                  <span className="max-w-[220px] truncate" title={opt.label}>
+                    {opt.label}
                   </span>
                   <span
                     role="button"
                     tabIndex={0}
-                    onClick={(e) => removeValue(e as any, value[idx])}
+                    onClick={(e) => removeValue(e as any, opt.value)}
                     className="ml-1 hover:text-blue-900"
                   >
                     <X size={12} />
