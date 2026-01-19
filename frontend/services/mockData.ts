@@ -1,8 +1,8 @@
 import { ResumeData, ResumeSectionType, Template } from '../types';
 
 export const MOCK_TEMPLATES: Template[] = [
-  { id: 'TemplateMintTimeline', name: '青色时间轴', tags: ['美观', '中文', 'ATS 友好'], usageCount: 0, isPremium: false, category: 'General' },
-  { id: 'TemplateClassic', name: '经典专业版', tags: ['专业', '简洁', 'ATS 友好'], usageCount: 0, isPremium: false, category: 'General' },
+  { id: 'TemplateMintTimeline', name: '青色时间轴', tags: ['美观', '中文', 'ATS 友好'] },
+  { id: 'TemplateClassic', name: '经典专业版', tags: ['专业', '简洁', 'ATS 友好'] },
 ];
 
 export const INITIAL_RESUME: ResumeData = {

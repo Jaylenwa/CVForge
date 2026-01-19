@@ -4,7 +4,6 @@ import { Button } from '../components/ui/Button';
 import { API_BASE } from '../config';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { MOCK_TEMPLATES } from '../services/mockData';
 import { CONTENT_PRESETS_SEED, JOB_CATEGORIES_SEED, JOB_ROLES_SEED, TEMPLATE_VARIANTS_SEED } from '../services/catalogSeeds';
 import { JobSidebar } from '../components/templateLibrary/JobSidebar';
 import { ResumeTemplateCard } from '../components/templateLibrary/ResumeTemplateCard';
@@ -44,37 +43,11 @@ export const Templates: React.FC = () => {
     }
   }, [searchParams]);
 
-  const [templates, setTemplates] = useState(Array<{id?:string; ExternalID?:string; name?:string; Name?:string; tags?:string[]; Tags?:string; usageCount?:number; UsageCount?:number; Popularity?:number; isPremium?:boolean; IsPremium?:boolean; category?:string; Category?:string}>());
   const [jobCategories, setJobCategories] = useState<Array<{ id: string; name: string; parentId?: string; orderNum?: number }>>([]);
   const [jobRoles, setJobRoles] = useState<Array<{ id: string; categoryId: string; name: string; tags?: string[]; orderNum?: number }>>([]);
   const [variants, setVariants] = useState<Array<{ id: string; name: string; layoutTemplateId: string; presetId: string; roleId: string; tags?: string[]; usageCount?: number; isPremium?: boolean }>>([]);
   const [presetDataMap, setPresetDataMap] = useState<Record<string, any>>(() => buildSeedPresetMap());
   const inFlightPresetIdsRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch(`${API_BASE}/templates`);
-        if (res.ok) {
-          const data = await res.json();
-          const items = (data.items || []).map((t: any) => ({
-            id: t.ExternalID || t.id,
-            name: t.Name || t.name,
-            tags: typeof t.Tags === 'string' ? (t.Tags as string).split(',') : (t.tags || []),
-            usageCount: t.UsageCount ?? t.usageCount ?? t.Popularity ?? t.popularity,
-            isPremium: t.IsPremium ?? t.isPremium,
-            category: t.Category || t.category,
-          }));
-          setTemplates(items);
-        } else {
-          throw new Error('Network response was not ok');
-        }
-      } catch (error) {
-        console.warn('Failed to fetch templates from API, falling back to mock data:', error);
-        setTemplates(MOCK_TEMPLATES);
-      }
-    })();
-  }, []);
 
   useEffect(() => {
     (async () => {
@@ -150,12 +123,6 @@ export const Templates: React.FC = () => {
     });
   }, [variants, roleMap, selectedJobCategory, selectedJobRole, childCategoryIdsForSelectedRoot]);
 
-  const filteredTemplates = useMemo(() => {
-    return templates.filter((tpl: any) => {
-      return true;
-    });
-  }, [templates]);
-
   const sortedVariants = useMemo(() => {
     const list = filteredVariants.slice();
     if (sortMode === 'hot') {
@@ -163,14 +130,6 @@ export const Templates: React.FC = () => {
     }
     return list.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), language === 'zh' ? 'zh' : 'en'));
   }, [filteredVariants, sortMode, language]);
-
-  const sortedTemplates = useMemo(() => {
-    const list = filteredTemplates.slice();
-    if (sortMode === 'hot') {
-      return list.sort((a: any, b: any) => (b.usageCount ?? 0) - (a.usageCount ?? 0));
-    }
-    return list.sort((a: any, b: any) => String(a.name || '').localeCompare(String(b.name || ''), language === 'zh' ? 'zh' : 'en'));
-  }, [filteredTemplates, sortMode, language]);
 
   const handleUseTemplate = (templateId: string, presetId?: string, variantId?: string) => {
     const qs = new URLSearchParams();
@@ -188,11 +147,7 @@ export const Templates: React.FC = () => {
     window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?${qs.toString()}`, '_blank');
   };
 
-  const useVariantMode = !!selectedJobCategory || !!selectedJobRole;
-
   useEffect(() => {
-    if (!useVariantMode) return;
-
     const uniquePresetIds: string[] = [];
     const seen = new Set<string>();
     for (const v of filteredVariants) {
@@ -246,7 +201,7 @@ export const Templates: React.FC = () => {
     run();
 
     return () => controller.abort();
-  }, [useVariantMode, filteredVariants, presetDataMap]);
+  }, [filteredVariants, presetDataMap]);
 
   const sidebarCategories = useMemo(() => {
     return jobCategories;
@@ -366,42 +321,25 @@ export const Templates: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {(useVariantMode ? sortedVariants : sortedTemplates).map((item: any) => {
-              if (useVariantMode) {
-                const variant = item;
-                const roleName = roleMap[variant.roleId]?.name || '';
-                return (
-                  <ResumeTemplateCard
-                    key={variant.id}
-                    title={variant.name}
-                    templateId={variant.layoutTemplateId}
-                    usageCount={variant.usageCount ?? 0}
-                    isPremium={variant.isPremium ?? false}
-                    tag={roleName}
-                    presetData={presetDataMap[variant.presetId] || null}
-                    onUse={() => handleUseTemplate(variant.layoutTemplateId, variant.presetId, variant.id)}
-                    onPreview={() => handlePreviewTemplate(variant.layoutTemplateId, variant.presetId, variant.id)}
-                  />
-                );
-              }
-              const tpl = item;
+            {sortedVariants.map((variant: any) => {
+              const roleName = roleMap[variant.roleId]?.name || '';
               return (
                 <ResumeTemplateCard
-                  key={tpl.id}
-                  title={tpl.name}
-                  templateId={tpl.id}
-                  usageCount={tpl.usageCount ?? 0}
-                  isPremium={tpl.isPremium ?? false}
-                  tag={tpl.category}
-                  presetData={null}
-                  onUse={() => handleUseTemplate(tpl.id)}
-                  onPreview={() => handlePreviewTemplate(tpl.id)}
+                  key={variant.id}
+                  title={variant.name}
+                  templateId={variant.layoutTemplateId}
+                  usageCount={variant.usageCount ?? 0}
+                  isPremium={variant.isPremium ?? false}
+                  tag={roleName}
+                  presetData={presetDataMap[variant.presetId] || null}
+                  onUse={() => handleUseTemplate(variant.layoutTemplateId, variant.presetId, variant.id)}
+                  onPreview={() => handlePreviewTemplate(variant.layoutTemplateId, variant.presetId, variant.id)}
                 />
               );
             })}
           </div>
 
-          {(useVariantMode ? sortedVariants.length === 0 : sortedTemplates.length === 0) ? (
+          {sortedVariants.length === 0 ? (
             <div className="mt-10 text-center py-20 bg-white rounded-2xl border border-slate-200">
               <p className="text-slate-500 text-lg font-medium">{t('templates.empty')}</p>
               <Button variant="ghost" onClick={clearAll} className="mt-4">

@@ -24,9 +24,6 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 		ExternalID string `json:"externalId"`
 		Name       string `json:"name"`
 		Tags       string `json:"tags"`
-		UsageCount *int   `json:"usageCount"`
-		IsPremium  *bool  `json:"isPremium"`
-		Category   string `json:"category"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || body.ExternalID == "" || body.Name == "" {
 		logger.WithCtx(c).Error("template.admin_create bad request", zap.Error(err))
@@ -37,13 +34,6 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 		ExternalID: body.ExternalID,
 		Name:       body.Name,
 		Tags:       body.Tags,
-		Category:   body.Category,
-	}
-	if body.UsageCount != nil {
-		mt.UsageCount = *body.UsageCount
-	}
-	if body.IsPremium != nil {
-		mt.IsPremium = *body.IsPremium
 	}
 	if err := h.svc.Create(mt); err != nil {
 		logger.WithCtx(c).Error("template.admin_create conflict", zap.Error(err))
@@ -57,9 +47,6 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 	var body struct {
 		Name       *string `json:"name"`
 		Tags       *string `json:"tags"`
-		UsageCount *int    `json:"usageCount"`
-		IsPremium  *bool   `json:"isPremium"`
-		Category   *string `json:"category"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		logger.WithCtx(c).Error("template.admin_patch bad request", zap.Error(err))
@@ -72,15 +59,6 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 		}
 		if body.Tags != nil {
 			t.Tags = strings.TrimSpace(*body.Tags)
-		}
-		if body.UsageCount != nil {
-			t.UsageCount = *body.UsageCount
-		}
-		if body.IsPremium != nil {
-			t.IsPremium = *body.IsPremium
-		}
-		if body.Category != nil {
-			t.Category = strings.TrimSpace(*body.Category)
 		}
 	})
 	if err != nil {

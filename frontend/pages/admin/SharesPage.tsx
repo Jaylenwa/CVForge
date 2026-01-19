@@ -5,7 +5,8 @@ import { useToast } from '../../components/ui/Toast';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TableCard } from '../../components/ui/TableCard';
-import { RefreshCw } from 'lucide-react';
+import { Input, Select } from '../../components/ui/Form';
+import { RefreshCw, Search } from 'lucide-react';
 
 export const SharesPage: React.FC = () => {
   const [items, setItems] = useState<AdminShare[]>([]);
@@ -30,18 +31,36 @@ export const SharesPage: React.FC = () => {
   };
   useEffect(() => { load(); }, [page, pageSize]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (page !== 1) setPage(1);
+      else load();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [keyword]);
+
   return (
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
         <div className="flex justify-between items-center">
           <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.shares')}</h1>
-          <Button variant="outline" onClick={() => load()} disabled={loading}>
-            <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
+          <Button
+            variant="outline"
+            onClick={() => load()}
+            disabled={loading}
+            icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
+          >
+            {t('common.refresh') || 'Refresh'}
           </Button>
         </div>
-        <div className="flex items-center mt-6 pb-4 border-b border-gray-100 space-x-2">
-          <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder={t('admin.slugKeyword')} className="border rounded-lg px-3 py-2 text-sm shadow-sm border-gray-200" />
-          <Button onClick={() => { setPage(1); load(); }}>{t('admin.search')}</Button>
+        <div className="flex flex-col md:flex-row md:items-center gap-4 border-b border-gray-100 mt-6 pb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder={t('admin.slugKeyword')} className="pl-10" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => { setPage(1); load(); }}>{t('admin.search')}</Button>
+          </div>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-10 pb-10">
@@ -94,14 +113,23 @@ export const SharesPage: React.FC = () => {
         </TableCard>
         <div className="flex justify-between items-center mt-4">
           <div className="text-sm text-gray-500">{t('admin.total')} {total}</div>
-          <div className="space-x-2">
-            <Button variant="outline" disabled={page === 1} onClick={() => setPage(p => Math.max(p - 1, 1))}>{t('admin.prev')}</Button>
-            <Button variant="outline" onClick={() => setPage(p => p + 1)} disabled={page * pageSize >= total}>{t('admin.next')}</Button>
-            <select className="border rounded-md px-2 py-1 text-sm" value={pageSize} onChange={e => setPageSize(parseInt(e.target.value))}>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))}>{t('admin.prev')}</Button>
+            <div className="text-sm text-gray-500 min-w-[64px] text-center">
+              {page} / {Math.max(1, Math.ceil(total / pageSize))}
+            </div>
+            <Button variant="outline" size="sm" disabled={page * pageSize >= total} onClick={() => setPage((p) => p + 1)}>{t('admin.next')}</Button>
+            <div className="w-[96px]">
+              <Select
+                value={String(pageSize)}
+                onChange={(e) => {
+                  setPage(1);
+                  setPageSize(parseInt(e.target.value, 10));
+                }}
+                options={[10, 20, 50].map((x) => ({ label: String(x), value: String(x) }))}
+                className="py-1.5"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -26,7 +26,7 @@ func (r *Repo) Count() (int64, error) {
 
 func (r *Repo) ListAll() ([]Template, error) {
 	var list []Template
-	err := r.db.Order("usage_count desc").Find(&list).Error
+	err := r.db.Order("name asc").Order("id asc").Find(&list).Error
 	return list, err
 }
 

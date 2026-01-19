@@ -47,9 +47,14 @@ export const Editor: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/templates`);
+        const res = await fetch(`${API_BASE}/template-variants`);
         const data = await res.json();
-        const items = (data.items || []).map((t: any) => ({ id: t.ExternalID || t.id }));
+        const ids = new Set<string>();
+        for (const v of data.items || []) {
+          const layoutId = v.LayoutTemplateExternalID || v.layoutTemplateId;
+          if (layoutId) ids.add(String(layoutId));
+        }
+        const items = Array.from(ids).map((id) => ({ id }));
         setTemplates(items);
       } catch {}
     })();

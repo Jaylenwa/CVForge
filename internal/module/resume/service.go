@@ -44,12 +44,11 @@ func (s *Service) ListUserResumes(uid uint) ([]Resume, error) {
 func (s *Service) CreateResume(uid uint, req ResumeReq) (Resume, error) {
 	res := s.toModel(uid, req)
 	err := s.repo.Create(&res)
-	if err == nil && req.TemplateID != "" {
-		_ = s.repo.IncrementTemplateUsage(req.TemplateID)
-		_ = cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
-	}
 	if err == nil && req.VariantID != "" {
 		_ = catalog.DefaultRepo().IncrementTemplateVariantUsage(req.VariantID)
+	} else if err == nil && req.TemplateID != "" {
+		_ = s.repo.IncrementTemplateUsage(req.TemplateID)
+		_ = cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
 	}
 	return res, err
 }

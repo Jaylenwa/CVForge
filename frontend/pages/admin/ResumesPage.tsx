@@ -5,10 +5,11 @@ import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TableCard } from '../../components/ui/TableCard';
+import { Input, Select } from '../../components/ui/Form';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { LanguageProvider } from '../../contexts/LanguageContext';
 import { INITIAL_RESUME } from '../../services/mockData';
-import { RefreshCw, Search, ChevronLeft, ChevronRight, Eye, Trash2, Globe } from 'lucide-react';
+import { RefreshCw, Search, Eye, Trash2, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppRoute } from '../../types';
 
@@ -80,26 +81,19 @@ export const ResumesPage: React.FC = () => {
       <div className="px-10 pt-10 pb-6">
         <div className="flex justify-between items-center">
           <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.resumes')}</h1>
-          <Button variant="outline" onClick={() => load()} disabled={loading}>
-            <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
+          <Button
+            variant="outline"
+            onClick={() => load()}
+            disabled={loading}
+            icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
+          >
+            {t('common.refresh') || 'Refresh'}
           </Button>
         </div>
         <div className="flex flex-col md:flex-row md:items-center gap-4 border-b border-gray-100 mt-6 pb-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t('admin.titleKeyword')}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-              value={keyword}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)}
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === 'Enter') { setPage(1); load(); }
-              }}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={() => { setPage(1); load(); }}>{t('admin.search')}</Button>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input value={keyword} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)} placeholder={t('admin.titleKeyword')} className="pl-10" />
           </div>
         </div>
       </div>
@@ -194,29 +188,26 @@ export const ResumesPage: React.FC = () => {
             {t('admin.total')} {total}
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPage((p: number) => Math.max(p - 1, 1))}
-              disabled={page === 1}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" /> {t('admin.prev')}
-            </button>
-            <div className="flex items-center gap-1 px-4">
-              <span className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg font-medium">{page}</span>
-              <span className="text-xs text-slate-500">/ {totalPages}</span>
+            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p: number) => Math.max(p - 1, 1))}>
+              {t('admin.prev')}
+            </Button>
+            <div className="min-w-[64px] text-center">
+              {page} / {Math.max(1, totalPages || Math.ceil(total / pageSize))}
             </div>
-            <button
-              onClick={() => setPage((p: number) => p + 1)}
-              disabled={!hasNext}
-              className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-colors"
-            >
-              {t('admin.next')} <ChevronRight className="w-4 h-4" />
-            </button>
-            <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-600" value={pageSize} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setPage(1); setPageSize(parseInt(e.target.value)); }}>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
+            <Button variant="outline" size="sm" disabled={!hasNext} onClick={() => setPage((p: number) => p + 1)}>
+              {t('admin.next')}
+            </Button>
+            <div className="w-[96px]">
+              <Select
+                value={String(pageSize)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  setPage(1);
+                  setPageSize(parseInt(e.target.value, 10));
+                }}
+                options={[10, 20, 50].map((x) => ({ label: String(x), value: String(x) }))}
+                className="py-1.5"
+              />
+            </div>
           </div>
         </div>
       </div>
