@@ -123,8 +123,23 @@ export const ConfigPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
-        <div className="flex justify-end items-center">
-          <div className="flex space-x-2">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4">
+          <nav className="inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start overflow-x-auto">
+            {Object.keys(groups).map((name) => (
+              <button
+                key={name}
+                type="button"
+                aria-pressed={activeTab === name}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap ${
+                  activeTab === name ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/60'
+                }`}
+                onClick={() => setActiveTab(name)}
+              >
+                {getTabLabel(name)}
+              </button>
+            ))}
+          </nav>
+          <div className="flex items-center gap-2 md:justify-end">
             <Button variant="outline" onClick={fetchConfigs} disabled={loading}>
               <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
             </Button>
@@ -132,19 +147,6 @@ export const ConfigPage: React.FC = () => {
               <Save size={16} className="mr-2" /> {t('common.save') || 'Save Changes'}
             </Button>
           </div>
-        </div>
-        <div className="flex border-b border-gray-100 overflow-x-auto mt-6">
-          {Object.keys(groups).map(name => (
-            <button
-              key={name}
-              onClick={() => setActiveTab(name)}
-              className={`flex items-center space-x-2 px-4 pb-4 border-b-2 transition-all duration-200 whitespace-nowrap ${
-                activeTab === name ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <span className="text-[15px] font-medium">{getTabLabel(name)}</span>
-            </button>
-          ))}
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-10 pb-10">
