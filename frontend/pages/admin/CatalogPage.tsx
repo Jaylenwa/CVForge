@@ -7,6 +7,7 @@ import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { RefreshCw, Search } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   adminCreateJobCategory,
   adminCreateJobRole,
@@ -483,126 +484,25 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                           </div>
                         </td>
                       </tr>
-                      {expanded ? (
-                        <>
-                          {children.map((child) => {
-                            const childRoles = rolesByCategory.get(child.ExternalID) || [];
-                            const childExpanded = keyword ? true : !!expandedCategories[child.ExternalID];
-                            return (
-                              <React.Fragment key={child.ExternalID}>
-                                <tr
-                                  className="hover:bg-blue-50/20 transition-colors bg-white cursor-pointer"
-                                  onClick={() => setExpandedCategories((prev) => ({ ...prev, [child.ExternalID]: !prev[child.ExternalID] }))}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                      e.preventDefault();
-                                      setExpandedCategories((prev) => ({ ...prev, [child.ExternalID]: !prev[child.ExternalID] }));
-                                    }
-                                  }}
-                                  tabIndex={0}
-                                >
-                                  <td className="px-4 py-4">
-                                    <div className="flex items-center gap-2 pl-5">
-                                      <button
-                                        type="button"
-                                        className="p-1 rounded hover:bg-slate-100 text-slate-400"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setExpandedCategories((prev) => ({ ...prev, [child.ExternalID]: !prev[child.ExternalID] }));
-                                        }}
-                                        title={childExpanded ? (t('admin.catalog.actions.collapse') || 'Collapse') : (t('admin.catalog.actions.expand') || 'Expand')}
-                                      >
-                                        {childExpanded ? (
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                                        ) : (
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                                        )}
-                                      </button>
-                                      <div className="min-w-0 flex-1">
-                                        <NameCell name={child.Name} id={child.ExternalID} />
-                                      </div>
-                                    </div>
-                                  </td>
-                                  <td className="px-4 py-4 text-sm text-slate-400">{childRoles.length}</td>
-                                  <td className="px-4 py-4 text-sm text-gray-500">{child.OrderNum ?? 0}</td>
-                                  <td className="px-4 py-4">
-                                    <BoolBadge value={!!child.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
-                                  </td>
-                                  <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
-                                    <div className="flex items-center justify-end gap-1">
-                                      <button
-                                        type="button"
-                                        onClick={() => openCreateRole(child.ExternalID)}
-                                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                                        title={t('admin.catalog.actions.addRole') || 'Add role'}
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                                      </button>
-                                      <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditCategory(child)} kind="edit" />
-                                      <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('category', child.ExternalID)} kind="delete" />
-                                    </div>
-                                  </td>
-                                </tr>
-                                {childExpanded
-                                  ? childRoles.map((r) => (
-                                      <tr key={r.ExternalID} className="hover:bg-blue-50/10 transition-colors bg-white">
-                                        <td className="px-4 py-4">
-                                          <div className="flex items-start gap-2 pl-12">
-                                            <div className="w-4 h-4 text-slate-200">
-                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                              <NameCell name={r.Name} id={r.ExternalID} />
-                                            </div>
-                                          </div>
-                                        </td>
-                                        <td className="px-4 py-4">
-                                          <div className="flex flex-wrap gap-1.5">
-                                            {parseTags(r.Tags).slice(0, 6).map((tag) => (
-                                              <span
-                                                key={tag}
-                                                title={tag}
-                                                className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-600 font-medium hover:border-indigo-300 hover:bg-indigo-50 transition-colors max-w-[200px] truncate"
-                                              >
-                                                {tag}
-                                              </span>
-                                            ))}
-                                            {parseTags(r.Tags).length > 6 ? (
-                                              <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-500 font-medium">
-                                                +{parseTags(r.Tags).length - 6}
-                                              </span>
-                                            ) : null}
-                                          </div>
-                                        </td>
-                                        <td className="px-4 py-4 text-sm text-gray-500">{r.OrderNum ?? 0}</td>
-                                        <td className="px-4 py-4">
-                                          <BoolBadge value={!!r.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
-                                        </td>
-                                        <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
-                                          <div className="flex items-center justify-end gap-1">
-                                            <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
-                                            <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.ExternalID)} kind="delete" />
-                                          </div>
-                                        </td>
-                                      </tr>
-                                    ))
-                                  : null}
-                              </React.Fragment>
-                            );
-                          })}
-                          {rootRoles.length ? (
-                            (() => {
-                              const key = `${c.ExternalID}__ungrouped`;
-                              const ungroupedExpanded = keyword ? true : !!expandedCategories[key];
+                      <AnimatePresence initial={false}>
+                        {expanded ? (
+                          <React.Fragment key={`${c.ExternalID}__expanded`}>
+                            {children.map((child, idx) => {
+                              const childRoles = rolesByCategory.get(child.ExternalID) || [];
+                              const childExpanded = keyword ? true : !!expandedCategories[child.ExternalID];
                               return (
-                                <React.Fragment key={key}>
-                                  <tr
+                                <React.Fragment key={child.ExternalID}>
+                                  <motion.tr
+                                    initial={{ opacity: 0, y: -6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.16, delay: Math.min(0.06, idx * 0.01) }}
                                     className="hover:bg-blue-50/20 transition-colors bg-white cursor-pointer"
-                                    onClick={() => setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }))}
+                                    onClick={() => setExpandedCategories((prev) => ({ ...prev, [child.ExternalID]: !prev[child.ExternalID] }))}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter' || e.key === ' ') {
                                         e.preventDefault();
-                                        setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
+                                        setExpandedCategories((prev) => ({ ...prev, [child.ExternalID]: !prev[child.ExternalID] }));
                                       }
                                     }}
                                     tabIndex={0}
@@ -614,73 +514,203 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                           className="p-1 rounded hover:bg-slate-100 text-slate-400"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
+                                            setExpandedCategories((prev) => ({ ...prev, [child.ExternalID]: !prev[child.ExternalID] }));
                                           }}
+                                          title={childExpanded ? (t('admin.catalog.actions.collapse') || 'Collapse') : (t('admin.catalog.actions.expand') || 'Expand')}
                                         >
-                                          {ungroupedExpanded ? (
+                                          {childExpanded ? (
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                                           ) : (
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                                           )}
                                         </button>
-                                        <div className="text-sm font-medium text-slate-500">{t('admin.catalog.jobs.ungrouped') || '未分组'}</div>
+                                        <div className="min-w-0 flex-1">
+                                          <NameCell name={child.Name} id={child.ExternalID} />
+                                        </div>
                                       </div>
                                     </td>
-                                    <td className="px-4 py-4 text-sm text-slate-400">{rootRoles.length}</td>
-                                    <td className="px-4 py-4 text-sm text-gray-300">-</td>
-                                    <td className="px-4 py-4 text-sm text-gray-300">-</td>
-                                    <td className="px-4 py-4 sticky right-0 bg-white" onClick={(e) => e.stopPropagation()} />
-                                  </tr>
-                                  {ungroupedExpanded
-                                    ? rootRoles.map((r) => (
-                                        <tr key={r.ExternalID} className="hover:bg-blue-50/10 transition-colors bg-white">
-                                          <td className="px-4 py-4">
-                                            <div className="flex items-start gap-2 pl-12">
-                                              <div className="w-4 h-4 text-slate-200">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
+                                    <td className="px-4 py-4 text-sm text-slate-400">{childRoles.length}</td>
+                                    <td className="px-4 py-4 text-sm text-gray-500">{child.OrderNum ?? 0}</td>
+                                    <td className="px-4 py-4">
+                                      <BoolBadge value={!!child.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
+                                    </td>
+                                    <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
+                                      <div className="flex items-center justify-end gap-1">
+                                        <button
+                                          type="button"
+                                          onClick={() => openCreateRole(child.ExternalID)}
+                                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                          title={t('admin.catalog.actions.addRole') || 'Add role'}
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                        </button>
+                                        <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditCategory(child)} kind="edit" />
+                                        <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('category', child.ExternalID)} kind="delete" />
+                                      </div>
+                                    </td>
+                                  </motion.tr>
+
+                                  <AnimatePresence initial={false}>
+                                    {childExpanded
+                                      ? childRoles.map((r, ridx) => (
+                                          <motion.tr
+                                            key={r.ExternalID}
+                                            initial={{ opacity: 0, y: -6 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -6 }}
+                                            transition={{ duration: 0.16, delay: Math.min(0.06, ridx * 0.008) }}
+                                            className="hover:bg-blue-50/10 transition-colors bg-white"
+                                          >
+                                            <td className="px-4 py-4">
+                                              <div className="flex items-start gap-2 pl-12">
+                                                <div className="w-4 h-4 text-slate-200">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
+                                                </div>
+                                                <div className="min-w-0 flex-1">
+                                                  <NameCell name={r.Name} id={r.ExternalID} />
+                                                </div>
                                               </div>
-                                              <div className="min-w-0 flex-1">
-                                                <NameCell name={r.Name} id={r.ExternalID} />
+                                            </td>
+                                            <td className="px-4 py-4">
+                                              <div className="flex flex-wrap gap-1.5">
+                                                {parseTags(r.Tags).slice(0, 6).map((tag) => (
+                                                  <span
+                                                    key={tag}
+                                                    title={tag}
+                                                    className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-600 font-medium hover:border-indigo-300 hover:bg-indigo-50 transition-colors max-w-[200px] truncate"
+                                                  >
+                                                    {tag}
+                                                  </span>
+                                                ))}
+                                                {parseTags(r.Tags).length > 6 ? (
+                                                  <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-500 font-medium">
+                                                    +{parseTags(r.Tags).length - 6}
+                                                  </span>
+                                                ) : null}
                                               </div>
-                                            </div>
-                                          </td>
-                                          <td className="px-4 py-4">
-                                            <div className="flex flex-wrap gap-1.5">
-                                              {parseTags(r.Tags).slice(0, 6).map((tag) => (
-                                                <span
-                                                  key={tag}
-                                                  title={tag}
-                                                  className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-600 font-medium hover:border-indigo-300 hover:bg-indigo-50 transition-colors max-w-[200px] truncate"
-                                                >
-                                                  {tag}
-                                                </span>
-                                              ))}
-                                              {parseTags(r.Tags).length > 6 ? (
-                                                <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-500 font-medium">
-                                                  +{parseTags(r.Tags).length - 6}
-                                                </span>
-                                              ) : null}
-                                            </div>
-                                          </td>
-                                          <td className="px-4 py-4 text-sm text-gray-500">{r.OrderNum ?? 0}</td>
-                                          <td className="px-4 py-4">
-                                            <BoolBadge value={!!r.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
-                                          </td>
-                                          <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
-                                            <div className="flex items-center justify-end gap-1">
-                                              <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
-                                              <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.ExternalID)} kind="delete" />
-                                            </div>
-                                          </td>
-                                        </tr>
-                                      ))
-                                    : null}
+                                            </td>
+                                            <td className="px-4 py-4 text-sm text-gray-500">{r.OrderNum ?? 0}</td>
+                                            <td className="px-4 py-4">
+                                              <BoolBadge value={!!r.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
+                                            </td>
+                                            <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
+                                              <div className="flex items-center justify-end gap-1">
+                                                <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
+                                                <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.ExternalID)} kind="delete" />
+                                              </div>
+                                            </td>
+                                          </motion.tr>
+                                        ))
+                                      : null}
+                                  </AnimatePresence>
                                 </React.Fragment>
                               );
-                            })()
-                          ) : null}
-                        </>
-                      ) : null}
+                            })}
+                            {rootRoles.length ? (
+                              (() => {
+                                const key = `${c.ExternalID}__ungrouped`;
+                                const ungroupedExpanded = keyword ? true : !!expandedCategories[key];
+                                return (
+                                  <React.Fragment key={key}>
+                                    <motion.tr
+                                      initial={{ opacity: 0, y: -6 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      exit={{ opacity: 0, y: -6 }}
+                                      transition={{ duration: 0.16 }}
+                                      className="hover:bg-blue-50/20 transition-colors bg-white cursor-pointer"
+                                      onClick={() => setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }))}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                          e.preventDefault();
+                                          setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
+                                        }
+                                      }}
+                                      tabIndex={0}
+                                    >
+                                      <td className="px-4 py-4">
+                                        <div className="flex items-center gap-2 pl-5">
+                                          <button
+                                            type="button"
+                                            className="p-1 rounded hover:bg-slate-100 text-slate-400"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
+                                            }}
+                                          >
+                                            {ungroupedExpanded ? (
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                            ) : (
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                            )}
+                                          </button>
+                                          <div className="text-sm font-medium text-slate-500">{t('admin.catalog.jobs.ungrouped') || '未分组'}</div>
+                                        </div>
+                                      </td>
+                                      <td className="px-4 py-4 text-sm text-slate-400">{rootRoles.length}</td>
+                                      <td className="px-4 py-4 text-sm text-gray-300">-</td>
+                                      <td className="px-4 py-4 text-sm text-gray-300">-</td>
+                                      <td className="px-4 py-4 sticky right-0 bg-white" onClick={(e) => e.stopPropagation()} />
+                                    </motion.tr>
+                                    <AnimatePresence initial={false}>
+                                      {ungroupedExpanded
+                                        ? rootRoles.map((r, ridx) => (
+                                            <motion.tr
+                                              key={r.ExternalID}
+                                              initial={{ opacity: 0, y: -6 }}
+                                              animate={{ opacity: 1, y: 0 }}
+                                              exit={{ opacity: 0, y: -6 }}
+                                              transition={{ duration: 0.16, delay: Math.min(0.06, ridx * 0.008) }}
+                                              className="hover:bg-blue-50/10 transition-colors bg-white"
+                                            >
+                                              <td className="px-4 py-4">
+                                                <div className="flex items-start gap-2 pl-12">
+                                                  <div className="w-4 h-4 text-slate-200">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
+                                                  </div>
+                                                  <div className="min-w-0 flex-1">
+                                                    <NameCell name={r.Name} id={r.ExternalID} />
+                                                  </div>
+                                                </div>
+                                              </td>
+                                              <td className="px-4 py-4">
+                                                <div className="flex flex-wrap gap-1.5">
+                                                  {parseTags(r.Tags).slice(0, 6).map((tag) => (
+                                                    <span
+                                                      key={tag}
+                                                      title={tag}
+                                                      className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-600 font-medium hover:border-indigo-300 hover:bg-indigo-50 transition-colors max-w-[200px] truncate"
+                                                    >
+                                                      {tag}
+                                                    </span>
+                                                  ))}
+                                                  {parseTags(r.Tags).length > 6 ? (
+                                                    <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-500 font-medium">
+                                                      +{parseTags(r.Tags).length - 6}
+                                                    </span>
+                                                  ) : null}
+                                                </div>
+                                              </td>
+                                              <td className="px-4 py-4 text-sm text-gray-500">{r.OrderNum ?? 0}</td>
+                                              <td className="px-4 py-4">
+                                                <BoolBadge value={!!r.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
+                                              </td>
+                                              <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
+                                                <div className="flex items-center justify-end gap-1">
+                                                  <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
+                                                  <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.ExternalID)} kind="delete" />
+                                                </div>
+                                              </td>
+                                            </motion.tr>
+                                          ))
+                                        : null}
+                                    </AnimatePresence>
+                                  </React.Fragment>
+                                );
+                              })()
+                            ) : null}
+                          </React.Fragment>
+                        ) : null}
+                      </AnimatePresence>
                     </React.Fragment>
                   );
                 })}
