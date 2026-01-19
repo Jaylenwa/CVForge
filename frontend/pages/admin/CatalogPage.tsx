@@ -24,7 +24,6 @@ type FormKind = 'category' | 'role';
 
 type CatalogPageProps = {
   embedded?: boolean;
-  title?: string;
 };
 
 const parseTags = (v: any): string[] => {
@@ -37,7 +36,7 @@ const parseTags = (v: any): string[] => {
 
 const joinTags = (tags: any): string => parseTags(tags).join(',');
 
-export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded, title }) => {
+export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
   const { t } = useLanguage();
   const { showToast } = useToast();
   const confirm = useConfirm();
@@ -97,8 +96,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded, title }) => 
       </button>
     );
   };
-
-  const pageTitle = title ?? t('admin.menu.catalog');
 
   const load = async () => {
     setLoading(true);
@@ -717,30 +714,23 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded, title }) => 
             </div>
           </div>
         ) : (
-          <>
-            <div className="flex justify-between items-center">
-              <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{pageTitle}</h1>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => load()}
-                  disabled={loading}
-                  icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-                >
-                  {t('common.refresh') || 'Refresh'}
-                </Button>
-                <Button onClick={openCreate}>{t('admin.actions.create') || 'Create'}</Button>
-              </div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4">
+            <div className="relative w-full md:w-[360px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('admin.keyword')} className="pl-10" />
             </div>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4 border-b border-gray-100 mt-6 pb-4">
-              <div className="flex w-full md:w-auto md:justify-end">
-                <div className="relative w-full md:w-[360px]">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('admin.keyword')} className="pl-10" />
-                </div>
-              </div>
+            <div className="flex items-center gap-2 md:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => load()}
+                disabled={loading}
+                icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
+              >
+                {t('common.refresh') || 'Refresh'}
+              </Button>
+              <Button onClick={openCreate}>{t('admin.actions.create') || 'Create'}</Button>
             </div>
-          </>
+          </div>
         )}
       </div>
       <div className={embedded ? 'flex-1 overflow-y-auto pb-10' : 'flex-1 overflow-y-auto px-10 pb-10'}>

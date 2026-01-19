@@ -123,8 +123,7 @@ export const ConfigPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold text-gray-800">{t('admin.menu.settings')}</h1>
+        <div className="flex justify-end items-center">
           <div className="flex space-x-2">
             <Button variant="outline" onClick={fetchConfigs} disabled={loading}>
               <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}

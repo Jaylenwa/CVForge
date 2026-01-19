@@ -1014,10 +1014,7 @@ export const TemplatesPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.templates')}</h1>
-        </div>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 mt-6 pb-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4">
           <nav className="inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start">
             {tabs.map((x) => (
               <button

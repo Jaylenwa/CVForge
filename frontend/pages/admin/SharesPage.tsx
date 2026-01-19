@@ -42,24 +42,21 @@ export const SharesPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.shares')}</h1>
-          <Button
-            variant="outline"
-            onClick={() => load()}
-            disabled={loading}
-            icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-          >
-            {t('common.refresh') || 'Refresh'}
-          </Button>
-        </div>
-        <div className="flex flex-col md:flex-row md:items-center gap-4 border-b border-gray-100 mt-6 pb-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder={t('admin.slugKeyword')} className="pl-10" />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 md:justify-end">
             <Button onClick={() => { setPage(1); load(); }}>{t('admin.search')}</Button>
+            <Button
+              variant="outline"
+              onClick={() => load()}
+              disabled={loading}
+              icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
+            >
+              {t('common.refresh') || 'Refresh'}
+            </Button>
           </div>
         </div>
       </div>

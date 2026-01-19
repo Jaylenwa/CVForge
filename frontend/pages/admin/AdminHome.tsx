@@ -109,8 +109,7 @@ export const AdminHome: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">{t('admin.menu.dashboard')}</h1>
+        <div className="flex items-center justify-end">
           <div className="flex items-center space-x-3">
             <Button
               variant="outline"
