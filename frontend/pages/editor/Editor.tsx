@@ -9,6 +9,7 @@ import { Modal } from '../../components/ui/Modal';
 import { DownloadModal } from '../../components/ui/DownloadModal';
 import { INITIAL_RESUME } from '../../services/mockData';
 import { CONTENT_PRESETS_SEED } from '../../services/catalogSeeds';
+import { fetchContentPresetData, listTemplateVariants } from '../../services/catalogService';
 import { ResumeData, AppRoute, Language } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useToast } from '../../components/ui/Toast';
@@ -47,12 +48,10 @@ export const Editor: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/template-variants`);
-        const data = await res.json();
         const ids = new Set<string>();
-        for (const v of data.items || []) {
-          const layoutId = v.LayoutTemplateExternalID || v.layoutTemplateId;
-          if (layoutId) ids.add(String(layoutId));
+        const variants = await listTemplateVariants();
+        for (const v of variants) {
+          if (v.layoutTemplateId) ids.add(String(v.layoutTemplateId));
         }
         const items = Array.from(ids).map((id) => ({ id }));
         setTemplates(items);
@@ -114,20 +113,8 @@ export const Editor: React.FC = () => {
         const baseSeed: ResumeData = { ...(INITIAL_RESUME as any), ...(localPreset as any) };
         const resolveSeed = () => {
           if (!presetId || localPreset) return Promise.resolve(baseSeed);
-          return fetch(`${API_BASE}/content-presets/${presetId}`)
-            .then(r => r.ok ? r.json() : null)
-            .then((p: any) => {
-              const dataJson = p?.DataJSON || p?.dataJSON || p?.dataJson;
-              if (typeof dataJson === 'string' && dataJson.trim()) {
-                try {
-                  const parsed = JSON.parse(dataJson);
-                  if (parsed && typeof parsed === 'object') {
-                    return { ...(INITIAL_RESUME as any), ...(parsed as any) };
-                  }
-                } catch {}
-              }
-              return baseSeed;
-            })
+          return fetchContentPresetData(presetId)
+            .then((parsed) => parsed && typeof parsed === 'object' ? ({ ...(INITIAL_RESUME as any), ...(parsed as any) }) : baseSeed)
             .catch(() => baseSeed);
         };
         resolveSeed().then((seed: ResumeData) => {

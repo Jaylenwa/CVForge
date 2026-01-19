@@ -1,9 +1,10 @@
 package catalog
 
 import (
-	"encoding/json"
 	"errors"
 	"strings"
+
+	"openresume/internal/module/preset"
 
 	"gorm.io/gorm"
 )
@@ -128,16 +129,18 @@ func (r *Repo) AdminCreateContentPreset(p *ContentPreset) error {
 	if p == nil || strings.TrimSpace(p.ExternalID) == "" || strings.TrimSpace(p.Name) == "" {
 		return errors.New("invalid")
 	}
-	if p.DataJSON != "" && !json.Valid([]byte(p.DataJSON)) {
-		return errors.New("invalid_json")
+	if err := preset.ValidatePresetDataJSON(p.DataJSON); err != nil {
+		return err
 	}
 	return r.db.Create(p).Error
 }
 
 func (r *Repo) AdminPatchContentPreset(externalID string, patch map[string]any) error {
 	if v, ok := patch["data_json"]; ok {
-		if s, ok := v.(string); ok && strings.TrimSpace(s) != "" && !json.Valid([]byte(s)) {
-			return errors.New("invalid_json")
+		if s, ok := v.(string); ok {
+			if err := preset.ValidatePresetDataJSON(s); err != nil {
+				return err
+			}
 		}
 	}
 	return r.db.Model(&ContentPreset{}).Where("external_id = ?", externalID).Updates(patch).Error

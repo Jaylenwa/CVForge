@@ -7,13 +7,16 @@ import (
 	"openresume/internal/middleware"
 	"openresume/internal/module/ai"
 	"openresume/internal/module/auth"
-	"openresume/internal/module/catalog"
 	conf "openresume/internal/module/config"
 	"openresume/internal/module/health"
+	"openresume/internal/module/library"
 	"openresume/internal/module/pdf"
+	"openresume/internal/module/preset"
 	"openresume/internal/module/resume"
+	"openresume/internal/module/seed"
 	"openresume/internal/module/share"
 	"openresume/internal/module/stats"
+	"openresume/internal/module/taxonomy"
 	"openresume/internal/module/template"
 	"openresume/internal/module/upload"
 	"openresume/internal/module/user"
@@ -37,11 +40,13 @@ func Init() *gin.Engine {
 	api.GET("/templates", templateH.ListAll)
 	api.GET("/templates/:id", templateH.GetByID)
 
-	catalogH := catalog.NewHandler()
-	api.GET("/job-categories", catalogH.ListJobCategories)
-	api.GET("/job-roles", catalogH.ListJobRoles)
-	api.GET("/template-variants", catalogH.ListTemplateVariants)
-	api.GET("/content-presets/:id", catalogH.GetContentPreset)
+	taxH := taxonomy.NewHandler()
+	api.GET("/taxonomy/categories", taxH.ListCategories)
+	api.GET("/taxonomy/roles", taxH.ListRoles)
+	libraryH := library.NewHandler()
+	api.GET("/library/variants", libraryH.ListVariants)
+	presetH := preset.NewHandler()
+	api.GET("/presets/:id", presetH.GetByID)
 
 	authR := api.Group("/auth")
 	authR.GET("/config", confHandler.GetPublic)
@@ -107,25 +112,31 @@ func Init() *gin.Engine {
 	adm.PATCH("/share-links/:slug", shareAdmH.AdminUpdate)
 	adm.DELETE("/share-links/:slug", shareAdmH.AdminDelete)
 
-	catalogAdmH := catalog.NewAdminHandler()
-	adm.POST("/catalog/import-seed", catalogAdmH.AdminImportSeed)
-	adm.GET("/catalog/job-categories", catalogAdmH.AdminListJobCategories)
-	adm.POST("/catalog/job-categories", catalogAdmH.AdminCreateJobCategory)
-	adm.PATCH("/catalog/job-categories/:id", catalogAdmH.AdminPatchJobCategory)
-	adm.DELETE("/catalog/job-categories/:id", catalogAdmH.AdminDeleteJobCategory)
-	adm.GET("/catalog/job-roles", catalogAdmH.AdminListJobRoles)
-	adm.POST("/catalog/job-roles", catalogAdmH.AdminCreateJobRole)
-	adm.PATCH("/catalog/job-roles/:id", catalogAdmH.AdminPatchJobRole)
-	adm.DELETE("/catalog/job-roles/:id", catalogAdmH.AdminDeleteJobRole)
-	adm.GET("/catalog/content-presets", catalogAdmH.AdminListContentPresets)
-	adm.POST("/catalog/content-presets", catalogAdmH.AdminCreateContentPreset)
-	adm.PATCH("/catalog/content-presets/:id", catalogAdmH.AdminPatchContentPreset)
-	adm.DELETE("/catalog/content-presets/:id", catalogAdmH.AdminDeleteContentPreset)
-	adm.GET("/catalog/template-variants", catalogAdmH.AdminListTemplateVariants)
-	adm.POST("/catalog/template-variants", catalogAdmH.AdminCreateTemplateVariant)
-	adm.PATCH("/catalog/template-variants/:id", catalogAdmH.AdminPatchTemplateVariant)
-	adm.DELETE("/catalog/template-variants/:id", catalogAdmH.AdminDeleteTemplateVariant)
-	adm.POST("/catalog/template-variants/generate", catalogAdmH.AdminGenerateTemplateVariants)
+	seedAdmH := seed.NewAdminHandler()
+	adm.POST("/seed/import-default", seedAdmH.AdminImportDefault)
+
+	taxAdmH := taxonomy.NewAdminHandler()
+	adm.GET("/taxonomy/categories", taxAdmH.AdminListCategories)
+	adm.POST("/taxonomy/categories", taxAdmH.AdminCreateCategory)
+	adm.PATCH("/taxonomy/categories/:id", taxAdmH.AdminPatchCategory)
+	adm.DELETE("/taxonomy/categories/:id", taxAdmH.AdminDeleteCategory)
+	adm.GET("/taxonomy/roles", taxAdmH.AdminListRoles)
+	adm.POST("/taxonomy/roles", taxAdmH.AdminCreateRole)
+	adm.PATCH("/taxonomy/roles/:id", taxAdmH.AdminPatchRole)
+	adm.DELETE("/taxonomy/roles/:id", taxAdmH.AdminDeleteRole)
+
+	presetAdmH := preset.NewAdminHandler()
+	adm.GET("/presets", presetAdmH.AdminListPresets)
+	adm.POST("/presets", presetAdmH.AdminCreatePreset)
+	adm.PATCH("/presets/:id", presetAdmH.AdminPatchPreset)
+	adm.DELETE("/presets/:id", presetAdmH.AdminDeletePreset)
+
+	libraryAdmH := library.NewAdminHandler()
+	adm.GET("/library/variants", libraryAdmH.AdminListVariants)
+	adm.POST("/library/variants", libraryAdmH.AdminCreateVariant)
+	adm.PATCH("/library/variants/:id", libraryAdmH.AdminPatchVariant)
+	adm.DELETE("/library/variants/:id", libraryAdmH.AdminDeleteVariant)
+	adm.POST("/library/variants/generate", libraryAdmH.AdminGenerateVariants)
 
 	statsH := stats.NewHandler()
 	adm.GET("/stats", statsH.AdminStats)

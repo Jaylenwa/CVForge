@@ -36,22 +36,20 @@ export type TemplateVariantSeed = {
 };
 
 export const JOB_CATEGORIES_SEED: JobCategorySeed[] = [
-  { id: 'tech', name: '技术 / 研发', orderNum: 10 },
-  { id: 'product', name: '产品 / 设计', orderNum: 20 },
-  { id: 'ops', name: '运维 / 技术支持', orderNum: 30 },
+  { id: 'it', name: 'IT | 互联网', orderNum: 10 },
+  { id: 'it_backend', name: '后端开发/程序员', parentId: 'it', orderNum: 10 },
 ];
 
 export const JOB_ROLES_SEED: JobRoleSeed[] = [
-  { id: 'java_dev', categoryId: 'tech', name: 'Java 开发工程师', tags: ['Java', '后端'], orderNum: 10 },
-  { id: 'frontend_dev', categoryId: 'tech', name: '前端工程师', tags: ['React', 'TypeScript'], orderNum: 20 },
+  { id: 'java', categoryId: 'it_backend', name: 'Java', tags: ['Java', '后端'], orderNum: 10 },
 ];
 
 export const CONTENT_PRESETS_SEED: ContentPresetSeed[] = [
   {
-    id: 'java_dev_zh',
+    id: 'it_backend_java_zh',
     name: 'Java 开发（中文示例）',
     language: 'zh',
-    roleId: 'java_dev',
+    roleId: 'java',
     tags: ['Java', '后端', 'Spring'],
     data: {
       title: 'Java 开发工程师简历',
@@ -134,24 +132,23 @@ export const CONTENT_PRESETS_SEED: ContentPresetSeed[] = [
 
 export const TEMPLATE_VARIANTS_SEED: TemplateVariantSeed[] = [
   {
-    id: 'mint_java_dev_zh',
+    id: 'mint_it_backend_java_zh',
     name: '青色时间轴 - Java 开发',
     layoutTemplateId: 'TemplateMintTimeline',
-    presetId: 'java_dev_zh',
-    roleId: 'java_dev',
+    presetId: 'it_backend_java_zh',
+    roleId: 'java',
     tags: ['Java', '后端', '中文'],
     usageCount: 0,
     isPremium: false,
   },
   {
-    id: 'classic_java_dev_zh',
+    id: 'classic_it_backend_java_zh',
     name: '经典专业版 - Java 开发',
     layoutTemplateId: 'TemplateClassic',
-    presetId: 'java_dev_zh',
-    roleId: 'java_dev',
+    presetId: 'it_backend_java_zh',
+    roleId: 'java',
     tags: ['Java', '后端', '中文'],
     usageCount: 0,
     isPremium: false,
   },
 ];
-

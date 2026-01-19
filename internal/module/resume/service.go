@@ -9,7 +9,8 @@ import (
 	"openresume/internal/common"
 	"openresume/internal/infra/cache"
 	"openresume/internal/middleware"
-	"openresume/internal/module/catalog"
+	"openresume/internal/module/library"
+	"openresume/internal/module/preset"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -45,7 +46,7 @@ func (s *Service) CreateResume(uid uint, req ResumeReq) (Resume, error) {
 	res := s.toModel(uid, req)
 	err := s.repo.Create(&res)
 	if err == nil && req.VariantID != "" {
-		_ = catalog.DefaultRepo().IncrementTemplateVariantUsage(req.VariantID)
+		_ = library.DefaultRepo().IncrementTemplateVariantUsage(req.VariantID)
 	} else if err == nil && req.TemplateID != "" {
 		_ = s.repo.IncrementTemplateUsage(req.TemplateID)
 		_ = cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
@@ -63,12 +64,13 @@ func (s *Service) CreateResumeFromVariant(uid uint, req CreateFromVariantReq) (R
 	if req.VariantID == "" {
 		return Resume{}, errors.New("variant required")
 	}
-	cRepo := catalog.DefaultRepo()
-	variant, err := cRepo.GetTemplateVariantByExternal(req.VariantID)
+	libRepo := library.DefaultRepo()
+	variant, err := libRepo.GetTemplateVariantByExternal(req.VariantID)
 	if err != nil {
 		return Resume{}, err
 	}
-	preset, err := cRepo.GetContentPresetByExternal(variant.PresetExternalID)
+	pRepo := preset.DefaultRepo()
+	preset, err := pRepo.GetByExternalActive(variant.PresetExternalID)
 	if err != nil {
 		return Resume{}, err
 	}

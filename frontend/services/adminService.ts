@@ -24,8 +24,8 @@ export const getAdminStats = async (days = 14): Promise<AdminStats> => {
   return res.json();
 };
 
-export const importCatalogSeed = async () => {
-  const res = await fetch(`${API_BASE}/admin/catalog/import-seed`, { method: 'POST', headers: authHeader() });
+export const importDefaultSeed = async () => {
+  const res = await fetch(`${API_BASE}/admin/seed/import-default`, { method: 'POST', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
   return res.json() as Promise<{ success: boolean; counts?: any }>;
 };
@@ -75,94 +75,94 @@ export interface AdminTemplateVariant {
 
 export const adminListJobCategories = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/catalog/job-categories?${q}`, { headers: authHeader() });
+  const res = await fetch(`${API_BASE}/admin/taxonomy/categories?${q}`, { headers: authHeader() });
   if (!res.ok) throw new Error('failed');
   return res.json() as Promise<PageResp<AdminJobCategory>>;
 };
 
 export const adminCreateJobCategory = async (body: any) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/job-categories`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}/admin/taxonomy/categories`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminPatchJobCategory = async (externalId: string, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/job-categories/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}/admin/taxonomy/categories/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminDeleteJobCategory = async (externalId: string) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/job-categories/${externalId}`, { method: 'DELETE', headers: authHeader() });
+  const res = await fetch(`${API_BASE}/admin/taxonomy/categories/${externalId}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminListJobRoles = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/catalog/job-roles?${q}`, { headers: authHeader() });
+  const res = await fetch(`${API_BASE}/admin/taxonomy/roles?${q}`, { headers: authHeader() });
   if (!res.ok) throw new Error('failed');
   return res.json() as Promise<PageResp<AdminJobRole>>;
 };
 
 export const adminCreateJobRole = async (body: any) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/job-roles`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}/admin/taxonomy/roles`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminPatchJobRole = async (externalId: string, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/job-roles/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}/admin/taxonomy/roles/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminDeleteJobRole = async (externalId: string) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/job-roles/${externalId}`, { method: 'DELETE', headers: authHeader() });
+  const res = await fetch(`${API_BASE}/admin/taxonomy/roles/${externalId}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminListContentPresets = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/catalog/content-presets?${q}`, { headers: authHeader() });
+  const res = await fetch(`${API_BASE}/admin/presets?${q}`, { headers: authHeader() });
   if (!res.ok) throw new Error('failed');
   return res.json() as Promise<PageResp<AdminContentPreset>>;
 };
 
 export const adminCreateContentPreset = async (body: any) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/content-presets`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}/admin/presets`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(await res.text());
 };
 
 export const adminPatchContentPreset = async (externalId: string, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/content-presets/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}/admin/presets/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(await res.text());
 };
 
 export const adminDeleteContentPreset = async (externalId: string) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/content-presets/${externalId}`, { method: 'DELETE', headers: authHeader() });
+  const res = await fetch(`${API_BASE}/admin/presets/${externalId}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminListTemplateVariants = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/catalog/template-variants?${q}`, { headers: authHeader() });
+  const res = await fetch(`${API_BASE}/admin/library/variants?${q}`, { headers: authHeader() });
   if (!res.ok) throw new Error('failed');
   return res.json() as Promise<PageResp<AdminTemplateVariant>>;
 };
 
 export const adminCreateTemplateVariant = async (body: any) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/template-variants`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}/admin/library/variants`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminPatchTemplateVariant = async (externalId: string, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/template-variants/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}/admin/library/variants/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminDeleteTemplateVariant = async (externalId: string) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/template-variants/${externalId}`, { method: 'DELETE', headers: authHeader() });
+  const res = await fetch(`${API_BASE}/admin/library/variants/${externalId}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
 
 export const adminGenerateTemplateVariants = async (body: any) => {
-  const res = await fetch(`${API_BASE}/admin/catalog/template-variants/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+  const res = await fetch(`${API_BASE}/admin/library/variants/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 };

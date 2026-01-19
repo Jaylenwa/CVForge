@@ -1,10 +1,10 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { API_BASE } from '../config';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { CONTENT_PRESETS_SEED, JOB_CATEGORIES_SEED, JOB_ROLES_SEED, TEMPLATE_VARIANTS_SEED } from '../services/catalogSeeds';
+import { fetchContentPresetData, fetchTemplateCatalog } from '../services/catalogService';
 import { JobSidebar } from '../components/templateLibrary/JobSidebar';
 import { ResumeTemplateCard } from '../components/templateLibrary/ResumeTemplateCard';
   
@@ -52,43 +52,10 @@ export const Templates: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const [catsRes, rolesRes, varsRes] = await Promise.all([
-          fetch(`${API_BASE}/job-categories`),
-          fetch(`${API_BASE}/job-roles`),
-          fetch(`${API_BASE}/template-variants`)
-        ]);
-        if (!catsRes.ok || !rolesRes.ok || !varsRes.ok) {
-          throw new Error('catalog api not ok');
-        }
-        const catsJson = await catsRes.json();
-        const rolesJson = await rolesRes.json();
-        const varsJson = await varsRes.json();
-        const cats = (catsJson.items || []).map((c: any) => ({
-          id: c.ExternalID || c.externalId || c.id,
-          name: c.Name || c.name,
-          parentId: c.ParentExternalID || c.parentId || '',
-          orderNum: c.OrderNum ?? c.orderNum ?? 0
-        }));
-        const roles = (rolesJson.items || []).map((r: any) => ({
-          id: r.ExternalID || r.externalId || r.id,
-          categoryId: r.CategoryExternalID || r.categoryId || '',
-          name: r.Name || r.name,
-          tags: typeof r.Tags === 'string' ? (r.Tags as string).split(',') : (r.tags || []),
-          orderNum: r.OrderNum ?? r.orderNum ?? 0
-        }));
-        const vars = (varsJson.items || []).map((v: any) => ({
-          id: v.ExternalID || v.externalId || v.id,
-          name: v.Name || v.name,
-          layoutTemplateId: v.LayoutTemplateExternalID || v.layoutTemplateId,
-          presetId: v.PresetExternalID || v.presetId,
-          roleId: v.RoleExternalID || v.roleId,
-          tags: typeof v.Tags === 'string' ? (v.Tags as string).split(',') : (v.tags || []),
-          usageCount: v.UsageCount ?? v.usageCount ?? 0,
-          isPremium: v.IsPremium ?? v.isPremium ?? false
-        }));
-        setJobCategories(cats);
-        setJobRoles(roles);
-        setVariants(vars);
+        const { jobCategories, jobRoles, variants } = await fetchTemplateCatalog();
+        setJobCategories(jobCategories);
+        setJobRoles(jobRoles);
+        setVariants(variants);
       } catch {
         setJobCategories(JOB_CATEGORIES_SEED);
         setJobRoles(JOB_ROLES_SEED);
@@ -167,17 +134,7 @@ export const Templates: React.FC = () => {
       if (inFlightPresetIdsRef.current.has(presetId)) return;
       inFlightPresetIdsRef.current.add(presetId);
       try {
-        const r = await fetch(`${API_BASE}/content-presets/${presetId}`, { signal });
-        if (!r.ok) return;
-        const p: any = await r.json();
-        const dataJson = p?.DataJSON || p?.dataJSON || p?.dataJson;
-        if (typeof dataJson !== 'string' || !dataJson.trim()) return;
-        let parsed: any = null;
-        try {
-          parsed = JSON.parse(dataJson);
-        } catch {
-          return;
-        }
+        const parsed = await fetchContentPresetData(presetId, signal);
         if (!parsed || typeof parsed !== 'object') return;
         setPresetDataMap((prev) => (prev[presetId] ? prev : { ...prev, [presetId]: parsed }));
       } catch {

@@ -6,6 +6,7 @@ import { ResumePreview } from '../editor/ResumePreview';
 import { INITIAL_RESUME } from '../../services/mockData';
 import { CONTENT_PRESETS_SEED } from '../../services/catalogSeeds';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { fetchContentPresetData } from '../../services/catalogService';
 
 export const PrintResume: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -24,20 +25,8 @@ export const PrintResume: React.FC = () => {
 
       const resolveSeed = () => {
         if (!presetId || localPreset) return Promise.resolve({ ...(INITIAL_RESUME as any), ...(localPreset as any) });
-        return fetch(`${API_BASE}/content-presets/${presetId}`)
-          .then(r => r.ok ? r.json() : null)
-          .then((p: any) => {
-            const dataJson = p?.DataJSON || p?.dataJSON || p?.dataJson;
-            if (typeof dataJson === 'string' && dataJson.trim()) {
-              try {
-                const parsed = JSON.parse(dataJson);
-                if (parsed && typeof parsed === 'object') {
-                  return { ...(INITIAL_RESUME as any), ...(parsed as any) };
-                }
-              } catch {}
-            }
-            return INITIAL_RESUME as any;
-          })
+        return fetchContentPresetData(presetId)
+          .then((parsed) => parsed && typeof parsed === 'object' ? ({ ...(INITIAL_RESUME as any), ...(parsed as any) }) : (INITIAL_RESUME as any))
           .catch(() => INITIAL_RESUME as any);
       };
 

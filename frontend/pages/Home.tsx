@@ -5,9 +5,9 @@ import { Button } from '../components/ui/Button';
 import { AppRoute } from '../types';
 // 后端数据来源
 import { useLanguage } from '../contexts/LanguageContext';
-import { API_BASE } from '../config';
 import { ResumeArtboard } from './editor/ResumePreview';
 import { INITIAL_RESUME } from '../services/mockData';
+import { fetchTemplateCatalog } from '../services/catalogService';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -26,28 +26,13 @@ export const Home: React.FC = () => {
   React.useEffect(() => {
     (async () => {
       try {
-        const [varsRes, rolesRes] = await Promise.all([fetch(`${API_BASE}/template-variants`), fetch(`${API_BASE}/job-roles`)]);
-        if (!varsRes.ok || !rolesRes.ok) return;
-        const varsJson = await varsRes.json();
-        const rolesJson = await rolesRes.json();
+        const { jobRoles, variants } = await fetchTemplateCatalog();
         const roleMap: Record<string, string> = {};
-        for (const r of rolesJson.items || []) {
-          const id = r.ExternalID || r.externalId || r.id;
-          const name = r.Name || r.name;
-          if (id) roleMap[id] = name || String(id);
+        for (const r of jobRoles) {
+          if (r.id) roleMap[r.id] = r.name || String(r.id);
         }
         setRoleNameById(roleMap);
-
-        const items = (varsJson.items || []).slice(0, 4).map((v: any) => ({
-          id: v.ExternalID || v.externalId || v.id,
-          name: v.Name || v.name,
-          layoutTemplateId: v.LayoutTemplateExternalID || v.layoutTemplateId,
-          presetId: v.PresetExternalID || v.presetId,
-          roleId: v.RoleExternalID || v.roleId,
-          usageCount: v.UsageCount ?? v.usageCount ?? 0,
-          isPremium: v.IsPremium ?? v.isPremium ?? false,
-        }));
-        setPopularVariants(items);
+        setPopularVariants(variants.slice(0, 4));
       } catch {}
     })();
   }, []);

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { getAdminStats, AdminStats, importCatalogSeed } from '../../services/adminService';
+import { getAdminStats, AdminStats, importDefaultSeed } from '../../services/adminService';
 import { RefreshCw, Users, FileText, LayoutGrid, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -11,7 +11,7 @@ export const AdminHome: React.FC = () => {
   const { showToast } = useToast();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [importingCatalog, setImportingCatalog] = useState(false);
+  const [importingSeed, setImportingSeed] = useState(false);
 
   const reload = async () => {
     setLoading(true);
@@ -114,24 +114,24 @@ export const AdminHome: React.FC = () => {
             <Button
               variant="outline"
               onClick={async () => {
-                if (importingCatalog) return;
-                setImportingCatalog(true);
+                if (importingSeed) return;
+                setImportingSeed(true);
                 try {
-                  const r = await importCatalogSeed();
+                  const r = await importDefaultSeed();
                   if (r?.success) {
-                    showToast(t('admin.msg.catalogImported'), 'success');
+                    showToast(t('admin.msg.seedImported'), 'success');
                   } else {
-                    showToast(t('admin.msg.catalogImportFailed'), 'error');
+                    showToast(t('admin.msg.seedImportFailed'), 'error');
                   }
                 } catch {
-                  showToast(t('admin.msg.catalogImportFailed'), 'error');
+                  showToast(t('admin.msg.seedImportFailed'), 'error');
                 } finally {
-                  setImportingCatalog(false);
+                  setImportingSeed(false);
                 }
               }}
-              disabled={importingCatalog}
+              disabled={importingSeed}
             >
-              {t('admin.actions.importCatalogSeed')}
+              {t('admin.actions.importDefaultSeed')}
             </Button>
             <Button variant="outline" onClick={reload} disabled={loading}>
               <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}

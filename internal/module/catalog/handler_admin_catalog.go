@@ -286,8 +286,8 @@ func (h *AdminHandler) AdminCreateContentPreset(c *gin.Context) {
 	}
 	if err := h.svc.repo.AdminCreateContentPreset(&m); err != nil {
 		logger.WithCtx(c).Error("catalog.admin.content_presets.create failed", zap.Error(err))
-		if strings.Contains(err.Error(), "invalid_json") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json"})
+		if strings.HasPrefix(err.Error(), "invalid_") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid preset"})
 			return
 		}
 		c.JSON(http.StatusConflict, gin.H{"error": "conflict"})
@@ -334,8 +334,8 @@ func (h *AdminHandler) AdminPatchContentPreset(c *gin.Context) {
 	}
 	if err := h.svc.repo.AdminPatchContentPreset(c.Param("id"), patch); err != nil {
 		logger.WithCtx(c).Error("catalog.admin.content_presets.patch failed", zap.Error(err))
-		if strings.Contains(err.Error(), "invalid_json") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid json"})
+		if strings.HasPrefix(err.Error(), "invalid_") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid preset"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
