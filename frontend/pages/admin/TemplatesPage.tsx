@@ -29,7 +29,7 @@ import { DataTable } from '../../components/ui/DataTable';
 import { TableCard } from '../../components/ui/TableCard';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { INITIAL_RESUME, MOCK_TEMPLATES } from '../../services/mockData';
-import { FileText, Layers, LayoutGrid, RefreshCw, Search } from 'lucide-react';
+import { AlertCircle, AlignLeft, Check, CheckCircle2, Copy, FileJson, FileText, Layers, LayoutGrid, Minimize2, RefreshCw, Search, Trash2 } from 'lucide-react';
 import { AppRoute } from '../../types';
 import { motion } from 'framer-motion';
 
@@ -68,6 +68,137 @@ export const TemplatesPage: React.FC = () => {
   };
 
   const joinTags = (tags: any): string => parseTags(tags).join(',');
+
+  const PresetJsonEditor: React.FC<{ value: string; onChange: (val: string) => void }> = ({ value, onChange }) => {
+    const [isCopied, setIsCopied] = useState(false);
+
+    const validation = useMemo(() => {
+      const raw = String(value || '');
+      const trimmed = raw.trim();
+      if (!trimmed) return { kind: 'empty' as const, isValid: true, message: '' };
+      try {
+        JSON.parse(trimmed);
+        return { kind: 'valid' as const, isValid: true, message: t('admin.catalog.msg.jsonOk') };
+      } catch (err: any) {
+        return {
+          kind: 'invalid' as const,
+          isValid: false,
+          message: t('admin.catalog.msg.invalidJson'),
+          detail: err?.message ? String(err.message) : '',
+        };
+      }
+    }, [t, value]);
+
+    const hasText = String(value || '').trim().length > 0;
+    const canTransform = validation.kind === 'valid';
+
+    const handleFormat = useCallback(() => {
+      if (!canTransform) return;
+      try {
+        const parsed = JSON.parse(String(value || ''));
+        const pretty = JSON.stringify(parsed, null, 2);
+        onChange(`${pretty}\n`);
+      } catch {
+        showToast(t('admin.catalog.msg.invalidJson'), 'error');
+      }
+    }, [canTransform, onChange, showToast, t, value]);
+
+    const handleMinify = useCallback(() => {
+      if (!canTransform) return;
+      try {
+        const parsed = JSON.parse(String(value || ''));
+        onChange(JSON.stringify(parsed));
+      } catch {
+        showToast(t('admin.catalog.msg.invalidJson'), 'error');
+      }
+    }, [canTransform, onChange, showToast, t, value]);
+
+    const handleCopy = useCallback(async () => {
+      if (!hasText) return;
+      try {
+        await navigator.clipboard.writeText(String(value || ''));
+        setIsCopied(true);
+        showToast(t('common.copied'), 'success');
+        setTimeout(() => setIsCopied(false), 1600);
+      } catch {
+        showToast(t('common.copyFailed'), 'error');
+      }
+    }, [hasText, showToast, t, value]);
+
+    const handleClear = useCallback(async () => {
+      if (!hasText) return;
+      const ok = await confirm({ title: t('admin.confirm.clearJsonTitle'), message: t('admin.confirm.clearJsonMsg') });
+      if (!ok) return;
+      onChange('');
+    }, [confirm, hasText, onChange, t]);
+
+    const lines = String(value || '').split('\n').length;
+
+    return (
+      <div className="border rounded-lg bg-white overflow-hidden flex flex-col shadow-sm">
+        <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-md">
+              <FileJson size={16} />
+            </div>
+            {validation.kind === 'empty' ? (
+              <span className="text-xs font-medium text-slate-400">{t('admin.catalog.msg.jsonEmptyHint')}</span>
+            ) : (
+              <span className={`flex items-center text-xs font-medium ${validation.isValid ? 'text-emerald-600' : 'text-rose-600'}`}>
+                {validation.isValid ? <CheckCircle2 size={14} className="mr-1.5" /> : <AlertCircle size={14} className="mr-1.5" />}
+                {validation.isValid ? validation.message : `${validation.message}${(validation as any).detail ? `: ${(validation as any).detail}` : ''}`}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="outline" size="sm" icon={<AlignLeft size={14} />} onClick={handleFormat} disabled={!canTransform}>
+              {t('admin.catalog.actions.formatJson')}
+            </Button>
+            <Button type="button" variant="outline" size="sm" icon={<Minimize2 size={14} />} onClick={handleMinify} disabled={!canTransform}>
+              {t('admin.catalog.actions.minifyJson')}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              icon={isCopied ? <Check size={14} /> : <Copy size={14} />}
+              onClick={handleCopy}
+              disabled={!hasText}
+            >
+              {isCopied ? t('admin.catalog.actions.copied') : t('admin.catalog.actions.copyJson')}
+            </Button>
+            <Button type="button" variant="ghost" size="sm" icon={<Trash2 size={16} />} onClick={handleClear} disabled={!hasText} aria-label={t('admin.catalog.actions.clearJson')} />
+          </div>
+        </div>
+
+        <div className="relative">
+          <textarea
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            spellCheck={false}
+            className={`w-full min-h-[320px] p-3 font-mono text-xs leading-relaxed resize-y bg-white text-slate-900 focus:outline-none transition-all ${
+              validation.kind !== 'invalid' ? 'focus:ring-2 focus:ring-blue-500/20' : 'focus:ring-2 focus:ring-rose-500/20'
+            }`}
+            placeholder={t('admin.catalog.form.dataJsonPlaceholder')}
+          />
+          {validation.kind === 'invalid' ? (
+            <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-rose-50 border border-rose-100 rounded-md text-rose-600 text-[11px] font-semibold shadow-sm flex items-center">
+              <AlertCircle size={14} className="mr-2" />
+              {t('admin.catalog.msg.invalidJson')}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="px-3 py-1.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[10px] uppercase font-bold tracking-widest text-slate-400">
+          <div className="flex gap-3">
+            <span>{t('admin.catalog.stats.characters')}: {String(value || '').length}</span>
+            <span>{t('admin.catalog.stats.lines')}: {lines}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const [items, setItems] = useState<Row[]>([]);
   const [keyword, setKeyword] = useState('');
@@ -419,18 +550,6 @@ export const TemplatesPage: React.FC = () => {
   const [generating, setGenerating] = useState(false);
   const [variantCreateMode, setVariantCreateMode] = useState<'single' | 'batch'>('single');
 
-  const formatPresetDataJson = () => {
-    const raw = String(catalogForm.dataJson || '');
-    if (!raw.trim()) return;
-    try {
-      const parsed = JSON.parse(raw);
-      const pretty = JSON.stringify(parsed, null, 2);
-      setCatalogForm((p: any) => ({ ...p, dataJson: `${pretty}\n` }));
-    } catch {
-      showToast(t('admin.catalog.msg.invalidJson'), 'error');
-    }
-  };
-
   const openCreatePreset = () => {
     setCatalogEditingId(null);
     setCatalogFormKind('preset');
@@ -649,24 +768,8 @@ export const TemplatesPage: React.FC = () => {
           <section className="space-y-4">
             <SectionTitle>{t('admin.catalog.section.data') || 'Data'}</SectionTitle>
             <div>
-              <Label
-                right={(() => {
-                  const raw = String(catalogForm.dataJson || '');
-                  const trimmed = raw.trim();
-                  const status = trimmed ? (parseJSON(raw) ? t('admin.catalog.msg.jsonOk') : t('admin.catalog.msg.invalidJson')) : null;
-                  return (
-                    <div className="flex items-center gap-2">
-                      {status ? <span>{status}</span> : null}
-                      <Button type="button" variant="outline" size="sm" onClick={formatPresetDataJson} disabled={!trimmed}>
-                        {t('admin.catalog.actions.formatJson') || '格式化 JSON'}
-                      </Button>
-                    </div>
-                  );
-                })()}
-              >
-                {t('admin.catalog.form.dataJson')}
-              </Label>
-              <Textarea className="font-mono text-xs h-64 no-scrollbar" value={catalogForm.dataJson || ''} onChange={(e) => setCatalogForm((p: any) => ({ ...p, dataJson: e.target.value }))} />
+              <Label>{t('admin.catalog.form.dataJson')}</Label>
+              <PresetJsonEditor value={String(catalogForm.dataJson || '')} onChange={(val) => setCatalogForm((p: any) => ({ ...p, dataJson: val }))} />
             </div>
           </section>
         </div>
