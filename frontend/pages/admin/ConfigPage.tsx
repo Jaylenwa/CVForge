@@ -3,7 +3,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { SystemConfig } from '../../types';
 import { getSystemConfigs, updateSystemConfigs } from '../../services/configService';
 import { Button } from '../../components/ui/Button';
-import { Save, RefreshCw } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { useToast } from '../../components/ui/Toast';
 import { motion } from 'framer-motion';
 
@@ -179,9 +179,6 @@ export const ConfigPage: React.FC = () => {
             ))}
           </nav>
           <div className="flex items-center gap-2 md:justify-end">
-            <Button variant="outline" onClick={fetchConfigs} disabled={loading}>
-              <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
-            </Button>
             <Button onClick={handleSave} isLoading={saving}>
               <Save size={16} className="mr-2" /> {t('common.save') || 'Save Changes'}
             </Button>

@@ -6,7 +6,7 @@ import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TableCard } from '../../components/ui/TableCard';
 import { Input, Select } from '../../components/ui/Form';
-import { RefreshCw, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 export const SharesPage: React.FC = () => {
   const [items, setItems] = useState<AdminShare[]>([]);
@@ -49,14 +49,6 @@ export const SharesPage: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 md:justify-end">
             <Button onClick={() => { setPage(1); load(); }}>{t('admin.search')}</Button>
-            <Button
-              variant="outline"
-              onClick={() => load()}
-              disabled={loading}
-              icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-            >
-              {t('common.refresh') || 'Refresh'}
-            </Button>
           </div>
         </div>
       </div>

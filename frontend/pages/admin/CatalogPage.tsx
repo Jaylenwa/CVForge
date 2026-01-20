@@ -6,7 +6,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/Toast';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { RefreshCw, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   adminCreateJobCategory,
@@ -732,14 +732,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('admin.keyword')} className="pl-10" />
             </div>
             <div className="flex items-center gap-2 md:justify-end">
-              <Button
-                variant="outline"
-                onClick={() => load()}
-                disabled={loading}
-                icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-              >
-                {t('common.refresh') || 'Refresh'}
-              </Button>
               <Button onClick={openCreate}>{t('admin.actions.create') || 'Create'}</Button>
             </div>
           </div>
@@ -750,14 +742,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
               <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('admin.keyword')} className="pl-10" />
             </div>
             <div className="flex items-center gap-2 md:justify-end">
-              <Button
-                variant="outline"
-                onClick={() => load()}
-                disabled={loading}
-                icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-              >
-                {t('common.refresh') || 'Refresh'}
-              </Button>
               <Button onClick={openCreate}>{t('admin.actions.create') || 'Create'}</Button>
             </div>
           </div>

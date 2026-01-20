@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getAdminStats, AdminStats, importDefaultSeed } from '../../services/adminService';
-import { RefreshCw, Users, FileText, LayoutGrid, Eye } from 'lucide-react';
+import { Users, FileText, LayoutGrid, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useToast } from '../../components/ui/Toast';
@@ -132,9 +132,6 @@ export const AdminHome: React.FC = () => {
               disabled={importingSeed}
             >
               {t('admin.actions.importDefaultSeed')}
-            </Button>
-            <Button variant="outline" onClick={reload} disabled={loading}>
-              <RefreshCw size={16} className={`${loading ? 'animate-spin' : ''} mr-2`} /> {t('common.refresh') || 'Refresh'}
             </Button>
           </div>
         </div>

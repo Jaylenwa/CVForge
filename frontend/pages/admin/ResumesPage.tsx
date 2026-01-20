@@ -9,7 +9,7 @@ import { Input, Select } from '../../components/ui/Form';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { LanguageProvider } from '../../contexts/LanguageContext';
 import { INITIAL_RESUME } from '../../services/mockData';
-import { RefreshCw, Search, Eye, Trash2, Globe } from 'lucide-react';
+import { Search, Eye, Trash2, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppRoute } from '../../types';
 
@@ -84,16 +84,7 @@ export const ResumesPage: React.FC = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input value={keyword} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setKeyword(e.target.value)} placeholder={t('admin.titleKeyword')} className="pl-10" />
           </div>
-          <div className="flex items-center gap-2 md:justify-end">
-            <Button
-              variant="outline"
-              onClick={() => load()}
-              disabled={loading}
-              icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-            >
-              {t('common.refresh') || 'Refresh'}
-            </Button>
-          </div>
+          <div className="flex items-center gap-2 md:justify-end"></div>
         </div>
       </div>
 

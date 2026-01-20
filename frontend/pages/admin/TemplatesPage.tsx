@@ -29,7 +29,7 @@ import { DataTable } from '../../components/ui/DataTable';
 import { TableCard } from '../../components/ui/TableCard';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { INITIAL_RESUME, MOCK_TEMPLATES } from '../../services/mockData';
-import { AlertCircle, AlignLeft, Check, CheckCircle2, Copy, FileJson, FileText, Layers, LayoutGrid, Minimize2, RefreshCw, Search, Trash2 } from 'lucide-react';
+import { AlertCircle, AlignLeft, Check, CheckCircle2, Copy, FileJson, FileText, Layers, LayoutGrid, Minimize2, Search, Trash2 } from 'lucide-react';
 import { AppRoute } from '../../types';
 import { motion } from 'framer-motion';
 
@@ -1199,14 +1199,6 @@ export const TemplatesPage: React.FC = () => {
                 />
               </div>
               <div className="flex items-center gap-2 md:justify-end">
-                <Button
-                  variant="outline"
-                  onClick={() => load()}
-                  disabled={loading}
-                  icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-                >
-                  {t('common.refresh') || 'Refresh'}
-                </Button>
                 <Button onClick={openCreate}>{t('admin.actions.create')}</Button>
                 <Button variant="outline" onClick={handleSyncMockData} disabled={syncing}>
                   {syncing ? `${syncDone}/${syncTotal} ${t('admin.sync.syncing')}` : t('admin.sync.syncMockData')}
@@ -1363,9 +1355,6 @@ export const TemplatesPage: React.FC = () => {
                 <Input value={catalogQ} onChange={(e) => setCatalogQ(e.target.value)} placeholder={t('admin.keyword')} className="pl-10" />
               </div>
               <div className="flex items-center gap-2 md:justify-end">
-                <Button variant="outline" onClick={() => loadCatalog()} disabled={catalogLoading} icon={<RefreshCw size={16} className={catalogLoading ? 'animate-spin' : ''} />}>
-                  {t('common.refresh') || 'Refresh'}
-                </Button>
                 <Button
                   onClick={() => {
                     setCatalogPage(1);
@@ -1415,9 +1404,6 @@ export const TemplatesPage: React.FC = () => {
                 <Input value={catalogQ} onChange={(e) => setCatalogQ(e.target.value)} placeholder={t('admin.keyword')} className="pl-10" />
               </div>
               <div className="flex items-center gap-2 md:justify-end">
-                <Button variant="outline" onClick={() => loadCatalog()} disabled={catalogLoading} icon={<RefreshCw size={16} className={catalogLoading ? 'animate-spin' : ''} />}>
-                  {t('common.refresh') || 'Refresh'}
-                </Button>
                 <Button
                   onClick={() => {
                     setCatalogPage(1);

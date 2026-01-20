@@ -6,7 +6,7 @@ import { useToast } from '../../components/ui/Toast';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TableCard } from '../../components/ui/TableCard';
 import { Input, Select } from '../../components/ui/Form';
-import { Search, RefreshCw, Mail, Lock, Ban, ShieldAlert } from 'lucide-react';
+import { Search, Mail, Lock, Ban, ShieldAlert } from 'lucide-react';
 
 export const UsersPage: React.FC = () => {
   const [items, setItems] = useState<AdminUser[]>([]);
@@ -84,14 +84,7 @@ export const UsersPage: React.FC = () => {
                 { label: t('admin.status.inactive'), value: 'false' },
               ]}
             />
-            <Button
-              variant="outline"
-              onClick={() => load()}
-              disabled={loading}
-              icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-            >
-              {t('common.refresh') || 'Refresh'}
-            </Button>
+            
           </div>
         </div>
       </div>
