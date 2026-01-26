@@ -20,7 +20,7 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f4f7fa]">
-      <aside className="w-64 bg-transparent h-screen flex flex-col py-6 px-4 overflow-y-auto">
+      <aside className="w-56 bg-transparent h-screen flex flex-col py-6 px-3 overflow-y-auto">
         <div className="px-2 py-3 flex items-center justify-between">
           <div>
             <div className="text-xl font-bold text-gray-900">{t('nav.admin')}</div>
@@ -46,7 +46,7 @@ export const AdminLayout: React.FC = () => {
               to={item.to}
               end={Boolean((item as any).end)}
               className={({ isActive }) =>
-                `w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group ${
+                `w-full flex items-center justify-between px-3 py-3 rounded-lg transition-all duration-200 group ${
                   isActive
                     ? 'bg-blue-100 text-blue-600 font-semibold'
                     : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
@@ -70,7 +70,7 @@ export const AdminLayout: React.FC = () => {
         <div className="mt-6">
           <NavLink
             to={AppRoute.Dashboard}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200 group text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+            className="w-full flex items-center justify-between px-3 py-3 rounded-lg transition-all duration-200 group text-gray-500 hover:bg-gray-100 hover:text-gray-900"
           >
             <div className="flex items-center space-x-3">
               <span className="text-gray-400 group-hover:text-gray-600">
