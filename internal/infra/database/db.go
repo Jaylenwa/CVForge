@@ -42,6 +42,9 @@ func InitMySQL(cfg config.Config) (*gorm.DB, error) {
 			return nil, err
 		}
 	}
+	if err := RunExternalIDToIDBackfill(DB); err != nil {
+		return nil, err
+	}
 	logger.WithCtx(nil).Info("mysql connected")
 	return DB, nil
 }

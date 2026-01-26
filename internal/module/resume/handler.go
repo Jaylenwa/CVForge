@@ -2,6 +2,8 @@ package resume
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
 	"openresume/internal/middleware"
 	"openresume/internal/pkg/logger"
@@ -55,7 +57,7 @@ func (h *Handler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"id": res.ExternalID})
+	c.JSON(http.StatusOK, gin.H{"id": res.ID})
 }
 
 func (h *Handler) CreateFromVariant(c *gin.Context) {
@@ -76,11 +78,16 @@ func (h *Handler) CreateFromVariant(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"id": res.ExternalID})
+	c.JSON(http.StatusOK, gin.H{"id": res.ID})
 }
 
 func (h *Handler) Get(c *gin.Context) {
-	res, code, err := h.svc.GetOwnedResume(c, c.Param("id"), true)
+	id, parseErr := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if parseErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	res, code, err := h.svc.GetOwnedResume(c, uint(id), true)
 	if err != nil {
 		logger.WithCtx(c).Error("resume.get failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {
@@ -105,7 +112,12 @@ func (h *Handler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	code, err := h.svc.UpdateOwnedResume(c, c.Param("id"), req)
+	id, parseErr := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if parseErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	code, err := h.svc.UpdateOwnedResume(c, uint(id), req)
 	if err != nil {
 		logger.WithCtx(c).Error("resume.update failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {
@@ -124,7 +136,12 @@ func (h *Handler) Update(c *gin.Context) {
 }
 
 func (h *Handler) Delete(c *gin.Context) {
-	code, err := h.svc.DeleteOwnedResume(c, c.Param("id"))
+	id, parseErr := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if parseErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	code, err := h.svc.DeleteOwnedResume(c, uint(id))
 	if err != nil {
 		logger.WithCtx(c).Error("resume.delete failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {

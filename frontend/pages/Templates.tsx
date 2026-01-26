@@ -3,19 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { CONTENT_PRESETS_SEED, JOB_CATEGORIES_SEED, JOB_ROLES_SEED, TEMPLATE_VARIANTS_SEED } from '../services/catalogSeeds';
 import { fetchContentPresetData, fetchTemplateCatalog } from '../services/catalogService';
 import { JobSidebar } from '../components/templateLibrary/JobSidebar';
 import { ResumeTemplateCard } from '../components/templateLibrary/ResumeTemplateCard';
   
-const buildSeedPresetMap = () => {
-  const presetMap: Record<string, any> = {};
-  for (const p of CONTENT_PRESETS_SEED) {
-    presetMap[p.id] = p.data;
-  }
-  return presetMap;
-};
-
 export const Templates: React.FC = () => {
   React.useEffect(() => {
     document.body.classList.add('no-scrollbar');
@@ -46,21 +37,21 @@ export const Templates: React.FC = () => {
   const [jobCategories, setJobCategories] = useState<Array<{ id: string; name: string; parentId?: string; orderNum?: number }>>([]);
   const [jobRoles, setJobRoles] = useState<Array<{ id: string; categoryId: string; name: string; tags?: string[]; orderNum?: number }>>([]);
   const [variants, setVariants] = useState<Array<{ id: string; name: string; layoutTemplateId: string; presetId: string; roleId: string; tags?: string[]; usageCount?: number; isPremium?: boolean }>>([]);
-  const [presetDataMap, setPresetDataMap] = useState<Record<string, any>>(() => buildSeedPresetMap());
+  const [presetDataMap, setPresetDataMap] = useState<Record<string, any>>({});
   const inFlightPresetIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     (async () => {
       try {
         const { jobCategories, jobRoles, variants } = await fetchTemplateCatalog();
-        setJobCategories(jobCategories);
-        setJobRoles(jobRoles);
-        setVariants(variants);
+        setJobCategories(jobCategories.map((c) => ({ id: String(c.id), name: c.name, parentId: c.parentId == null ? '' : String(c.parentId), orderNum: c.orderNum })));
+        setJobRoles(jobRoles.map((r) => ({ id: String(r.id), categoryId: String(r.categoryId), name: r.name, tags: r.tags, orderNum: r.orderNum })));
+        setVariants(variants.map((v) => ({ id: String(v.id), name: v.name, layoutTemplateId: v.layoutTemplateId, presetId: String(v.presetId), roleId: String(v.roleId), tags: v.tags, usageCount: v.usageCount, isPremium: v.isPremium })));
       } catch {
-        setJobCategories(JOB_CATEGORIES_SEED);
-        setJobRoles(JOB_ROLES_SEED);
-        setVariants(TEMPLATE_VARIANTS_SEED);
-        setPresetDataMap(buildSeedPresetMap());
+        setJobCategories([]);
+        setJobRoles([]);
+        setVariants([]);
+        setPresetDataMap({});
       }
     })();
   }, []);
@@ -97,16 +88,16 @@ export const Templates: React.FC = () => {
   const handleUseTemplate = (templateId: string, presetId?: string, variantId?: string) => {
     const qs = new URLSearchParams();
     qs.set('template', templateId);
-    if (presetId) qs.set('preset', presetId);
-    if (variantId) qs.set('variant', variantId);
+    if (presetId) qs.set('presetId', presetId);
+    if (variantId) qs.set('variantId', variantId);
     qs.set('returnTo', AppRoute.Templates);
     window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?${qs.toString()}`, '_blank');
   };
   const handlePreviewTemplate = (templateId: string, presetId?: string, variantId?: string) => {
     const qs = new URLSearchParams();
     qs.set('template', templateId);
-    if (presetId) qs.set('preset', presetId);
-    if (variantId) qs.set('variant', variantId);
+    if (presetId) qs.set('presetId', presetId);
+    if (variantId) qs.set('variantId', variantId);
     window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?${qs.toString()}`, '_blank');
   };
 
@@ -130,7 +121,7 @@ export const Templates: React.FC = () => {
       if (inFlightPresetIdsRef.current.has(presetId)) return;
       inFlightPresetIdsRef.current.add(presetId);
       try {
-        const parsed = await fetchContentPresetData(presetId, signal);
+        const parsed = await fetchContentPresetData(Number(presetId), signal);
         if (!parsed || typeof parsed !== 'object') return;
         setPresetDataMap((prev) => (prev[presetId] ? prev : { ...prev, [presetId]: parsed }));
       } catch {

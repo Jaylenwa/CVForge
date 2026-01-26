@@ -213,13 +213,13 @@ export const Home: React.FC = () => {
                       variant={variant}
                       onUse={() =>
                         window.open(
-                          `${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${variant.layoutTemplateId}&preset=${variant.presetId}&variant=${variant.id}&returnTo=${encodeURIComponent(AppRoute.Home)}`,
+                          `${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${variant.layoutTemplateId}&presetId=${variant.presetId}&variantId=${variant.id}&returnTo=${encodeURIComponent(AppRoute.Home)}`,
                           '_blank'
                         )
                       }
                       onPreview={() =>
                         window.open(
-                          `${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${variant.layoutTemplateId}&preset=${variant.presetId}&variant=${variant.id}`,
+                          `${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${variant.layoutTemplateId}&presetId=${variant.presetId}&variantId=${variant.id}`,
                           '_blank'
                         )
                       }

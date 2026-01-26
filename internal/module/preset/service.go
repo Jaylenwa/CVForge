@@ -8,7 +8,6 @@ func NewService() *Service {
 	return &Service{repo: DefaultRepo()}
 }
 
-func (s *Service) GetByExternalActive(id string) (ContentPreset, error) {
-	return s.repo.GetByExternalActive(id)
+func (s *Service) GetByIDActive(id uint) (ContentPreset, error) {
+	return s.repo.GetByIDActive(id)
 }
-

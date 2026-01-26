@@ -4,14 +4,13 @@ import "gorm.io/gorm"
 
 type Resume struct {
 	gorm.Model
-	ExternalID   string          `gorm:"uniqueIndex;size:64"` // 业务外部 ID（用于 URL/接口）
 	UserID       uint            // 所属用户 ID
-	Title        string          `gorm:"size:191"`      // 简历标题
-	TemplateID   string          `gorm:"size:64"`       // 布局模板 ExternalID
-	VariantID    string          `gorm:"size:64;index"` // 模板变体 ExternalID（岗位维度）
-	PresetID     string          `gorm:"size:64;index"` // 内容预设 ExternalID
-	RoleID       string          `gorm:"size:64;index"` // 岗位方向 ExternalID
-	Language     string          `gorm:"size:8"`        // 语言（zh/en）
+	Title        string          `gorm:"size:191"`                   // 简历标题
+	TemplateID   string          `gorm:"size:64"`                    // 布局模板 ExternalID（Template.ExternalID）
+	VariantID    *uint           `gorm:"column:variant_db_id;index"` // 模板变体 ID
+	PresetID     *uint           `gorm:"column:preset_db_id;index"`  // 内容预设 ID
+	RoleID       *uint           `gorm:"column:role_db_id;index"`    // 岗位方向 ID
+	Language     string          `gorm:"size:8"`                     // 语言（zh/en）
 	LastModified int64           // 最近更新时间戳（毫秒）
 	Personal     ResumePersonal  `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"` // 个人信息（1:1）
 	Theme        ResumeTheme     `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"` // 主题配置（1:1）
@@ -58,13 +57,12 @@ func (ResumeTheme) TableName() string {
 
 type ResumeSection struct {
 	gorm.Model
-	ResumeID   uint         // 所属简历 ID
-	ExternalID string       `gorm:"size:64"`  // 模块外部 ID（前端 section.id）
-	Type       string       `gorm:"size:32"`  // 模块类型（如 Experience/Education/Skills）
-	Title      string       `gorm:"size:128"` // 模块标题
-	IsVisible  bool         // 是否显示
-	OrderNum   int          // 排序号（越小越靠前）
-	Items      []ResumeItem `gorm:"constraint:OnDelete:CASCADE;foreignKey:SectionID"` // 模块条目（1:N）
+	ResumeID  uint         // 所属简历 ID
+	Type      string       `gorm:"size:32"`  // 模块类型（如 Experience/Education/Skills）
+	Title     string       `gorm:"size:128"` // 模块标题
+	IsVisible bool         // 是否显示
+	OrderNum  int          // 排序号（越小越靠前）
+	Items     []ResumeItem `gorm:"constraint:OnDelete:CASCADE;foreignKey:SectionID"` // 模块条目（1:N）
 }
 
 func (ResumeSection) TableName() string {
@@ -74,7 +72,6 @@ func (ResumeSection) TableName() string {
 type ResumeItem struct {
 	gorm.Model
 	SectionID   uint   // 所属模块 ID
-	ExternalID  string `gorm:"size:64"`  // 条目外部 ID（前端 item.id）
 	Title       string `gorm:"size:128"` // 主标题（公司/学校/项目等）
 	Subtitle    string `gorm:"size:128"` // 副标题（岗位/专业等）
 	Major       string `gorm:"size:128"` // 专业（教育模块常用）

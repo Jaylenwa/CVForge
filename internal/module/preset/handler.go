@@ -2,6 +2,8 @@ package preset
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
 	"openresume/internal/pkg/logger"
 
@@ -18,20 +20,24 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) GetByID(c *gin.Context) {
-	p, err := h.svc.GetByExternalActive(c.Param("id"))
+	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	p, err := h.svc.GetByIDActive(uint(id))
 	if err != nil {
 		logger.WithCtx(c).Error("preset.get failed", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
 	c.JSON(http.StatusOK, ContentPresetDTO{
-		ExternalID:     p.ExternalID,
+		ID:             p.ID,
 		Name:           p.Name,
 		Language:       p.Language,
-		RoleExternalID: p.RoleExternalID,
+		RoleID:         p.RoleID,
 		Tags:           splitTags(p.Tags),
 		DataJSON:       p.DataJSON,
 		IsActive:       p.IsActive,
 	})
 }
-

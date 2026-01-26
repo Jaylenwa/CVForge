@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"openresume/internal/common"
 	"openresume/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -59,7 +58,7 @@ func (h *AdminHandler) AdminListPresets(c *gin.Context) {
 	page := parseIntDefault(c.Query("page"), 1)
 	size := parseIntDefault(c.Query("pageSize"), 20)
 	q := c.Query("q")
-	role := c.Query("roleExternalId")
+	role := c.Query("roleId")
 	lang := c.Query("language")
 	items, total, err := h.svc.repo.AdminListContentPresets(page, size, q, role, lang)
 	if err != nil {
@@ -72,27 +71,21 @@ func (h *AdminHandler) AdminListPresets(c *gin.Context) {
 
 func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
 	var body struct {
-		ExternalID     string `json:"externalId"`
-		Name           string `json:"name"`
-		Language       string `json:"language"`
-		RoleExternalID string `json:"roleExternalId"`
-		Tags           string `json:"tags"`
-		DataJSON       string `json:"dataJson"`
-		IsActive       *bool  `json:"isActive"`
+		Name     string `json:"name"`
+		Language string `json:"language"`
+		RoleID   uint   `json:"roleId"`
+		Tags     string `json:"tags"`
+		DataJSON string `json:"dataJson"`
+		IsActive *bool  `json:"isActive"`
 	}
-	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" {
+	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" || body.RoleID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	externalID := strings.TrimSpace(body.ExternalID)
-	if externalID == "" {
-		externalID = common.NewExternalID("preset")
-	}
 	m := ContentPreset{
-		ExternalID:     externalID,
 		Name:           strings.TrimSpace(body.Name),
 		Language:       strings.TrimSpace(body.Language),
-		RoleExternalID: strings.TrimSpace(body.RoleExternalID),
+		RoleID:         body.RoleID,
 		Tags:           strings.TrimSpace(body.Tags),
 		DataJSON:       strings.TrimSpace(body.DataJSON),
 	}
@@ -113,12 +106,12 @@ func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
 
 func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
 	var body struct {
-		Name           *string `json:"name"`
-		Language       *string `json:"language"`
-		RoleExternalID *string `json:"roleExternalId"`
-		Tags           *string `json:"tags"`
-		DataJSON       *string `json:"dataJson"`
-		IsActive       *bool   `json:"isActive"`
+		Name     *string `json:"name"`
+		Language *string `json:"language"`
+		RoleID   *uint   `json:"roleId"`
+		Tags     *string `json:"tags"`
+		DataJSON *string `json:"dataJson"`
+		IsActive *bool   `json:"isActive"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
@@ -131,8 +124,8 @@ func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
 	if body.Language != nil {
 		patch["language"] = strings.TrimSpace(*body.Language)
 	}
-	if body.RoleExternalID != nil {
-		patch["role_external_id"] = strings.TrimSpace(*body.RoleExternalID)
+	if body.RoleID != nil {
+		patch["role_id"] = *body.RoleID
 	}
 	if body.Tags != nil {
 		patch["tags"] = strings.TrimSpace(*body.Tags)
@@ -147,7 +140,12 @@ func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": true})
 		return
 	}
-	if err := h.svc.repo.AdminPatchContentPreset(c.Param("id"), patch); err != nil {
+	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	if err := h.svc.repo.AdminPatchContentPreset(uint(id), patch); err != nil {
 		logger.WithCtx(c).Error("preset.admin.patch failed", zap.Error(err))
 		if strings.HasPrefix(err.Error(), "invalid_") {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid preset"})
@@ -160,7 +158,12 @@ func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
 }
 
 func (h *AdminHandler) AdminDeletePreset(c *gin.Context) {
-	if err := h.svc.repo.AdminDeleteContentPreset(c.Param("id")); err != nil {
+	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	if err := h.svc.repo.AdminDeleteContentPreset(uint(id)); err != nil {
 		logger.WithCtx(c).Error("preset.admin.delete failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return

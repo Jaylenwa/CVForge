@@ -22,9 +22,9 @@ func NewService() *Service {
 	return &Service{repo: DefaultRepo()}
 }
 
-func (s *Service) PublishResumeForUser(uid uint, externalID string) (ShareLink, int, error) {
+func (s *Service) PublishResumeForUser(uid uint, id uint) (ShareLink, int, error) {
 	var res Resume
-	if err := database.DB.Where("external_id = ?", externalID).First(&res).Error; err != nil {
+	if err := database.DB.Where("id = ?", id).First(&res).Error; err != nil {
 		return ShareLink{}, 404, err
 	}
 	if res.UserID != uid {

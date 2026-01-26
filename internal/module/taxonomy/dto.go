@@ -3,16 +3,16 @@ package taxonomy
 import "strings"
 
 type JobCategoryDTO struct {
-	ExternalID       string `json:"externalId"`
+	ID               uint   `json:"id"`
 	Name             string `json:"name"`
-	ParentExternalID string `json:"parentExternalId"`
+	ParentID         *uint  `json:"parentId"`
 	OrderNum         int    `json:"orderNum"`
 	IsActive         bool   `json:"isActive"`
 }
 
 type JobRoleDTO struct {
-	ExternalID         string   `json:"externalId"`
-	CategoryExternalID string   `json:"categoryExternalId"`
+	ID         uint   `json:"id"`
+	CategoryID uint   `json:"categoryId"`
 	Name               string   `json:"name"`
 	Tags               []string `json:"tags"`
 	OrderNum           int      `json:"orderNum"`
@@ -38,4 +38,3 @@ func splitTags(s string) []string {
 	}
 	return out
 }
-

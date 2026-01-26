@@ -2,6 +2,8 @@ package library
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
 	"openresume/internal/pkg/logger"
 
@@ -18,10 +20,20 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) ListVariants(c *gin.Context) {
-	role := c.Query("roleId")
-	category := c.Query("categoryId")
+	var roleID uint
+	if v := strings.TrimSpace(c.Query("roleId")); v != "" {
+		if n, err := strconv.ParseUint(v, 10, 64); err == nil {
+			roleID = uint(n)
+		}
+	}
+	var categoryID uint
+	if v := strings.TrimSpace(c.Query("categoryId")); v != "" {
+		if n, err := strconv.ParseUint(v, 10, 64); err == nil {
+			categoryID = uint(n)
+		}
+	}
 	q := c.Query("q")
-	items, err := h.svc.ListTemplateVariants(role, category, q)
+	items, err := h.svc.ListTemplateVariants(roleID, categoryID, q)
 	if err != nil {
 		logger.WithCtx(c).Error("library.variants.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
@@ -30,11 +42,11 @@ func (h *Handler) ListVariants(c *gin.Context) {
 	out := make([]TemplateVariantDTO, 0, len(items))
 	for _, v := range items {
 		out = append(out, TemplateVariantDTO{
-			ExternalID:               v.ExternalID,
+			ID:                       v.ID,
 			Name:                     v.Name,
 			LayoutTemplateExternalID: v.LayoutTemplateExternalID,
-			PresetExternalID:         v.PresetExternalID,
-			RoleExternalID:           v.RoleExternalID,
+			PresetID:                 v.PresetID,
+			RoleID:                   v.RoleID,
 			Tags:                     splitTags(v.Tags),
 			UsageCount:               v.UsageCount,
 			IsPremium:                v.IsPremium,
@@ -43,4 +55,3 @@ func (h *Handler) ListVariants(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"items": out})
 }
-

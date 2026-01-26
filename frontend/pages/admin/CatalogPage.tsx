@@ -52,13 +52,13 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
   const [allRoles, setAllRoles] = useState<AdminJobRole[]>([]);
 
   const categoryNameById = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const c of allCategories) m.set(c.ExternalID, c.Name);
+    const m = new Map<number, string>();
+    for (const c of allCategories) m.set(c.ID, c.Name);
     return m;
   }, [allCategories]);
 
-  const NameCell: React.FC<{ name?: string; id?: string }> = ({ name, id }) => {
-    const display = (name || '').trim() || (id || '').trim() || '-';
+  const NameCell: React.FC<{ name?: string }> = ({ name }) => {
+    const display = (name || '').trim() || '-';
     return <div className="w-full max-w-full overflow-hidden truncate whitespace-nowrap text-sm text-gray-700" title={display}>{display}</div>;
   };
 
@@ -109,37 +109,37 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
   }, []);
 
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<any>({});
   const openCreateCategory = () => {
     setEditingId(null);
     setFormKind('category');
-    setForm({ name: '', parentExternalId: '', orderNum: 0, isActive: true });
+    setForm({ name: '', parentId: null as number | null, orderNum: 0, isActive: true });
     setShowForm(true);
   };
-  const openCreateSubCategory = (parentExternalId: string) => {
+  const openCreateSubCategory = (parentId: number) => {
     setEditingId(null);
     setFormKind('category');
-    setForm({ name: '', parentExternalId, orderNum: 0, isActive: true });
+    setForm({ name: '', parentId, orderNum: 0, isActive: true });
     setShowForm(true);
   };
-  const openCreateRole = (categoryExternalId: string) => {
+  const openCreateRole = (categoryId: number) => {
     setEditingId(null);
     setFormKind('role');
-    setForm({ categoryExternalId, name: '', tags: [] as string[], orderNum: 0, isActive: true });
+    setForm({ categoryId, name: '', tags: [] as string[], orderNum: 0, isActive: true });
     setShowForm(true);
   };
 
   const openEditCategory = (row: any) => {
-    setEditingId(row.ExternalID);
+    setEditingId(row.ID);
     setFormKind('category');
-    setForm({ name: row.Name, parentExternalId: row.ParentExternalID || '', orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
+    setForm({ name: row.Name, parentId: row.ParentID ?? null, orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
     setShowForm(true);
   };
   const openEditRole = (row: any) => {
-    setEditingId(row.ExternalID);
+    setEditingId(row.ID);
     setFormKind('role');
-    setForm({ categoryExternalId: row.CategoryExternalID, name: row.Name, tags: parseTags(row.Tags), orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
+    setForm({ categoryId: row.CategoryID, name: row.Name, tags: parseTags(row.Tags), orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
     setShowForm(true);
   };
 
@@ -159,22 +159,24 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
         }
       }
       if (formKind === 'role') {
-        if (!String(form.categoryExternalId || '').trim() || !String(form.name || '').trim()) {
+        if (!Number(form.categoryId || 0) || !String(form.name || '').trim()) {
           showToast(t('auth.error.fillAll'), 'error');
           setSaving(false);
           return;
         }
       }
       if (!editingId) {
-        const body = { ...form };
-        delete body.externalId;
-        if (formKind === 'category') await adminCreateJobCategory(body);
-        else if (formKind === 'role') await adminCreateJobRole({ ...body, tags: joinTags(body.tags) });
+        if (formKind === 'category') {
+          await adminCreateJobCategory({ name: String(form.name || '').trim(), parentId: form.parentId ?? null, orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
+        } else if (formKind === 'role') {
+          await adminCreateJobRole({ categoryId: Number(form.categoryId), name: String(form.name || '').trim(), tags: joinTags(form.tags), orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
+        }
       } else {
-        const body = { ...form };
-        delete body.externalId;
-        if (formKind === 'category') await adminPatchJobCategory(editingId, body);
-        else if (formKind === 'role') await adminPatchJobRole(editingId, { ...body, tags: joinTags(body.tags) });
+        if (formKind === 'category') {
+          await adminPatchJobCategory(editingId, { name: String(form.name || '').trim(), parentId: form.parentId ?? null, orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
+        } else if (formKind === 'role') {
+          await adminPatchJobRole(editingId, { categoryId: Number(form.categoryId), name: String(form.name || '').trim(), tags: joinTags(form.tags), orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
+        }
       }
       setShowForm(false);
       showToast(t('admin.msg.saveSuccess'), 'success');
@@ -186,7 +188,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
     }
   };
 
-  const removeItem = async (kind: FormKind, id: string) => {
+  const removeItem = async (kind: FormKind, id: number) => {
     const ok = await confirm({ title: t('admin.confirm.delete'), message: t('admin.confirm.deleteMsg') });
     if (!ok) return;
     try {
@@ -215,15 +217,15 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="cat-parent">{t('admin.catalog.form.parent')}</Label>
-                {!editingId && String(form.parentExternalId || '').trim() ? (
-                  <Input id="cat-parent" value={categoryNameById.get(String(form.parentExternalId)) || String(form.parentExternalId)} disabled />
+                {!editingId && Number(form.parentId || 0) ? (
+                  <Input id="cat-parent" value={categoryNameById.get(Number(form.parentId)) || String(form.parentId)} disabled />
                 ) : (
                   <Select
-                    value={form.parentExternalId || ''}
-                    onChange={(e) => setForm((p: any) => ({ ...p, parentExternalId: e.target.value }))}
+                    value={form.parentId == null ? '' : String(form.parentId)}
+                    onChange={(e) => setForm((p: any) => ({ ...p, parentId: e.target.value ? Number(e.target.value) : null }))}
                     options={[
                       { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                      ...allCategories.map(c => ({ label: c.Name, value: c.ExternalID })),
+                      ...allCategories.map(c => ({ label: c.Name, value: String(c.ID) })),
                     ]}
                   />
                 )}
@@ -245,15 +247,15 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
             <SectionTitle>{t('admin.catalog.section.basic') || 'Basic'}</SectionTitle>
             <div>
               <Label required htmlFor="role-category">{t('admin.catalog.form.category')}</Label>
-              {!editingId && String(form.categoryExternalId || '').trim() ? (
-                <Input id="role-category" value={categoryNameById.get(String(form.categoryExternalId)) || String(form.categoryExternalId)} disabled />
+              {!editingId && Number(form.categoryId || 0) ? (
+                <Input id="role-category" value={categoryNameById.get(Number(form.categoryId)) || String(form.categoryId)} disabled />
               ) : (
                 <Select
-                  value={form.categoryExternalId || ''}
-                  onChange={(e) => setForm((p: any) => ({ ...p, categoryExternalId: e.target.value }))}
+                  value={form.categoryId ? String(form.categoryId) : ''}
+                  onChange={(e) => setForm((p: any) => ({ ...p, categoryId: e.target.value ? Number(e.target.value) : 0 }))}
                   options={[
                     { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                    ...allCategories.map(c => ({ label: c.Name, value: c.ExternalID })),
+                    ...allCategories.map(c => ({ label: c.Name, value: String(c.ID) })),
                   ]}
                 />
               )}
@@ -285,19 +287,19 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
 
   const renderTable = () => {
     const keyword = q.trim().toLowerCase();
-    const rolesByCategory = new Map<string, AdminJobRole[]>();
+    const rolesByCategory = new Map<number, AdminJobRole[]>();
     for (const r of allRoles) {
-      const list = rolesByCategory.get(r.CategoryExternalID) || [];
+      const list = rolesByCategory.get(r.CategoryID) || [];
       list.push(r);
-      rolesByCategory.set(r.CategoryExternalID, list);
+      rolesByCategory.set(r.CategoryID, list);
     }
     for (const [k, list] of rolesByCategory.entries()) {
       list.sort((a, b) => (a.OrderNum ?? 0) - (b.OrderNum ?? 0) || a.Name.localeCompare(b.Name));
       rolesByCategory.set(k, list);
     }
-    const categoriesByParent = new Map<string, AdminJobCategory[]>();
+    const categoriesByParent = new Map<number, AdminJobCategory[]>();
     for (const c of allCategories) {
-      const parent = c.ParentExternalID || '';
+      const parent = c.ParentID ?? 0;
       const list = categoriesByParent.get(parent) || [];
       list.push(c);
       categoriesByParent.set(parent, list);
@@ -307,36 +309,35 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
       categoriesByParent.set(k, list);
     }
 
-    const rootCategories = categoriesByParent.get('') || [];
+    const rootCategories = categoriesByParent.get(0) || [];
 
     const matchCategory = (c: AdminJobCategory) => {
       if (!keyword) return true;
-      return (c.Name || '').toLowerCase().includes(keyword) || (c.ExternalID || '').toLowerCase().includes(keyword);
+      return (c.Name || '').toLowerCase().includes(keyword);
     };
     const matchRole = (r: AdminJobRole) => {
       if (!keyword) return true;
       const name = (r.Name || '').toLowerCase();
-      const id = (r.ExternalID || '').toLowerCase();
       const tags = (r.Tags || '').toLowerCase();
-      return name.includes(keyword) || id.includes(keyword) || tags.includes(keyword);
+      return name.includes(keyword) || tags.includes(keyword);
     };
-    const roleCountUnderCategory = (categoryId: string) => (rolesByCategory.get(categoryId) || []).length;
-    const totalRoleCountUnderRoot = (rootId: string) => {
+    const roleCountUnderCategory = (categoryId: number) => (rolesByCategory.get(categoryId) || []).length;
+    const totalRoleCountUnderRoot = (rootId: number) => {
       const children = categoriesByParent.get(rootId) || [];
       let total = roleCountUnderCategory(rootId);
-      for (const child of children) total += roleCountUnderCategory(child.ExternalID);
+      for (const child of children) total += roleCountUnderCategory(child.ID);
       return total;
     };
 
     const filteredRootCategories = keyword
       ? rootCategories.filter((root) => {
           if (matchCategory(root)) return true;
-          const rootRoles = rolesByCategory.get(root.ExternalID) || [];
+          const rootRoles = rolesByCategory.get(root.ID) || [];
           if (rootRoles.some(matchRole)) return true;
-          const children = categoriesByParent.get(root.ExternalID) || [];
+          const children = categoriesByParent.get(root.ID) || [];
           for (const child of children) {
             if (matchCategory(child)) return true;
-            const childRoles = rolesByCategory.get(child.ExternalID) || [];
+            const childRoles = rolesByCategory.get(child.ID) || [];
             if (childRoles.some(matchRole)) return true;
           }
           return false;
@@ -351,9 +352,9 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
             onClick={() => {
               const next: Record<string, boolean> = {};
               for (const c of filteredRootCategories) {
-                next[c.ExternalID] = true;
-                for (const child of categoriesByParent.get(c.ExternalID) || []) next[child.ExternalID] = true;
-                next[`${c.ExternalID}__ungrouped`] = true;
+                next[String(c.ID)] = true;
+                for (const child of categoriesByParent.get(c.ID) || []) next[String(child.ID)] = true;
+                next[`${c.ID}__ungrouped`] = true;
               }
               setExpandedCategories(next);
             }}
@@ -386,18 +387,19 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredRootCategories.map((c) => {
-                  const children = categoriesByParent.get(c.ExternalID) || [];
-                  const rootRoles = rolesByCategory.get(c.ExternalID) || [];
-                  const expanded = keyword ? true : !!expandedCategories[c.ExternalID];
+                  const children = categoriesByParent.get(c.ID) || [];
+                  const rootRoles = rolesByCategory.get(c.ID) || [];
+                  const expandedKey = String(c.ID);
+                  const expanded = keyword ? true : !!expandedCategories[expandedKey];
                   return (
-                    <React.Fragment key={c.ExternalID}>
+                    <React.Fragment key={c.ID}>
                       <tr
                         className="hover:bg-blue-50/30 transition-colors cursor-pointer"
-                        onClick={() => setExpandedCategories((prev) => ({ ...prev, [c.ExternalID]: !prev[c.ExternalID] }))}
+                        onClick={() => setExpandedCategories((prev) => ({ ...prev, [expandedKey]: !prev[expandedKey] }))}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            setExpandedCategories((prev) => ({ ...prev, [c.ExternalID]: !prev[c.ExternalID] }));
+                            setExpandedCategories((prev) => ({ ...prev, [expandedKey]: !prev[expandedKey] }));
                           }
                         }}
                         tabIndex={0}
@@ -409,7 +411,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                               className="p-1 rounded hover:bg-slate-100 text-slate-500"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setExpandedCategories((prev) => ({ ...prev, [c.ExternalID]: !prev[c.ExternalID] }));
+                                setExpandedCategories((prev) => ({ ...prev, [expandedKey]: !prev[expandedKey] }));
                               }}
                               title={expanded ? (t('admin.catalog.actions.collapse') || 'Collapse') : (t('admin.catalog.actions.expand') || 'Expand')}
                             >
@@ -420,14 +422,14 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                               )}
                             </button>
                             <div className="min-w-0 flex-1">
-                              <NameCell name={c.Name} id={c.ExternalID} />
+                              <NameCell name={c.Name} />
                             </div>
                           </div>
                         </td>
                         <td className="px-4 py-4 text-sm text-slate-400 whitespace-nowrap">
                           {children.length ? `${children.length} ${t('admin.catalog.jobs.subcategories') || '小类'}` : '-'}
                           <span className="mx-2 text-slate-200">|</span>
-                          {(totalRoleCountUnderRoot(c.ExternalID) || 0) ? `${totalRoleCountUnderRoot(c.ExternalID)} ${t('admin.catalog.jobs.roles') || '岗位'}` : '-'}
+                          {(totalRoleCountUnderRoot(c.ID) || 0) ? `${totalRoleCountUnderRoot(c.ID)} ${t('admin.catalog.jobs.roles') || '岗位'}` : '-'}
                         </td>
                         <td className="px-4 py-4 text-sm text-gray-500">{c.OrderNum ?? 0}</td>
                         <td className="px-4 py-4">
@@ -437,36 +439,37 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                           <div className="flex items-center justify-end gap-1">
                             <button
                               type="button"
-                              onClick={() => openCreateSubCategory(c.ExternalID)}
+                              onClick={() => openCreateSubCategory(c.ID)}
                               className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
                               title={t('admin.catalog.actions.addSubcategory') || 'Add subcategory'}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                             </button>
                             <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditCategory(c)} kind="edit" />
-                            <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('category', c.ExternalID)} kind="delete" />
+                            <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('category', c.ID)} kind="delete" />
                           </div>
                         </td>
                       </tr>
                       <AnimatePresence initial={false}>
                         {expanded ? (
-                          <React.Fragment key={`${c.ExternalID}__expanded`}>
+                          <React.Fragment key={`${c.ID}__expanded`}>
                             {children.map((child, idx) => {
-                              const childRoles = rolesByCategory.get(child.ExternalID) || [];
-                              const childExpanded = keyword ? true : !!expandedCategories[child.ExternalID];
+                              const childRoles = rolesByCategory.get(child.ID) || [];
+                              const childExpandedKey = String(child.ID);
+                              const childExpanded = keyword ? true : !!expandedCategories[childExpandedKey];
                               return (
-                                <React.Fragment key={child.ExternalID}>
+                                <React.Fragment key={child.ID}>
                                   <motion.tr
                                     initial={{ opacity: 0, y: -6 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -6 }}
                                     transition={{ duration: 0.16, delay: Math.min(0.06, idx * 0.01) }}
                                     className="hover:bg-blue-50/20 transition-colors bg-white cursor-pointer"
-                                    onClick={() => setExpandedCategories((prev) => ({ ...prev, [child.ExternalID]: !prev[child.ExternalID] }))}
+                                    onClick={() => setExpandedCategories((prev) => ({ ...prev, [childExpandedKey]: !prev[childExpandedKey] }))}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter' || e.key === ' ') {
                                         e.preventDefault();
-                                        setExpandedCategories((prev) => ({ ...prev, [child.ExternalID]: !prev[child.ExternalID] }));
+                                        setExpandedCategories((prev) => ({ ...prev, [childExpandedKey]: !prev[childExpandedKey] }));
                                       }
                                     }}
                                     tabIndex={0}
@@ -478,7 +481,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                           className="p-1 rounded hover:bg-slate-100 text-slate-400"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            setExpandedCategories((prev) => ({ ...prev, [child.ExternalID]: !prev[child.ExternalID] }));
+                                            setExpandedCategories((prev) => ({ ...prev, [childExpandedKey]: !prev[childExpandedKey] }));
                                           }}
                                           title={childExpanded ? (t('admin.catalog.actions.collapse') || 'Collapse') : (t('admin.catalog.actions.expand') || 'Expand')}
                                         >
@@ -489,7 +492,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                           )}
                                         </button>
                                         <div className="min-w-0 flex-1">
-                                          <NameCell name={child.Name} id={child.ExternalID} />
+                                          <NameCell name={child.Name} />
                                         </div>
                                       </div>
                                     </td>
@@ -502,14 +505,14 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                       <div className="flex items-center justify-end gap-1">
                                         <button
                                           type="button"
-                                          onClick={() => openCreateRole(child.ExternalID)}
+                                          onClick={() => openCreateRole(child.ID)}
                                           className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
                                           title={t('admin.catalog.actions.addRole') || 'Add role'}
                                         >
                                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                                         </button>
                                         <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditCategory(child)} kind="edit" />
-                                        <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('category', child.ExternalID)} kind="delete" />
+                                        <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('category', child.ID)} kind="delete" />
                                       </div>
                                     </td>
                                   </motion.tr>
@@ -518,7 +521,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                     {childExpanded
                                       ? childRoles.map((r, ridx) => (
                                           <motion.tr
-                                            key={r.ExternalID}
+                                            key={r.ID}
                                             initial={{ opacity: 0, y: -6 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -6 }}
@@ -531,7 +534,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
                                                 </div>
                                                 <div className="min-w-0 flex-1">
-                                                  <NameCell name={r.Name} id={r.ExternalID} />
+                                                  <NameCell name={r.Name} />
                                                 </div>
                                               </div>
                                             </td>
@@ -560,7 +563,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                             <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
                                               <div className="flex items-center justify-end gap-1">
                                                 <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
-                                                <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.ExternalID)} kind="delete" />
+                                                <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.ID)} kind="delete" />
                                               </div>
                                             </td>
                                           </motion.tr>
@@ -572,7 +575,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                             })}
                             {rootRoles.length ? (
                               (() => {
-                                const key = `${c.ExternalID}__ungrouped`;
+                                const key = `${c.ID}__ungrouped`;
                                 const ungroupedExpanded = keyword ? true : !!expandedCategories[key];
                                 return (
                                   <React.Fragment key={key}>
@@ -619,7 +622,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                       {ungroupedExpanded
                                         ? rootRoles.map((r, ridx) => (
                                             <motion.tr
-                                              key={r.ExternalID}
+                                              key={r.ID}
                                               initial={{ opacity: 0, y: -6 }}
                                               animate={{ opacity: 1, y: 0 }}
                                               exit={{ opacity: 0, y: -6 }}
@@ -632,7 +635,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
                                                   </div>
                                                   <div className="min-w-0 flex-1">
-                                                    <NameCell name={r.Name} id={r.ExternalID} />
+                                                    <NameCell name={r.Name} />
                                                   </div>
                                                 </div>
                                               </td>
@@ -661,7 +664,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                               <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
                                                 <div className="flex items-center justify-end gap-1">
                                                   <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
-                                                  <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.ExternalID)} kind="delete" />
+                                                  <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.ID)} kind="delete" />
                                                 </div>
                                               </td>
                                             </motion.tr>

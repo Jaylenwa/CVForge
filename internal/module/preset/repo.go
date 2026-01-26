@@ -2,6 +2,7 @@ package preset
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 
 	"openresume/internal/infra/database"
@@ -21,22 +22,23 @@ func NewRepo(db *gorm.DB) *Repo {
 	return &Repo{db: db}
 }
 
-func (r *Repo) GetByExternalActive(id string) (ContentPreset, error) {
+func (r *Repo) GetByIDActive(id uint) (ContentPreset, error) {
 	var p ContentPreset
-	err := r.db.Where("external_id = ?", id).Where("is_active = ?", true).First(&p).Error
+	err := r.db.Where("id = ?", id).Where("is_active = ?", true).First(&p).Error
 	return p, err
 }
 
 func (r *Repo) UpsertContentPreset(db *gorm.DB, p *ContentPreset) error {
-	if p == nil || p.ExternalID == "" {
+	if p == nil || strings.TrimSpace(p.Name) == "" {
 		return errors.New("invalid content preset")
 	}
 	var existing ContentPreset
-	err := db.Where("external_id = ?", p.ExternalID).First(&existing).Error
+	err := db.Where("name = ?", strings.TrimSpace(p.Name)).Where("role_id = ?", p.RoleID).First(&existing).Error
 	if err == nil {
+		p.ID = existing.ID
 		existing.Name = p.Name
 		existing.Language = p.Language
-		existing.RoleExternalID = p.RoleExternalID
+		existing.RoleID = p.RoleID
 		existing.Tags = p.Tags
 		existing.DataJSON = p.DataJSON
 		existing.IsActive = p.IsActive
@@ -55,10 +57,15 @@ func (r *Repo) AdminListContentPresets(page, size int, q, role, language string)
 	db := r.db.Model(&ContentPreset{})
 	if q = strings.TrimSpace(q); q != "" {
 		qq := "%" + q + "%"
-		db = db.Where("name LIKE ? OR tags LIKE ? OR external_id LIKE ?", qq, qq, qq)
+		db = db.Where("name LIKE ? OR tags LIKE ?", qq, qq)
+		if id, err := strconv.ParseUint(q, 10, 64); err == nil {
+			db = db.Or("id = ?", uint(id))
+		}
 	}
 	if role = strings.TrimSpace(role); role != "" {
-		db = db.Where("role_external_id = ?", role)
+		if roleID, err := strconv.ParseUint(role, 10, 64); err == nil {
+			db = db.Where("role_id = ?", uint(roleID))
+		}
 	}
 	if language = strings.TrimSpace(language); language != "" {
 		db = db.Where("language = ?", language)
@@ -72,7 +79,7 @@ func (r *Repo) AdminListContentPresets(page, size int, q, role, language string)
 }
 
 func (r *Repo) AdminCreateContentPreset(p *ContentPreset) error {
-	if p == nil || strings.TrimSpace(p.ExternalID) == "" || strings.TrimSpace(p.Name) == "" {
+	if p == nil || strings.TrimSpace(p.Name) == "" || p.RoleID == 0 {
 		return errors.New("invalid")
 	}
 	if err := ValidatePresetDataJSON(p.DataJSON); err != nil {
@@ -81,7 +88,7 @@ func (r *Repo) AdminCreateContentPreset(p *ContentPreset) error {
 	return r.db.Create(p).Error
 }
 
-func (r *Repo) AdminPatchContentPreset(externalID string, patch map[string]any) error {
+func (r *Repo) AdminPatchContentPreset(id uint, patch map[string]any) error {
 	if v, ok := patch["data_json"]; ok {
 		if s, ok := v.(string); ok {
 			if err := ValidatePresetDataJSON(s); err != nil {
@@ -89,9 +96,9 @@ func (r *Repo) AdminPatchContentPreset(externalID string, patch map[string]any) 
 			}
 		}
 	}
-	return r.db.Model(&ContentPreset{}).Where("external_id = ?", externalID).Updates(patch).Error
+	return r.db.Model(&ContentPreset{}).Where("id = ?", id).Updates(patch).Error
 }
 
-func (r *Repo) AdminDeleteContentPreset(externalID string) error {
-	return r.db.Where("external_id = ?", externalID).Delete(&ContentPreset{}).Error
+func (r *Repo) AdminDeleteContentPreset(id uint) error {
+	return r.db.Where("id = ?", id).Delete(&ContentPreset{}).Error
 }

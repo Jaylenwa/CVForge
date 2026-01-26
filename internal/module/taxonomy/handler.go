@@ -2,6 +2,7 @@ package taxonomy
 
 import (
 	"net/http"
+	"strconv"
 
 	"openresume/internal/pkg/logger"
 
@@ -27,9 +28,9 @@ func (h *Handler) ListCategories(c *gin.Context) {
 	out := make([]JobCategoryDTO, 0, len(items))
 	for _, it := range items {
 		out = append(out, JobCategoryDTO{
-			ExternalID:       it.ExternalID,
+			ID:               it.ID,
 			Name:             it.Name,
-			ParentExternalID: it.ParentExternalID,
+			ParentID:         it.ParentID,
 			OrderNum:         it.OrderNum,
 			IsActive:         it.IsActive,
 		})
@@ -38,9 +39,14 @@ func (h *Handler) ListCategories(c *gin.Context) {
 }
 
 func (h *Handler) ListRoles(c *gin.Context) {
-	category := c.Query("categoryId")
+	var categoryID uint
+	if v := c.Query("categoryId"); v != "" {
+		if n, err := strconv.ParseUint(v, 10, 64); err == nil {
+			categoryID = uint(n)
+		}
+	}
 	q := c.Query("q")
-	items, err := h.svc.ListJobRoles(category, q)
+	items, err := h.svc.ListJobRoles(categoryID, q)
 	if err != nil {
 		logger.WithCtx(c).Error("taxonomy.roles.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
@@ -49,8 +55,8 @@ func (h *Handler) ListRoles(c *gin.Context) {
 	out := make([]JobRoleDTO, 0, len(items))
 	for _, it := range items {
 		out = append(out, JobRoleDTO{
-			ExternalID:         it.ExternalID,
-			CategoryExternalID: it.CategoryExternalID,
+			ID:         it.ID,
+			CategoryID: it.CategoryID,
 			Name:               it.Name,
 			Tags:               splitTags(it.Tags),
 			OrderNum:           it.OrderNum,
@@ -59,4 +65,3 @@ func (h *Handler) ListRoles(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"items": out})
 }
-

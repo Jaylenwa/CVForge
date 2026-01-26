@@ -19,8 +19,8 @@ export const Dashboard: React.FC = () => {
   
   
   const [resumes, setResumes] = useState<ResumeData[]>([]);
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [activeMenu, setActiveMenu] = useState<number | string | null>(null);
+  const [renamingId, setRenamingId] = useState<number | string | null>(null);
   const [tempTitle, setTempTitle] = useState('');
   const [shareModal, setShareModal] = useState<{ open: boolean; url: string; slug: string }>({ open: false, url: '', slug: '' });
   const [copied, setCopied] = useState(false);
@@ -32,9 +32,9 @@ export const Dashboard: React.FC = () => {
       const res = await fetch(`${API_BASE}/resumes`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       const items = (data.items || []).map((r: any) => ({
-        id: r.id || r.ExternalID,
-        title: r.title || r.Title,
-        templateId: r.templateId || r.TemplateID,
+        id: r.ID ?? r.id,
+        title: r.Title ?? r.title,
+        templateId: r.TemplateID ?? r.templateId,
         language: (r.language || r.Language) === 'en' ? 'en' : 'zh',
         Theme: r.Theme || { Color: r.Theme?.Color, Font: r.Theme?.Font, Spacing: r.Theme?.Spacing, FontSize: r.Theme?.FontSize },
         lastModified: r.lastModified || r.LastModified || Date.now(),
@@ -45,12 +45,12 @@ export const Dashboard: React.FC = () => {
           AvatarURL: r.Personal?.AvatarURL,
         },
         sections: (r.sections || r.Sections || []).map((s: any) => ({
-          id: s.id || s.ExternalID,
+          id: s.ID ?? s.id,
           type: s.type || s.Type,
           title: s.title || s.Title,
           isVisible: (s.isVisible ?? s.IsVisible) ?? true,
           items: (s.items || s.Items || []).map((it: any) => ({
-            id: it.id || it.ExternalID,
+            id: it.ID ?? it.id,
             title: it.title || it.Title,
             subtitle: it.subtitle || it.Subtitle,
             major: it.major || it.Major,
@@ -66,11 +66,11 @@ export const Dashboard: React.FC = () => {
     })();
   }, []);
 
-  const handleEdit = (id: string) => {
+  const handleEdit = (id: number | string) => {
     window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?id=${id}&returnTo=${encodeURIComponent(AppRoute.Dashboard)}`, '_blank');
   };
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: number | string, e: React.MouseEvent) => {
       e.stopPropagation();
       const token = localStorage.getItem('token');
       fetch(`${API_BASE}/resumes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
@@ -89,12 +89,10 @@ export const Dashboard: React.FC = () => {
         Personal: resume.Personal || INITIAL_RESUME.Personal || {},
         Theme: resume.Theme || INITIAL_RESUME.Theme || {},
         Sections: (resume.sections || INITIAL_RESUME.sections).map(s => ({
-          ExternalID: s.id,
           Type: s.type,
           Title: s.title,
           IsVisible: s.isVisible,
           Items: s.items.map(i => ({
-            ExternalID: i.id,
             Title: i.title || '',
             Subtitle: i.subtitle || '',
             Major: i.major || '',
@@ -119,12 +117,12 @@ export const Dashboard: React.FC = () => {
       setActiveMenu(null);
   };
 
-  const saveRename = (id: string) => {
+  const saveRename = (id: number | string) => {
       setResumes(prev => prev.map(r => r.id === id ? { ...r, title: tempTitle } : r));
       setRenamingId(null);
   };
 
-  const handleShare = async (resumeId: string, e: React.MouseEvent) => {
+  const handleShare = async (resumeId: number | string, e: React.MouseEvent) => {
       e.stopPropagation();
       const token = localStorage.getItem('token');
       if (!token) return;

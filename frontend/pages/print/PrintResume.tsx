@@ -4,7 +4,6 @@ import { ResumeData } from '../../types';
 import { API_BASE } from '../../config';
 import { ResumePreview } from '../editor/ResumePreview';
 import { INITIAL_RESUME } from '../../services/mockData';
-import { CONTENT_PRESETS_SEED } from '../../services/catalogSeeds';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { fetchContentPresetData } from '../../services/catalogService';
 
@@ -16,16 +15,15 @@ export const PrintResume: React.FC = () => {
   useEffect(() => {
     const id = searchParams.get('id');
     const template = searchParams.get('template');
-    const presetId = searchParams.get('preset') || '';
-    searchParams.get('variant');
+    const presetId = searchParams.get('presetId') || '';
+    searchParams.get('variantId');
 
     if (template && !id) {
       let cancelled = false;
-      const localPreset = presetId ? CONTENT_PRESETS_SEED.find(p => p.id === presetId)?.data : null;
 
       const resolveSeed = () => {
-        if (!presetId || localPreset) return Promise.resolve({ ...(INITIAL_RESUME as any), ...(localPreset as any) });
-        return fetchContentPresetData(presetId)
+        if (!presetId) return Promise.resolve({ ...(INITIAL_RESUME as any) });
+        return fetchContentPresetData(Number(presetId))
           .then((parsed) => parsed && typeof parsed === 'object' ? ({ ...(INITIAL_RESUME as any), ...(parsed as any) }) : (INITIAL_RESUME as any))
           .catch(() => INITIAL_RESUME as any);
       };
@@ -47,7 +45,7 @@ export const PrintResume: React.FC = () => {
       .then(r => r.json())
       .then((res: any) => {
         const mapped: ResumeData = {
-          id: res.ExternalID || id,
+          id: res.ID || Number(id),
           title: res.Title,
           templateId: res.TemplateID,
           language: (res.Language || '') === 'en' ? 'en' : 'zh',
@@ -55,13 +53,13 @@ export const PrintResume: React.FC = () => {
           lastModified: res.LastModified,
           Personal: res.Personal,
           sections: (res.Sections || []).map((s: any) => ({
-            id: s.ExternalID || s.ID,
+            id: s.ID,
             type: s.Type,
             title: s.Title,
             isVisible: s.IsVisible,
             orderNum: s.OrderNum,
             items: (s.Items || []).map((i: any) => ({
-              id: i.ExternalID || i.ID,
+              id: i.ID,
               title: i.Title,
               subtitle: i.Subtitle,
               major: i.Major,

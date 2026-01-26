@@ -277,7 +277,7 @@ export const TemplatesPage: React.FC = () => {
     if (errors === 0) {
       showToast(t('admin.sync.complete'), 'success');
     } else {
-      showToast(t('admin.sync.partial').replace('{count}', String(errors)), 'warning');
+      showToast(t('admin.sync.partial').replace('{count}', String(errors)), 'error');
     }
   };
 
@@ -388,7 +388,7 @@ export const TemplatesPage: React.FC = () => {
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogSaving, setCatalogSaving] = useState(false);
   const [catalogShowForm, setCatalogShowForm] = useState(false);
-  const [catalogEditingId, setCatalogEditingId] = useState<string | null>(null);
+  const [catalogEditingId, setCatalogEditingId] = useState<number | null>(null);
   const [catalogFormKind, setCatalogFormKind] = useState<'preset' | 'variant'>('preset');
   const [catalogForm, setCatalogForm] = useState<any>({});
 
@@ -397,13 +397,13 @@ export const TemplatesPage: React.FC = () => {
   const [allTemplates, setAllTemplates] = useState<Array<{ id: string; name: string }>>([]);
 
   const roleNameById = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const r of allRoles) m.set(r.ExternalID, r.Name);
+    const m = new Map<number, string>();
+    for (const r of allRoles) m.set(r.ID, r.Name);
     return m;
   }, [allRoles]);
   const presetNameById = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const p of allPresets) m.set(p.ExternalID, p.Name);
+    const m = new Map<number, string>();
+    for (const p of allPresets) m.set(p.ID, p.Name);
     return m;
   }, [allPresets]);
   const templateNameById = useMemo(() => {
@@ -544,7 +544,7 @@ export const TemplatesPage: React.FC = () => {
     setCatalogForm({
       name: '',
       language: '',
-      roleExternalId: '',
+      roleId: '',
       tags: [] as string[],
       dataJson: '{\n  \"title\": \"\",\n  \"language\": \"zh\",\n  \"Personal\": {},\n  \"Theme\": {},\n  \"sections\": []\n}\n',
       isActive: true,
@@ -558,8 +558,8 @@ export const TemplatesPage: React.FC = () => {
     setCatalogForm({
       name: '',
       layoutTemplateExternalId: '',
-      presetExternalId: '',
-      roleExternalId: '',
+      presetId: '',
+      roleId: '',
       tags: [] as string[],
       usageCount: 0,
       isPremium: false,
@@ -569,12 +569,12 @@ export const TemplatesPage: React.FC = () => {
   };
 
   const openEditPreset = (row: AdminContentPreset) => {
-    setCatalogEditingId(row.ExternalID);
+    setCatalogEditingId(row.ID);
     setCatalogFormKind('preset');
     setCatalogForm({
       name: row.Name,
       language: row.Language || 'zh',
-      roleExternalId: row.RoleExternalID || '',
+      roleId: String(row.RoleID),
       tags: parseTags(row.Tags),
       dataJson: row.DataJSON || '',
       isActive: !!row.IsActive,
@@ -583,13 +583,13 @@ export const TemplatesPage: React.FC = () => {
   };
 
   const openEditVariant = (row: AdminTemplateVariant) => {
-    setCatalogEditingId(row.ExternalID);
+    setCatalogEditingId(row.ID);
     setCatalogFormKind('variant');
     setCatalogForm({
       name: row.Name,
       layoutTemplateExternalId: row.LayoutTemplateExternalID,
-      presetExternalId: row.PresetExternalID,
-      roleExternalId: row.RoleExternalID,
+      presetId: String(row.PresetID),
+      roleId: String(row.RoleID),
       tags: parseTags(row.Tags),
       usageCount: row.UsageCount ?? 0,
       isPremium: !!row.IsPremium,
@@ -618,8 +618,8 @@ export const TemplatesPage: React.FC = () => {
     setGenerateResult(null);
     try {
       const res = await adminGenerateTemplateVariants({
-        roleId: generateForm.roleId,
-        presetId: generateForm.presetId,
+        roleId: Number(generateForm.roleId),
+        presetId: Number(generateForm.presetId),
         layoutTemplateIds: generateForm.layoutTemplateIds,
         namePrefix: generateForm.namePrefix,
         tags: generateForm.tags,
@@ -643,14 +643,14 @@ export const TemplatesPage: React.FC = () => {
     setCatalogSaving(true);
     try {
       if (catalogFormKind === 'preset') {
-        if (!String(catalogForm.name || '').trim() || !String(catalogForm.language || '').trim() || !String(catalogForm.roleExternalId || '').trim()) {
+        if (!String(catalogForm.name || '').trim() || !String(catalogForm.language || '').trim() || !Number(catalogForm.roleId || 0)) {
           showToast(t('auth.error.fillAll'), 'error');
           setCatalogSaving(false);
           return;
         }
       }
       if (catalogFormKind === 'variant') {
-        if (!String(catalogForm.name || '').trim() || !String(catalogForm.layoutTemplateExternalId || '').trim() || !String(catalogForm.presetExternalId || '').trim() || !String(catalogForm.roleExternalId || '').trim()) {
+        if (!String(catalogForm.name || '').trim() || !String(catalogForm.layoutTemplateExternalId || '').trim() || !Number(catalogForm.presetId || 0) || !Number(catalogForm.roleId || 0)) {
           showToast(t('auth.error.fillAll'), 'error');
           setCatalogSaving(false);
           return;
@@ -666,15 +666,49 @@ export const TemplatesPage: React.FC = () => {
       }
 
       if (!catalogEditingId) {
-        const body = { ...catalogForm, tags: joinTags(catalogForm.tags) };
-        delete body.externalId;
-        if (catalogFormKind === 'preset') await adminCreateContentPreset(body);
-        else await adminCreateTemplateVariant(body);
+        if (catalogFormKind === 'preset') {
+          await adminCreateContentPreset({
+            name: String(catalogForm.name || '').trim(),
+            language: String(catalogForm.language || '').trim(),
+            roleId: Number(catalogForm.roleId),
+            tags: joinTags(catalogForm.tags),
+            dataJson: String(catalogForm.dataJson || ''),
+            isActive: !!catalogForm.isActive,
+          });
+        } else {
+          await adminCreateTemplateVariant({
+            name: String(catalogForm.name || '').trim(),
+            layoutTemplateExternalId: String(catalogForm.layoutTemplateExternalId || '').trim(),
+            presetId: Number(catalogForm.presetId),
+            roleId: Number(catalogForm.roleId),
+            tags: joinTags(catalogForm.tags),
+            usageCount: Number(catalogForm.usageCount || 0),
+            isPremium: !!catalogForm.isPremium,
+            isActive: !!catalogForm.isActive,
+          });
+        }
       } else {
-        const body = { ...catalogForm };
-        delete body.externalId;
-        if (catalogFormKind === 'preset') await adminPatchContentPreset(catalogEditingId, { ...body, tags: joinTags(body.tags) });
-        else await adminPatchTemplateVariant(catalogEditingId, { ...body, tags: joinTags(body.tags) });
+        if (catalogFormKind === 'preset') {
+          await adminPatchContentPreset(catalogEditingId, {
+            name: String(catalogForm.name || '').trim(),
+            language: String(catalogForm.language || '').trim(),
+            roleId: Number(catalogForm.roleId),
+            tags: joinTags(catalogForm.tags),
+            dataJson: String(catalogForm.dataJson || ''),
+            isActive: !!catalogForm.isActive,
+          });
+        } else {
+          await adminPatchTemplateVariant(catalogEditingId, {
+            name: String(catalogForm.name || '').trim(),
+            layoutTemplateExternalId: String(catalogForm.layoutTemplateExternalId || '').trim(),
+            presetId: Number(catalogForm.presetId),
+            roleId: Number(catalogForm.roleId),
+            tags: joinTags(catalogForm.tags),
+            usageCount: Number(catalogForm.usageCount || 0),
+            isPremium: !!catalogForm.isPremium,
+            isActive: !!catalogForm.isActive,
+          });
+        }
       }
       setCatalogShowForm(false);
       showToast(t('admin.msg.saveSuccess'), 'success');
@@ -687,7 +721,7 @@ export const TemplatesPage: React.FC = () => {
     }
   };
 
-  const removeCatalogItem = async (kind: 'preset' | 'variant', id: string) => {
+  const removeCatalogItem = async (kind: 'preset' | 'variant', id: number) => {
     const ok = await confirm({ title: t('admin.confirm.delete'), message: t('admin.confirm.deleteMsg') });
     if (!ok) return;
     try {
@@ -727,11 +761,11 @@ export const TemplatesPage: React.FC = () => {
               <div>
                 <Label required htmlFor="preset-role">{t('admin.catalog.form.role')}</Label>
                 <Select
-                  value={catalogForm.roleExternalId || ''}
-                  onChange={(e) => setCatalogForm((p: any) => ({ ...p, roleExternalId: e.target.value }))}
+                  value={catalogForm.roleId || ''}
+                  onChange={(e) => setCatalogForm((p: any) => ({ ...p, roleId: e.target.value }))}
                   options={[
                     { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                    ...allRoles.map((r) => ({ label: r.Name, value: r.ExternalID })),
+                    ...allRoles.map((r) => ({ label: r.Name, value: String(r.ID) })),
                   ]}
                 />
               </div>
@@ -789,7 +823,7 @@ export const TemplatesPage: React.FC = () => {
                   <Select
                     value={generateForm.roleId}
                     onChange={(e) => setGenerateForm((p) => ({ ...p, roleId: e.target.value }))}
-                    options={[{ label: t('admin.form.selectPlaceholder'), value: '' }, ...allRoles.map((r) => ({ label: r.Name, value: r.ExternalID }))]}
+                    options={[{ label: t('admin.form.selectPlaceholder'), value: '' }, ...allRoles.map((r) => ({ label: r.Name, value: String(r.ID) }))]}
                   />
                 </div>
                 <div>
@@ -797,7 +831,7 @@ export const TemplatesPage: React.FC = () => {
                   <Select
                     value={generateForm.presetId}
                     onChange={(e) => setGenerateForm((p) => ({ ...p, presetId: e.target.value }))}
-                    options={[{ label: t('admin.form.selectPlaceholder'), value: '' }, ...allPresets.map((p) => ({ label: p.Name, value: p.ExternalID }))]}
+                    options={[{ label: t('admin.form.selectPlaceholder'), value: '' }, ...allPresets.map((p) => ({ label: p.Name, value: String(p.ID) }))]}
                   />
                 </div>
                 <div>
@@ -916,22 +950,22 @@ export const TemplatesPage: React.FC = () => {
                 <div>
                   <Label required htmlFor="variant-preset">{t('admin.catalog.form.preset')}</Label>
                   <Select
-                    value={catalogForm.presetExternalId || ''}
-                    onChange={(e) => setCatalogForm((p: any) => ({ ...p, presetExternalId: e.target.value }))}
+                    value={catalogForm.presetId || ''}
+                    onChange={(e) => setCatalogForm((p: any) => ({ ...p, presetId: e.target.value }))}
                     options={[
                       { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                      ...allPresets.map((x) => ({ label: x.Name, value: x.ExternalID })),
+                      ...allPresets.map((x) => ({ label: x.Name, value: String(x.ID) })),
                     ]}
                   />
                 </div>
                 <div>
                   <Label required htmlFor="variant-role">{t('admin.catalog.form.role')}</Label>
                   <Select
-                    value={catalogForm.roleExternalId || ''}
-                    onChange={(e) => setCatalogForm((p: any) => ({ ...p, roleExternalId: e.target.value }))}
+                    value={catalogForm.roleId || ''}
+                    onChange={(e) => setCatalogForm((p: any) => ({ ...p, roleId: e.target.value }))}
                     options={[
                       { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                      ...allRoles.map((x) => ({ label: x.Name, value: x.ExternalID })),
+                      ...allRoles.map((x) => ({ label: x.Name, value: String(x.ID) })),
                     ]}
                   />
                 </div>
@@ -999,7 +1033,7 @@ export const TemplatesPage: React.FC = () => {
         <TableCard>
           <DataTable<AdminContentPreset>
             data={presets}
-            getRowKey={(row) => row.ExternalID}
+            getRowKey={(row) => String(row.ID)}
             emptyState={{
               title: t('admin.catalog.empty') || '暂无数据',
               description: t('admin.catalog.emptyDesc') || '点击右上角创建开始新增',
@@ -1007,7 +1041,7 @@ export const TemplatesPage: React.FC = () => {
             columns={[
               { key: 'name', label: t('admin.form.name'), minWidth: 280, render: (p) => <TextCell text={p.Name} className="text-gray-900 font-medium" /> },
               { key: 'language', label: t('admin.catalog.form.language'), minWidth: 120, nowrap: true, render: (p) => <span className="text-sm text-gray-600">{p.Language || '-'}</span> },
-              { key: 'role', label: t('admin.catalog.form.role'), minWidth: 240, render: (p) => <NameCell name={p.RoleExternalID ? roleNameById.get(p.RoleExternalID) : ''} id={p.RoleExternalID || ''} /> },
+              { key: 'role', label: t('admin.catalog.form.role'), minWidth: 240, render: (p) => <NameCell name={roleNameById.get(p.RoleID)} id={String(p.RoleID)} /> },
               { key: 'active', label: t('admin.catalog.form.active'), minWidth: 120, nowrap: true, render: (p) => <BoolBadge value={!!p.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} /> },
               {
                 key: 'actions',
@@ -1019,7 +1053,7 @@ export const TemplatesPage: React.FC = () => {
                 render: (p) => (
                   <div className="flex items-center justify-end gap-1">
                     <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditPreset(p)} kind="edit" />
-                    <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeCatalogItem('preset', p.ExternalID)} kind="delete" />
+                    <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeCatalogItem('preset', p.ID)} kind="delete" />
                   </div>
                 ),
               },
@@ -1032,7 +1066,7 @@ export const TemplatesPage: React.FC = () => {
       <TableCard>
         <DataTable<AdminTemplateVariant>
           data={variants}
-          getRowKey={(row) => row.ExternalID}
+          getRowKey={(row) => String(row.ID)}
           emptyState={{
             title: t('admin.catalog.empty') || '暂无数据',
             description: t('admin.catalog.emptyDesc') || '点击右上角创建开始新增',
@@ -1051,8 +1085,8 @@ export const TemplatesPage: React.FC = () => {
               ),
             },
             { key: 'template', label: t('admin.catalog.form.template'), minWidth: 240, render: (v) => <NameCell name={templateNameById.get(v.LayoutTemplateExternalID)} id={v.LayoutTemplateExternalID} /> },
-            { key: 'preset', label: t('admin.catalog.form.preset'), minWidth: 220, render: (v) => <NameCell name={presetNameById.get(v.PresetExternalID)} id={v.PresetExternalID} /> },
-            { key: 'role', label: t('admin.catalog.form.role'), minWidth: 220, render: (v) => <NameCell name={roleNameById.get(v.RoleExternalID)} id={v.RoleExternalID} /> },
+            { key: 'preset', label: t('admin.catalog.form.preset'), minWidth: 220, render: (v) => <NameCell name={presetNameById.get(v.PresetID)} id={String(v.PresetID)} /> },
+            { key: 'role', label: t('admin.catalog.form.role'), minWidth: 220, render: (v) => <NameCell name={roleNameById.get(v.RoleID)} id={String(v.RoleID)} /> },
             {
               key: 'tags',
               label: t('admin.form.tags'),
@@ -1090,7 +1124,7 @@ export const TemplatesPage: React.FC = () => {
               render: (v) => (
                 <div className="flex items-center justify-end gap-1">
                   <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditVariant(v)} kind="edit" />
-                  <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeCatalogItem('variant', v.ExternalID)} kind="delete" />
+                  <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeCatalogItem('variant', v.ID)} kind="delete" />
                 </div>
               ),
             },

@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"openresume/internal/infra/cache"
@@ -57,7 +58,12 @@ func sanitizeFilename(s string) string {
 }
 
 func (h *Handler) GenerateImage(c *gin.Context) {
-	img, code, err := h.svc.GenerateImage(c, c.Param("id"))
+	id, parseErr := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if parseErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	img, code, err := h.svc.GenerateImage(c, uint(id))
 	if err != nil {
 		logger.WithCtx(c).Error("image.generate failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {
@@ -81,11 +87,12 @@ func (h *Handler) SubmitExport(c *gin.Context) {
 	if uid, ok := uidVal.(uint); ok {
 		userID = fmt.Sprintf("%d", uid)
 	}
-	resumeID := c.Query("resumeId")
-	if resumeID == "" {
-		resumeID = c.Param("id")
+	resumeIDStr := strings.TrimSpace(c.Query("resumeId"))
+	if resumeIDStr == "" {
+		resumeIDStr = strings.TrimSpace(c.Param("id"))
 	}
-	if resumeID == "" {
+	id64, err := strconv.ParseUint(resumeIDStr, 10, 64)
+	if resumeIDStr == "" || err != nil {
 		logger.WithCtx(c).Error("pdf.submit_export bad request")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "resumeId required"})
 		return
@@ -94,7 +101,7 @@ func (h *Handler) SubmitExport(c *gin.Context) {
 	job := ExportJob{
 		ID:       uuid.NewString(),
 		UserID:   userID,
-		ResumeID: resumeID,
+		ResumeID: uint(id64),
 		Token:    strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer ")),
 	}
 	repo := NewExportRepo(h.svc)
@@ -151,8 +158,8 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 	}
 	job, _ := repo.GetJob(c, id)
 	var r models.Resume
-	if job.ResumeID != "" {
-		_ = database.DB.Where("external_id = ?", job.ResumeID).First(&r).Error
+	if job.ResumeID != 0 {
+		_ = database.DB.Where("id = ?", job.ResumeID).First(&r).Error
 	}
 	c.Header("Content-Type", "application/pdf")
 	disp := sanitizeFilename(r.Title)

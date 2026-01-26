@@ -8,7 +8,6 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { DownloadModal } from '../../components/ui/DownloadModal';
 import { INITIAL_RESUME } from '../../services/mockData';
-import { CONTENT_PRESETS_SEED } from '../../services/catalogSeeds';
 import { fetchContentPresetData, listTemplateVariants } from '../../services/catalogService';
 import { ResumeData, AppRoute, Language } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -68,7 +67,7 @@ export const Editor: React.FC = () => {
               const incoming = res || {};
               const sectionsRaw = (incoming.Sections || []);
               const mapped: ResumeData = {
-                id: incoming.ExternalID || resumeId,
+                id: incoming.ID || Number(resumeId),
                 title: incoming.Title,
                 templateId: incoming.TemplateID,
                 language: (incoming.Language || '') === 'en' ? 'en' : 'zh',
@@ -76,13 +75,13 @@ export const Editor: React.FC = () => {
                 Personal: { ...(INITIAL_RESUME.Personal || {}), ...(resumeData.Personal || {}), ...(incoming.Personal || {}) },
                 Theme: incoming.Theme,
                 sections: sectionsRaw.map((s: any) => ({
-                  id: s.ExternalID || s.ID,
+                  id: s.ID,
                   type: s.Type,
                   title: s.Title,
                   isVisible: s.IsVisible,
                   orderNum: s.OrderNum,
                   items: (s.Items || []).map((i: any) => ({
-                    id: i.ExternalID || i.ID,
+                    id: i.ID,
                     title: i.Title,
                     subtitle: i.Subtitle,
                     major: i.Major,
@@ -106,14 +105,13 @@ export const Editor: React.FC = () => {
           return;
         }
         hasCreatedFromTemplate.current = true;
-        const presetId = searchParams.get('preset') || '';
-        const variantId = searchParams.get('variant') || '';
+        const presetId = searchParams.get('presetId') || '';
+        const variantId = searchParams.get('variantId') || '';
         const token = localStorage.getItem('token');
-        const localPreset = presetId ? CONTENT_PRESETS_SEED.find(p => p.id === presetId)?.data : null;
-        const baseSeed: ResumeData = { ...(INITIAL_RESUME as any), ...(localPreset as any) };
+        const baseSeed: ResumeData = { ...(INITIAL_RESUME as any) };
         const resolveSeed = () => {
-          if (!presetId || localPreset) return Promise.resolve(baseSeed);
-          return fetchContentPresetData(presetId)
+          if (!presetId) return Promise.resolve(baseSeed);
+          return fetchContentPresetData(Number(presetId))
             .then((parsed) => parsed && typeof parsed === 'object' ? ({ ...(INITIAL_RESUME as any), ...(parsed as any) }) : baseSeed)
             .catch(() => baseSeed);
         };
@@ -123,7 +121,7 @@ export const Editor: React.FC = () => {
           const seedTheme = seed.Theme || INITIAL_RESUME.Theme || ({} as any);
           const seedSections = Array.isArray(seed.sections) ? seed.sections : INITIAL_RESUME.sections;
           if (variantId) {
-            fetch(`${API_BASE}/resumes/from-variant`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ VariantID: variantId, Language: language, Title: seedTitle }) })
+            fetch(`${API_BASE}/resumes/from-variant`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ VariantID: Number(variantId), Language: language, Title: seedTitle }) })
               .then(r => r.ok ? r.json() : Promise.reject(new Error('bad')))
               .then(({ id }) => {
                 const nextTheme = { ...(INITIAL_RESUME.Theme || {}), ...(seedTheme || {}) };
@@ -136,19 +134,17 @@ export const Editor: React.FC = () => {
                 const payload = {
                   Title: seedTitle,
                   TemplateID: templateId,
-                  VariantID: variantId,
-                  PresetID: presetId,
+                  VariantID: Number(variantId),
+                  PresetID: presetId ? Number(presetId) : undefined,
                   Language: language,
                   Personal: seedPersonal,
                   Theme: seedTheme,
                   Sections: seedSections.map((s: any, si: number) => ({
-                    ExternalID: s.id,
                     Type: s.type,
                     Title: s.title,
                     IsVisible: s.isVisible,
                     OrderNum: si,
                     Items: (s.items || []).map((i: any, ii: number) => ({
-                      ExternalID: i.id,
                       Title: i.title || '',
                       Subtitle: i.subtitle || '',
                       Major: i.major || '',
@@ -176,17 +172,16 @@ export const Editor: React.FC = () => {
           const payload = {
             Title: seedTitle,
             TemplateID: templateId,
+            PresetID: presetId ? Number(presetId) : undefined,
             Language: language,
             Personal: seedPersonal,
             Theme: seedTheme,
             Sections: seedSections.map((s: any, si: number) => ({
-              ExternalID: s.id,
               Type: s.type,
               Title: s.title,
               IsVisible: s.isVisible,
               OrderNum: si,
               Items: (s.items || []).map((i: any, ii: number) => ({
-                ExternalID: i.id,
                 Title: i.title || '',
                 Subtitle: i.subtitle || '',
                 Major: i.major || '',
@@ -354,17 +349,18 @@ export const Editor: React.FC = () => {
     const payload = {
       Title: resumeData.title,
       TemplateID: resumeData.templateId,
+      VariantID: (resumeData as any).variantId || undefined,
+      PresetID: (resumeData as any).presetId || undefined,
+      RoleID: (resumeData as any).roleId || undefined,
       Language: resumeData.language || language,
       Personal: resumeData.Personal || {},
       Theme: resumeData.Theme || {},
       Sections: resumeData.sections.map((s, si) => ({
-        ExternalID: s.id,
         Type: s.type,
         Title: s.title,
         IsVisible: s.isVisible,
         OrderNum: si,
         Items: s.items.map((i, ii) => ({
-          ExternalID: i.id,
           Title: i.title || '',
           Subtitle: i.subtitle || '',
           Major: i.major || '',
@@ -388,17 +384,18 @@ export const Editor: React.FC = () => {
     const payload = {
       Title: resumeData.title,
       TemplateID: resumeData.templateId,
+      VariantID: (resumeData as any).variantId || undefined,
+      PresetID: (resumeData as any).presetId || undefined,
+      RoleID: (resumeData as any).roleId || undefined,
       Language: lang,
       Personal: resumeData.Personal || {},
       Theme: resumeData.Theme || {},
       Sections: resumeData.sections.map((s, si) => ({
-        ExternalID: s.id,
         Type: s.type,
         Title: s.title,
         IsVisible: s.isVisible,
         OrderNum: si,
         Items: s.items.map((i, ii) => ({
-          ExternalID: i.id,
           Title: i.title || '',
           Subtitle: i.subtitle || '',
           Major: i.major || '',

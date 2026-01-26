@@ -31,26 +31,23 @@ export const importDefaultSeed = async () => {
 };
 
 export interface AdminJobCategory {
-  id?: number;
-  ExternalID: string;
+  ID: number;
   Name: string;
-  ParentExternalID?: string;
+  ParentID?: number | null;
   OrderNum?: number;
   IsActive: boolean;
 }
 
 export interface AdminCreateJobCategoryReq {
-  externalId?: string;
   name: string;
-  parentExternalId?: string;
+  parentId?: number | null;
   orderNum?: number;
   isActive?: boolean;
 }
 
 export interface AdminJobRole {
-  id?: number;
-  ExternalID: string;
-  CategoryExternalID: string;
+  ID: number;
+  CategoryID: number;
   Name: string;
   Tags?: string;
   OrderNum?: number;
@@ -58,8 +55,7 @@ export interface AdminJobRole {
 }
 
 export interface AdminCreateJobRoleReq {
-  externalId?: string;
-  categoryExternalId: string;
+  categoryId: number;
   name: string;
   tags?: string;
   orderNum?: number;
@@ -67,33 +63,30 @@ export interface AdminCreateJobRoleReq {
 }
 
 export interface AdminContentPreset {
-  id?: number;
-  ExternalID: string;
+  ID: number;
   Name: string;
   Language?: string;
-  RoleExternalID?: string;
+  RoleID: number;
   Tags?: string;
   DataJSON?: string;
   IsActive: boolean;
 }
 
 export interface AdminCreateContentPresetReq {
-  externalId?: string;
   name: string;
   language?: string;
-  roleExternalId?: string;
+  roleId: number;
   tags?: string;
   dataJson?: string;
   isActive?: boolean;
 }
 
 export interface AdminTemplateVariant {
-  id?: number;
-  ExternalID: string;
+  ID: number;
   Name: string;
   LayoutTemplateExternalID: string;
-  PresetExternalID: string;
-  RoleExternalID: string;
+  PresetID: number;
+  RoleID: number;
   Tags?: string;
   UsageCount?: number;
   IsPremium?: boolean;
@@ -101,11 +94,10 @@ export interface AdminTemplateVariant {
 }
 
 export interface AdminCreateTemplateVariantReq {
-  externalId?: string;
   name: string;
   layoutTemplateExternalId: string;
-  presetExternalId: string;
-  roleExternalId: string;
+  presetId: number;
+  roleId: number;
   tags?: string;
   usageCount?: number;
   isPremium?: boolean;
@@ -124,13 +116,13 @@ export const adminCreateJobCategory = async (body: AdminCreateJobCategoryReq) =>
   if (!res.ok) throw new Error('failed');
 };
 
-export const adminPatchJobCategory = async (externalId: string, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/categories/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+export const adminPatchJobCategory = async (id: number, body: any) => {
+  const res = await fetch(`${API_BASE}/admin/taxonomy/categories/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
 
-export const adminDeleteJobCategory = async (externalId: string) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/categories/${externalId}`, { method: 'DELETE', headers: authHeader() });
+export const adminDeleteJobCategory = async (id: number) => {
+  const res = await fetch(`${API_BASE}/admin/taxonomy/categories/${id}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
 
@@ -146,13 +138,13 @@ export const adminCreateJobRole = async (body: AdminCreateJobRoleReq) => {
   if (!res.ok) throw new Error('failed');
 };
 
-export const adminPatchJobRole = async (externalId: string, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/roles/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+export const adminPatchJobRole = async (id: number, body: any) => {
+  const res = await fetch(`${API_BASE}/admin/taxonomy/roles/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
 
-export const adminDeleteJobRole = async (externalId: string) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/roles/${externalId}`, { method: 'DELETE', headers: authHeader() });
+export const adminDeleteJobRole = async (id: number) => {
+  const res = await fetch(`${API_BASE}/admin/taxonomy/roles/${id}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
 
@@ -168,13 +160,13 @@ export const adminCreateContentPreset = async (body: AdminCreateContentPresetReq
   if (!res.ok) throw new Error(await res.text());
 };
 
-export const adminPatchContentPreset = async (externalId: string, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/presets/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+export const adminPatchContentPreset = async (id: number, body: any) => {
+  const res = await fetch(`${API_BASE}/admin/presets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(await res.text());
 };
 
-export const adminDeleteContentPreset = async (externalId: string) => {
-  const res = await fetch(`${API_BASE}/admin/presets/${externalId}`, { method: 'DELETE', headers: authHeader() });
+export const adminDeleteContentPreset = async (id: number) => {
+  const res = await fetch(`${API_BASE}/admin/presets/${id}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
 
@@ -190,13 +182,13 @@ export const adminCreateTemplateVariant = async (body: AdminCreateTemplateVarian
   if (!res.ok) throw new Error('failed');
 };
 
-export const adminPatchTemplateVariant = async (externalId: string, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/library/variants/${externalId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
+export const adminPatchTemplateVariant = async (id: number, body: any) => {
+  const res = await fetch(`${API_BASE}/admin/library/variants/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
 
-export const adminDeleteTemplateVariant = async (externalId: string) => {
-  const res = await fetch(`${API_BASE}/admin/library/variants/${externalId}`, { method: 'DELETE', headers: authHeader() });
+export const adminDeleteTemplateVariant = async (id: number) => {
+  const res = await fetch(`${API_BASE}/admin/library/variants/${id}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
 
@@ -252,7 +244,7 @@ export const unbanUser = async (id: number) => {
 
 // Resumes
 export interface AdminResume {
-  id: string;
+  id: number;
   userId: number;
   userName?: string;
   title: string;
@@ -270,7 +262,7 @@ export const listResumes = async (params: Record<string, string>) => {
   const items: AdminResume[] = (data.items || []).map((it: any) => {
     const r = it.resume || {};
     return {
-      id: r.ExternalID,
+      id: r.ID ?? r.id,
       userId: it.userId,
       userName: it.userName,
       title: r.Title,
@@ -283,12 +275,12 @@ export const listResumes = async (params: Record<string, string>) => {
   return { items, page: data.page, pageSize: data.pageSize, total: data.total, hasNext: data.hasNext, totalPages: data.totalPages } as PageResp<AdminResume>;
 };
 
-export const deleteResume = async (id: string) => {
+export const deleteResume = async (id: number) => {
   const res = await fetch(`${API_BASE}/admin/resumes/${id}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
 };
 
-export const setResumeVisibility = async (id: string, isPublic: boolean) => {
+export const setResumeVisibility = async (id: number, isPublic: boolean) => {
   const res = await fetch(`${API_BASE}/admin/resumes/${id}/visibility`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify({ isPublic }) });
   if (!res.ok) throw new Error('failed');
 };

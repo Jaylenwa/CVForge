@@ -30,9 +30,9 @@ func (r *Repo) ListByUser(uid uint) ([]Resume, error) {
 	return list, err
 }
 
-func (r *Repo) FindByExternal(externalID string, preload bool) (Resume, error) {
+func (r *Repo) FindByID(id uint, preload bool) (Resume, error) {
 	var res Resume
-	q := r.db.Where("external_id = ?", externalID)
+	q := r.db.Where("id = ?", id)
 	if preload {
 		q = q.Preload("Personal").Preload("Theme").Preload("Sections.Items")
 	}

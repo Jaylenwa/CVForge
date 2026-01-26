@@ -3,10 +3,10 @@ package preset
 import "strings"
 
 type ContentPresetDTO struct {
-	ExternalID     string   `json:"externalId"`
+	ID             uint     `json:"id"`
 	Name           string   `json:"name"`
 	Language       string   `json:"language"`
-	RoleExternalID string   `json:"roleExternalId"`
+	RoleID         uint     `json:"roleId"`
 	Tags           []string `json:"tags"`
 	DataJSON       string   `json:"dataJson"`
 	IsActive       bool     `json:"isActive"`
@@ -31,4 +31,3 @@ func splitTags(s string) []string {
 	}
 	return out
 }
-

@@ -81,18 +81,18 @@ func (s *Service) deleteJobFile(ctx context.Context, jobID string) {
 	_ = cache.RDB.Del(ctx, jobKey(jobID)+":consumed").Err()
 }
 
-func (s *Service) GeneratePDFWithToken(externalID string, token string) ([]byte, int, error) {
+func (s *Service) GeneratePDFWithToken(id uint, token string) ([]byte, int, error) {
 	if s.cbOpen(common.CBCircuitPDF) {
 		return nil, 503, fmt.Errorf("cb")
 	}
 	var res Resume
-	if err := database.DB.Where("external_id = ?", externalID).Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("id = ?", id).Preload("Sections.Items").First(&res).Error; err != nil {
 		return nil, 404, err
 	}
 	if s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) == "" {
 		return nil, 503, fmt.Errorf("fe empty")
 	}
-	dest := s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) + "/#/print?id=" + externalID
+	dest := s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) + "/#/print?id=" + fmt.Sprintf("%d", id)
 	if token == "" {
 		token = ""
 	}
@@ -164,18 +164,18 @@ func (s *Service) GeneratePDFWithToken(externalID string, token string) ([]byte,
 	return buf, 200, nil
 }
 
-func (s *Service) GenerateImage(c *gin.Context, externalID string) ([]byte, int, error) {
+func (s *Service) GenerateImage(c *gin.Context, id uint) ([]byte, int, error) {
 	if s.cbOpen(common.CBCircuitImage) {
 		return nil, 503, fmt.Errorf("cb")
 	}
 	var res Resume
-	if err := database.DB.Where("external_id = ?", externalID).Preload("Sections.Items").First(&res).Error; err != nil {
+	if err := database.DB.Where("id = ?", id).Preload("Sections.Items").First(&res).Error; err != nil {
 		return nil, 404, err
 	}
 	if s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) == "" {
 		return nil, 503, fmt.Errorf("fe empty")
 	}
-	dest := s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) + "/#/print?id=" + externalID
+	dest := s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) + "/#/print?id=" + fmt.Sprintf("%d", id)
 	authHeader := c.GetHeader("Authorization")
 	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 	reqBody := ScreenshotRequest{

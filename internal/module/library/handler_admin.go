@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"openresume/internal/common"
 	"openresume/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -64,8 +63,8 @@ const (
 )
 
 type GenerateVariantsReq struct {
-	RoleID            string   `json:"roleId"`
-	PresetID          string   `json:"presetId"`
+	RoleID            uint     `json:"roleId"`
+	PresetID          uint     `json:"presetId"`
 	LayoutTemplateIDs []string `json:"layoutTemplateIds"`
 	NamePrefix        string   `json:"namePrefix"`
 	Tags              string   `json:"tags"`
@@ -81,7 +80,7 @@ type GenerateVariantsResult struct {
 	Failed  int `json:"failed"`
 	Items   []struct {
 		LayoutTemplateID string `json:"layoutTemplateId"`
-		ExternalID       string `json:"externalId"`
+		VariantID        uint   `json:"variantId"`
 		Action           string `json:"action"`
 		Error            string `json:"error,omitempty"`
 	} `json:"items"`
@@ -105,30 +104,24 @@ func (h *AdminHandler) AdminListVariants(c *gin.Context) {
 
 func (h *AdminHandler) AdminCreateVariant(c *gin.Context) {
 	var body struct {
-		ExternalID               string `json:"externalId"`
 		Name                     string `json:"name"`
 		LayoutTemplateExternalID string `json:"layoutTemplateExternalId"`
-		PresetExternalID         string `json:"presetExternalId"`
-		RoleExternalID           string `json:"roleExternalId"`
+		PresetID                 uint   `json:"presetId"`
+		RoleID                   uint   `json:"roleId"`
 		Tags                     string `json:"tags"`
 		UsageCount               *int   `json:"usageCount"`
 		IsPremium                *bool  `json:"isPremium"`
 		IsActive                 *bool  `json:"isActive"`
 	}
-	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" {
+	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" || body.PresetID == 0 || body.RoleID == 0 || strings.TrimSpace(body.LayoutTemplateExternalID) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	externalID := strings.TrimSpace(body.ExternalID)
-	if externalID == "" {
-		externalID = common.NewExternalID("variant")
-	}
 	m := TemplateVariant{
-		ExternalID:               externalID,
 		Name:                     strings.TrimSpace(body.Name),
 		LayoutTemplateExternalID: strings.TrimSpace(body.LayoutTemplateExternalID),
-		PresetExternalID:         strings.TrimSpace(body.PresetExternalID),
-		RoleExternalID:           strings.TrimSpace(body.RoleExternalID),
+		PresetID:                 body.PresetID,
+		RoleID:                   body.RoleID,
 		Tags:                     strings.TrimSpace(body.Tags),
 	}
 	if body.UsageCount != nil {
@@ -152,8 +145,8 @@ func (h *AdminHandler) AdminPatchVariant(c *gin.Context) {
 	var body struct {
 		Name                     *string `json:"name"`
 		LayoutTemplateExternalID *string `json:"layoutTemplateExternalId"`
-		PresetExternalID         *string `json:"presetExternalId"`
-		RoleExternalID           *string `json:"roleExternalId"`
+		PresetID                 *uint   `json:"presetId"`
+		RoleID                   *uint   `json:"roleId"`
 		Tags                     *string `json:"tags"`
 		UsageCount               *int    `json:"usageCount"`
 		IsPremium                *bool   `json:"isPremium"`
@@ -170,11 +163,11 @@ func (h *AdminHandler) AdminPatchVariant(c *gin.Context) {
 	if body.LayoutTemplateExternalID != nil {
 		patch["layout_template_external_id"] = strings.TrimSpace(*body.LayoutTemplateExternalID)
 	}
-	if body.PresetExternalID != nil {
-		patch["preset_external_id"] = strings.TrimSpace(*body.PresetExternalID)
+	if body.PresetID != nil {
+		patch["preset_id"] = *body.PresetID
 	}
-	if body.RoleExternalID != nil {
-		patch["role_external_id"] = strings.TrimSpace(*body.RoleExternalID)
+	if body.RoleID != nil {
+		patch["role_id"] = *body.RoleID
 	}
 	if body.Tags != nil {
 		patch["tags"] = strings.TrimSpace(*body.Tags)
@@ -192,7 +185,12 @@ func (h *AdminHandler) AdminPatchVariant(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"success": true})
 		return
 	}
-	if err := h.svc.repo.AdminPatchTemplateVariant(c.Param("id"), patch); err != nil {
+	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	if err := h.svc.repo.AdminPatchTemplateVariant(uint(id), patch); err != nil {
 		logger.WithCtx(c).Error("library.admin.variants.patch failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
@@ -201,7 +199,12 @@ func (h *AdminHandler) AdminPatchVariant(c *gin.Context) {
 }
 
 func (h *AdminHandler) AdminDeleteVariant(c *gin.Context) {
-	if err := h.svc.repo.AdminDeleteTemplateVariant(c.Param("id")); err != nil {
+	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	if err := h.svc.repo.AdminDeleteTemplateVariant(uint(id)); err != nil {
 		logger.WithCtx(c).Error("library.admin.variants.delete failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
@@ -219,9 +222,9 @@ func (h *AdminHandler) AdminGenerateVariants(c *gin.Context) {
 	if mode != GenerateModeSkip && mode != GenerateModeUpdate {
 		mode = GenerateModeSkip
 	}
-	roleID := strings.TrimSpace(req.RoleID)
-	presetID := strings.TrimSpace(req.PresetID)
-	if roleID == "" || presetID == "" || len(req.LayoutTemplateIDs) == 0 {
+	roleID := req.RoleID
+	presetID := req.PresetID
+	if roleID == 0 || presetID == 0 || len(req.LayoutTemplateIDs) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
@@ -244,7 +247,6 @@ func (h *AdminHandler) AdminGenerateVariants(c *gin.Context) {
 			if tplID == "" {
 				continue
 			}
-			externalID := stableExternalID("variant", roleID, presetID, tplID)
 			name := namePrefix
 			if name == "" {
 				tplName, _ := h.svc.repo.getTemplateName(tplID)
@@ -253,11 +255,10 @@ func (h *AdminHandler) AdminGenerateVariants(c *gin.Context) {
 				name = strings.TrimSpace(roleName + " " + tplName + " " + presetName)
 			}
 			v := TemplateVariant{
-				ExternalID:               externalID,
 				Name:                     name,
 				LayoutTemplateExternalID: tplID,
-				PresetExternalID:         presetID,
-				RoleExternalID:           roleID,
+				PresetID:                 presetID,
+				RoleID:                   roleID,
 				Tags:                     tags,
 				IsPremium:                isPremium,
 				IsActive:                 isActive,
@@ -265,13 +266,15 @@ func (h *AdminHandler) AdminGenerateVariants(c *gin.Context) {
 			action, genErr := h.svc.repo.upsertVariant(tx, &v, mode)
 			item := struct {
 				LayoutTemplateID string `json:"layoutTemplateId"`
-				ExternalID       string `json:"externalId"`
+				VariantID        uint   `json:"variantId"`
 				Action           string `json:"action"`
 				Error            string `json:"error,omitempty"`
 			}{
 				LayoutTemplateID: tplID,
-				ExternalID:       externalID,
 				Action:           action,
+			}
+			if got, e := h.svc.repo.findVariantByCombo(roleID, presetID, tplID); e == nil {
+				item.VariantID = got.ID
 			}
 			if genErr != nil {
 				out.Failed++

@@ -63,7 +63,7 @@ func (w *Worker) Start(ctx context.Context) error {
 				_ = w.repo.SetFailed(ctx, jobID, err.Error())
 				return
 			}
-			name := fmt.Sprintf("resume-%s-%d.pdf", job.ResumeID, time.Now().UnixMilli())
+			name := fmt.Sprintf("resume-%d-%d.pdf", job.ResumeID, time.Now().UnixMilli())
 			url, err := w.uploader.Upload(ctx, name, buf)
 			if err != nil {
 				logger.WithCtx(nil).Error("upload pdf error", zap.Error(err))

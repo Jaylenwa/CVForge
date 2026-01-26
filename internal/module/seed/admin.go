@@ -16,10 +16,49 @@ import (
 )
 
 type SeedData struct {
-	Categories []taxonomy.JobCategory
-	Roles      []taxonomy.JobRole
-	Presets    []preset.ContentPreset
-	Variants   []library.TemplateVariant
+	Categories []SeedJobCategory
+	Roles      []SeedJobRole
+	Presets    []SeedContentPreset
+	Variants   []SeedTemplateVariant
+}
+
+type SeedJobCategory struct {
+	ExternalID       string
+	Name             string
+	ParentExternalID string
+	OrderNum         int
+	IsActive         bool
+}
+
+type SeedJobRole struct {
+	ExternalID         string
+	CategoryExternalID string
+	Name               string
+	Tags               string
+	OrderNum           int
+	IsActive           bool
+}
+
+type SeedContentPreset struct {
+	ExternalID     string
+	Name           string
+	Language       string
+	RoleExternalID string
+	Tags           string
+	DataJSON       string
+	IsActive       bool
+}
+
+type SeedTemplateVariant struct {
+	ExternalID               string
+	Name                     string
+	LayoutTemplateExternalID string
+	PresetExternalID         string
+	RoleExternalID           string
+	Tags                     string
+	UsageCount               int
+	IsPremium                bool
+	IsActive                 bool
 }
 
 type ImportCounts struct {
@@ -49,26 +88,90 @@ func (h *AdminHandler) AdminImportDefault(c *gin.Context) {
 		presetRepo := preset.NewRepo(tx)
 		libraryRepo := library.NewRepo(tx)
 
-		for i := range seed.Categories {
-			if err := taxRepo.UpsertJobCategory(tx, &seed.Categories[i]); err != nil {
+		categoryIDByExternal := make(map[string]uint, len(seed.Categories))
+		for _, sc := range seed.Categories {
+			var parentID *uint
+			if sc.ParentExternalID != "" {
+				pid, ok := categoryIDByExternal[sc.ParentExternalID]
+				if !ok || pid == 0 {
+					return gorm.ErrInvalidData
+				}
+				parentID = &pid
+			}
+			m := taxonomy.JobCategory{
+				Name:     sc.Name,
+				ParentID: parentID,
+				OrderNum: sc.OrderNum,
+				IsActive: sc.IsActive,
+			}
+			if err := taxRepo.UpsertJobCategory(tx, &m); err != nil {
 				return err
 			}
+			categoryIDByExternal[sc.ExternalID] = m.ID
 			counts.JobCategories++
 		}
-		for i := range seed.Roles {
-			if err := taxRepo.UpsertJobRole(tx, &seed.Roles[i]); err != nil {
+
+		roleIDByExternal := make(map[string]uint, len(seed.Roles))
+		for _, sr := range seed.Roles {
+			cid, ok := categoryIDByExternal[sr.CategoryExternalID]
+			if !ok || cid == 0 {
+				return gorm.ErrInvalidData
+			}
+			m := taxonomy.JobRole{
+				CategoryID: cid,
+				Name:       sr.Name,
+				Tags:       sr.Tags,
+				OrderNum:   sr.OrderNum,
+				IsActive:   sr.IsActive,
+			}
+			if err := taxRepo.UpsertJobRole(tx, &m); err != nil {
 				return err
 			}
+			roleIDByExternal[sr.ExternalID] = m.ID
 			counts.JobRoles++
 		}
-		for i := range seed.Presets {
-			if err := presetRepo.UpsertContentPreset(tx, &seed.Presets[i]); err != nil {
+
+		presetIDByExternal := make(map[string]uint, len(seed.Presets))
+		for _, sp := range seed.Presets {
+			rid, ok := roleIDByExternal[sp.RoleExternalID]
+			if !ok || rid == 0 {
+				return gorm.ErrInvalidData
+			}
+			m := preset.ContentPreset{
+				Name:     sp.Name,
+				Language: sp.Language,
+				RoleID:   rid,
+				Tags:     sp.Tags,
+				DataJSON: sp.DataJSON,
+				IsActive: sp.IsActive,
+			}
+			if err := presetRepo.UpsertContentPreset(tx, &m); err != nil {
 				return err
 			}
+			presetIDByExternal[sp.ExternalID] = m.ID
 			counts.ContentPresets++
 		}
-		for i := range seed.Variants {
-			if err := libraryRepo.UpsertTemplateVariant(tx, &seed.Variants[i]); err != nil {
+
+		for _, sv := range seed.Variants {
+			rid, ok := roleIDByExternal[sv.RoleExternalID]
+			if !ok || rid == 0 {
+				return gorm.ErrInvalidData
+			}
+			pid, ok := presetIDByExternal[sv.PresetExternalID]
+			if !ok || pid == 0 {
+				return gorm.ErrInvalidData
+			}
+			m := library.TemplateVariant{
+				Name:                     sv.Name,
+				LayoutTemplateExternalID: sv.LayoutTemplateExternalID,
+				PresetID:                 pid,
+				RoleID:                   rid,
+				Tags:                     sv.Tags,
+				UsageCount:               sv.UsageCount,
+				IsPremium:                sv.IsPremium,
+				IsActive:                 sv.IsActive,
+			}
+			if err := libraryRepo.UpsertTemplateVariant(tx, &m); err != nil {
 				return err
 			}
 			counts.TemplateVariants++
@@ -143,7 +246,7 @@ func DefaultSeed() (SeedData, error) {
 	}
 
 	return SeedData{
-		Categories: []taxonomy.JobCategory{
+		Categories: []SeedJobCategory{
 			{ExternalID: "it", Name: "IT | 互联网", ParentExternalID: "", OrderNum: 10, IsActive: true},
 			{ExternalID: "finance", Name: "金融 | 银行", ParentExternalID: "", OrderNum: 20, IsActive: true},
 			{ExternalID: "education", Name: "教育 | 培训", ParentExternalID: "", OrderNum: 30, IsActive: true},
@@ -247,7 +350,7 @@ func DefaultSeed() (SeedData, error) {
 			{ExternalID: "public_research", Name: "科研相关", ParentExternalID: "public", OrderNum: 20, IsActive: true},
 			{ExternalID: "public_social", Name: "社会服务", ParentExternalID: "public", OrderNum: 30, IsActive: true},
 		},
-		Roles: []taxonomy.JobRole{
+		Roles: []SeedJobRole{
 			{ExternalID: "java", CategoryExternalID: "it_backend", Name: "java", Tags: "Java,后端", OrderNum: 10, IsActive: true},
 			{ExternalID: "python", CategoryExternalID: "it_backend", Name: "python", Tags: "Python,后端", OrderNum: 20, IsActive: true},
 			{ExternalID: "golang", CategoryExternalID: "it_backend", Name: "Go (Golang)", Tags: "Go,后端", OrderNum: 30, IsActive: true},
@@ -885,10 +988,10 @@ func DefaultSeed() (SeedData, error) {
 			{ExternalID: "caregiver", CategoryExternalID: "public_social", Name: "护理员", Tags: "社会服务,护理", OrderNum: 60, IsActive: true},
 			{ExternalID: "rehab_therapist", CategoryExternalID: "public_social", Name: "康复师", Tags: "社会服务,康复", OrderNum: 70, IsActive: true},
 		},
-		Presets: []preset.ContentPreset{
+		Presets: []SeedContentPreset{
 			{ExternalID: "it_backend_java_zh", Name: "Java 开发（中文示例）", Language: "zh", RoleExternalID: "java", Tags: "Java,后端,中文", DataJSON: string(b), IsActive: true},
 		},
-		Variants: []library.TemplateVariant{
+		Variants: []SeedTemplateVariant{
 			{ExternalID: "mint_it_backend_java_zh", Name: "青色时间轴 - Java 开发", LayoutTemplateExternalID: "TemplateMintTimeline", PresetExternalID: "it_backend_java_zh", RoleExternalID: "java", Tags: "Java,后端,中文", UsageCount: 0, IsPremium: false, IsActive: true},
 			{ExternalID: "classic_it_backend_java_zh", Name: "经典专业版 - Java 开发", LayoutTemplateExternalID: "TemplateClassic", PresetExternalID: "it_backend_java_zh", RoleExternalID: "java", Tags: "Java,后端,中文", UsageCount: 0, IsPremium: false, IsActive: true},
 		},

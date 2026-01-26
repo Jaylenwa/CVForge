@@ -15,7 +15,7 @@ export enum ResumeSectionType {
 }
 
 export interface ResumeItem {
-  id: string;
+  id: number | string;
   title?: string;
   subtitle?: string; // Company or Degree
   major?: string;
@@ -28,7 +28,7 @@ export interface ResumeItem {
 }
 
 export interface ResumeSection {
-  id: string;
+  id: number | string;
   type: ResumeSectionType;
   title: string;
   items: ResumeItem[];
@@ -37,7 +37,7 @@ export interface ResumeSection {
 }
 
 export interface ResumeData {
-  id: string;
+  id: number | string;
   title: string;
   templateId: string;
   lastModified: number;

@@ -24,7 +24,7 @@ const (
 type ExportJob struct {
 	ID        string            `json:"id"`
 	UserID    string            `json:"userId"`
-	ResumeID  string            `json:"resumeId"`
+	ResumeID  uint              `json:"resumeId"`
 	Token     string            `json:"token"`
 	Options   map[string]string `json:"options,omitempty"`
 	CreatedAt int64             `json:"createdAt"`

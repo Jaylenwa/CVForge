@@ -93,7 +93,12 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 
 func (h *AdminHandler) AdminGet(c *gin.Context) {
 	var res Resume
-	if err := database.DB.Where("external_id = ?", c.Param("id")).Preload("Personal").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
+	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	if err := database.DB.Where("id = ?", uint(id)).Preload("Personal").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
 		logger.WithCtx(c).Error("resume.admin_get not found", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
@@ -103,7 +108,12 @@ func (h *AdminHandler) AdminGet(c *gin.Context) {
 
 func (h *AdminHandler) AdminDelete(c *gin.Context) {
 	var res Resume
-	if err := database.DB.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
+	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	if err := database.DB.Where("id = ?", uint(id)).First(&res).Error; err != nil {
 		logger.WithCtx(c).Error("resume.admin_delete not found", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
@@ -126,7 +136,12 @@ func (h *AdminHandler) AdminUpdateVisibility(c *gin.Context) {
 		return
 	}
 	var res Resume
-	if err := database.DB.Where("external_id = ?", c.Param("id")).First(&res).Error; err != nil {
+	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	if err := database.DB.Where("id = ?", uint(id)).First(&res).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}

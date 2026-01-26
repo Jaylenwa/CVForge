@@ -3,12 +3,12 @@ package resume
 import "sort"
 
 type ResumeDTO struct {
-	ExternalID   string            `json:"ExternalID"`
+	ID           uint              `json:"ID"`
 	Title        string            `json:"Title"`
 	TemplateID   string            `json:"TemplateID"`
-	VariantID    string            `json:"VariantID"`
-	PresetID     string            `json:"PresetID"`
-	RoleID       string            `json:"RoleID"`
+	VariantID    *uint             `json:"VariantID"`
+	PresetID     *uint             `json:"PresetID"`
+	RoleID       *uint             `json:"RoleID"`
 	Language     string            `json:"Language"`
 	LastModified int64             `json:"LastModified"`
 	Personal     ResumePersonalDTO `json:"Personal"`
@@ -39,7 +39,7 @@ type ResumeThemeDTO struct {
 }
 
 type SectionDTO struct {
-	ExternalID string    `json:"ExternalID"`
+	ID        uint      `json:"ID"`
 	Type       string    `json:"Type"`
 	Title      string    `json:"Title"`
 	IsVisible  bool      `json:"IsVisible"`
@@ -48,7 +48,7 @@ type SectionDTO struct {
 }
 
 type ItemDTO struct {
-	ExternalID  string `json:"ExternalID"`
+	ID          uint   `json:"ID"`
 	Title       string `json:"Title"`
 	Subtitle    string `json:"Subtitle"`
 	Major       string `json:"Major"`
@@ -62,7 +62,7 @@ type ItemDTO struct {
 
 func ToDTO(r Resume) ResumeDTO {
 	dto := ResumeDTO{
-		ExternalID:   r.ExternalID,
+		ID:           r.ID,
 		Title:        r.Title,
 		TemplateID:   r.TemplateID,
 		VariantID:    r.VariantID,
@@ -95,7 +95,7 @@ func ToDTO(r Resume) ResumeDTO {
 	sort.SliceStable(secs, func(i, j int) bool { return secs[i].OrderNum < secs[j].OrderNum })
 	for _, s := range secs {
 		sec := SectionDTO{
-			ExternalID: s.ExternalID,
+			ID:        s.ID,
 			Type:       s.Type,
 			Title:      s.Title,
 			IsVisible:  s.IsVisible,
@@ -105,7 +105,7 @@ func ToDTO(r Resume) ResumeDTO {
 		sort.SliceStable(items, func(i, j int) bool { return items[i].OrderNum < items[j].OrderNum })
 		for _, it := range items {
 			sec.Items = append(sec.Items, ItemDTO{
-				ExternalID:  it.ExternalID,
+				ID:          it.ID,
 				Title:       it.Title,
 				Subtitle:    it.Subtitle,
 				Major:       it.Major,

@@ -2,6 +2,8 @@ package share
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 
 	"openresume/internal/middleware"
 	"openresume/internal/pkg/logger"
@@ -24,7 +26,12 @@ func (h *Handler) PublishResume(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	sl, code, err := h.svc.PublishResumeForUser(uid, c.Param("id"))
+	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	sl, code, err := h.svc.PublishResumeForUser(uid, uint(id))
 	if err != nil {
 		logger.WithCtx(c).Error("share.publish failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {

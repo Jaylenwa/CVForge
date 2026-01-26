@@ -3,11 +3,11 @@ package library
 import "strings"
 
 type TemplateVariantDTO struct {
-	ExternalID               string   `json:"externalId"`
+	ID                       uint     `json:"id"`
 	Name                     string   `json:"name"`
 	LayoutTemplateExternalID string   `json:"layoutTemplateExternalId"`
-	PresetExternalID         string   `json:"presetExternalId"`
-	RoleExternalID           string   `json:"roleExternalId"`
+	PresetID                 uint     `json:"presetId"`
+	RoleID                   uint     `json:"roleId"`
 	Tags                     []string `json:"tags"`
 	UsageCount               int      `json:"usageCount"`
 	IsPremium                bool     `json:"isPremium"`
@@ -33,4 +33,3 @@ func splitTags(s string) []string {
 	}
 	return out
 }
-

@@ -1,36 +1,36 @@
 import { API_BASE } from '../config';
 
 export type JobCategory = {
-  id: string;
+  id: number;
   name: string;
-  parentId?: string;
+  parentId?: number | null;
   orderNum?: number;
 };
 
 export type JobRole = {
-  id: string;
-  categoryId: string;
+  id: number;
+  categoryId: number;
   name: string;
   tags?: string[];
   orderNum?: number;
 };
 
 export type TemplateVariant = {
-  id: string;
+  id: number;
   name: string;
   layoutTemplateId: string;
-  presetId: string;
-  roleId: string;
+  presetId: number;
+  roleId: number;
   tags?: string[];
   usageCount?: number;
   isPremium?: boolean;
 };
 
 export type ContentPreset = {
-  id: string;
+  id: number;
   name: string;
   language?: string;
-  roleId?: string;
+  roleId?: number;
   tags?: string[];
   dataJson?: string;
 };
@@ -61,26 +61,26 @@ export const fetchTemplateCatalog = async () => {
   ]);
 
   const jobCategories: JobCategory[] = (catsJson.items || []).map((c: any) => ({
-    id: c.externalId,
+    id: c.id,
     name: c.name,
-    parentId: c.parentExternalId || '',
+    parentId: c.parentId ?? null,
     orderNum: c.orderNum ?? 0
   }));
 
   const jobRoles: JobRole[] = (rolesJson.items || []).map((r: any) => ({
-    id: r.externalId,
-    categoryId: r.categoryExternalId || '',
+    id: r.id,
+    categoryId: r.categoryId,
     name: r.name,
     tags: normalizeTags(r.tags),
     orderNum: r.orderNum ?? 0
   }));
 
   const variants: TemplateVariant[] = (varsJson.items || []).map((v: any) => ({
-    id: v.externalId,
+    id: v.id,
     name: v.name,
     layoutTemplateId: v.layoutTemplateExternalId,
-    presetId: v.presetExternalId,
-    roleId: v.roleExternalId,
+    presetId: v.presetId,
+    roleId: v.roleId,
     tags: normalizeTags(v.tags),
     usageCount: v.usageCount ?? 0,
     isPremium: !!v.isPremium
@@ -89,14 +89,14 @@ export const fetchTemplateCatalog = async () => {
   return { jobCategories, jobRoles, variants };
 };
 
-export const listJobRoles = async (params?: { categoryId?: string; q?: string }) => {
+export const listJobRoles = async (params?: { categoryId?: number; q?: string }) => {
   const qs = new URLSearchParams();
-  if (params?.categoryId) qs.set('categoryId', params.categoryId);
+  if (params?.categoryId) qs.set('categoryId', String(params.categoryId));
   if (params?.q) qs.set('q', params.q);
   const json = await fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/roles?${qs.toString()}`);
   const jobRoles: JobRole[] = (json.items || []).map((r: any) => ({
-    id: r.externalId,
-    categoryId: r.categoryExternalId || '',
+    id: r.id,
+    categoryId: r.categoryId,
     name: r.name,
     tags: normalizeTags(r.tags),
     orderNum: r.orderNum ?? 0
@@ -104,18 +104,18 @@ export const listJobRoles = async (params?: { categoryId?: string; q?: string })
   return jobRoles;
 };
 
-export const listTemplateVariants = async (params?: { roleId?: string; categoryId?: string; q?: string }) => {
+export const listTemplateVariants = async (params?: { roleId?: number; categoryId?: number; q?: string }) => {
   const qs = new URLSearchParams();
-  if (params?.roleId) qs.set('roleId', params.roleId);
-  if (params?.categoryId) qs.set('categoryId', params.categoryId);
+  if (params?.roleId) qs.set('roleId', String(params.roleId));
+  if (params?.categoryId) qs.set('categoryId', String(params.categoryId));
   if (params?.q) qs.set('q', params.q);
   const json = await fetchJson<{ items: any[] }>(`${API_BASE}/library/variants?${qs.toString()}`);
   const variants: TemplateVariant[] = (json.items || []).map((v: any) => ({
-    id: v.externalId,
+    id: v.id,
     name: v.name,
     layoutTemplateId: v.layoutTemplateExternalId,
-    presetId: v.presetExternalId,
-    roleId: v.roleExternalId,
+    presetId: v.presetId,
+    roleId: v.roleId,
     tags: normalizeTags(v.tags),
     usageCount: v.usageCount ?? 0,
     isPremium: !!v.isPremium
@@ -123,7 +123,7 @@ export const listTemplateVariants = async (params?: { roleId?: string; categoryI
   return variants;
 };
 
-export const fetchContentPresetData = async (presetId: string, signal?: AbortSignal): Promise<any | null> => {
+export const fetchContentPresetData = async (presetId: number, signal?: AbortSignal): Promise<any | null> => {
   if (!presetId) return null;
   const res = await fetch(`${API_BASE}/presets/${encodeURIComponent(presetId)}`, { signal });
   if (!res.ok) return null;
@@ -137,4 +137,3 @@ export const fetchContentPresetData = async (presetId: string, signal?: AbortSig
     return null;
   }
 };
-

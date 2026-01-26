@@ -39,13 +39,13 @@ export const PublicResume: React.FC = () => {
           lastModified: res.LastModified || Date.now(),
           Personal: res.Personal,
           sections: (res.Sections || []).map((s: any) => ({
-            id: s.ExternalID || s.ID,
+            id: s.ID,
             type: s.Type,
             title: s.Title,
             isVisible: s.IsVisible,
             orderNum: s.OrderNum,
             items: (s.Items || []).map((i: any) => ({
-              id: i.ExternalID || i.ID,
+              id: i.ID,
               title: i.Title,
               subtitle: i.Subtitle,
               major: i.Major,

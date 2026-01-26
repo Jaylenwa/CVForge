@@ -69,7 +69,7 @@ export const AdminLayout: React.FC = () => {
         </nav>
         <div className="mt-6">
           <NavLink
-            to={AppRoute.Dashboard}
+            to={AppRoute.Home}
             className="w-full flex items-center justify-between px-3 py-3 rounded-lg transition-all duration-200 group text-gray-500 hover:bg-gray-100 hover:text-gray-900"
           >
             <div className="flex items-center space-x-3">

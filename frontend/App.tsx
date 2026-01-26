@@ -6,6 +6,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import { ConfirmDialogProvider } from './components/ui/ConfirmDialog';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 const Home = React.lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
 const Templates = React.lazy(() => import('./pages/Templates').then(m => ({ default: m.Templates })));
 const Dashboard = React.lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -42,51 +43,49 @@ const App: React.FC = () => {
         <ConfirmDialogProvider>
           <AuthProvider>
             <Router>
-          <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
-            <Routes>
-              <Route element={<LayoutWithFooter />}>
-                <Route path={AppRoute.Home} element={<Home />} />
-              </Route>
-              <Route element={<MainLayout hideFooter><Outlet /></MainLayout>}>
-                <Route path={AppRoute.Templates} element={<Templates />} />
-                <Route path={AppRoute.Pricing} element={<Pricing />} />
-              </Route>
+              <ErrorBoundary>
+                <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
+                  <Routes>
+                    <Route element={<LayoutWithFooter />}>
+                      <Route path={AppRoute.Home} element={<Home />} />
+                    </Route>
+                    <Route element={<MainLayout hideFooter><Outlet /></MainLayout>}>
+                      <Route path={AppRoute.Templates} element={<Templates />} />
+                      <Route path={AppRoute.Pricing} element={<Pricing />} />
+                    </Route>
 
-              <Route element={<ProtectedRoute />}>
-                <Route element={<MainLayout hideFooter><Outlet /></MainLayout>}>
-                  <Route path={AppRoute.Dashboard} element={<Dashboard />} />
-                  <Route path={AppRoute.Settings} element={<Settings />} />
-                </Route>
-              </Route>
-              
-              {/* Auth Routes */}
-              <Route path={AppRoute.Login} element={<Login />} />
-              <Route path={AppRoute.Register} element={<Register />} />
-              <Route path={AppRoute.OAuthCallback} element={<OAuthCallback />} />
-              
-              {/* Protected Standalone Routes */}
-              <Route element={<ProtectedRoute />}>
-                  <Route path={AppRoute.Editor} element={<Editor />} />
-              </Route>
-              
-              {/* Admin Routes */}
-              <Route element={<ProtectedAdminRoute />}>
-                <Route element={<AdminLayout />}>
-                  <Route path={AppRoute.Admin} element={<AdminHome />} />
-                  <Route path={AppRoute.AdminUsers} element={<UsersPage />} />
-                  <Route path={AppRoute.AdminResumes} element={<ResumesPage />} />
-                  <Route path={AppRoute.AdminTemplates} element={<TemplatesPage />} />
-                  <Route path={AppRoute.AdminShares} element={<SharesPage />} />
-                  <Route path={AppRoute.AdminCatalog} element={<CatalogPage />} />
-                  <Route path={AppRoute.AdminConfigs} element={<ConfigPage />} />
-                </Route>
-              </Route>
-              
-              {/* Standalone Routes */}
-              <Route path={AppRoute.Print} element={<PrintResume />} />
-              <Route path={AppRoute.Public} element={<PublicResume />} />
-            </Routes>
-          </Suspense>
+                    <Route element={<ProtectedRoute />}>
+                      <Route element={<MainLayout hideFooter><Outlet /></MainLayout>}>
+                        <Route path={AppRoute.Dashboard} element={<Dashboard />} />
+                        <Route path={AppRoute.Settings} element={<Settings />} />
+                      </Route>
+                    </Route>
+                    
+                    <Route path={AppRoute.Login} element={<Login />} />
+                    <Route path={AppRoute.Register} element={<Register />} />
+                    <Route path={AppRoute.OAuthCallback} element={<OAuthCallback />} />
+                    
+                    <Route element={<ProtectedRoute />}>
+                        <Route path={AppRoute.Editor} element={<Editor />} />
+                    </Route>
+                    
+                    <Route element={<ProtectedAdminRoute />}>
+                      <Route element={<AdminLayout />}>
+                        <Route path={AppRoute.Admin} element={<AdminHome />} />
+                        <Route path={AppRoute.AdminUsers} element={<UsersPage />} />
+                        <Route path={AppRoute.AdminResumes} element={<ResumesPage />} />
+                        <Route path={AppRoute.AdminTemplates} element={<TemplatesPage />} />
+                        <Route path={AppRoute.AdminShares} element={<SharesPage />} />
+                        <Route path={AppRoute.AdminCatalog} element={<CatalogPage />} />
+                        <Route path={AppRoute.AdminConfigs} element={<ConfigPage />} />
+                      </Route>
+                    </Route>
+                    
+                    <Route path={AppRoute.Print} element={<PrintResume />} />
+                    <Route path={AppRoute.Public} element={<PublicResume />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
             </Router>
           </AuthProvider>
         </ConfirmDialogProvider>
