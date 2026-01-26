@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"openresume/internal/common"
 	"openresume/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -76,12 +77,16 @@ func (h *AdminHandler) AdminCreateCategory(c *gin.Context) {
 		OrderNum         *int   `json:"orderNum"`
 		IsActive         *bool  `json:"isActive"`
 	}
-	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.ExternalID) == "" || strings.TrimSpace(body.Name) == "" {
+	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
+	externalID := strings.TrimSpace(body.ExternalID)
+	if externalID == "" {
+		externalID = common.NewExternalID("cat")
+	}
 	m := JobCategory{
-		ExternalID:       strings.TrimSpace(body.ExternalID),
+		ExternalID:       externalID,
 		Name:             strings.TrimSpace(body.Name),
 		ParentExternalID: strings.TrimSpace(body.ParentExternalID),
 	}
@@ -167,12 +172,16 @@ func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
 		OrderNum           *int   `json:"orderNum"`
 		IsActive           *bool  `json:"isActive"`
 	}
-	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.ExternalID) == "" || strings.TrimSpace(body.Name) == "" || strings.TrimSpace(body.CategoryExternalID) == "" {
+	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" || strings.TrimSpace(body.CategoryExternalID) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
+	externalID := strings.TrimSpace(body.ExternalID)
+	if externalID == "" {
+		externalID = common.NewExternalID("role")
+	}
 	m := JobRole{
-		ExternalID:         strings.TrimSpace(body.ExternalID),
+		ExternalID:         externalID,
 		CategoryExternalID: strings.TrimSpace(body.CategoryExternalID),
 		Name:               strings.TrimSpace(body.Name),
 		Tags:               strings.TrimSpace(body.Tags),
@@ -239,4 +248,3 @@ func (h *AdminHandler) AdminDeleteRole(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
-

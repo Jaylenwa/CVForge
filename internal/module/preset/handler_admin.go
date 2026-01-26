@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"openresume/internal/common"
 	"openresume/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -79,12 +80,16 @@ func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
 		DataJSON       string `json:"dataJson"`
 		IsActive       *bool  `json:"isActive"`
 	}
-	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.ExternalID) == "" || strings.TrimSpace(body.Name) == "" {
+	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
+	externalID := strings.TrimSpace(body.ExternalID)
+	if externalID == "" {
+		externalID = common.NewExternalID("preset")
+	}
 	m := ContentPreset{
-		ExternalID:     strings.TrimSpace(body.ExternalID),
+		ExternalID:     externalID,
 		Name:           strings.TrimSpace(body.Name),
 		Language:       strings.TrimSpace(body.Language),
 		RoleExternalID: strings.TrimSpace(body.RoleExternalID),

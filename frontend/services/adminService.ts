@@ -39,6 +39,14 @@ export interface AdminJobCategory {
   IsActive: boolean;
 }
 
+export interface AdminCreateJobCategoryReq {
+  externalId?: string;
+  name: string;
+  parentExternalId?: string;
+  orderNum?: number;
+  isActive?: boolean;
+}
+
 export interface AdminJobRole {
   id?: number;
   ExternalID: string;
@@ -47,6 +55,15 @@ export interface AdminJobRole {
   Tags?: string;
   OrderNum?: number;
   IsActive: boolean;
+}
+
+export interface AdminCreateJobRoleReq {
+  externalId?: string;
+  categoryExternalId: string;
+  name: string;
+  tags?: string;
+  orderNum?: number;
+  isActive?: boolean;
 }
 
 export interface AdminContentPreset {
@@ -58,6 +75,16 @@ export interface AdminContentPreset {
   Tags?: string;
   DataJSON?: string;
   IsActive: boolean;
+}
+
+export interface AdminCreateContentPresetReq {
+  externalId?: string;
+  name: string;
+  language?: string;
+  roleExternalId?: string;
+  tags?: string;
+  dataJson?: string;
+  isActive?: boolean;
 }
 
 export interface AdminTemplateVariant {
@@ -73,6 +100,18 @@ export interface AdminTemplateVariant {
   IsActive: boolean;
 }
 
+export interface AdminCreateTemplateVariantReq {
+  externalId?: string;
+  name: string;
+  layoutTemplateExternalId: string;
+  presetExternalId: string;
+  roleExternalId: string;
+  tags?: string;
+  usageCount?: number;
+  isPremium?: boolean;
+  isActive?: boolean;
+}
+
 export const adminListJobCategories = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
   const res = await fetch(`${API_BASE}/admin/taxonomy/categories?${q}`, { headers: authHeader() });
@@ -80,7 +119,7 @@ export const adminListJobCategories = async (params: Record<string, string>) => 
   return res.json() as Promise<PageResp<AdminJobCategory>>;
 };
 
-export const adminCreateJobCategory = async (body: any) => {
+export const adminCreateJobCategory = async (body: AdminCreateJobCategoryReq) => {
   const res = await fetch(`${API_BASE}/admin/taxonomy/categories`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
@@ -102,7 +141,7 @@ export const adminListJobRoles = async (params: Record<string, string>) => {
   return res.json() as Promise<PageResp<AdminJobRole>>;
 };
 
-export const adminCreateJobRole = async (body: any) => {
+export const adminCreateJobRole = async (body: AdminCreateJobRoleReq) => {
   const res = await fetch(`${API_BASE}/admin/taxonomy/roles`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };
@@ -124,7 +163,7 @@ export const adminListContentPresets = async (params: Record<string, string>) =>
   return res.json() as Promise<PageResp<AdminContentPreset>>;
 };
 
-export const adminCreateContentPreset = async (body: any) => {
+export const adminCreateContentPreset = async (body: AdminCreateContentPresetReq) => {
   const res = await fetch(`${API_BASE}/admin/presets`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error(await res.text());
 };
@@ -146,7 +185,7 @@ export const adminListTemplateVariants = async (params: Record<string, string>) 
   return res.json() as Promise<PageResp<AdminTemplateVariant>>;
 };
 
-export const adminCreateTemplateVariant = async (body: any) => {
+export const adminCreateTemplateVariant = async (body: AdminCreateTemplateVariantReq) => {
   const res = await fetch(`${API_BASE}/admin/library/variants`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
   if (!res.ok) throw new Error('failed');
 };

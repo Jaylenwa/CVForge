@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"openresume/internal/common"
 	"openresume/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -114,12 +115,16 @@ func (h *AdminHandler) AdminCreateVariant(c *gin.Context) {
 		IsPremium                *bool  `json:"isPremium"`
 		IsActive                 *bool  `json:"isActive"`
 	}
-	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.ExternalID) == "" || strings.TrimSpace(body.Name) == "" {
+	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
+	externalID := strings.TrimSpace(body.ExternalID)
+	if externalID == "" {
+		externalID = common.NewExternalID("variant")
+	}
 	m := TemplateVariant{
-		ExternalID:               strings.TrimSpace(body.ExternalID),
+		ExternalID:               externalID,
 		Name:                     strings.TrimSpace(body.Name),
 		LayoutTemplateExternalID: strings.TrimSpace(body.LayoutTemplateExternalID),
 		PresetExternalID:         strings.TrimSpace(body.PresetExternalID),
@@ -293,4 +298,3 @@ func (h *AdminHandler) AdminGenerateVariants(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, out)
 }
-

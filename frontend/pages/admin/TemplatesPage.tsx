@@ -424,18 +424,6 @@ export const TemplatesPage: React.FC = () => {
 
   const NameCell: React.FC<{ name?: string; id?: string }> = ({ name, id }) => {
     const display = (name || '').trim() || (id || '').trim() || '-';
-    if (name && id && name !== id) {
-      return (
-        <div className="w-full max-w-full overflow-hidden" title={name}>
-          <div className="text-sm text-gray-700 truncate whitespace-nowrap" title={name}>
-            {name}
-          </div>
-          <div className="text-[11px] text-gray-400 font-mono truncate whitespace-nowrap" title={id}>
-            {id}
-          </div>
-        </div>
-      );
-    }
     return (
       <div className="w-full max-w-full overflow-hidden truncate whitespace-nowrap text-sm text-gray-700" title={display}>
         {display}
@@ -554,7 +542,6 @@ export const TemplatesPage: React.FC = () => {
     setCatalogEditingId(null);
     setCatalogFormKind('preset');
     setCatalogForm({
-      externalId: '',
       name: '',
       language: '',
       roleExternalId: '',
@@ -569,7 +556,6 @@ export const TemplatesPage: React.FC = () => {
     setCatalogEditingId(null);
     setCatalogFormKind('variant');
     setCatalogForm({
-      externalId: '',
       name: '',
       layoutTemplateExternalId: '',
       presetExternalId: '',
@@ -586,7 +572,6 @@ export const TemplatesPage: React.FC = () => {
     setCatalogEditingId(row.ExternalID);
     setCatalogFormKind('preset');
     setCatalogForm({
-      externalId: row.ExternalID,
       name: row.Name,
       language: row.Language || 'zh',
       roleExternalId: row.RoleExternalID || '',
@@ -601,7 +586,6 @@ export const TemplatesPage: React.FC = () => {
     setCatalogEditingId(row.ExternalID);
     setCatalogFormKind('variant');
     setCatalogForm({
-      externalId: row.ExternalID,
       name: row.Name,
       layoutTemplateExternalId: row.LayoutTemplateExternalID,
       presetExternalId: row.PresetExternalID,
@@ -659,14 +643,14 @@ export const TemplatesPage: React.FC = () => {
     setCatalogSaving(true);
     try {
       if (catalogFormKind === 'preset') {
-        if (!String(catalogForm.externalId || '').trim() || !String(catalogForm.name || '').trim() || !String(catalogForm.language || '').trim() || !String(catalogForm.roleExternalId || '').trim()) {
+        if (!String(catalogForm.name || '').trim() || !String(catalogForm.language || '').trim() || !String(catalogForm.roleExternalId || '').trim()) {
           showToast(t('auth.error.fillAll'), 'error');
           setCatalogSaving(false);
           return;
         }
       }
       if (catalogFormKind === 'variant') {
-        if (!String(catalogForm.externalId || '').trim() || !String(catalogForm.name || '').trim() || !String(catalogForm.layoutTemplateExternalId || '').trim() || !String(catalogForm.presetExternalId || '').trim() || !String(catalogForm.roleExternalId || '').trim()) {
+        if (!String(catalogForm.name || '').trim() || !String(catalogForm.layoutTemplateExternalId || '').trim() || !String(catalogForm.presetExternalId || '').trim() || !String(catalogForm.roleExternalId || '').trim()) {
           showToast(t('auth.error.fillAll'), 'error');
           setCatalogSaving(false);
           return;
@@ -682,8 +666,10 @@ export const TemplatesPage: React.FC = () => {
       }
 
       if (!catalogEditingId) {
-        if (catalogFormKind === 'preset') await adminCreateContentPreset({ ...catalogForm, tags: joinTags(catalogForm.tags) });
-        else await adminCreateTemplateVariant({ ...catalogForm, tags: joinTags(catalogForm.tags) });
+        const body = { ...catalogForm, tags: joinTags(catalogForm.tags) };
+        delete body.externalId;
+        if (catalogFormKind === 'preset') await adminCreateContentPreset(body);
+        else await adminCreateTemplateVariant(body);
       } else {
         const body = { ...catalogForm };
         delete body.externalId;
@@ -721,15 +707,9 @@ export const TemplatesPage: React.FC = () => {
         <div className="space-y-8">
           <section className="space-y-4">
             <SectionTitle>{t('admin.catalog.section.basic') || 'Basic'}</SectionTitle>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label required htmlFor="preset-external">{t('admin.form.externalId')}</Label>
-                <Input id="preset-external" value={catalogForm.externalId || ''} disabled={!!catalogEditingId} onChange={(e) => setCatalogForm((p: any) => ({ ...p, externalId: e.target.value }))} />
-              </div>
-              <div>
-                <Label required htmlFor="preset-name">{t('admin.form.name')}</Label>
-                <Input id="preset-name" value={catalogForm.name || ''} onChange={(e) => setCatalogForm((p: any) => ({ ...p, name: e.target.value }))} />
-              </div>
+            <div>
+              <Label required htmlFor="preset-name">{t('admin.form.name')}</Label>
+              <Input id="preset-name" value={catalogForm.name || ''} onChange={(e) => setCatalogForm((p: any) => ({ ...p, name: e.target.value }))} />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -888,7 +868,6 @@ export const TemplatesPage: React.FC = () => {
                     <thead>
                       <tr className="bg-slate-50/80 border-b border-slate-200">
                         <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.form.template')}</th>
-                        <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.form.externalId')}</th>
                         <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.action')}</th>
                         <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.error')}</th>
                       </tr>
@@ -899,7 +878,6 @@ export const TemplatesPage: React.FC = () => {
                           <td className="px-4 py-3">
                             <NameCell name={templateNameById.get(it.layoutTemplateId)} id={it.layoutTemplateId} />
                           </td>
-                          <td className="px-4 py-3 text-sm font-mono text-gray-600">{it.externalId}</td>
                           <td className="px-4 py-3 text-sm text-gray-600">{it.action}</td>
                           <td className="px-4 py-3 text-sm text-rose-600">{it.error || ''}</td>
                         </tr>
@@ -916,15 +894,9 @@ export const TemplatesPage: React.FC = () => {
           <>
             <section className="space-y-4">
               <SectionTitle>{t('admin.catalog.section.basic') || 'Basic'}</SectionTitle>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label required htmlFor="variant-external">{t('admin.form.externalId')}</Label>
-                  <Input id="variant-external" value={catalogForm.externalId || ''} disabled={!!catalogEditingId} onChange={(e) => setCatalogForm((p: any) => ({ ...p, externalId: e.target.value }))} />
-                </div>
-                <div>
-                  <Label required htmlFor="variant-name">{t('admin.form.name')}</Label>
-                  <Input id="variant-name" value={catalogForm.name || ''} onChange={(e) => setCatalogForm((p: any) => ({ ...p, name: e.target.value }))} />
-                </div>
+              <div>
+                <Label required htmlFor="variant-name">{t('admin.form.name')}</Label>
+                <Input id="variant-name" value={catalogForm.name || ''} onChange={(e) => setCatalogForm((p: any) => ({ ...p, name: e.target.value }))} />
               </div>
             </section>
             <section className="space-y-4">
@@ -1033,7 +1005,6 @@ export const TemplatesPage: React.FC = () => {
               description: t('admin.catalog.emptyDesc') || '点击右上角创建开始新增',
             }}
             columns={[
-              { key: 'externalId', label: 'ExternalID', minWidth: 200, nowrap: true, render: (p) => <TextCell text={p.ExternalID} className="font-mono text-gray-600" /> },
               { key: 'name', label: t('admin.form.name'), minWidth: 280, render: (p) => <TextCell text={p.Name} className="text-gray-900 font-medium" /> },
               { key: 'language', label: t('admin.catalog.form.language'), minWidth: 120, nowrap: true, render: (p) => <span className="text-sm text-gray-600">{p.Language || '-'}</span> },
               { key: 'role', label: t('admin.catalog.form.role'), minWidth: 240, render: (p) => <NameCell name={p.RoleExternalID ? roleNameById.get(p.RoleExternalID) : ''} id={p.RoleExternalID || ''} /> },
@@ -1067,17 +1038,6 @@ export const TemplatesPage: React.FC = () => {
             description: t('admin.catalog.emptyDesc') || '点击右上角创建开始新增',
           }}
           columns={[
-            {
-              key: 'externalId',
-              label: 'ExternalID',
-              minWidth: 200,
-              nowrap: true,
-              render: (v) => (
-                <div className="text-sm font-mono text-gray-600 truncate whitespace-nowrap" title={v.ExternalID}>
-                  {v.ExternalID}
-                </div>
-              ),
-            },
             {
               key: 'name',
               label: t('admin.form.name'),

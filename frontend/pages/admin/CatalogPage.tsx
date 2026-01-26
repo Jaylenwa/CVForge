@@ -59,14 +59,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
 
   const NameCell: React.FC<{ name?: string; id?: string }> = ({ name, id }) => {
     const display = (name || '').trim() || (id || '').trim() || '-';
-    if (name && id && name !== id) {
-      return (
-        <div className="w-full max-w-full overflow-hidden" title={name}>
-          <div className="text-sm text-gray-700 truncate whitespace-nowrap" title={name}>{name}</div>
-          <div className="text-[11px] text-gray-400 font-mono truncate whitespace-nowrap" title={id}>{id}</div>
-        </div>
-      );
-    }
     return <div className="w-full max-w-full overflow-hidden truncate whitespace-nowrap text-sm text-gray-700" title={display}>{display}</div>;
   };
 
@@ -122,32 +114,32 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
   const openCreateCategory = () => {
     setEditingId(null);
     setFormKind('category');
-    setForm({ externalId: '', name: '', parentExternalId: '', orderNum: 0, isActive: true });
+    setForm({ name: '', parentExternalId: '', orderNum: 0, isActive: true });
     setShowForm(true);
   };
   const openCreateSubCategory = (parentExternalId: string) => {
     setEditingId(null);
     setFormKind('category');
-    setForm({ externalId: '', name: '', parentExternalId, orderNum: 0, isActive: true });
+    setForm({ name: '', parentExternalId, orderNum: 0, isActive: true });
     setShowForm(true);
   };
   const openCreateRole = (categoryExternalId: string) => {
     setEditingId(null);
     setFormKind('role');
-    setForm({ externalId: '', categoryExternalId, name: '', tags: [] as string[], orderNum: 0, isActive: true });
+    setForm({ categoryExternalId, name: '', tags: [] as string[], orderNum: 0, isActive: true });
     setShowForm(true);
   };
 
   const openEditCategory = (row: any) => {
     setEditingId(row.ExternalID);
     setFormKind('category');
-    setForm({ externalId: row.ExternalID, name: row.Name, parentExternalId: row.ParentExternalID || '', orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
+    setForm({ name: row.Name, parentExternalId: row.ParentExternalID || '', orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
     setShowForm(true);
   };
   const openEditRole = (row: any) => {
     setEditingId(row.ExternalID);
     setFormKind('role');
-    setForm({ externalId: row.ExternalID, categoryExternalId: row.CategoryExternalID, name: row.Name, tags: parseTags(row.Tags), orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
+    setForm({ categoryExternalId: row.CategoryExternalID, name: row.Name, tags: parseTags(row.Tags), orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
     setShowForm(true);
   };
 
@@ -160,22 +152,24 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
     setSaving(true);
     try {
       if (formKind === 'category') {
-        if (!String(form.externalId || '').trim() || !String(form.name || '').trim()) {
+        if (!String(form.name || '').trim()) {
           showToast(t('auth.error.fillAll'), 'error');
           setSaving(false);
           return;
         }
       }
       if (formKind === 'role') {
-        if (!String(form.externalId || '').trim() || !String(form.categoryExternalId || '').trim() || !String(form.name || '').trim()) {
+        if (!String(form.categoryExternalId || '').trim() || !String(form.name || '').trim()) {
           showToast(t('auth.error.fillAll'), 'error');
           setSaving(false);
           return;
         }
       }
       if (!editingId) {
-        if (formKind === 'category') await adminCreateJobCategory(form);
-        else if (formKind === 'role') await adminCreateJobRole({ ...form, tags: joinTags(form.tags) });
+        const body = { ...form };
+        delete body.externalId;
+        if (formKind === 'category') await adminCreateJobCategory(body);
+        else if (formKind === 'role') await adminCreateJobRole({ ...body, tags: joinTags(body.tags) });
       } else {
         const body = { ...form };
         delete body.externalId;
@@ -211,15 +205,9 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
         <div className="space-y-8">
           <section className="space-y-4">
             <SectionTitle>{t('admin.catalog.section.basic') || 'Basic'}</SectionTitle>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label required htmlFor="cat-external">{t('admin.form.externalId')}</Label>
-                <Input id="cat-external" value={form.externalId || ''} disabled={!!editingId} onChange={(e) => setForm((p: any) => ({ ...p, externalId: e.target.value }))} />
-              </div>
-              <div>
-                <Label required htmlFor="cat-name">{t('admin.form.name')}</Label>
-                <Input id="cat-name" value={form.name || ''} onChange={(e) => setForm((p: any) => ({ ...p, name: e.target.value }))} />
-              </div>
+            <div>
+              <Label required htmlFor="cat-name">{t('admin.form.name')}</Label>
+              <Input id="cat-name" value={form.name || ''} onChange={(e) => setForm((p: any) => ({ ...p, name: e.target.value }))} />
             </div>
           </section>
           <section className="space-y-4">
@@ -228,16 +216,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
               <div>
                 <Label htmlFor="cat-parent">{t('admin.catalog.form.parent')}</Label>
                 {!editingId && String(form.parentExternalId || '').trim() ? (
-                  <div className="space-y-1">
-                    <Input
-                      id="cat-parent"
-                      value={categoryNameById.get(String(form.parentExternalId)) || String(form.parentExternalId)}
-                      disabled
-                    />
-                    <div className="text-[11px] text-slate-400 font-mono truncate whitespace-nowrap" title={String(form.parentExternalId)}>
-                      {String(form.parentExternalId)}
-                    </div>
-                  </div>
+                  <Input id="cat-parent" value={categoryNameById.get(String(form.parentExternalId)) || String(form.parentExternalId)} disabled />
                 ) : (
                   <Select
                     value={form.parentExternalId || ''}
@@ -264,35 +243,20 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
         <div className="space-y-8">
           <section className="space-y-4">
             <SectionTitle>{t('admin.catalog.section.basic') || 'Basic'}</SectionTitle>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label required htmlFor="role-external">{t('admin.form.externalId')}</Label>
-                <Input id="role-external" value={form.externalId || ''} disabled={!!editingId} onChange={(e) => setForm((p: any) => ({ ...p, externalId: e.target.value }))} />
-              </div>
-              <div>
-                <Label required htmlFor="role-category">{t('admin.catalog.form.category')}</Label>
-                {!editingId && String(form.categoryExternalId || '').trim() ? (
-                  <div className="space-y-1">
-                    <Input
-                      id="role-category"
-                      value={categoryNameById.get(String(form.categoryExternalId)) || String(form.categoryExternalId)}
-                      disabled
-                    />
-                    <div className="text-[11px] text-slate-400 font-mono truncate whitespace-nowrap" title={String(form.categoryExternalId)}>
-                      {String(form.categoryExternalId)}
-                    </div>
-                  </div>
-                ) : (
-                  <Select
-                    value={form.categoryExternalId || ''}
-                    onChange={(e) => setForm((p: any) => ({ ...p, categoryExternalId: e.target.value }))}
-                    options={[
-                      { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                      ...allCategories.map(c => ({ label: c.Name, value: c.ExternalID })),
-                    ]}
-                  />
-                )}
-              </div>
+            <div>
+              <Label required htmlFor="role-category">{t('admin.catalog.form.category')}</Label>
+              {!editingId && String(form.categoryExternalId || '').trim() ? (
+                <Input id="role-category" value={categoryNameById.get(String(form.categoryExternalId)) || String(form.categoryExternalId)} disabled />
+              ) : (
+                <Select
+                  value={form.categoryExternalId || ''}
+                  onChange={(e) => setForm((p: any) => ({ ...p, categoryExternalId: e.target.value }))}
+                  options={[
+                    { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
+                    ...allCategories.map(c => ({ label: c.Name, value: c.ExternalID })),
+                  ]}
+                />
+              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
