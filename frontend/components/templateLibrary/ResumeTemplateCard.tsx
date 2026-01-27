@@ -81,8 +81,8 @@ export const ResumeTemplateCard: React.FC<{
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -6 }}
-      transition={{ duration: 0.22, ease: 'easeOut' }}
-      className="group relative bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300"
+      transition={{ duration: 0.001, ease: 'easeOut' }}
+      className="group relative bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-200"
     >
       <div ref={containerRef} className="relative aspect-[210/297] overflow-hidden bg-slate-100">
         {ready && scale !== null ? (
@@ -98,7 +98,7 @@ export const ResumeTemplateCard: React.FC<{
           <div className="absolute inset-0 bg-white" />
         )}
 
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
           <div className="flex flex-col items-center space-y-3">
             <Button className="w-40" onClick={onUse}>
               {t('templates.actions.useTemplate')}
