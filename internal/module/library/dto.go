@@ -2,16 +2,15 @@ package library
 
 import "strings"
 
-type TemplateVariantDTO struct {
-	ID                       uint     `json:"id"`
-	Name                     string   `json:"name"`
-	LayoutTemplateExternalID string   `json:"layoutTemplateExternalId"`
-	PresetID                 uint     `json:"presetId"`
-	RoleID                   uint     `json:"roleId"`
-	Tags                     []string `json:"tags"`
-	UsageCount               int      `json:"usageCount"`
-	IsPremium                bool     `json:"isPremium"`
-	IsActive                 bool     `json:"isActive"`
+type TemplateLibraryItemDTO struct {
+	TemplateExternalID string   `json:"templateExternalId"`
+	Name               string   `json:"name"`
+	Tags               []string `json:"tags"`
+	UsageCount         int      `json:"usageCount"`
+	GlobalUsageCount   int      `json:"globalUsageCount"`
+	PresetID           uint     `json:"presetId,omitempty"`
+	RoleID             uint     `json:"roleId,omitempty"`
+	IsPremium          bool     `json:"isPremium"`
 }
 
 func splitTags(s string) []string {

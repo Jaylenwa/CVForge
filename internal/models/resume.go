@@ -7,7 +7,6 @@ type Resume struct {
 	UserID       uint            // 所属用户 ID
 	Title        string          `gorm:"size:191"`                   // 简历标题
 	TemplateID   string          `gorm:"size:64"`                    // 布局模板 ExternalID（Template.ExternalID）
-	VariantID    *uint           `gorm:"column:variant_db_id;index"` // 模板变体 ID
 	PresetID     *uint           `gorm:"column:preset_db_id;index"`  // 内容预设 ID
 	RoleID       *uint           `gorm:"column:role_db_id;index"`    // 岗位方向 ID
 	Language     string          `gorm:"size:8"`                     // 语言（zh/en）

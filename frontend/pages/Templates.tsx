@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { fetchContentPresetData, fetchTemplateCatalog } from '../services/catalogService';
+import { fetchContentPresetData, fetchTemplateCatalog, listTemplateLibraryItems } from '../services/catalogService';
 import { JobSidebar } from '../components/templateLibrary/JobSidebar';
 import { ResumeTemplateCard } from '../components/templateLibrary/ResumeTemplateCard';
   
@@ -36,25 +36,37 @@ export const Templates: React.FC = () => {
 
   const [jobCategories, setJobCategories] = useState<Array<{ id: string; name: string; parentId?: string; orderNum?: number }>>([]);
   const [jobRoles, setJobRoles] = useState<Array<{ id: string; categoryId: string; name: string; tags?: string[]; orderNum?: number }>>([]);
-  const [variants, setVariants] = useState<Array<{ id: string; name: string; layoutTemplateId: string; presetId: string; roleId: string; tags?: string[]; usageCount?: number; isPremium?: boolean }>>([]);
+  const [templates, setTemplates] = useState<Array<{ templateId: string; name: string; presetId?: string; roleId?: string; tags?: string[]; usageCount?: number; globalUsageCount?: number; isPremium?: boolean }>>([]);
   const [presetDataMap, setPresetDataMap] = useState<Record<string, any>>({});
   const inFlightPresetIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     (async () => {
       try {
-        const { jobCategories, jobRoles, variants } = await fetchTemplateCatalog();
+        const { jobCategories, jobRoles, templates } = await fetchTemplateCatalog();
         setJobCategories(jobCategories.map((c) => ({ id: String(c.id), name: c.name, parentId: c.parentId == null ? '' : String(c.parentId), orderNum: c.orderNum })));
         setJobRoles(jobRoles.map((r) => ({ id: String(r.id), categoryId: String(r.categoryId), name: r.name, tags: r.tags, orderNum: r.orderNum })));
-        setVariants(variants.map((v) => ({ id: String(v.id), name: v.name, layoutTemplateId: v.layoutTemplateId, presetId: String(v.presetId), roleId: String(v.roleId), tags: v.tags, usageCount: v.usageCount, isPremium: v.isPremium })));
+        setTemplates(templates.map((t) => ({ templateId: String(t.templateExternalId), name: t.name, presetId: t.presetId ? String(t.presetId) : undefined, roleId: t.roleId ? String(t.roleId) : undefined, tags: t.tags, usageCount: t.usageCount, globalUsageCount: t.globalUsageCount, isPremium: t.isPremium })));
       } catch {
         setJobCategories([]);
         setJobRoles([]);
-        setVariants([]);
+        setTemplates([]);
         setPresetDataMap({});
       }
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const roleId = selectedJobRole ? Number(selectedJobRole) : undefined;
+        const items = await listTemplateLibraryItems(roleId ? { roleId } : undefined);
+        setTemplates(items.map((t) => ({ templateId: String(t.templateExternalId), name: t.name, presetId: t.presetId ? String(t.presetId) : undefined, roleId: t.roleId ? String(t.roleId) : undefined, tags: t.tags, usageCount: t.usageCount, globalUsageCount: t.globalUsageCount, isPremium: t.isPremium })));
+      } catch {
+        setTemplates([]);
+      }
+    })();
+  }, [selectedJobRole]);
 
   const childCategoryIdsForSelectedRoot = useMemo(() => {
     const rootId = selectedJobCategory;
@@ -68,49 +80,33 @@ export const Templates: React.FC = () => {
     return m;
   }, [jobRoles]);
 
-  const filteredVariants = useMemo(() => {
-    return variants.filter(v => {
-    const role = roleMap[v.roleId];
-    const matchesJobCategory = !selectedJobCategory || (role && (role.categoryId === selectedJobCategory || childCategoryIdsForSelectedRoot.has(role.categoryId)));
-    const matchesJobRole = !selectedJobRole || v.roleId === selectedJobRole;
-    return matchesJobCategory && matchesJobRole;
-    });
-  }, [variants, roleMap, selectedJobCategory, selectedJobRole, childCategoryIdsForSelectedRoot]);
-
-  const sortedVariants = useMemo(() => {
-    const list = filteredVariants.slice();
+  const sortedTemplates = useMemo(() => {
+    const list = templates.slice();
     if (sortMode === 'hot') {
       return list.sort((a, b) => (b.usageCount ?? 0) - (a.usageCount ?? 0));
     }
     return list.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), language === 'zh' ? 'zh' : 'en'));
-  }, [filteredVariants, sortMode, language]);
+  }, [templates, sortMode, language]);
 
-  const handleUseTemplate = (templateId: string, presetId?: string, variantId?: string) => {
+  const handleUseTemplate = (templateId: string, presetId?: string, roleId?: string) => {
     const qs = new URLSearchParams();
     qs.set('template', templateId);
     if (presetId) qs.set('presetId', presetId);
-    if (variantId) qs.set('variantId', variantId);
+    if (roleId) qs.set('roleId', roleId);
     qs.set('returnTo', AppRoute.Templates);
     window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?${qs.toString()}`, '_blank');
   };
-  const handlePreviewTemplate = (templateId: string, presetId?: string, variantId?: string) => {
+  const handlePreviewTemplate = (templateId: string, presetId?: string) => {
     const qs = new URLSearchParams();
     qs.set('template', templateId);
     if (presetId) qs.set('presetId', presetId);
-    if (variantId) qs.set('variantId', variantId);
     window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?${qs.toString()}`, '_blank');
   };
 
   useEffect(() => {
     const uniquePresetIds: string[] = [];
-    const seen = new Set<string>();
-    for (const v of filteredVariants) {
-      const id = v.presetId;
-      if (!id || seen.has(id)) continue;
-      seen.add(id);
-      uniquePresetIds.push(id);
-      if (uniquePresetIds.length >= 24) break;
-    }
+    const pid = sortedTemplates.find((t) => !!t.presetId)?.presetId;
+    if (pid) uniquePresetIds.push(pid);
 
     const controller = new AbortController();
     const signal = controller.signal;
@@ -145,7 +141,7 @@ export const Templates: React.FC = () => {
     run();
 
     return () => controller.abort();
-  }, [filteredVariants, presetDataMap]);
+  }, [sortedTemplates, presetDataMap]);
 
   const sidebarCategories = useMemo(() => {
     return jobCategories;
@@ -265,25 +261,26 @@ export const Templates: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {sortedVariants.map((variant: any) => {
-              const roleName = roleMap[variant.roleId]?.name || '';
+            {sortedTemplates.map((it: any) => {
+              const roleName = selectedJobRole ? (roleMap[selectedJobRole]?.name || '') : '';
+              const presetId = it.presetId || '';
               return (
                 <ResumeTemplateCard
-                  key={variant.id}
-                  title={variant.name}
-                  templateId={variant.layoutTemplateId}
-                  usageCount={variant.usageCount ?? 0}
-                  isPremium={variant.isPremium ?? false}
-                  tag={roleName}
-                  presetData={presetDataMap[variant.presetId] || null}
-                  onUse={() => handleUseTemplate(variant.layoutTemplateId, variant.presetId, variant.id)}
-                  onPreview={() => handlePreviewTemplate(variant.layoutTemplateId, variant.presetId, variant.id)}
+                  key={it.templateId}
+                  title={it.name}
+                  templateId={it.templateId}
+                  usageCount={it.usageCount ?? 0}
+                  isPremium={it.isPremium ?? false}
+                  tag={roleName || undefined}
+                  presetData={presetId ? (presetDataMap[presetId] || null) : null}
+                  onUse={() => handleUseTemplate(it.templateId, it.presetId, it.roleId || selectedJobRole || undefined)}
+                  onPreview={() => handlePreviewTemplate(it.templateId, it.presetId)}
                 />
               );
             })}
           </div>
 
-          {sortedVariants.length === 0 ? (
+          {sortedTemplates.length === 0 ? (
             <div className="mt-10 text-center py-20 bg-white rounded-2xl border border-slate-200">
               <p className="text-slate-500 text-lg font-medium">{t('templates.empty')}</p>
               <Button variant="ghost" onClick={clearAll} className="mt-4">

@@ -97,56 +97,16 @@ func RunExternalIDToIDBackfill(db *gorm.DB) error {
 			}
 		}
 
-		type VariantRow struct {
-			ID               uint
-			PresetExternalID string
-			RoleExternalID   string
-		}
-		var variants []VariantRow
-		if err := tx.Raw(`SELECT id, preset_external_id, role_external_id FROM template_variant WHERE (preset_id IS NULL OR preset_id = 0 OR role_id IS NULL OR role_id = 0) AND deleted_at IS NULL`).Scan(&variants).Error; err != nil {
-			return err
-		}
-		for _, v := range variants {
-			var presetID uint
-			if v.PresetExternalID != "" {
-				_ = tx.Raw(`SELECT id FROM content_preset WHERE external_id = ? AND deleted_at IS NULL LIMIT 1`, v.PresetExternalID).Scan(&presetID).Error
-			}
-			var roleID uint
-			if v.RoleExternalID != "" {
-				_ = tx.Raw(`SELECT id FROM job_role WHERE external_id = ? AND deleted_at IS NULL LIMIT 1`, v.RoleExternalID).Scan(&roleID).Error
-			}
-			if presetID != 0 {
-				if err := tx.Exec(`UPDATE template_variant SET preset_id = ? WHERE id = ?`, presetID, v.ID).Error; err != nil {
-					return err
-				}
-			}
-			if roleID != 0 {
-				if err := tx.Exec(`UPDATE template_variant SET role_id = ? WHERE id = ?`, roleID, v.ID).Error; err != nil {
-					return err
-				}
-			}
-		}
-
 		type ResumeRow struct {
 			ID              uint
-			VariantExternal string
 			PresetExternal  string
 			RoleExternal    string
 		}
 		var resumes []ResumeRow
-		if err := tx.Raw(`SELECT id, variant_id AS variant_external, preset_id AS preset_external, role_id AS role_external FROM resume WHERE deleted_at IS NULL`).Scan(&resumes).Error; err != nil {
+		if err := tx.Raw(`SELECT id, preset_id AS preset_external, role_id AS role_external FROM resume WHERE deleted_at IS NULL`).Scan(&resumes).Error; err != nil {
 			return err
 		}
 		for _, r := range resumes {
-			if r.VariantExternal != "" {
-				var vid uint
-				_ = tx.Raw(`SELECT id FROM template_variant WHERE external_id = ? AND deleted_at IS NULL LIMIT 1`, r.VariantExternal).Scan(&vid).Error
-				if vid != 0 {
-					if err := tx.Exec(`UPDATE resume SET variant_db_id = ? WHERE id = ?`, vid, r.ID).Error; err != nil {
-						return err
-					}
-				}
-			}
 			if r.PresetExternal != "" {
 				var pid uint
 				_ = tx.Raw(`SELECT id FROM content_preset WHERE external_id = ? AND deleted_at IS NULL LIMIT 1`, r.PresetExternal).Scan(&pid).Error

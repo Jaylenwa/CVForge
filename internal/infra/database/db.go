@@ -45,6 +45,9 @@ func InitMySQL(cfg config.Config) (*gorm.DB, error) {
 	if err := RunExternalIDToIDBackfill(DB); err != nil {
 		return nil, err
 	}
+	if err := RunRoleTemplateUsageBackfill(DB); err != nil {
+		return nil, err
+	}
 	logger.WithCtx(nil).Info("mysql connected")
 	return DB, nil
 }
@@ -56,7 +59,7 @@ func autoMigrate() error {
 		&models.JobCategory{},
 		&models.JobRole{},
 		&models.ContentPreset{},
-		&models.TemplateVariant{},
+		&models.RoleTemplateUsage{},
 		&models.Resume{},
 		&models.ResumePersonal{},
 		&models.ResumeTheme{},

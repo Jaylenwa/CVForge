@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"openresume/internal/infra/database"
-	"openresume/internal/module/library"
 	"openresume/internal/module/preset"
 	"openresume/internal/module/taxonomy"
 	"openresume/internal/pkg/logger"
@@ -19,7 +18,6 @@ type SeedData struct {
 	Categories []SeedJobCategory
 	Roles      []SeedJobRole
 	Presets    []SeedContentPreset
-	Variants   []SeedTemplateVariant
 }
 
 type SeedJobCategory struct {
@@ -49,23 +47,10 @@ type SeedContentPreset struct {
 	IsActive       bool
 }
 
-type SeedTemplateVariant struct {
-	ExternalID               string
-	Name                     string
-	LayoutTemplateExternalID string
-	PresetExternalID         string
-	RoleExternalID           string
-	Tags                     string
-	UsageCount               int
-	IsPremium                bool
-	IsActive                 bool
-}
-
 type ImportCounts struct {
-	JobCategories    int `json:"jobCategories"`
-	JobRoles         int `json:"jobRoles"`
-	ContentPresets   int `json:"contentPresets"`
-	TemplateVariants int `json:"templateVariants"`
+	JobCategories  int `json:"jobCategories"`
+	JobRoles       int `json:"jobRoles"`
+	ContentPresets int `json:"contentPresets"`
 }
 
 type AdminHandler struct{}
@@ -86,7 +71,6 @@ func (h *AdminHandler) AdminImportDefault(c *gin.Context) {
 	err = database.DB.Transaction(func(tx *gorm.DB) error {
 		taxRepo := taxonomy.NewRepo(tx)
 		presetRepo := preset.NewRepo(tx)
-		libraryRepo := library.NewRepo(tx)
 
 		categoryIDByExternal := make(map[string]uint, len(seed.Categories))
 		for _, sc := range seed.Categories {
@@ -150,31 +134,6 @@ func (h *AdminHandler) AdminImportDefault(c *gin.Context) {
 			}
 			presetIDByExternal[sp.ExternalID] = m.ID
 			counts.ContentPresets++
-		}
-
-		for _, sv := range seed.Variants {
-			rid, ok := roleIDByExternal[sv.RoleExternalID]
-			if !ok || rid == 0 {
-				return gorm.ErrInvalidData
-			}
-			pid, ok := presetIDByExternal[sv.PresetExternalID]
-			if !ok || pid == 0 {
-				return gorm.ErrInvalidData
-			}
-			m := library.TemplateVariant{
-				Name:                     sv.Name,
-				LayoutTemplateExternalID: sv.LayoutTemplateExternalID,
-				PresetID:                 pid,
-				RoleID:                   rid,
-				Tags:                     sv.Tags,
-				UsageCount:               sv.UsageCount,
-				IsPremium:                sv.IsPremium,
-				IsActive:                 sv.IsActive,
-			}
-			if err := libraryRepo.UpsertTemplateVariant(tx, &m); err != nil {
-				return err
-			}
-			counts.TemplateVariants++
 		}
 		return nil
 	})
@@ -1159,10 +1118,6 @@ func DefaultSeed() (SeedData, error) {
 		},
 		Presets: []SeedContentPreset{
 			{ExternalID: "it_backend_java_zh", Name: "Java 开发（中文示例）", Language: "zh", RoleExternalID: "java", Tags: "Java,后端,中文", DataJSON: string(b), IsActive: true},
-		},
-		Variants: []SeedTemplateVariant{
-			{ExternalID: "mint_it_backend_java_zh", Name: "青色时间轴 - Java 开发", LayoutTemplateExternalID: "TemplateMintTimeline", PresetExternalID: "it_backend_java_zh", RoleExternalID: "java", Tags: "Java,后端,中文", UsageCount: 0, IsPremium: false, IsActive: true},
-			{ExternalID: "classic_it_backend_java_zh", Name: "经典专业版 - Java 开发", LayoutTemplateExternalID: "TemplateClassic", PresetExternalID: "it_backend_java_zh", RoleExternalID: "java", Tags: "Java,后端,中文", UsageCount: 0, IsPremium: false, IsActive: true},
 		},
 	}, nil
 }

@@ -3,17 +3,11 @@ import { API_BASE } from '../../config';
 import {
   AdminContentPreset,
   AdminJobRole,
-  AdminTemplateVariant,
   adminCreateContentPreset,
-  adminCreateTemplateVariant,
   adminDeleteContentPreset,
-  adminDeleteTemplateVariant,
-  adminGenerateTemplateVariants,
   adminListContentPresets,
   adminListJobRoles,
-  adminListTemplateVariants,
   adminPatchContentPreset,
-  adminPatchTemplateVariant,
   createTemplate,
   deleteTemplate,
   updateTemplate,
@@ -44,10 +38,10 @@ export const TemplatesPage: React.FC = () => {
   const { showToast } = useToast();
   const confirm = useConfirm();
 
-  type TabKey = 'templates' | 'presets' | 'variants';
+  type TabKey = 'templates' | 'presets';
   const [tab, setTab] = useState<TabKey>('templates');
   const tabNavRef = useRef<HTMLDivElement | null>(null);
-  const tabButtonRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({ templates: null, presets: null, variants: null });
+  const tabButtonRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({ templates: null, presets: null });
   const [tabIndicator, setTabIndicator] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
 
   const parseJSON = (s: string) => {
@@ -344,7 +338,6 @@ export const TemplatesPage: React.FC = () => {
     () => [
       { key: 'templates' as const, label: t('admin.templates.tab.templates'), Icon: LayoutGrid },
       { key: 'presets' as const, label: t('admin.templates.tab.presets'), Icon: FileText },
-      { key: 'variants' as const, label: t('admin.templates.tab.variants'), Icon: Layers },
     ],
     [t]
   );
@@ -380,7 +373,6 @@ export const TemplatesPage: React.FC = () => {
   };
 
   const [presets, setPresets] = useState<AdminContentPreset[]>([]);
-  const [variants, setVariants] = useState<AdminTemplateVariant[]>([]);
   const [catalogPage, setCatalogPage] = useState(1);
   const [catalogPageSize, setCatalogPageSize] = useState(20);
   const [catalogTotal, setCatalogTotal] = useState(0);
@@ -389,7 +381,6 @@ export const TemplatesPage: React.FC = () => {
   const [catalogSaving, setCatalogSaving] = useState(false);
   const [catalogShowForm, setCatalogShowForm] = useState(false);
   const [catalogEditingId, setCatalogEditingId] = useState<number | null>(null);
-  const [catalogFormKind, setCatalogFormKind] = useState<'preset' | 'variant'>('preset');
   const [catalogForm, setCatalogForm] = useState<any>({});
 
   const [allRoles, setAllRoles] = useState<AdminJobRole[]>([]);
@@ -493,15 +484,9 @@ export const TemplatesPage: React.FC = () => {
     if (tab === 'templates') return;
     setCatalogLoading(true);
     try {
-      if (tab === 'presets') {
-        const resp = await adminListContentPresets({ page: String(catalogPage), pageSize: String(catalogPageSize), q: catalogQ });
-        setPresets(resp.items || []);
-        setCatalogTotal(resp.total || 0);
-      } else {
-        const resp = await adminListTemplateVariants({ page: String(catalogPage), pageSize: String(catalogPageSize), q: catalogQ });
-        setVariants(resp.items || []);
-        setCatalogTotal(resp.total || 0);
-      }
+      const resp = await adminListContentPresets({ page: String(catalogPage), pageSize: String(catalogPageSize), q: catalogQ });
+      setPresets(resp.items || []);
+      setCatalogTotal(resp.total || 0);
     } catch {
       showToast(t('admin.msg.loadFailed'), 'error');
     } finally {
@@ -511,7 +496,6 @@ export const TemplatesPage: React.FC = () => {
 
   useEffect(() => {
     if (tab === 'templates') return;
-    setCatalogFormKind(tab === 'presets' ? 'preset' : 'variant');
     loadCatalog();
   }, [tab, catalogPage, catalogPageSize]);
 
@@ -524,23 +508,8 @@ export const TemplatesPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [catalogQ]);
 
-  const [generateForm, setGenerateForm] = useState({
-    roleId: '',
-    presetId: '',
-    layoutTemplateIds: [] as string[],
-    namePrefix: '',
-    tags: '',
-    isPremium: false,
-    isActive: true,
-    mode: 'skip' as 'skip' | 'update',
-  });
-  const [generateResult, setGenerateResult] = useState<any>(null);
-  const [generating, setGenerating] = useState(false);
-  const [variantCreateMode, setVariantCreateMode] = useState<'single' | 'batch'>('single');
-
   const openCreatePreset = () => {
     setCatalogEditingId(null);
-    setCatalogFormKind('preset');
     setCatalogForm({
       name: '',
       language: '',
@@ -552,25 +521,8 @@ export const TemplatesPage: React.FC = () => {
     setCatalogShowForm(true);
   };
 
-  const openCreateVariant = () => {
-    setCatalogEditingId(null);
-    setCatalogFormKind('variant');
-    setCatalogForm({
-      name: '',
-      layoutTemplateExternalId: '',
-      presetId: '',
-      roleId: '',
-      tags: [] as string[],
-      usageCount: 0,
-      isPremium: false,
-      isActive: true,
-    });
-    setCatalogShowForm(true);
-  };
-
   const openEditPreset = (row: AdminContentPreset) => {
     setCatalogEditingId(row.ID);
-    setCatalogFormKind('preset');
     setCatalogForm({
       name: row.Name,
       language: row.Language || 'zh',
@@ -582,133 +534,44 @@ export const TemplatesPage: React.FC = () => {
     setCatalogShowForm(true);
   };
 
-  const openEditVariant = (row: AdminTemplateVariant) => {
-    setCatalogEditingId(row.ID);
-    setCatalogFormKind('variant');
-    setCatalogForm({
-      name: row.Name,
-      layoutTemplateExternalId: row.LayoutTemplateExternalID,
-      presetId: String(row.PresetID),
-      roleId: String(row.RoleID),
-      tags: parseTags(row.Tags),
-      usageCount: row.UsageCount ?? 0,
-      isPremium: !!row.IsPremium,
-      isActive: !!row.IsActive,
-    });
-    setCatalogShowForm(true);
-  };
-
   const openCatalogCreate = () => {
-    if (tab === 'presets') {
-      openCreatePreset();
-      return;
-    }
-    setVariantCreateMode('single');
-    setGenerateResult(null);
-    openCreateVariant();
-  };
-
-  const runGenerateVariants = async () => {
-    if (!String(generateForm.roleId || '').trim() || !String(generateForm.presetId || '').trim() || (generateForm.layoutTemplateIds || []).length === 0) {
-      showToast(t('auth.error.fillAll'), 'error');
-      return;
-    }
-    if (generating) return;
-    setGenerating(true);
-    setGenerateResult(null);
-    try {
-      const res = await adminGenerateTemplateVariants({
-        roleId: Number(generateForm.roleId),
-        presetId: Number(generateForm.presetId),
-        layoutTemplateIds: generateForm.layoutTemplateIds,
-        namePrefix: generateForm.namePrefix,
-        tags: generateForm.tags,
-        isPremium: generateForm.isPremium,
-        isActive: generateForm.isActive,
-        mode: generateForm.mode,
-      });
-      setGenerateResult(res?.result || null);
-      showToast(t('admin.catalog.generate.done'), 'success');
-      await refreshCatalogRefs();
-      await loadCatalog();
-    } catch {
-      showToast(t('admin.catalog.generate.failed'), 'error');
-    } finally {
-      setGenerating(false);
-    }
+    openCreatePreset();
   };
 
   const saveCatalog = async () => {
     if (catalogSaving) return;
     setCatalogSaving(true);
     try {
-      if (catalogFormKind === 'preset') {
-        if (!String(catalogForm.name || '').trim() || !String(catalogForm.language || '').trim() || !Number(catalogForm.roleId || 0)) {
-          showToast(t('auth.error.fillAll'), 'error');
-          setCatalogSaving(false);
-          return;
-        }
+      if (!String(catalogForm.name || '').trim() || !String(catalogForm.language || '').trim() || !Number(catalogForm.roleId || 0)) {
+        showToast(t('auth.error.fillAll'), 'error');
+        setCatalogSaving(false);
+        return;
       }
-      if (catalogFormKind === 'variant') {
-        if (!String(catalogForm.name || '').trim() || !String(catalogForm.layoutTemplateExternalId || '').trim() || !Number(catalogForm.presetId || 0) || !Number(catalogForm.roleId || 0)) {
-          showToast(t('auth.error.fillAll'), 'error');
-          setCatalogSaving(false);
-          return;
-        }
-      }
-      if (catalogFormKind === 'preset') {
-        const dj = String(catalogForm.dataJson || '').trim();
-        if (dj && !parseJSON(dj)) {
-          showToast(t('admin.catalog.msg.invalidJson'), 'error');
-          setCatalogSaving(false);
-          return;
-        }
+      const dj = String(catalogForm.dataJson || '').trim();
+      if (dj && !parseJSON(dj)) {
+        showToast(t('admin.catalog.msg.invalidJson'), 'error');
+        setCatalogSaving(false);
+        return;
       }
 
       if (!catalogEditingId) {
-        if (catalogFormKind === 'preset') {
-          await adminCreateContentPreset({
-            name: String(catalogForm.name || '').trim(),
-            language: String(catalogForm.language || '').trim(),
-            roleId: Number(catalogForm.roleId),
-            tags: joinTags(catalogForm.tags),
-            dataJson: String(catalogForm.dataJson || ''),
-            isActive: !!catalogForm.isActive,
-          });
-        } else {
-          await adminCreateTemplateVariant({
-            name: String(catalogForm.name || '').trim(),
-            layoutTemplateExternalId: String(catalogForm.layoutTemplateExternalId || '').trim(),
-            presetId: Number(catalogForm.presetId),
-            roleId: Number(catalogForm.roleId),
-            tags: joinTags(catalogForm.tags),
-            usageCount: Number(catalogForm.usageCount || 0),
-            isPremium: !!catalogForm.isPremium,
-            isActive: !!catalogForm.isActive,
-          });
-        }
+        await adminCreateContentPreset({
+          name: String(catalogForm.name || '').trim(),
+          language: String(catalogForm.language || '').trim(),
+          roleId: Number(catalogForm.roleId),
+          tags: joinTags(catalogForm.tags),
+          dataJson: String(catalogForm.dataJson || ''),
+          isActive: !!catalogForm.isActive,
+        });
       } else {
-        if (catalogFormKind === 'preset') {
-          await adminPatchContentPreset(catalogEditingId, {
-            name: String(catalogForm.name || '').trim(),
-            language: String(catalogForm.language || '').trim(),
-            roleId: Number(catalogForm.roleId),
-            tags: joinTags(catalogForm.tags),
-            dataJson: String(catalogForm.dataJson || ''),
-            isActive: !!catalogForm.isActive,
-          });
-        } else {
-          await adminPatchTemplateVariant(catalogEditingId, {
-            name: String(catalogForm.name || '').trim(),
-            layoutTemplateExternalId: String(catalogForm.layoutTemplateExternalId || '').trim(),
-            presetId: Number(catalogForm.presetId),
-            roleId: Number(catalogForm.roleId),
-            tags: joinTags(catalogForm.tags),
-            usageCount: Number(catalogForm.usageCount || 0),
-            isPremium: !!catalogForm.isPremium,
-            isActive: !!catalogForm.isActive,
-          });
-        }
+        await adminPatchContentPreset(catalogEditingId, {
+          name: String(catalogForm.name || '').trim(),
+          language: String(catalogForm.language || '').trim(),
+          roleId: Number(catalogForm.roleId),
+          tags: joinTags(catalogForm.tags),
+          dataJson: String(catalogForm.dataJson || ''),
+          isActive: !!catalogForm.isActive,
+        });
       }
       setCatalogShowForm(false);
       showToast(t('admin.msg.saveSuccess'), 'success');
@@ -721,12 +584,11 @@ export const TemplatesPage: React.FC = () => {
     }
   };
 
-  const removeCatalogItem = async (kind: 'preset' | 'variant', id: number) => {
+  const removeCatalogItem = async (id: number) => {
     const ok = await confirm({ title: t('admin.confirm.delete'), message: t('admin.confirm.deleteMsg') });
     if (!ok) return;
     try {
-      if (kind === 'preset') await adminDeleteContentPreset(id);
-      else await adminDeleteTemplateVariant(id);
+      await adminDeleteContentPreset(id);
       showToast(t('admin.msg.deleteSuccess'), 'success');
       await refreshCatalogRefs();
       await loadCatalog();
@@ -736,260 +598,55 @@ export const TemplatesPage: React.FC = () => {
   };
 
   const renderCatalogFormFields = () => {
-    if (catalogFormKind === 'preset') {
-      return (
-        <div className="space-y-8">
-          <section className="space-y-4">
-            <SectionTitle>{t('admin.catalog.section.basic') || 'Basic'}</SectionTitle>
-            <div>
-              <Label required htmlFor="preset-name">{t('admin.form.name')}</Label>
-              <Input id="preset-name" value={catalogForm.name || ''} onChange={(e) => setCatalogForm((p: any) => ({ ...p, name: e.target.value }))} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label required htmlFor="preset-language">{t('admin.catalog.form.language')}</Label>
-                <Select
-                  value={catalogForm.language || ''}
-                  onChange={(e) => setCatalogForm((p: any) => ({ ...p, language: e.target.value }))}
-                  options={[
-                    { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                    { label: 'zh', value: 'zh' },
-                    { label: 'en', value: 'en' },
-                  ]}
-                />
-              </div>
-              <div>
-                <Label required htmlFor="preset-role">{t('admin.catalog.form.role')}</Label>
-                <Select
-                  value={catalogForm.roleId || ''}
-                  onChange={(e) => setCatalogForm((p: any) => ({ ...p, roleId: e.target.value }))}
-                  options={[
-                    { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                    ...allRoles.map((r) => ({ label: r.Name, value: String(r.ID) })),
-                  ]}
-                />
-              </div>
-            </div>
-            <Checkbox label={t('admin.catalog.form.active')} checked={!!catalogForm.isActive} onChange={(checked) => setCatalogForm((p: any) => ({ ...p, isActive: checked }))} />
-          </section>
-          <section className="space-y-4">
-            <SectionTitle>{t('admin.catalog.section.tags') || 'Tags'}</SectionTitle>
-            <div>
-              <Label>{t('admin.form.tags')}</Label>
-              <TagInput tags={parseTags(catalogForm.tags)} onChange={(tags) => setCatalogForm((p: any) => ({ ...p, tags }))} />
-            </div>
-          </section>
-          <section className="space-y-4">
-            <SectionTitle>{t('admin.catalog.section.data') || 'Data'}</SectionTitle>
-            <div>
-              <Label>{t('admin.catalog.form.dataJson')}</Label>
-              <PresetJsonEditor value={String(catalogForm.dataJson || '')} onChange={(val) => setCatalogForm((p: any) => ({ ...p, dataJson: val }))} />
-            </div>
-          </section>
-        </div>
-      );
-    }
-
     return (
       <div className="space-y-8">
-        {!catalogEditingId ? (
-          <nav className="inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
-            <button
-              type="button"
-              aria-pressed={variantCreateMode === 'single'}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${variantCreateMode === 'single' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/60'}`}
-              onClick={() => setVariantCreateMode('single')}
-            >
-              {t('admin.catalog.generate.modeSingle')}
-            </button>
-            <button
-              type="button"
-              aria-pressed={variantCreateMode === 'batch'}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${variantCreateMode === 'batch' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/60'}`}
-              onClick={() => setVariantCreateMode('batch')}
-            >
-              {t('admin.catalog.generate.title') || '批量生成'}
-            </button>
-          </nav>
-        ) : null}
-
-        {!catalogEditingId && variantCreateMode === 'batch' ? (
-          <div className="space-y-8">
-            <section className="space-y-4">
-              <SectionTitle>{t('admin.catalog.section.config') || 'Config'}</SectionTitle>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <Label required htmlFor="generate-role">{t('admin.catalog.form.role')}</Label>
-                  <Select
-                    value={generateForm.roleId}
-                    onChange={(e) => setGenerateForm((p) => ({ ...p, roleId: e.target.value }))}
-                    options={[{ label: t('admin.form.selectPlaceholder'), value: '' }, ...allRoles.map((r) => ({ label: r.Name, value: String(r.ID) }))]}
-                  />
-                </div>
-                <div>
-                  <Label required htmlFor="generate-preset">{t('admin.catalog.form.preset')}</Label>
-                  <Select
-                    value={generateForm.presetId}
-                    onChange={(e) => setGenerateForm((p) => ({ ...p, presetId: e.target.value }))}
-                    options={[{ label: t('admin.form.selectPlaceholder'), value: '' }, ...allPresets.map((p) => ({ label: p.Name, value: String(p.ID) }))]}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="generate-mode">{t('admin.catalog.generate.title')}</Label>
-                  <Select
-                    value={generateForm.mode}
-                    onChange={(e) => setGenerateForm((p) => ({ ...p, mode: e.target.value as any }))}
-                    options={[
-                      { label: t('admin.catalog.generate.modeSkip'), value: 'skip' },
-                      { label: t('admin.catalog.generate.modeUpdate'), value: 'update' },
-                    ]}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="generate-namePrefix">{t('admin.catalog.generate.namePrefix')}</Label>
-                  <Input id="generate-namePrefix" value={generateForm.namePrefix} onChange={(e) => setGenerateForm((p) => ({ ...p, namePrefix: e.target.value }))} />
-                </div>
-                <div>
-                  <Label htmlFor="generate-tags">{t('admin.form.tags')}</Label>
-                  <Input id="generate-tags" value={generateForm.tags} onChange={(e) => setGenerateForm((p) => ({ ...p, tags: e.target.value }))} />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <Label required right={<span>{generateForm.layoutTemplateIds.length}</span>}>
-                    {t('admin.catalog.form.template')}
-                  </Label>
-                  <MultiSelect
-                    options={allTemplates.map((tp) => ({ value: tp.id, label: tp.name }))}
-                    value={generateForm.layoutTemplateIds}
-                    onChange={(vals) => setGenerateForm((p) => ({ ...p, layoutTemplateIds: vals }))}
-                    placeholder={t('admin.form.selectPlaceholder')}
-                    searchPlaceholder={t('admin.form.multiSelect.searchPlaceholder')}
-                    selectAllLabel={t('admin.form.multiSelect.selectAll')}
-                    unselectAllLabel={t('admin.form.multiSelect.unselectAll')}
-                    availableSuffix={t('admin.form.multiSelect.availableSuffix')}
-                    noResultsLabel={(q) => `${t('admin.form.multiSelect.noResults')}: “${q}”`}
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-8">
-                <Checkbox label={t('admin.form.isPremium')} checked={!!generateForm.isPremium} onChange={(checked) => setGenerateForm((p) => ({ ...p, isPremium: checked }))} />
-                <Checkbox label={t('admin.catalog.form.active')} checked={!!generateForm.isActive} onChange={(checked) => setGenerateForm((p) => ({ ...p, isActive: checked }))} />
-              </div>
-            </section>
-
-            {generateResult ? (
-              <section className="space-y-4">
-                <SectionTitle>{t('admin.catalog.generate.result')}</SectionTitle>
-                <div className="text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-1">
-                  <span>
-                    {t('admin.catalog.generate.created')}: {generateResult.created}
-                  </span>
-                  <span>
-                    {t('admin.catalog.generate.updated')}: {generateResult.updated}
-                  </span>
-                  <span>
-                    {t('admin.catalog.generate.skipped')}: {generateResult.skipped}
-                  </span>
-                  <span>
-                    {t('admin.catalog.generate.failedCount')}: {generateResult.failed}
-                  </span>
-                </div>
-                <div className="overflow-x-auto no-scrollbar border border-slate-200 rounded-2xl bg-white">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="bg-slate-50/80 border-b border-slate-200">
-                        <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.form.template')}</th>
-                        <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.action')}</th>
-                        <th className="px-4 py-3 font-semibold text-gray-600">{t('admin.catalog.generate.error')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {(generateResult.items || []).map((it: any, idx: number) => (
-                        <tr key={idx}>
-                          <td className="px-4 py-3">
-                            <NameCell name={templateNameById.get(it.layoutTemplateId)} id={it.layoutTemplateId} />
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{it.action}</td>
-                          <td className="px-4 py-3 text-sm text-rose-600">{it.error || ''}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            ) : null}
+        <section className="space-y-4">
+          <SectionTitle>{t('admin.catalog.section.basic') || 'Basic'}</SectionTitle>
+          <div>
+            <Label required htmlFor="preset-name">{t('admin.form.name')}</Label>
+            <Input id="preset-name" value={catalogForm.name || ''} onChange={(e) => setCatalogForm((p: any) => ({ ...p, name: e.target.value }))} />
           </div>
-        ) : null}
-
-        {!catalogEditingId && variantCreateMode === 'batch' ? null : (
-          <>
-            <section className="space-y-4">
-              <SectionTitle>{t('admin.catalog.section.basic') || 'Basic'}</SectionTitle>
-              <div>
-                <Label required htmlFor="variant-name">{t('admin.form.name')}</Label>
-                <Input id="variant-name" value={catalogForm.name || ''} onChange={(e) => setCatalogForm((p: any) => ({ ...p, name: e.target.value }))} />
-              </div>
-            </section>
-            <section className="space-y-4">
-              <SectionTitle>{t('admin.catalog.section.config') || 'Config'}</SectionTitle>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <Label required htmlFor="variant-template">{t('admin.catalog.form.template')}</Label>
-                  <Select
-                    value={catalogForm.layoutTemplateExternalId || ''}
-                    onChange={(e) => setCatalogForm((p: any) => ({ ...p, layoutTemplateExternalId: e.target.value }))}
-                    options={[
-                      { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                      ...allTemplates.map((x) => ({ label: x.name, value: x.id })),
-                    ]}
-                  />
-                </div>
-                <div>
-                  <Label required htmlFor="variant-preset">{t('admin.catalog.form.preset')}</Label>
-                  <Select
-                    value={catalogForm.presetId || ''}
-                    onChange={(e) => setCatalogForm((p: any) => ({ ...p, presetId: e.target.value }))}
-                    options={[
-                      { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                      ...allPresets.map((x) => ({ label: x.Name, value: String(x.ID) })),
-                    ]}
-                  />
-                </div>
-                <div>
-                  <Label required htmlFor="variant-role">{t('admin.catalog.form.role')}</Label>
-                  <Select
-                    value={catalogForm.roleId || ''}
-                    onChange={(e) => setCatalogForm((p: any) => ({ ...p, roleId: e.target.value }))}
-                    options={[
-                      { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                      ...allRoles.map((x) => ({ label: x.Name, value: String(x.ID) })),
-                    ]}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="variant-usage">{t('admin.form.usageCount')}</Label>
-                  <Input id="variant-usage" type="number" value={String(catalogForm.usageCount ?? 0)} onChange={(e) => setCatalogForm((p: any) => ({ ...p, usageCount: Number(e.target.value) }))} />
-                </div>
-                <div className="flex items-end gap-8">
-                  <Checkbox label={t('admin.form.isPremium')} checked={!!catalogForm.isPremium} onChange={(checked) => setCatalogForm((p: any) => ({ ...p, isPremium: checked }))} />
-                  <Checkbox label={t('admin.catalog.form.active')} checked={!!catalogForm.isActive} onChange={(checked) => setCatalogForm((p: any) => ({ ...p, isActive: checked }))} />
-                </div>
-              </div>
-            </section>
-            <section className="space-y-4">
-              <SectionTitle>{t('admin.catalog.section.tags') || 'Tags'}</SectionTitle>
-              <div>
-                <Label>{t('admin.form.tags')}</Label>
-                <TagInput tags={parseTags(catalogForm.tags)} onChange={(tags) => setCatalogForm((p: any) => ({ ...p, tags }))} />
-              </div>
-            </section>
-          </>
-        )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label required htmlFor="preset-language">{t('admin.catalog.form.language')}</Label>
+              <Select
+                value={catalogForm.language || ''}
+                onChange={(e) => setCatalogForm((p: any) => ({ ...p, language: e.target.value }))}
+                options={[
+                  { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
+                  { label: 'zh', value: 'zh' },
+                  { label: 'en', value: 'en' },
+                ]}
+              />
+            </div>
+            <div>
+              <Label required htmlFor="preset-role">{t('admin.catalog.form.role')}</Label>
+              <Select
+                value={catalogForm.roleId || ''}
+                onChange={(e) => setCatalogForm((p: any) => ({ ...p, roleId: e.target.value }))}
+                options={[
+                  { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
+                  ...allRoles.map((r) => ({ label: r.Name, value: String(r.ID) })),
+                ]}
+              />
+            </div>
+          </div>
+          <Checkbox label={t('admin.catalog.form.active')} checked={!!catalogForm.isActive} onChange={(checked) => setCatalogForm((p: any) => ({ ...p, isActive: checked }))} />
+        </section>
+        <section className="space-y-4">
+          <SectionTitle>{t('admin.catalog.section.tags') || 'Tags'}</SectionTitle>
+          <div>
+            <Label>{t('admin.form.tags')}</Label>
+            <TagInput tags={parseTags(catalogForm.tags)} onChange={(tags) => setCatalogForm((p: any) => ({ ...p, tags }))} />
+          </div>
+        </section>
+        <section className="space-y-4">
+          <SectionTitle>{t('admin.catalog.section.data') || 'Data'}</SectionTitle>
+          <div>
+            <Label>{t('admin.catalog.form.dataJson')}</Label>
+            <PresetJsonEditor value={String(catalogForm.dataJson || '')} onChange={(val) => setCatalogForm((p: any) => ({ ...p, dataJson: val }))} />
+          </div>
+        </section>
       </div>
     );
   };
@@ -1053,7 +710,7 @@ export const TemplatesPage: React.FC = () => {
                 render: (p) => (
                   <div className="flex items-center justify-end gap-1">
                     <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditPreset(p)} kind="edit" />
-                    <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeCatalogItem('preset', p.ID)} kind="delete" />
+                    <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeCatalogItem(p.ID)} kind="delete" />
                   </div>
                 ),
               },
@@ -1062,76 +719,7 @@ export const TemplatesPage: React.FC = () => {
         </TableCard>
       );
     }
-    return (
-      <TableCard>
-        <DataTable<AdminTemplateVariant>
-          data={variants}
-          getRowKey={(row) => String(row.ID)}
-          emptyState={{
-            title: t('admin.catalog.empty') || '暂无数据',
-            description: t('admin.catalog.emptyDesc') || '点击右上角创建开始新增',
-          }}
-          columns={[
-            {
-              key: 'name',
-              label: t('admin.form.name'),
-              minWidth: 240,
-              render: (v) => (
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-gray-900 truncate whitespace-nowrap" title={v.Name}>
-                    {v.Name}
-                  </div>
-                </div>
-              ),
-            },
-            { key: 'template', label: t('admin.catalog.form.template'), minWidth: 240, render: (v) => <NameCell name={templateNameById.get(v.LayoutTemplateExternalID)} id={v.LayoutTemplateExternalID} /> },
-            { key: 'preset', label: t('admin.catalog.form.preset'), minWidth: 220, render: (v) => <NameCell name={presetNameById.get(v.PresetID)} id={String(v.PresetID)} /> },
-            { key: 'role', label: t('admin.catalog.form.role'), minWidth: 220, render: (v) => <NameCell name={roleNameById.get(v.RoleID)} id={String(v.RoleID)} /> },
-            {
-              key: 'tags',
-              label: t('admin.form.tags'),
-              minWidth: 240,
-              render: (v) => {
-                const tags = parseTags(v.Tags);
-                return (
-                  <div className="flex flex-wrap gap-1.5 py-1">
-                    {tags.slice(0, 6).map((tag) => (
-                      <span
-                        key={tag}
-                        title={tag}
-                        className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-600 font-medium hover:border-indigo-300 hover:bg-indigo-50 transition-colors max-w-[200px] truncate"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                    {tags.length > 6 ? (
-                      <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-500 font-medium">+{tags.length - 6}</span>
-                    ) : null}
-                  </div>
-                );
-              },
-            },
-            { key: 'usage', label: t('admin.form.usageCount'), minWidth: 110, nowrap: true, render: (v) => <span className="text-sm text-gray-600">{v.UsageCount ?? 0}</span> },
-            { key: 'isPremium', label: t('admin.form.isPremium'), minWidth: 110, nowrap: true, render: (v) => <BoolBadge value={!!v.IsPremium} yes={t('admin.catalog.yes') || 'Yes'} no={t('admin.catalog.no') || 'No'} /> },
-            { key: 'isActive', label: t('admin.catalog.form.active'), minWidth: 120, nowrap: true, render: (v) => <BoolBadge value={!!v.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} /> },
-            {
-              key: 'actions',
-              label: t('admin.columns.actions'),
-              minWidth: 140,
-              fixed: 'right',
-              headerClassName: 'text-right',
-              cellClassName: 'text-right',
-              render: (v) => (
-                <div className="flex items-center justify-end gap-1">
-                  <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditVariant(v)} kind="edit" />
-                  <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeCatalogItem('variant', v.ID)} kind="delete" />
-                </div>
-              ),
-            },
-          ]}
-        />
-      </TableCard>
-    );
+    return null;
   };
 
   return (
@@ -1374,72 +962,17 @@ export const TemplatesPage: React.FC = () => {
               <div className="flex flex-col max-h-[70vh]">
                 <div className="flex-1 overflow-y-auto no-scrollbar pr-1 space-y-5">{renderCatalogFormFields()}</div>
                 <div className="mt-4 pt-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3">
-                  <Button variant="outline" onClick={() => setCatalogShowForm(false)} disabled={catalogSaving || generating}>
+                  <Button variant="outline" onClick={() => setCatalogShowForm(false)} disabled={catalogSaving}>
                     {t('common.cancel') || 'Cancel'}
                   </Button>
-                  {catalogFormKind === 'variant' && !catalogEditingId && variantCreateMode === 'batch' ? (
-                    <Button onClick={runGenerateVariants} disabled={generating}>
-                      {t('admin.catalog.generate.submit')}
-                    </Button>
-                  ) : (
-                    <Button onClick={saveCatalog} disabled={catalogSaving}>
-                      {t('common.save') || 'Save'}
-                    </Button>
-                  )}
+                  <Button onClick={saveCatalog} disabled={catalogSaving}>
+                    {t('common.save') || 'Save'}
+                  </Button>
                 </div>
               </div>
             </Modal>
           </>
-        ) : (
-          <>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-gray-100">
-              <div className="relative w-full md:w-[360px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input value={catalogQ} onChange={(e) => setCatalogQ(e.target.value)} placeholder={t('admin.keyword')} className="pl-10" />
-              </div>
-              <div className="flex items-center gap-2 md:justify-end">
-                <Button
-                  onClick={() => {
-                    setCatalogPage(1);
-                    openCatalogCreate();
-                  }}
-                >
-                  {t('admin.actions.create') || 'Create'}
-                </Button>
-              </div>
-            </div>
-            <div className="mt-6">
-              <div className="overflow-x-auto no-scrollbar">{renderCatalogTable()}</div>
-              <CatalogPagination />
-            </div>
-
-            <Modal
-              isOpen={catalogShowForm}
-              onClose={() => setCatalogShowForm(false)}
-              title={catalogEditingId ? (t('common.edit') || 'Edit') : (t('admin.actions.create') || 'Create')}
-              size="lg"
-              compact
-            >
-              <div className="flex flex-col max-h-[70vh]">
-                <div className="flex-1 overflow-y-auto no-scrollbar pr-1 space-y-5">{renderCatalogFormFields()}</div>
-                <div className="mt-4 pt-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-3">
-                  <Button variant="outline" onClick={() => setCatalogShowForm(false)} disabled={catalogSaving || generating}>
-                    {t('common.cancel') || 'Cancel'}
-                  </Button>
-                  {catalogFormKind === 'variant' && !catalogEditingId && variantCreateMode === 'batch' ? (
-                    <Button onClick={runGenerateVariants} disabled={generating}>
-                      {t('admin.catalog.generate.submit')}
-                    </Button>
-                  ) : (
-                    <Button onClick={saveCatalog} disabled={catalogSaving}>
-                      {t('common.save') || 'Save'}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </Modal>
-          </>
-        )}
+        ) : null}
       </div>
     </div>
   );

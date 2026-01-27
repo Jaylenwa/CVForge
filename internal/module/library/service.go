@@ -8,6 +8,6 @@ func NewService() *Service {
 	return &Service{repo: DefaultRepo()}
 }
 
-func (s *Service) ListTemplateVariants(roleID uint, categoryID uint, q string) ([]TemplateVariant, error) {
-	return s.repo.ListTemplateVariants(roleID, categoryID, q)
+func (s *Service) ListTemplateLibraryItems(roleID uint) ([]TemplateLibraryItem, error) {
+	return s.repo.ListTemplateLibraryItems(roleID)
 }

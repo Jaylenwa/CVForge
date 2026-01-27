@@ -60,27 +60,6 @@ func (h *Handler) Create(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"id": res.ID})
 }
 
-func (h *Handler) CreateFromVariant(c *gin.Context) {
-	var req CreateFromVariantReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		logger.WithCtx(c).Error("resume.createFromVariant bad request", zap.Error(err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
-		return
-	}
-	uid, ok := middleware.UID(c)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-		return
-	}
-	res, err := h.svc.CreateResumeFromVariant(uid, req)
-	if err != nil {
-		logger.WithCtx(c).Error("resume.createFromVariant failed", zap.Error(err), zap.Uint("uid", uid))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"id": res.ID})
-}
-
 func (h *Handler) Get(c *gin.Context) {
 	id, parseErr := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
 	if parseErr != nil {

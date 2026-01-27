@@ -19,38 +19,30 @@ func NewHandler() *Handler {
 	return &Handler{svc: NewService()}
 }
 
-func (h *Handler) ListVariants(c *gin.Context) {
+func (h *Handler) ListTemplates(c *gin.Context) {
 	var roleID uint
 	if v := strings.TrimSpace(c.Query("roleId")); v != "" {
 		if n, err := strconv.ParseUint(v, 10, 64); err == nil {
 			roleID = uint(n)
 		}
 	}
-	var categoryID uint
-	if v := strings.TrimSpace(c.Query("categoryId")); v != "" {
-		if n, err := strconv.ParseUint(v, 10, 64); err == nil {
-			categoryID = uint(n)
-		}
-	}
-	q := c.Query("q")
-	items, err := h.svc.ListTemplateVariants(roleID, categoryID, q)
+	items, err := h.svc.ListTemplateLibraryItems(roleID)
 	if err != nil {
-		logger.WithCtx(c).Error("library.variants.list failed", zap.Error(err))
+		logger.WithCtx(c).Error("library.templates.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
-	out := make([]TemplateVariantDTO, 0, len(items))
-	for _, v := range items {
-		out = append(out, TemplateVariantDTO{
-			ID:                       v.ID,
-			Name:                     v.Name,
-			LayoutTemplateExternalID: v.LayoutTemplateExternalID,
-			PresetID:                 v.PresetID,
-			RoleID:                   v.RoleID,
-			Tags:                     splitTags(v.Tags),
-			UsageCount:               v.UsageCount,
-			IsPremium:                v.IsPremium,
-			IsActive:                 v.IsActive,
+	out := make([]TemplateLibraryItemDTO, 0, len(items))
+	for _, it := range items {
+		out = append(out, TemplateLibraryItemDTO{
+			TemplateExternalID: it.TemplateExternalID,
+			Name:               it.Name,
+			Tags:               splitTags(it.Tags),
+			UsageCount:         it.UsageCount,
+			GlobalUsageCount:   it.GlobalUsageCount,
+			PresetID:           it.PresetID,
+			RoleID:             it.RoleID,
+			IsPremium:          it.IsPremium,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"items": out})

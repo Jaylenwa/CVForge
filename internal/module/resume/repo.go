@@ -1,10 +1,13 @@
 package resume
 
 import (
+	"time"
+
 	"openresume/internal/infra/database"
 	"openresume/internal/models"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Repo struct {
@@ -82,4 +85,28 @@ func (r *Repo) IncrementTemplateUsage(externalID string) error {
 	return r.db.Model(&models.Template{}).
 		Where("external_id = ?", externalID).
 		UpdateColumn("usage_count", gorm.Expr("usage_count + ?", 1)).Error
+}
+
+func (r *Repo) IncrementRoleTemplateUsage(roleID uint, templateExternalID string) error {
+	if roleID == 0 || templateExternalID == "" {
+		return nil
+	}
+	now := time.Now()
+	row := models.RoleTemplateUsage{
+		RoleID:             roleID,
+		TemplateExternalID: templateExternalID,
+		UsageCount:         1,
+		LastUsedAt:         &now,
+	}
+	return r.db.Clauses(clause.OnConflict{
+		Columns: []clause.Column{
+			{Name: "role_id"},
+			{Name: "template_external_id"},
+		},
+		DoUpdates: clause.Assignments(map[string]any{
+			"usage_count":  gorm.Expr("usage_count + ?", 1),
+			"updated_at":   now,
+			"last_used_at": now,
+		}),
+	}).Create(&row).Error
 }

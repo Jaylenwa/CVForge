@@ -44,7 +44,7 @@ func Init() *gin.Engine {
 	api.GET("/taxonomy/categories", taxH.ListCategories)
 	api.GET("/taxonomy/roles", taxH.ListRoles)
 	libraryH := library.NewHandler()
-	api.GET("/library/variants", libraryH.ListVariants)
+	api.GET("/library/templates", libraryH.ListTemplates)
 	presetH := preset.NewHandler()
 	api.GET("/presets/:id", presetH.GetByID)
 
@@ -69,7 +69,6 @@ func Init() *gin.Engine {
 	resumeH := resume.NewHandler()
 	g.GET("/resumes", resumeH.List)
 	g.POST("/resumes", resumeH.Create)
-	g.POST("/resumes/from-variant", resumeH.CreateFromVariant)
 	g.GET("/resumes/:id", resumeH.Get)
 	g.PUT("/resumes/:id", resumeH.Update)
 	g.DELETE("/resumes/:id", resumeH.Delete)
@@ -130,13 +129,6 @@ func Init() *gin.Engine {
 	adm.POST("/presets", presetAdmH.AdminCreatePreset)
 	adm.PATCH("/presets/:id", presetAdmH.AdminPatchPreset)
 	adm.DELETE("/presets/:id", presetAdmH.AdminDeletePreset)
-
-	libraryAdmH := library.NewAdminHandler()
-	adm.GET("/library/variants", libraryAdmH.AdminListVariants)
-	adm.POST("/library/variants", libraryAdmH.AdminCreateVariant)
-	adm.PATCH("/library/variants/:id", libraryAdmH.AdminPatchVariant)
-	adm.DELETE("/library/variants/:id", libraryAdmH.AdminDeleteVariant)
-	adm.POST("/library/variants/generate", libraryAdmH.AdminGenerateVariants)
 
 	statsH := stats.NewHandler()
 	adm.GET("/stats", statsH.AdminStats)

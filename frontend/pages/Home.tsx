@@ -12,8 +12,7 @@ import { fetchTemplateCatalog } from '../services/catalogService';
 export const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [popularVariants, setPopularVariants] = React.useState<any[]>([]);
-  const [roleNameById, setRoleNameById] = React.useState<Record<string, string>>({});
+  const [popularTemplates, setPopularTemplates] = React.useState<any[]>([]);
   React.useEffect(() => {
     document.body.classList.add('no-scrollbar');
     document.documentElement.classList.add('no-scrollbar');
@@ -26,13 +25,9 @@ export const Home: React.FC = () => {
   React.useEffect(() => {
     (async () => {
       try {
-        const { jobRoles, variants } = await fetchTemplateCatalog();
-        const roleMap: Record<string, string> = {};
-        for (const r of jobRoles) {
-          if (r.id) roleMap[r.id] = r.name || String(r.id);
-        }
-        setRoleNameById(roleMap);
-        setPopularVariants(variants.slice(0, 4));
+        const { templates } = await fetchTemplateCatalog();
+        const list = (templates || []).slice().sort((a: any, b: any) => (b.usageCount ?? 0) - (a.usageCount ?? 0));
+        setPopularTemplates(list.slice(0, 4));
       } catch {}
     })();
   }, []);
@@ -43,7 +38,7 @@ export const Home: React.FC = () => {
     { key: 'home.quick.creative', icon: <PenTool size={20} />, query: 'Creative' },
   ];
 
-  const HomeTemplateCard: React.FC<{ variant: any; onUse: () => void; onPreview: () => void }> = ({ variant, onUse, onPreview }) => {
+  const HomeTemplateCard: React.FC<{ template: any; onUse: () => void; onPreview: () => void }> = ({ template, onUse, onPreview }) => {
     const containerRef = React.useRef<HTMLDivElement | null>(null);
     const rafRef = React.useRef<number | null>(null);
     const roRef = React.useRef<ResizeObserver | null>(null);
@@ -112,7 +107,7 @@ export const Home: React.FC = () => {
                 className="relative select-none pointer-events-none shadow-sm bg-white"
               >
                 <ResumeArtboard
-                  data={{ ...INITIAL_RESUME, templateId: variant.layoutTemplateId }}
+                  data={{ ...INITIAL_RESUME, templateId: template.templateExternalId }}
                   scale={scale}
                   disableShadow={true}
                   showPageHint={false}
@@ -131,10 +126,9 @@ export const Home: React.FC = () => {
           </div>
         </div>
         <div className="p-3">
-          <h3 className="font-medium text-gray-900 truncate">{variant.name}</h3>
+          <h3 className="font-medium text-gray-900 truncate">{template.name}</h3>
           <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
-            <span className="px-2 py-0.5 bg-gray-100 rounded">{roleNameById[variant.roleId] || variant.roleId}</span>
-            {variant.isPremium && <span className="text-yellow-600 font-bold">{t('home.badge.premium')}</span>}
+            {template.isPremium && <span className="text-yellow-600 font-bold">{t('home.badge.premium')}</span>}
           </div>
         </div>
       </div>
@@ -207,19 +201,19 @@ export const Home: React.FC = () => {
                  </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {popularVariants.map(variant => (
+                {popularTemplates.map(template => (
                   <HomeTemplateCard
-                      key={variant.id}
-                      variant={variant}
+                      key={template.templateExternalId}
+                      template={template}
                       onUse={() =>
                         window.open(
-                          `${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${variant.layoutTemplateId}&presetId=${variant.presetId}&variantId=${variant.id}&returnTo=${encodeURIComponent(AppRoute.Home)}`,
+                          `${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?template=${template.templateExternalId}&returnTo=${encodeURIComponent(AppRoute.Home)}`,
                           '_blank'
                         )
                       }
                       onPreview={() =>
                         window.open(
-                          `${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${variant.layoutTemplateId}&presetId=${variant.presetId}&variantId=${variant.id}`,
+                          `${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${template.templateExternalId}`,
                           '_blank'
                         )
                       }

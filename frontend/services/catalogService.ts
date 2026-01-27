@@ -15,14 +15,14 @@ export type JobRole = {
   orderNum?: number;
 };
 
-export type TemplateVariant = {
-  id: number;
+export type TemplateLibraryItem = {
+  templateExternalId: string;
   name: string;
-  layoutTemplateId: string;
-  presetId: number;
-  roleId: number;
   tags?: string[];
   usageCount?: number;
+  globalUsageCount?: number;
+  presetId?: number;
+  roleId?: number;
   isPremium?: boolean;
 };
 
@@ -54,10 +54,10 @@ const normalizeTags = (tags: unknown): string[] | undefined => {
 };
 
 export const fetchTemplateCatalog = async () => {
-  const [catsJson, rolesJson, varsJson] = await Promise.all([
+  const [catsJson, rolesJson, templatesJson] = await Promise.all([
     fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/categories`),
     fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/roles`),
-    fetchJson<{ items: any[] }>(`${API_BASE}/library/variants`)
+    fetchJson<{ items: any[] }>(`${API_BASE}/library/templates`)
   ]);
 
   const jobCategories: JobCategory[] = (catsJson.items || []).map((c: any) => ({
@@ -75,18 +75,18 @@ export const fetchTemplateCatalog = async () => {
     orderNum: r.orderNum ?? 0
   }));
 
-  const variants: TemplateVariant[] = (varsJson.items || []).map((v: any) => ({
-    id: v.id,
-    name: v.name,
-    layoutTemplateId: v.layoutTemplateExternalId,
-    presetId: v.presetId,
-    roleId: v.roleId,
-    tags: normalizeTags(v.tags),
-    usageCount: v.usageCount ?? 0,
-    isPremium: !!v.isPremium
+  const templates: TemplateLibraryItem[] = (templatesJson.items || []).map((t: any) => ({
+    templateExternalId: t.templateExternalId,
+    name: t.name,
+    tags: normalizeTags(t.tags),
+    usageCount: t.usageCount ?? 0,
+    globalUsageCount: t.globalUsageCount ?? 0,
+    presetId: t.presetId || undefined,
+    roleId: t.roleId || undefined,
+    isPremium: !!t.isPremium
   }));
 
-  return { jobCategories, jobRoles, variants };
+  return { jobCategories, jobRoles, templates };
 };
 
 export const listJobRoles = async (params?: { categoryId?: number; q?: string }) => {
@@ -104,23 +104,21 @@ export const listJobRoles = async (params?: { categoryId?: number; q?: string })
   return jobRoles;
 };
 
-export const listTemplateVariants = async (params?: { roleId?: number; categoryId?: number; q?: string }) => {
+export const listTemplateLibraryItems = async (params?: { roleId?: number }) => {
   const qs = new URLSearchParams();
   if (params?.roleId) qs.set('roleId', String(params.roleId));
-  if (params?.categoryId) qs.set('categoryId', String(params.categoryId));
-  if (params?.q) qs.set('q', params.q);
-  const json = await fetchJson<{ items: any[] }>(`${API_BASE}/library/variants?${qs.toString()}`);
-  const variants: TemplateVariant[] = (json.items || []).map((v: any) => ({
-    id: v.id,
-    name: v.name,
-    layoutTemplateId: v.layoutTemplateExternalId,
-    presetId: v.presetId,
-    roleId: v.roleId,
-    tags: normalizeTags(v.tags),
-    usageCount: v.usageCount ?? 0,
-    isPremium: !!v.isPremium
+  const json = await fetchJson<{ items: any[] }>(`${API_BASE}/library/templates?${qs.toString()}`);
+  const templates: TemplateLibraryItem[] = (json.items || []).map((t: any) => ({
+    templateExternalId: t.templateExternalId,
+    name: t.name,
+    tags: normalizeTags(t.tags),
+    usageCount: t.usageCount ?? 0,
+    globalUsageCount: t.globalUsageCount ?? 0,
+    presetId: t.presetId || undefined,
+    roleId: t.roleId || undefined,
+    isPremium: !!t.isPremium
   }));
-  return variants;
+  return templates;
 };
 
 export const fetchContentPresetData = async (presetId: number, signal?: AbortSignal): Promise<any | null> => {

@@ -2,15 +2,11 @@ package resume
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"time"
 
 	"openresume/internal/common"
 	"openresume/internal/infra/cache"
 	"openresume/internal/middleware"
-	"openresume/internal/module/library"
-	"openresume/internal/module/preset"
 
 	"github.com/gin-gonic/gin"
 	"github.com/microcosm-cc/bluemonday"
@@ -28,7 +24,6 @@ func NewService() *Service {
 type ResumeReq struct {
 	Title      string            `json:"Title"`
 	TemplateID string            `json:"TemplateID"`
-	VariantID  *uint             `json:"VariantID"`
 	PresetID   *uint             `json:"PresetID"`
 	RoleID     *uint             `json:"RoleID"`
 	Language   string            `json:"Language"`
@@ -64,113 +59,15 @@ func (s *Service) ListUserResumes(uid uint) ([]Resume, error) {
 func (s *Service) CreateResume(uid uint, req ResumeReq) (Resume, error) {
 	res := s.toModel(uid, req)
 	err := s.repo.Create(&res)
-	if err == nil && req.VariantID != nil && *req.VariantID != 0 {
-		_ = library.DefaultRepo().IncrementTemplateVariantUsage(*req.VariantID)
-	} else if err == nil && req.TemplateID != "" {
-		_ = s.repo.IncrementTemplateUsage(req.TemplateID)
-		_ = cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
-	}
-	return res, err
-}
-
-type CreateFromVariantReq struct {
-	VariantID uint   `json:"VariantID"`
-	Language  string `json:"Language"`
-	Title     string `json:"Title"`
-}
-
-func (s *Service) CreateResumeFromVariant(uid uint, req CreateFromVariantReq) (Resume, error) {
-	if req.VariantID == 0 {
-		return Resume{}, errors.New("variant required")
-	}
-	libRepo := library.DefaultRepo()
-	variant, err := libRepo.GetTemplateVariantByID(req.VariantID)
-	if err != nil {
-		return Resume{}, err
-	}
-	pRepo := preset.DefaultRepo()
-	presetItem, err := pRepo.GetByIDActive(variant.PresetID)
-	if err != nil {
-		return Resume{}, err
-	}
-
-	type presetPayload struct {
-		Title    string            `json:"title"`
-		Language string            `json:"language"`
-		Personal ResumePersonalDTO `json:"Personal"`
-		Theme    ResumeThemeDTO    `json:"Theme"`
-		Sections []struct {
-			ID        string `json:"id"`
-			Type      string `json:"type"`
-			Title     string `json:"title"`
-			IsVisible bool   `json:"isVisible"`
-			Items     []struct {
-				ID          string `json:"id"`
-				Title       string `json:"title"`
-				Subtitle    string `json:"subtitle"`
-				Major       string `json:"major"`
-				Degree      string `json:"degree"`
-				TimeStart   string `json:"timeStart"`
-				TimeEnd     string `json:"timeEnd"`
-				Today       bool   `json:"today"`
-				Description string `json:"description"`
-			} `json:"items"`
-		} `json:"sections"`
-	}
-
-	payload := presetPayload{}
-	if presetItem.DataJSON != "" {
-		_ = json.Unmarshal([]byte(presetItem.DataJSON), &payload)
-	}
-
-	lang := req.Language
-	if lang == "" {
-		lang = payload.Language
-	}
-	if lang == "" {
-		lang = "zh"
-	}
-
-	title := req.Title
-	if title == "" {
-		title = payload.Title
-	}
-	if title == "" {
-		title = variant.Name
-	}
-
-	out := ResumeReq{
-		Title:      title,
-		TemplateID: variant.LayoutTemplateExternalID,
-		VariantID:  &variant.ID,
-		PresetID:   &presetItem.ID,
-		RoleID:     &variant.RoleID,
-		Language:   lang,
-		Personal:   payload.Personal,
-		Theme:      payload.Theme,
-	}
-	for _, sct := range payload.Sections {
-		sec := SectionReq{
-			Type:      sct.Type,
-			Title:     sct.Title,
-			IsVisible: sct.IsVisible,
+	if err == nil {
+		if req.TemplateID != "" {
+			_ = s.repo.IncrementTemplateUsage(req.TemplateID)
+			_ = cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll)).Err()
 		}
-		for _, it := range sct.Items {
-			sec.Items = append(sec.Items, ItemReq{
-				Title:       it.Title,
-				Subtitle:    it.Subtitle,
-				Major:       it.Major,
-				Degree:      it.Degree,
-				TimeStart:   it.TimeStart,
-				TimeEnd:     it.TimeEnd,
-				Today:       it.Today,
-				Description: it.Description,
-			})
+		if req.RoleID != nil && *req.RoleID != 0 && req.TemplateID != "" {
+			_ = s.repo.IncrementRoleTemplateUsage(*req.RoleID, req.TemplateID)
 		}
-		out.Sections = append(out.Sections, sec)
 	}
-
-	res, err := s.CreateResume(uid, out)
 	return res, err
 }
 
@@ -233,7 +130,6 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 		UserID:       uid,
 		Title:        req.Title,
 		TemplateID:   req.TemplateID,
-		VariantID:    req.VariantID,
 		PresetID:     req.PresetID,
 		RoleID:       req.RoleID,
 		Language:     req.Language,

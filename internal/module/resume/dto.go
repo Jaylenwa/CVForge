@@ -6,7 +6,6 @@ type ResumeDTO struct {
 	ID           uint              `json:"ID"`
 	Title        string            `json:"Title"`
 	TemplateID   string            `json:"TemplateID"`
-	VariantID    *uint             `json:"VariantID"`
 	PresetID     *uint             `json:"PresetID"`
 	RoleID       *uint             `json:"RoleID"`
 	Language     string            `json:"Language"`
@@ -65,7 +64,6 @@ func ToDTO(r Resume) ResumeDTO {
 		ID:           r.ID,
 		Title:        r.Title,
 		TemplateID:   r.TemplateID,
-		VariantID:    r.VariantID,
 		PresetID:     r.PresetID,
 		RoleID:       r.RoleID,
 		Language:     r.Language,

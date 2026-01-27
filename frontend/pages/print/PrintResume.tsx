@@ -16,7 +16,6 @@ export const PrintResume: React.FC = () => {
     const id = searchParams.get('id');
     const template = searchParams.get('template');
     const presetId = searchParams.get('presetId') || '';
-    searchParams.get('variantId');
 
     if (template && !id) {
       let cancelled = false;

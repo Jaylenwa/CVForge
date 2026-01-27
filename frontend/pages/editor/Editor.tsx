@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { DownloadModal } from '../../components/ui/DownloadModal';
 import { INITIAL_RESUME } from '../../services/mockData';
-import { fetchContentPresetData, listTemplateVariants } from '../../services/catalogService';
+import { fetchContentPresetData, listTemplateLibraryItems } from '../../services/catalogService';
 import { ResumeData, AppRoute, Language } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useToast } from '../../components/ui/Toast';
@@ -48,12 +48,11 @@ export const Editor: React.FC = () => {
     (async () => {
       try {
         const ids = new Set<string>();
-        const variants = await listTemplateVariants();
-        for (const v of variants) {
-          if (v.layoutTemplateId) ids.add(String(v.layoutTemplateId));
+        const items = await listTemplateLibraryItems();
+        for (const it of items) {
+          if (it.templateExternalId) ids.add(String(it.templateExternalId));
         }
-        const items = Array.from(ids).map((id) => ({ id }));
-        setTemplates(items);
+        setTemplates(Array.from(ids).map((id) => ({ id })));
       } catch {}
     })();
     const resumeId = searchParams.get('id');
@@ -106,7 +105,7 @@ export const Editor: React.FC = () => {
         }
         hasCreatedFromTemplate.current = true;
         const presetId = searchParams.get('presetId') || '';
-        const variantId = searchParams.get('variantId') || '';
+        const roleId = searchParams.get('roleId') || '';
         const token = localStorage.getItem('token');
         const baseSeed: ResumeData = { ...(INITIAL_RESUME as any) };
         const resolveSeed = () => {
@@ -120,59 +119,11 @@ export const Editor: React.FC = () => {
           const seedPersonal = seed.Personal || INITIAL_RESUME.Personal || ({} as any);
           const seedTheme = seed.Theme || INITIAL_RESUME.Theme || ({} as any);
           const seedSections = Array.isArray(seed.sections) ? seed.sections : INITIAL_RESUME.sections;
-          if (variantId) {
-            fetch(`${API_BASE}/resumes/from-variant`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ VariantID: Number(variantId), Language: language, Title: seedTitle }) })
-              .then(r => r.ok ? r.json() : Promise.reject(new Error('bad')))
-              .then(({ id }) => {
-                const nextTheme = { ...(INITIAL_RESUME.Theme || {}), ...(seedTheme || {}) };
-                setResumeData({ ...(INITIAL_RESUME as any), ...(seed as any), templateId, id, language, Theme: nextTheme });
-                const rt = searchParams.get('returnTo');
-                window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}${rt ? `&returnTo=${encodeURIComponent(rt)}` : ''}`);
-                setLoading(false);
-              })
-              .catch(() => {
-                const payload = {
-                  Title: seedTitle,
-                  TemplateID: templateId,
-                  VariantID: Number(variantId),
-                  PresetID: presetId ? Number(presetId) : undefined,
-                  Language: language,
-                  Personal: seedPersonal,
-                  Theme: seedTheme,
-                  Sections: seedSections.map((s: any, si: number) => ({
-                    Type: s.type,
-                    Title: s.title,
-                    IsVisible: s.isVisible,
-                    OrderNum: si,
-                    Items: (s.items || []).map((i: any, ii: number) => ({
-                      Title: i.title || '',
-                      Subtitle: i.subtitle || '',
-                      Major: i.major || '',
-                      Degree: i.degree || '',
-                      TimeStart: i.timeStart || '',
-                      TimeEnd: i.today ? '' : (i.timeEnd || ''),
-                      Today: !!i.today,
-                      Description: i.description || '',
-                      OrderNum: ii
-                    }))
-                  }))
-                };
-                fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
-                  .then(r => r.json())
-                  .then(({ id }) => {
-                    const nextTheme = { ...(INITIAL_RESUME.Theme || {}), ...(seedTheme || {}) };
-                    setResumeData({ ...(INITIAL_RESUME as any), ...(seed as any), templateId, id, language, Theme: nextTheme });
-                    const rt = searchParams.get('returnTo');
-                    window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}${rt ? `&returnTo=${encodeURIComponent(rt)}` : ''}`);
-                    setLoading(false);
-                  });
-              });
-            return;
-          }
           const payload = {
             Title: seedTitle,
             TemplateID: templateId,
             PresetID: presetId ? Number(presetId) : undefined,
+            RoleID: roleId ? Number(roleId) : undefined,
             Language: language,
             Personal: seedPersonal,
             Theme: seedTheme,
@@ -349,7 +300,6 @@ export const Editor: React.FC = () => {
     const payload = {
       Title: resumeData.title,
       TemplateID: resumeData.templateId,
-      VariantID: (resumeData as any).variantId || undefined,
       PresetID: (resumeData as any).presetId || undefined,
       RoleID: (resumeData as any).roleId || undefined,
       Language: resumeData.language || language,
@@ -384,7 +334,6 @@ export const Editor: React.FC = () => {
     const payload = {
       Title: resumeData.title,
       TemplateID: resumeData.templateId,
-      VariantID: (resumeData as any).variantId || undefined,
       PresetID: (resumeData as any).presetId || undefined,
       RoleID: (resumeData as any).roleId || undefined,
       Language: lang,

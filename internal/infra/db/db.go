@@ -57,7 +57,6 @@ func autoMigrate() error {
 		&models.JobCategory{},
 		&models.JobRole{},
 		&models.ContentPreset{},
-		&models.TemplateVariant{},
 		&models.Resume{},
 		&models.ResumePersonal{},
 		&models.ResumeTheme{},

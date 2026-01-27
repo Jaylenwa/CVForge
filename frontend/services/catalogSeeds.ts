@@ -24,17 +24,6 @@ export type ContentPresetSeed = {
   tags?: string[];
 };
 
-export type TemplateVariantSeed = {
-  id: string;
-  name: string;
-  layoutTemplateId: string;
-  presetId: string;
-  roleId: string;
-  tags?: string[];
-  usageCount?: number;
-  isPremium?: boolean;
-};
-
 export const JOB_CATEGORIES_SEED: JobCategorySeed[] = [
   { id: 'it', name: 'IT | 互联网', orderNum: 10 },
   { id: 'it_backend', name: '后端开发/程序员', parentId: 'it', orderNum: 10 },
@@ -127,28 +116,5 @@ export const CONTENT_PRESETS_SEED: ContentPresetSeed[] = [
         },
       ],
     },
-  },
-];
-
-export const TEMPLATE_VARIANTS_SEED: TemplateVariantSeed[] = [
-  {
-    id: 'mint_it_backend_java_zh',
-    name: '青色时间轴 - Java 开发',
-    layoutTemplateId: 'TemplateMintTimeline',
-    presetId: 'it_backend_java_zh',
-    roleId: 'java',
-    tags: ['Java', '后端', '中文'],
-    usageCount: 0,
-    isPremium: false,
-  },
-  {
-    id: 'classic_it_backend_java_zh',
-    name: '经典专业版 - Java 开发',
-    layoutTemplateId: 'TemplateClassic',
-    presetId: 'it_backend_java_zh',
-    roleId: 'java',
-    tags: ['Java', '后端', '中文'],
-    usageCount: 0,
-    isPremium: false,
   },
 ];

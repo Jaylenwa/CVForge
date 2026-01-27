@@ -81,29 +81,6 @@ export interface AdminCreateContentPresetReq {
   isActive?: boolean;
 }
 
-export interface AdminTemplateVariant {
-  ID: number;
-  Name: string;
-  LayoutTemplateExternalID: string;
-  PresetID: number;
-  RoleID: number;
-  Tags?: string;
-  UsageCount?: number;
-  IsPremium?: boolean;
-  IsActive: boolean;
-}
-
-export interface AdminCreateTemplateVariantReq {
-  name: string;
-  layoutTemplateExternalId: string;
-  presetId: number;
-  roleId: number;
-  tags?: string;
-  usageCount?: number;
-  isPremium?: boolean;
-  isActive?: boolean;
-}
-
 export const adminListJobCategories = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
   const res = await fetch(`${API_BASE}/admin/taxonomy/categories?${q}`, { headers: authHeader() });
@@ -168,34 +145,6 @@ export const adminPatchContentPreset = async (id: number, body: any) => {
 export const adminDeleteContentPreset = async (id: number) => {
   const res = await fetch(`${API_BASE}/admin/presets/${id}`, { method: 'DELETE', headers: authHeader() });
   if (!res.ok) throw new Error('failed');
-};
-
-export const adminListTemplateVariants = async (params: Record<string, string>) => {
-  const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/library/variants?${q}`, { headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-  return res.json() as Promise<PageResp<AdminTemplateVariant>>;
-};
-
-export const adminCreateTemplateVariant = async (body: AdminCreateTemplateVariantReq) => {
-  const res = await fetch(`${API_BASE}/admin/library/variants`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('failed');
-};
-
-export const adminPatchTemplateVariant = async (id: number, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/library/variants/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('failed');
-};
-
-export const adminDeleteTemplateVariant = async (id: number) => {
-  const res = await fetch(`${API_BASE}/admin/library/variants/${id}`, { method: 'DELETE', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-};
-
-export const adminGenerateTemplateVariants = async (body: any) => {
-  const res = await fetch(`${API_BASE}/admin/library/variants/generate`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
 };
 
 // Users
