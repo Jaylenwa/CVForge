@@ -24,6 +24,9 @@ func (r *Repo) ListTemplateLibraryItems(roleID uint) ([]TemplateLibraryItem, err
 			Order("id asc").
 			Limit(1).
 			Scan(&presetID).Error
+		if presetID == 0 {
+			return []TemplateLibraryItem{}, nil
+		}
 	}
 
 	type row struct {

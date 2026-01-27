@@ -32,6 +32,7 @@ export const JobSidebar: React.FC<{
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [flyoutStyle, setFlyoutStyle] = useState<React.CSSProperties | undefined>(undefined);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const hoverCloseTimerRef = useRef<number | null>(null);
 
   const computeFlyoutStyleForCategory = useCallback((categoryId: string) => {
     const btn = buttonRefs.current[categoryId];
@@ -40,6 +41,7 @@ export const JobSidebar: React.FC<{
 
     const viewportPadding = 16;
     const menuWidth = 640;
+    const minMenuHeight = 240;
     const leftGap = 16;
     const desiredLeft = rect.right + leftGap;
     const left = Math.min(
@@ -49,8 +51,11 @@ export const JobSidebar: React.FC<{
 
     const topOffset = 40;
     const desiredTop = rect.top - topOffset;
-    const top = Math.max(viewportPadding, desiredTop);
-    const maxHeight = Math.max(240, window.innerHeight - viewportPadding * 2);
+    const top = Math.max(
+      viewportPadding,
+      Math.min(desiredTop, window.innerHeight - viewportPadding - minMenuHeight)
+    );
+    const maxHeight = Math.max(minMenuHeight, window.innerHeight - viewportPadding - top);
 
     return {
       position: 'fixed',
@@ -59,8 +64,35 @@ export const JobSidebar: React.FC<{
       width: menuWidth,
       maxHeight,
       overflowY: 'auto',
+      overscrollBehavior: 'contain',
     } as React.CSSProperties;
   }, []);
+
+  const cancelCloseTimer = useCallback(() => {
+    if (hoverCloseTimerRef.current) {
+      window.clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleClose = useCallback(() => {
+    cancelCloseTimer();
+    hoverCloseTimerRef.current = window.setTimeout(() => {
+      setHoveredCategory(null);
+      setFlyoutStyle(undefined);
+      hoverCloseTimerRef.current = null;
+    }, 120);
+  }, [cancelCloseTimer]);
+
+  const handleSelectRole = useCallback(
+    (roleId: string) => {
+      cancelCloseTimer();
+      onSelectRole(roleId);
+      setHoveredCategory(null);
+      setFlyoutStyle(undefined);
+    },
+    [cancelCloseTimer, onSelectRole]
+  );
 
   const updateFlyoutStyle = useCallback(
     (categoryId?: string) => {
@@ -150,13 +182,11 @@ export const JobSidebar: React.FC<{
                 key={category.id}
                 className="relative group"
                 onMouseEnter={() => {
+                  cancelCloseTimer();
                   updateFlyoutStyle(category.id);
                   setHoveredCategory(category.id);
                 }}
-                onMouseLeave={() => {
-                  setHoveredCategory(null);
-                  setFlyoutStyle(undefined);
-                }}
+                onMouseLeave={scheduleClose}
               >
                 <button
                   ref={(el) => {
@@ -187,8 +217,10 @@ export const JobSidebar: React.FC<{
                   isVisible={showFlyout}
                   title={category.name}
                   groups={flyoutGroups}
-                  onSelectRole={onSelectRole}
+                  onSelectRole={handleSelectRole}
                   style={showFlyout ? flyoutStyle : undefined}
+                  onMouseEnter={cancelCloseTimer}
+                  onMouseLeave={scheduleClose}
                 />
               </div>
             );

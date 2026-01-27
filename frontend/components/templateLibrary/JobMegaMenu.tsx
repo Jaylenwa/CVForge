@@ -12,7 +12,9 @@ export const JobMegaMenu: React.FC<{
   groups?: JobMegaMenuGroup[];
   onSelectRole: (roleId: string) => void;
   style?: React.CSSProperties;
-}> = ({ isVisible, title, roles, groups, onSelectRole, style }) => {
+  onMouseEnter?: React.MouseEventHandler<HTMLDivElement>;
+  onMouseLeave?: React.MouseEventHandler<HTMLDivElement>;
+}> = ({ isVisible, title, roles, groups, onSelectRole, style, onMouseEnter, onMouseLeave }) => {
   const normalizedGroups: JobMegaMenuGroup[] =
     groups && groups.length
       ? groups
@@ -33,7 +35,9 @@ export const JobMegaMenu: React.FC<{
           exit={{ opacity: 0, x: -8, y: -2 }}
           transition={{ duration: 0.16, ease: 'easeOut' }}
           style={style}
-          className={`${style ? 'fixed' : 'absolute left-full -top-10 ml-4'} w-[640px] min-h-[420px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-40 p-8`}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          className={`${style ? 'fixed' : 'absolute left-full -top-10 ml-4 min-h-[420px]'} w-[640px] bg-white rounded-2xl shadow-2xl border border-slate-100 z-40 p-8 no-scrollbar`}
         >
           <div className="space-y-6">
             {title ? (
