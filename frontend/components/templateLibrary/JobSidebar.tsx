@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Briefcase, Code, Palette, Settings, User, ChevronRight, ListFilter } from 'lucide-react';
 import { JobMegaMenu, JobMegaMenuGroup, JobMegaMenuRole } from './JobMegaMenu';
 
@@ -30,6 +30,63 @@ export const JobSidebar: React.FC<{
   onSelectRole: (roleId: string) => void;
 }> = ({ title, categories, roles, selectedCategoryId, onSelectCategory, onSelectRole }) => {
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [flyoutStyle, setFlyoutStyle] = useState<React.CSSProperties | undefined>(undefined);
+  const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  const computeFlyoutStyleForCategory = useCallback((categoryId: string) => {
+    const btn = buttonRefs.current[categoryId];
+    const rect = btn?.getBoundingClientRect();
+    if (!rect) return undefined;
+
+    const viewportPadding = 16;
+    const menuWidth = 640;
+    const leftGap = 16;
+    const desiredLeft = rect.right + leftGap;
+    const left = Math.min(
+      Math.max(viewportPadding, desiredLeft),
+      Math.max(viewportPadding, window.innerWidth - viewportPadding - menuWidth)
+    );
+
+    const topOffset = 40;
+    const desiredTop = rect.top - topOffset;
+    const top = Math.max(viewportPadding, desiredTop);
+    const maxHeight = Math.max(240, window.innerHeight - viewportPadding * 2);
+
+    return {
+      position: 'fixed',
+      left,
+      top,
+      width: menuWidth,
+      maxHeight,
+      overflowY: 'auto',
+    } as React.CSSProperties;
+  }, []);
+
+  const updateFlyoutStyle = useCallback(
+    (categoryId?: string) => {
+      const id = categoryId ?? hoveredCategory;
+      if (!id) {
+        setFlyoutStyle(undefined);
+        return;
+      }
+      setFlyoutStyle(computeFlyoutStyleForCategory(id));
+    },
+    [computeFlyoutStyleForCategory, hoveredCategory]
+  );
+
+  useEffect(() => {
+    updateFlyoutStyle();
+    if (!hoveredCategory) return;
+
+    const onScroll = () => updateFlyoutStyle();
+    const onResize = () => updateFlyoutStyle();
+    document.addEventListener('scroll', onScroll, true);
+    window.addEventListener('resize', onResize);
+    return () => {
+      document.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [hoveredCategory, updateFlyoutStyle]);
 
   const rolesByCategory = useMemo(() => {
     const m: Record<string, JobSidebarRole[]> = {};
@@ -92,10 +149,19 @@ export const JobSidebar: React.FC<{
               <div
                 key={category.id}
                 className="relative group"
-                onMouseEnter={() => setHoveredCategory(category.id)}
-                onMouseLeave={() => setHoveredCategory(null)}
+                onMouseEnter={() => {
+                  updateFlyoutStyle(category.id);
+                  setHoveredCategory(category.id);
+                }}
+                onMouseLeave={() => {
+                  setHoveredCategory(null);
+                  setFlyoutStyle(undefined);
+                }}
               >
                 <button
+                  ref={(el) => {
+                    buttonRefs.current[category.id] = el;
+                  }}
                   onClick={() => onSelectCategory(category.id)}
                   className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-200 border-2 ${
                     isActive
@@ -122,6 +188,7 @@ export const JobSidebar: React.FC<{
                   title={category.name}
                   groups={flyoutGroups}
                   onSelectRole={onSelectRole}
+                  style={showFlyout ? flyoutStyle : undefined}
                 />
               </div>
             );

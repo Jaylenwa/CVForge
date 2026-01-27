@@ -31,6 +31,8 @@ const generateUUID = () => {
 export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   const { t } = useLanguage();
   const confirm = useConfirm();
+  type SectionId = ResumeSection['id'];
+  type ItemId = ResumeItem['id'];
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor)
@@ -40,7 +42,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     { group: t('editor.font.group.chineseSans'), id: 'notosans', label: t('font.notosans') },
   ];
   const [activeTab, setActiveTab] = useState<'content' | 'design'>('content');
-  const [activeSection, setActiveSection] = useState<string | null>('personal');
+  const [activeSection, setActiveSection] = useState<SectionId | 'personal' | null>('personal');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -107,14 +109,14 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     } catch {}
   };
 
-  const updateSection = (sectionId: string, updates: Partial<ResumeSection>) => {
+  const updateSection = (sectionId: SectionId, updates: Partial<ResumeSection>) => {
     onChange({
       ...data,
       sections: data.sections.map(s => s.id === sectionId ? { ...s, ...updates } : s)
     });
   };
 
-  const updateItem = (sectionId: string, itemId: string, field: keyof ResumeItem, value: string) => {
+  const updateItem = (sectionId: SectionId, itemId: ItemId, field: keyof ResumeItem, value: string) => {
     onChange({
       ...data,
       sections: data.sections.map(s => {
@@ -127,7 +129,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     });
   };
 
-  const addItem = (sectionId: string) => {
+  const addItem = (sectionId: SectionId) => {
     const newItem: ResumeItem = {
       id: generateUUID(),
       title: '',
@@ -150,7 +152,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     onChange({ ...data, sections: nextSections.map((s, idx) => ({ ...s, orderNum: idx })) });
   };
 
-  const removeItem = (sectionId: string, itemId: string) => {
+  const removeItem = (sectionId: SectionId, itemId: ItemId) => {
     const nextSections = data.sections.map(s => {
       if (s.id !== sectionId) return s;
       const items = s.items.filter(i => i.id !== itemId).map((it, idx) => ({ ...it, orderNum: idx }));
@@ -230,7 +232,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     }
   }, [data.sections]);
 
-  const removeSection = async (sectionId: string) => {
+  const removeSection = async (sectionId: SectionId) => {
       const ok = await confirm({ title: t('common.confirmAction'), message: t('editor.removeSection'), variant: 'danger' });
       if (!ok) return;
       const next = data.sections.filter(s => s.id !== sectionId).map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
@@ -286,7 +288,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     }
   };
 
-  const handleAiPolish = async (sectionId: string, itemId: string, text: string) => {
+  const handleAiPolish = async (sectionId: SectionId, itemId: ItemId, text: string) => {
     if (!text) return;
     setIsAiLoading(true);
     const improved = await polishText(text);
@@ -596,7 +598,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                           updateSection(section.id, { items: nextItems });
                         };
 
-                        const removeScoreRow = (itemId: string) => {
+                        const removeScoreRow = (itemId: ItemId) => {
                           if (!meta) return;
                           const nextItems = [meta, ...scores.filter(s => s.id !== itemId)].map((it, idx) => ({ ...it, orderNum: idx }));
                           updateSection(section.id, { items: nextItems });
