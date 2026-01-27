@@ -117,11 +117,11 @@ export const ResumeTemplateCard: React.FC<{
       </div>
 
       <div className="p-5">
-        <h3 className="text-lg font-bold text-slate-800 mb-1 line-clamp-1">{title}</h3>
-        <div className="flex items-center justify-between mt-3">
-          <span className="text-sm text-slate-500">{Number(usageCount || 0).toLocaleString()} {t('templates.meta.usageCount')}</span>
+        <h3 className="text-base font-bold text-slate-800 mb-1 line-clamp-1">{title}</h3>
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-xs text-slate-500">{Number(usageCount || 0).toLocaleString()} {t('templates.meta.usageCount')}</span>
           {tag ? (
-            <span className="px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-md border border-blue-100">
+            <span className="px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-md border border-blue-100">
               {tag}
             </span>
           ) : null}
