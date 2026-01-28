@@ -114,7 +114,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
           <div className="px-10 pt-8 pb-6 flex items-start gap-6">
             <div className="flex-1">
               <h1 className="text-3xl font-bold tracking-wide text-white">{data.Personal?.FullName}</h1>
-              {findJobTarget() && <p className="text-base mt-2 text-white/90">{t('editor.fields.jobApplication')}：{findJobTarget()}</p>}
+              {findJobTarget() && <p className="text-sm mt-2 text-white/90">{t('editor.fields.jobApplication')}：{findJobTarget()}</p>}
               <div className="mt-4 flex flex-wrap gap-4 text-sm text-white/90">
                 {data.Personal?.Age && (
                   <span className="inline-flex items-center gap-1">

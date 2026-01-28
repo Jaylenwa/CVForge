@@ -11,6 +11,10 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
   const { t } = useLanguage();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const customInfo = normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo));
+  const basePairs: Array<{ label: string; value: string }> = [
+    { label: t('editor.fields.phone'), value: personal?.Phone || '' },
+    { label: t('editor.fields.email'), value: personal?.Email || '' },
+  ].filter(p => p.value && String(p.value).trim());
   const extraPairs: Array<{ label: string; value: string }> = [
     { label: t('editor.fields.gender'), value: personal?.Gender || '' },
     { label: t('editor.fields.age'), value: personal?.Age || '' },
@@ -27,22 +31,31 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
   <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none p-10`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
   <div className="pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6">
       <div className="flex-1 text-center md:text-left order-2 md:order-1">
-          <h1 className="text-4xl font-bold uppercase tracking-wider">{personal?.FullName}</h1>
-          {personal?.Job && <p className="text-xl mt-2 text-gray-600">{personal.Job}</p>}
-          {(personal?.Email || personal?.Phone) && (
-            <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-600">
-              {personal?.Email && <span>{personal.Email}</span>}
-              {personal?.Phone && <span>{personal?.Email ? '• ' : ''}{personal.Phone}</span>}
-            </div>
-          )}
-          {(extraPairs.length > 0 || hasCustomInfo) && (
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
-              {extraPairs.map((p, idx) => (
-                <span key={`${p.label}-${idx}`}>{p.label}: {p.value}</span>
+          <h1 className="text-3xl font-extrabold uppercase tracking-wider">{personal?.FullName}</h1>
+          {personal?.Job && <p className="text-sm mt-2 text-gray-600">{personal.Job}</p>}
+          {(basePairs.length > 0 || extraPairs.length > 0 || hasCustomInfo) && (
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm text-gray-600 leading-6 text-left">
+              {[...basePairs, ...extraPairs].map((p, idx) => (
+                <div key={`${p.label}-${idx}`} className="flex gap-2 min-w-0">
+                  <div className="text-gray-500 whitespace-nowrap">{p.label}:</div>
+                  <div className="min-w-0 break-words">{p.value}</div>
+                </div>
               ))}
-              {customInfo.map((ci, idx) => (
-                <span key={`ci-${idx}`}>{ci.label ? `${ci.label}: ${ci.value}` : ci.value}</span>
-              ))}
+              {customInfo.map((ci, idx) => {
+                if (!ci.label) {
+                  return (
+                    <div key={`ci-${idx}`} className="col-span-1 sm:col-span-2 break-words">
+                      {ci.value}
+                    </div>
+                  );
+                }
+                return (
+                  <div key={`ci-${idx}`} className="flex gap-2 min-w-0">
+                    <div className="text-gray-500 whitespace-nowrap">{ci.label}:</div>
+                    <div className="min-w-0 break-words">{ci.value}</div>
+                  </div>
+                );
+              })}
             </div>
           )}
       </div>
