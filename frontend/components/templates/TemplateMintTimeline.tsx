@@ -5,12 +5,13 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { Mail, Phone, MapPin, GraduationCap, User, Briefcase, Wrench, Layers, BookOpen, Award, Heart, Image as ImageIcon } from 'lucide-react';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getOrderedItems, getOrderedVisibleSections, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
   const { t } = useLanguage();
   const color = getAccentColor(data, '#14b8a6');
+  const { lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const findJobTarget = () => {
     return data.Personal?.Job || '';
@@ -107,7 +108,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
   };
 
   return (
-    <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5, fontSize: styles.fontSize }}>
+    <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
       <div className="relative">
         <div className="bg-teal-500" style={{ backgroundColor: color }}>
           <div className="px-10 pt-8 pb-6 flex items-start gap-6">
@@ -180,7 +181,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
         </div> */}
       </div>
 
-      <div className="px-10 pt-6 pb-10 space-y-1">
+      <div className={`px-10 pt-6 pb-10 ${contentGapClass}`}>
                 {sectionsOrdered.map((section, idx) => (
                   (() => {
                     const items = getOrderedItems(section.items || []);
@@ -215,20 +216,20 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                     {section.type === ResumeSectionType.Exam ? (
                       <ExamSection section={section} color={color} t={t} />
                     ) : section.type === ResumeSectionType.Skills ? (
-                      <div className="space-y-3">
+                      <div className={listTightClass}>
                         {items.map(item => (
                           <div key={item.id} className="relative">
                             {showMarkerForSection(section.type) && (
                               <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
                             )}
                             {item.description && (
-                              <RichText html={item.description} className="text-gray-700" fontSize={styles.fontSize} />
+                              <RichText html={item.description} className="text-gray-700" fontSize={styles.fontSize} lineHeight={lineHeight} />
                             )}
                           </div>
                         ))}
                       </div>
                 ) : (
-                      <div className={items.length > 1 ? 'space-y-5' : ''}>
+                      <div className={items.length > 1 ? listMediumClass : ''}>
                         {items.map(item => (
                           <div key={item.id} className="relative">
                             <div className="relative flex justify-between items-baseline mb-1">
@@ -248,7 +249,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                               )}
                             </div>
                             {item.description && (
-                              <RichText html={item.description} className="text-gray-700 mt-1" fontSize={styles.fontSize} />
+                              <RichText html={item.description} className="text-gray-700 mt-1" fontSize={styles.fontSize} lineHeight={lineHeight} />
                             )}
                           </div>
                         ))}
