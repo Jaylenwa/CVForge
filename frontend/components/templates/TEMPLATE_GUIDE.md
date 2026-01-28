@@ -8,6 +8,7 @@
 - 间距密度：`getSpacingTokens(styles)`（基于 `styles.spacingMultiplier` 统一 compact/normal/spacious）。
 - 日期区间：`formatDateRange(item, t, options)`（避免 `~` / `-` / `YYYY-MM` / `YYYY.MM` 混用）。
 - 自定义字段：`parseCustomPairs()` + `normalizeCustomPairs()`（统一 JSON 解析、空值过滤与 trim）。
+- 头像尺寸：`getIdPhotoClassName()`（统一证件照物理尺寸，避免 px/随意大小）。
 - 富文本描述：`<RichText />`（统一 sanitize、基础排版与注入）。
 - Exam 分区：`<ExamSection />`（统一 meta+scores 的解释与表格 props）。
 
@@ -22,6 +23,21 @@
 - Section 标题：`text-base` 或 `text-lg`（搭配 `font-bold`）
 - 条目标题（item.title）：`text-sm` 或 `text-lg`（根据模板风格选择）
 - 辅助信息（日期/地点/副标题）：`text-xs` 或 `text-sm`（搭配更浅颜色）
+
+## 头像规范（证件照）
+
+模板头像必须统一为证件照物理尺寸，避免使用 `px` 或随意 `w/h`：
+
+- 尺寸：`35mm × 49mm`（比例 5:7）
+- 渲染：`object-cover`（保证不同照片比例不破版）
+
+用法示例：
+
+```tsx
+import { getIdPhotoClassName } from './shared/templateTokens';
+
+<img className={getIdPhotoClassName('rounded-md object-cover')} />
+```
 
 ## Density 规范（间距与密度控制）
 

@@ -18,6 +18,14 @@ export type SpacingTokens = {
   listMediumClass: string;
 };
 
+export const ID_PHOTO_WIDTH_MM = 35;
+export const ID_PHOTO_HEIGHT_MM = 49;
+export const ID_PHOTO_CLASSNAME = `w-[${ID_PHOTO_WIDTH_MM}mm] h-[${ID_PHOTO_HEIGHT_MM}mm]`;
+
+export const getIdPhotoClassName = (extraClassName?: string) => {
+  return extraClassName ? `${ID_PHOTO_CLASSNAME} ${extraClassName}` : ID_PHOTO_CLASSNAME;
+};
+
 export const getAccentColor = (data: ResumeData, fallback: string) => {
   return data?.Theme?.Color || fallback;
 };
@@ -103,4 +111,3 @@ export const normalizeCustomPairs = (pairs: CustomPair[] = []): NormalizedPair[]
     .map(p => ({ label: String(p?.label || '').trim(), value: String(p?.value || '').trim() }))
     .filter(p => p.label || p.value);
 };
-

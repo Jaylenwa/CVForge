@@ -5,7 +5,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { Mail, Phone, MapPin, GraduationCap, User, Briefcase, Wrench, Layers, BookOpen, Award, Heart, Image as ImageIcon } from 'lucide-react';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getIdPhotoClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
@@ -168,7 +168,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                 <img 
                   src={data.Personal.AvatarURL} 
                   alt={t('a11y.avatarAlt')} 
-                  className="w-[105px] h-[147px] rounded-md object-cover ring-2 ring-white/70"
+                  className={getIdPhotoClassName('rounded-md object-cover ring-2 ring-white/70')}
                 />
               </div>
             )}

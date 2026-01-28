@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getIdPhotoClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -128,11 +128,11 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
               <img
                 src={personal.AvatarURL}
                 alt={t('a11y.avatarAlt')}
-                className="w-[28mm] h-[38mm] rounded-lg object-cover ring-2 ring-white shadow-sm border border-slate-200"
+                className={getIdPhotoClassName('rounded-lg object-cover ring-2 ring-white shadow-sm border border-slate-200')}
                 style={{ backgroundColor: '#ffffff' }}
               />
             ) : (
-              <div className="w-[28mm] h-[38mm] rounded-lg bg-slate-200 border border-slate-200" />
+              <div className={getIdPhotoClassName('rounded-lg bg-slate-200 border border-slate-200')} />
             )}
             <div className="flex-1 min-w-0 pl-8">
               <div className="min-w-0">

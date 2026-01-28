@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getLineHeight, getOrderedItems, getOrderedVisibleSections, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getIdPhotoClassName, getLineHeight, getOrderedItems, getOrderedVisibleSections, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
@@ -51,8 +51,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
           <img 
               src={personal.AvatarURL} 
               alt={t('a11y.avatarAlt')} 
-              className="w-32 h-32 rounded-lg object-cover border-2 shadow-sm"
-              style={{ borderColor: data.Theme?.Color || '#e5e7eb' }}
+              className={getIdPhotoClassName('rounded-lg object-cover border-2 shadow-sm')}
           />
           </div>
       )}
