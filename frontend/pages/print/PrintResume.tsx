@@ -6,6 +6,7 @@ import { ResumePreview } from '../editor/ResumePreview';
 import { INITIAL_RESUME } from '../../services/mockData';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { fetchContentPresetData } from '../../services/catalogService';
+import { applyTemplateDefaultsToResumeData } from '../../utils/template-defaults';
 
 export const PrintResume: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -29,7 +30,7 @@ export const PrintResume: React.FC = () => {
 
       resolveSeed().then((seed: ResumeData) => {
         if (cancelled) return;
-        const demo: ResumeData = { ...(seed as any), templateId: template };
+        const demo: ResumeData = applyTemplateDefaultsToResumeData({ ...(seed as any), templateId: template } as ResumeData);
         setData(demo);
         setLanguage(demo.language);
       });

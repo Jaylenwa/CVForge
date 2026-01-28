@@ -5,6 +5,7 @@ import { ResumeArtboard } from '../../pages/editor/ResumePreview';
 import { INITIAL_RESUME } from '../../services/mockData';
 import { ResumeData } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { applyTemplateDefaultsToResumeData } from '../../utils/template-defaults';
 import { Button } from '../ui/Button';
 
 export const ResumeTemplateCard: React.FC<{
@@ -74,7 +75,10 @@ export const ResumeTemplateCard: React.FC<{
   const mmToPx = 96 / 25.4;
   const a4w = 210 * mmToPx;
   const a4h = 297 * mmToPx;
-  const previewData = presetData ? ({ ...INITIAL_RESUME, ...presetData, templateId } as any) : ({ ...INITIAL_RESUME, templateId } as any);
+  const rawPreviewData = presetData
+    ? ({ ...INITIAL_RESUME, ...presetData, templateId } as ResumeData)
+    : ({ ...INITIAL_RESUME, templateId } as ResumeData);
+  const previewData = applyTemplateDefaultsToResumeData(rawPreviewData);
 
   return (
     <motion.div

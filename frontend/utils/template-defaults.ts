@@ -1,0 +1,28 @@
+import { ResumeData } from '../types';
+
+export type ResumeTheme = NonNullable<ResumeData['Theme']>;
+
+const TEMPLATE_DEFAULT_THEMES: Record<string, Partial<ResumeTheme>> = {
+  TemplateClassic: { Color: '#14b8a6' },
+  TemplateMintTimeline: { Color: '#14b8a6' },
+  TemplateSlateSidebar: { Color: '#2563eb' },
+};
+
+export const getTemplateDefaultTheme = (templateId: string): Partial<ResumeTheme> | null => {
+  const key = String(templateId || '');
+  const theme = TEMPLATE_DEFAULT_THEMES[key];
+  return theme ? { ...theme } : null;
+};
+
+export const applyTemplateThemeDefaults = (templateId: string, theme?: ResumeData['Theme']): ResumeData['Theme'] => {
+  const defaults = getTemplateDefaultTheme(templateId);
+  if (!defaults) return theme;
+  return { ...(theme || {}), ...defaults };
+};
+
+export const applyTemplateDefaultsToResumeData = (data: ResumeData): ResumeData => {
+  const nextTheme = applyTemplateThemeDefaults(data.templateId, data.Theme);
+  if (nextTheme === data.Theme) return data;
+  return { ...data, Theme: nextTheme };
+};
+

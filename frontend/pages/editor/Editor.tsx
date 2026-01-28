@@ -12,6 +12,7 @@ import { fetchContentPresetData, listTemplateLibraryItems } from '../../services
 import { ResumeData, AppRoute, Language } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useToast } from '../../components/ui/Toast';
+import { applyTemplateThemeDefaults } from '../../utils/template-defaults';
 
 export const Editor: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -117,7 +118,8 @@ export const Editor: React.FC = () => {
         resolveSeed().then((seed: ResumeData) => {
           const seedTitle = seed.title || INITIAL_RESUME.title;
           const seedPersonal = seed.Personal || INITIAL_RESUME.Personal || ({} as any);
-          const seedTheme = seed.Theme || INITIAL_RESUME.Theme || ({} as any);
+          const seedThemeRaw = seed.Theme || INITIAL_RESUME.Theme || ({} as any);
+          const seedTheme = applyTemplateThemeDefaults(templateId, seedThemeRaw);
           const seedSections = Array.isArray(seed.sections) ? seed.sections : INITIAL_RESUME.sections;
           const payload = {
             Title: seedTitle,

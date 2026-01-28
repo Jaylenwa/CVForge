@@ -41,7 +41,7 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
       <h3 className="text-lg font-bold tracking-wide" style={{ color }}>
         {getSectionTitle(section)}
       </h3>
-      <div className="h-[2px] flex-1 rounded" style={{ backgroundColor: `${color}22` }} />
+      <div className="h-[2px] flex-1 rounded" style={{ backgroundColor: `${color}88` }} />
     </div>
   );
 
@@ -72,7 +72,7 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
           {items.map((item: any) => (
             <div key={item.id} className="relative pl-5">
               <div className="absolute left-0 top-2 w-2 h-2 rotate-45" style={{ backgroundColor: color }} />
-              <div className="absolute left-[3px] top-5 bottom-0 w-[1px]" style={{ backgroundColor: `${color}22` }} />
+              <div className="absolute left-[3px] top-5 bottom-0 w-[1px]" style={{ backgroundColor: `${color}44` }} />
               <div className="flex items-baseline justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-sm font-bold text-slate-900 truncate">{item.title}</div>
