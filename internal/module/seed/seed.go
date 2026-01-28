@@ -479,8 +479,8 @@ func DefaultSeed() (SeedData, error) {
 			{ExternalID: "public_social", Name: "社会服务", ParentExternalID: "public", OrderNum: 30, IsActive: true},
 		},
 		Roles: []SeedJobRole{
-			{ExternalID: "java", CategoryExternalID: "it_backend", Name: "java", Tags: "Java,后端", OrderNum: 10, IsActive: true},
-			{ExternalID: "python", CategoryExternalID: "it_backend", Name: "python", Tags: "Python,后端", OrderNum: 20, IsActive: true},
+			{ExternalID: "Java", CategoryExternalID: "it_backend", Name: "java", Tags: "Java,后端", OrderNum: 10, IsActive: true},
+			{ExternalID: "Python", CategoryExternalID: "it_backend", Name: "python", Tags: "Python,后端", OrderNum: 20, IsActive: true},
 			{ExternalID: "golang", CategoryExternalID: "it_backend", Name: "Go (Golang)", Tags: "Go,后端", OrderNum: 30, IsActive: true},
 			{ExternalID: "php", CategoryExternalID: "it_backend", Name: "php", Tags: "PHP,后端", OrderNum: 40, IsActive: true},
 			{ExternalID: "c_cpp", CategoryExternalID: "it_backend", Name: "C/C++", Tags: "C,C++,后端", OrderNum: 50, IsActive: true},

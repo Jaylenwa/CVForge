@@ -129,7 +129,7 @@ export const Navbar: React.FC = () => {
                             </Link>
                             
                             {isAdmin && (
-                              <Link to={AppRoute.AdminUsers} target="_blank" rel="noopener noreferrer" onClick={() => setIsProfileOpen(false)} className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
+                              <Link to={AppRoute.Admin} target="_blank" rel="noopener noreferrer" onClick={() => setIsProfileOpen(false)} className="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50" role="menuitem">
                                   <Grid size={16} className="mr-3 text-gray-400 group-hover:text-gray-500"/>
                                   {t('nav.admin')}
                               </Link>
@@ -229,7 +229,7 @@ export const Navbar: React.FC = () => {
                                   className="w-full justify-start mt-2" 
                                   variant="ghost" 
                                   icon={<Grid size={16}/>}
-                                  onClick={() => { window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.AdminUsers}`, '_blank'); setIsOpen(false); }}
+                                  onClick={() => { window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Admin}`, '_blank'); setIsOpen(false); }}
                               >
                                   {t('nav.admin')}
                               </Button>

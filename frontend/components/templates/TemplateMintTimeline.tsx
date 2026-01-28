@@ -187,11 +187,11 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
             )}
           </div>
         </div>
-        <div className="w-full" style={{ backgroundColor: color }}>
+        {/* <div className="w-full" style={{ backgroundColor: color }}>
           <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-6 block">
             <path d="M0 30 Q 300 60 600 30 T 1200 30 L 1200 60 L 0 60 Z" fill="white"></path>
           </svg>
-        </div>
+        </div> */}
       </div>
 
       <div className="px-10 pt-6 pb-10 space-y-1">

@@ -346,26 +346,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
 
     return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              const next: Record<string, boolean> = {};
-              for (const c of filteredRootCategories) {
-                next[String(c.ID)] = true;
-                for (const child of categoriesByParent.get(c.ID) || []) next[String(child.ID)] = true;
-                next[`${c.ID}__ungrouped`] = true;
-              }
-              setExpandedCategories(next);
-            }}
-          >
-            {t('admin.catalog.actions.expandAll') || 'Expand all'}
-          </Button>
-          <Button variant="outline" onClick={() => setExpandedCategories({})}>
-            {t('admin.catalog.actions.collapseAll') || 'Collapse all'}
-          </Button>
-        </div>
-
         <TableCard>
           <div className="overflow-x-auto no-scrollbar">
             <table className="w-full text-left table-fixed text-sm">
