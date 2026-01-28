@@ -3,7 +3,7 @@ import { ResumeData } from '../types';
 export type ResumeTheme = NonNullable<ResumeData['Theme']>;
 
 const TEMPLATE_DEFAULT_THEMES: Record<string, Partial<ResumeTheme>> = {
-  TemplateClassic: { Color: '#14b8a6' },
+  TemplateClassic: { Color: '#050505ff' },
   TemplateMintTimeline: { Color: '#14b8a6' },
   TemplateSlateSidebar: { Color: '#2563eb' },
 };

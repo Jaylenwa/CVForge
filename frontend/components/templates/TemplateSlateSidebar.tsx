@@ -65,7 +65,7 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
         </div>
       );
     }
-    const timelineLike = section.type === ResumeSectionType.Experience || section.type === ResumeSectionType.Projects || section.type === ResumeSectionType.Internships;
+    const timelineLike = section.type === ResumeSectionType.Experience || section.type === ResumeSectionType.Projects || section.type === ResumeSectionType.Internships || section.type === ResumeSectionType.Education;
     if (timelineLike) {
       return (
         <div className={listMediumClass}>
@@ -76,7 +76,15 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
               <div className="flex items-baseline justify-between gap-4">
                 <div className="min-w-0">
                   <div className="text-sm font-bold text-slate-900 truncate">{item.title}</div>
-                  {item.subtitle && <div className="text-xs text-slate-600">{item.subtitle}</div>}
+                  {section.type === ResumeSectionType.Education ? (
+                    (item.major || item.degree) ? (
+                      <div className="text-xs text-slate-600">
+                        {item.major}{item.major && item.degree ? ' • ' : ''}{item.degree}
+                      </div>
+                    ) : (item.subtitle ? <div className="text-xs text-slate-600">{item.subtitle}</div> : null)
+                  ) : (
+                    item.subtitle ? <div className="text-xs text-slate-600">{item.subtitle}</div> : null
+                  )}
                 </div>
                 {(item.timeStart || item.timeEnd || item.today) && (
                   <div className="text-xs text-slate-600 whitespace-nowrap">{formatRange(item)}</div>
