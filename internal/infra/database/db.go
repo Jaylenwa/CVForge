@@ -48,6 +48,9 @@ func InitMySQL(cfg config.Config) (*gorm.DB, error) {
 	if err := RunRoleTemplateUsageBackfill(DB); err != nil {
 		return nil, err
 	}
+	if err := RunDefaultTemplatesSeed(DB); err != nil {
+		return nil, err
+	}
 	logger.WithCtx(nil).Info("mysql connected")
 	return DB, nil
 }

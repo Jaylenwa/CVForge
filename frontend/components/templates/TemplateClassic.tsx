@@ -37,7 +37,7 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
   <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none p-10`} style={{ fontFamily: styles.fontFamily, lineHeight: parseFloat(styles.spacingMultiplier) * 1.5, fontSize: styles.fontSize }}>
   <div className="pb-6 mb-6 flex flex-col md:flex-row items-center md:items-start gap-6">
       <div className="flex-1 text-center md:text-left order-2 md:order-1">
-          <h1 className="text-4xl font-bold uppercase tracking-wider" style={{ color: data.Theme?.Color }}>{personal?.FullName}</h1>
+          <h1 className="text-4xl font-bold uppercase tracking-wider">{personal?.FullName}</h1>
           {personal?.Job && <p className="text-xl mt-2 text-gray-600">{personal.Job}</p>}
           {(personal?.Email || personal?.Phone) && (
             <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-600">
