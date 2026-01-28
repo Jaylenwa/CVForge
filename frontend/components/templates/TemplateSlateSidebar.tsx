@@ -2,33 +2,20 @@ import React from 'react';
 import { ResumeData, ResumeSectionType } from '../../types';
 import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { sanitizeHtml } from '../../utils/resume-helpers';
-import { ExamScoreTable } from './ExamScoreTable';
+import { ExamSection } from './shared/ExamSection';
+import { RichText } from './shared/RichText';
+import { formatDateRange, getAccentColor, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
-  const color = data.Theme?.Color || '#0f172a';
+  const color = getAccentColor(data, '#0f172a');
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
 
-  const spacingValue = Number.parseFloat(String(styles?.spacingMultiplier ?? '1'));
-  const spacingMode = spacingValue <= 0.9 ? 'compact' : spacingValue >= 1.15 ? 'spacious' : 'normal';
-  const lineHeight = (Number.isFinite(spacingValue) ? spacingValue : 1) * 1.5;
-  const contentGapClass = spacingMode === 'compact' ? 'space-y-6' : spacingMode === 'spacious' ? 'space-y-10' : 'space-y-8';
-  const headerSpaceClass = 'pb-6 mb-6';
-  const listTightClass = spacingMode === 'compact' ? 'space-y-2' : spacingMode === 'spacious' ? 'space-y-4' : 'space-y-3';
-  const listMediumClass = spacingMode === 'compact' ? 'space-y-4' : spacingMode === 'spacious' ? 'space-y-6' : 'space-y-5';
+  const { lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const customPairs = React.useMemo(() => {
-    try {
-      const raw = personal?.CustomInfo;
-      if (!raw) return [] as Array<{ label?: string; value?: string }>;
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return parsed as Array<{ label?: string; value?: string }>;
-    } catch {
-      return [] as Array<{ label?: string; value?: string }>;
-    }
+    return normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo));
   }, [personal?.CustomInfo]);
 
   const basePairs: Array<{ label: string; value: string }> = [
@@ -44,16 +31,10 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
   ].filter(p => p.value && String(p.value).trim());
 
   const sectionsOrdered = React.useMemo(() => {
-    const visible = (data.sections || []).filter(s => s.isVisible);
-    return visible.slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
+    return getOrderedVisibleSections(data.sections || []);
   }, [data.sections]);
 
-  const formatRange = (item: any) => {
-    if (!item?.timeStart && !item?.timeEnd && !item?.today) return '';
-    const start = item?.timeStart || item?.timeEnd || '';
-    const end = item?.today ? t('common.toPresent') : (item?.timeEnd || '');
-    return `${start}${start || end ? ' ~ ' : ''}${end}`;
-  };
+  const formatRange = (item: any) => formatDateRange(item, t, { separatorVariant: 'tilde' });
 
   const SectionTitle: React.FC<{ section: any }> = ({ section }) => (
     <div className="flex items-center gap-3 mb-4">
@@ -64,27 +45,10 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
     </div>
   );
 
-  const renderExam = (section: any) => {
-    const items = (section.items || []).slice().sort((a: any, b: any) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
-    const meta = items[0];
-    const scores = items.slice(1);
-    return (
-      <ExamScoreTable
-        color={color}
-        schoolLabel={t('exam.school')}
-        majorLabel={t('exam.major')}
-        scoreLabel={(meta?.description && String(meta.description).trim()) ? String(meta.description).trim() : t('exam.scoreLabel')}
-        school={meta?.title || ''}
-        major={meta?.subtitle || ''}
-        items={scores.map((s: any) => ({ subject: s.title || '', score: s.subtitle || '' }))}
-      />
-    );
-  };
-
   const renderSection = (section: any) => {
-    const items = (section.items || []).slice().sort((a: any, b: any) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
+    const items = getOrderedItems(section.items || []);
     if (section.type === ResumeSectionType.Exam) {
-      return renderExam(section);
+      return <ExamSection section={section} color={color} t={t} />;
     }
     if (section.type === ResumeSectionType.Skills || section.type === ResumeSectionType.SelfEvaluation || section.type === ResumeSectionType.Portfolio || section.type === ResumeSectionType.Awards || section.type === ResumeSectionType.Interests) {
       return (
@@ -94,7 +58,7 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
               {item.title && <div className="text-sm font-semibold text-slate-900">{item.title}</div>}
               {item.subtitle && <div className="text-xs text-slate-600">{item.subtitle}</div>}
               {item.description && (
-                <div className="resume-rich-content text-slate-700 text-sm mt-1" style={{ fontSize: styles.fontSize, lineHeight }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                <RichText html={item.description} className="text-slate-700 mt-1" fontSize={styles.fontSize} lineHeight={lineHeight} />
               )}
             </div>
           ))}
@@ -119,7 +83,7 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
                 )}
               </div>
               {item.description && (
-                <div className="resume-rich-content text-slate-700 text-sm mt-2" style={{ fontSize: styles.fontSize, lineHeight }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                <RichText html={item.description} className="text-slate-700 mt-2" fontSize={styles.fontSize} lineHeight={lineHeight} />
               )}
             </div>
           ))}
@@ -147,7 +111,7 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
               <div className="text-xs text-slate-600 mt-0.5">{item.subtitle}</div>
             )}
             {item.description && (
-              <div className="resume-rich-content text-slate-700 text-sm mt-1" style={{ fontSize: styles.fontSize, lineHeight }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+              <RichText html={item.description} className="text-slate-700 mt-1" fontSize={styles.fontSize} lineHeight={lineHeight} />
             )}
           </div>
         ))}
@@ -183,20 +147,17 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
                   </div>
                 ))}
                 {customPairs.map((ci, idx) => {
-                  const label = String(ci?.label || '').trim();
-                  const value = String(ci?.value || '').trim();
-                  if (!label && !value) return null;
-                  if (!label) {
+                  if (!ci.label) {
                     return (
                       <div key={`ci-${idx}`} className="col-span-2 break-words">
-                        {value}
+                        {ci.value}
                       </div>
                     );
                   }
                   return (
                     <div key={`ci-${idx}`} className="flex gap-2 min-w-0">
-                      <div className="text-slate-500 whitespace-nowrap">{label}:</div>
-                      <div className="min-w-0 break-words">{value}</div>
+                      <div className="text-slate-500 whitespace-nowrap">{ci.label}:</div>
+                      <div className="min-w-0 break-words">{ci.value}</div>
                     </div>
                   );
                 })}

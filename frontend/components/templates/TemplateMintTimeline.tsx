@@ -2,14 +2,15 @@ import React from 'react';
 import { ResumeData, ResumeSectionType } from '../../types';
 import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { hasExtraPersonalInfo, sanitizeHtml } from '../../utils/resume-helpers';
 import { Mail, Phone, MapPin, GraduationCap, User, Briefcase, Wrench, Layers, BookOpen, Award, Heart, Image as ImageIcon } from 'lucide-react';
-import { ExamScoreTable } from './ExamScoreTable';
+import { ExamSection } from './shared/ExamSection';
+import { RichText } from './shared/RichText';
+import { formatDateRange, getAccentColor, getOrderedItems, getOrderedVisibleSections, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
   const { t } = useLanguage();
-  const color = data.Theme?.Color || '#14b8a6';
+  const color = getAccentColor(data, '#14b8a6');
 
   const findJobTarget = () => {
     return data.Personal?.Job || '';
@@ -44,16 +45,13 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
   };
 
   const renderItemTime = (item: any) => {
-    if (item?.timeStart || item?.timeEnd || item?.today) {
-      return (
-        <span className="text-sm text-gray-600 font-bold" style={{ fontSize: styles.fontSize }}>
-          {(item.timeStart || item.timeEnd || '').replace('-', '.')}
-          {' - '}
-          {item.today ? t('common.toPresent') : (item.timeEnd || '').replace('-', '.')}
-        </span>
-      );
-    }
-    return null;
+    const range = formatDateRange(item, t, { separatorVariant: 'dash', normalizeMonthSeparator: '.' });
+    if (!range) return null;
+    return (
+      <span className="text-sm text-gray-600 font-bold" style={{ fontSize: styles.fontSize }}>
+        {range}
+      </span>
+    );
   };
 
   const getRightTag = (sectionType: ResumeSectionType, item: any) => {
@@ -88,8 +86,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
   };
 
   const sectionsOrdered = React.useMemo(() => {
-    const visible = (data.sections || []).filter(s => s.isVisible);
-    return visible.slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
+    return getOrderedVisibleSections(data.sections || []);
   }, [data.sections]);
 
   const hasMeaningfulContent = (item: any, type: ResumeSectionType) => {
@@ -158,22 +155,11 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                     {t('editor.fields.joinTime')}：{findJoinTime()}
                   </span>
                 )}
-                {(() => {
-                  try {
-                    const raw = data.Personal?.CustomInfo;
-                    if (raw) {
-                      const arr = JSON.parse(raw);
-                      if (Array.isArray(arr) && arr.length > 0) {
-                        return arr.map((ci: any, idx: number) => (
-                          <span key={idx} className="inline-flex items-center gap-1">
-                            {ci.label}: {ci.value}
-                          </span>
-                        ));
-                      }
-                    }
-                  } catch {}
-                  return null;
-                })()}
+                {normalizeCustomPairs(parseCustomPairs(data.Personal?.CustomInfo)).map((ci, idx) => (
+                  <span key={idx} className="inline-flex items-center gap-1">
+                    {ci.label ? `${ci.label}: ${ci.value}` : ci.value}
+                  </span>
+                ))}
               </div>
             </div>
             {data.Personal?.AvatarURL && (
@@ -197,7 +183,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
       <div className="px-10 pt-6 pb-10 space-y-1">
                 {sectionsOrdered.map((section, idx) => (
                   (() => {
-                    const items = (section.items || []).slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
+                    const items = getOrderedItems(section.items || []);
                     const isLast = idx === sectionsOrdered.length - 1;
                     const dashTop = 24;
                     const dashBottom = isLast ? 2 : -55;
@@ -227,21 +213,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                       <SectionIcon type={section.type} />
                     </div>
                     {section.type === ResumeSectionType.Exam ? (
-                      (() => {
-                        const meta = items[0];
-                        const scores = items.slice(1);
-                        return (
-                          <ExamScoreTable
-                            color={color}
-                            schoolLabel={t('exam.school')}
-                            majorLabel={t('exam.major')}
-                            scoreLabel={(meta?.description && String(meta.description).trim()) ? String(meta.description).trim() : t('exam.scoreLabel')}
-                            school={meta?.title || ''}
-                            major={meta?.subtitle || ''}
-                            items={scores.map(s => ({ subject: s.title || '', score: s.subtitle || '' }))}
-                          />
-                        );
-                      })()
+                      <ExamSection section={section} color={color} t={t} />
                     ) : section.type === ResumeSectionType.Skills ? (
                       <div className="space-y-3">
                         {items.map(item => (
@@ -250,11 +222,11 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                               <div className="absolute -translate-x-1/2 top-2 w-3 h-3 rotate-45" style={{ backgroundColor: color, left: -32 }} />
                             )}
                             {item.description && (
-                          <div className="resume-rich-content text-gray-700 text-sm leading-relaxed" style={{ fontSize: styles.fontSize }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
-                        )}
+                              <RichText html={item.description} className="text-gray-700" fontSize={styles.fontSize} />
+                            )}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
                 ) : (
                       <div className={items.length > 1 ? 'space-y-5' : ''}>
                         {items.map(item => (
@@ -276,7 +248,7 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                               )}
                             </div>
                             {item.description && (
-                              <div className="resume-rich-content text-gray-700 text-sm leading-relaxed mt-1" style={{ fontSize: styles.fontSize }} dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.description) }} />
+                              <RichText html={item.description} className="text-gray-700 mt-1" fontSize={styles.fontSize} />
                             )}
                           </div>
                         ))}
