@@ -15,7 +15,7 @@ import (
 
 var DB *gorm.DB
 
-func InitMySQL(cfg config.Config) (*gorm.DB, error) {
+func InitDB(cfg config.Config) (*gorm.DB, error) {
 	var err error
 	if cfg.MySQLDSN != "" {
 		DB, err = gorm.Open(mysql.Open(cfg.MySQLDSN))
@@ -28,29 +28,11 @@ func InitMySQL(cfg config.Config) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	sqlDB, err := DB.DB()
-	if err != nil {
+
+	if err = autoMigrate(); err != nil {
 		return nil, err
 	}
-	// prefer versioned migrations if present; otherwise fall back to AutoMigrate for initial schema
-	if _, e := os.Stat("db/migrations"); e == nil {
-		if err = RunMigrations(cfg, sqlDB); err != nil {
-			return nil, err
-		}
-	} else {
-		if err = autoMigrate(); err != nil {
-			return nil, err
-		}
-	}
-	if err := RunExternalIDToIDBackfill(DB); err != nil {
-		return nil, err
-	}
-	if err := RunRoleTemplateUsageBackfill(DB); err != nil {
-		return nil, err
-	}
-	if err := RunDefaultTemplatesSeed(DB); err != nil {
-		return nil, err
-	}
+
 	logger.WithCtx(nil).Info("mysql connected")
 	return DB, nil
 }

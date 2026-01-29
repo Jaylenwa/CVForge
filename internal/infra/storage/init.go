@@ -15,7 +15,7 @@ func Init() error {
 		}
 	}()
 	cfg := config.CF
-	_, err = database.InitMySQL(cfg)
+	_, err = database.InitDB(cfg)
 	if err != nil {
 		return err
 	}
