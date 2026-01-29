@@ -4,6 +4,7 @@ export const MOCK_TEMPLATES: Template[] = [
   { id: 'TemplateMintTimeline', name: '青色时间轴', tags: ['美观', '中文', 'ATS 友好'] },
   { id: 'TemplateClassic', name: '经典专业版', tags: ['专业', '简洁', 'ATS 友好'] },
   { id: 'TemplateSlate', name: '石板简洁版', tags: ['单栏', '简洁', 'ATS 友好'] },
+  { id: 'TemplateMonoBar', name: '黑白竖线版', tags: ['极简', '中文', 'ATS 友好'] },
 ];
 
 export const INITIAL_RESUME: ResumeData = {
