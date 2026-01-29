@@ -5,7 +5,7 @@ export type ResumeTheme = NonNullable<ResumeData['Theme']>;
 const TEMPLATE_DEFAULT_THEMES: Record<string, Partial<ResumeTheme>> = {
   TemplateClassic: { Color: '#050505ff' },
   TemplateMintTimeline: { Color: '#14b8a6' },
-  TemplateSlateSidebar: { Color: '#2563eb' },
+  TemplateSlate: { Color: '#2563eb' },
 };
 
 export const getTemplateDefaultTheme = (templateId: string): Partial<ResumeTheme> | null => {

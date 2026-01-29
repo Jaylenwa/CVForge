@@ -63,7 +63,13 @@ func (r *Repo) UpsertJobCategory(db *gorm.DB, c *JobCategory) error {
 		return errors.New("invalid job category")
 	}
 	var existing JobCategory
-	err := db.Where("name = ?", strings.TrimSpace(c.Name)).Where("parent_id IS ?", c.ParentID).First(&existing).Error
+	q := db.Where("name = ?", strings.TrimSpace(c.Name))
+	if c.ParentID == nil {
+		q = q.Where("parent_id IS NULL")
+	} else {
+		q = q.Where("parent_id = ?", *c.ParentID)
+	}
+	err := q.First(&existing).Error
 	if err == nil {
 		c.ID = existing.ID
 		existing.Name = c.Name

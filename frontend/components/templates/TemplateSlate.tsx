@@ -6,7 +6,7 @@ import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
 import { formatDateRange, getAccentColor, getIdPhotoClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
-export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
+export const TemplateSlate: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const color = getAccentColor(data, '#0f172a');
@@ -187,4 +187,4 @@ export const TemplateSlateSidebar: React.FC<{ data: ResumeData; styles: any; dis
   );
 };
 
-export default TemplateSlateSidebar;
+export default TemplateSlate;

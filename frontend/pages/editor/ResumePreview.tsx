@@ -6,7 +6,7 @@ import { AlertCircle } from 'lucide-react';
 
 import { TemplateClassic } from '../../components/templates/TemplateClassic';
 import { TemplateMintTimeline } from '../../components/templates/TemplateMintTimeline';
-import { TemplateSlateSidebar } from '../../components/templates/TemplateSlateSidebar';
+import { TemplateSlate } from '../../components/templates/TemplateSlate';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 
@@ -51,7 +51,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const TEMPLATE_COMPONENTS: Record<string, React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }>> = {
     TemplateClassic: TemplateClassic,
     TemplateMintTimeline: TemplateMintTimeline,
-    TemplateSlateSidebar: TemplateSlateSidebar,
+    TemplateSlate: TemplateSlate,
   };
 
   const containerStyle: React.CSSProperties = {

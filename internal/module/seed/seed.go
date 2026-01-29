@@ -1117,7 +1117,7 @@ func DefaultSeed() (SeedData, error) {
 			{ExternalID: "rehab_therapist", CategoryExternalID: "public_social", Name: "康复师", Tags: "社会服务,康复", OrderNum: 70, IsActive: true},
 		},
 		Presets: []SeedContentPreset{
-			{ExternalID: "it_backend_java_zh", Name: "Java 开发（中文示例）", Language: "zh", RoleExternalID: "java", Tags: "Java,后端,中文", DataJSON: string(b), IsActive: true},
+			{ExternalID: "it_backend_java_zh", Name: "Java 开发（中文示例）", Language: "zh", RoleExternalID: "Java", Tags: "Java,后端,中文", DataJSON: string(b), IsActive: true},
 		},
 	}, nil
 }
