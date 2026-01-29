@@ -8,6 +8,7 @@ import { TemplateClassic } from '../../components/templates/TemplateClassic';
 import { TemplateMintTimeline } from '../../components/templates/TemplateMintTimeline';
 import { TemplateSlate } from '../../components/templates/TemplateSlate';
 import { TemplateMonoBar } from '../../components/templates/TemplateMonoBar';
+import { TemplateSidebarLabel } from '../../components/templates/TemplateSidebarLabel';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 
@@ -54,6 +55,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     TemplateMintTimeline: TemplateMintTimeline,
     TemplateSlate: TemplateSlate,
     TemplateMonoBar: TemplateMonoBar,
+    TemplateSidebarLabel: TemplateSidebarLabel,
   };
 
   const containerStyle: React.CSSProperties = {

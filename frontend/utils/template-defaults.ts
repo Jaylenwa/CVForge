@@ -7,6 +7,7 @@ const TEMPLATE_DEFAULT_THEMES: Record<string, Partial<ResumeTheme>> = {
   TemplateMintTimeline: { Color: '#14b8a6' },
   TemplateSlate: { Color: '#2563eb' },
   TemplateMonoBar: { Color: '#050505ff' },
+  TemplateSidebarLabel: { Color: '#111827' },
 };
 
 export const getTemplateDefaultTheme = (templateId: string): Partial<ResumeTheme> | null => {
