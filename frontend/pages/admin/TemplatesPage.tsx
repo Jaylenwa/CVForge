@@ -654,7 +654,7 @@ export const TemplatesPage: React.FC = () => {
   const CatalogPagination = () => {
     const totalPages = Math.max(1, Math.ceil(catalogTotal / catalogPageSize));
     return (
-      <div className="flex items-center justify-between mt-4 text-sm text-gray-500">
+      <div className="flex items-center justify-between text-sm text-gray-500">
         <div>
           {t('admin.pagination.total') || 'Total'}: {catalogTotal}
         </div>
@@ -687,36 +687,34 @@ export const TemplatesPage: React.FC = () => {
   const renderCatalogTable = () => {
     if (tab === 'presets') {
       return (
-        <TableCard>
-          <DataTable<AdminContentPreset>
-            data={presets}
-            getRowKey={(row) => String(row.ID)}
-            emptyState={{
-              title: t('admin.catalog.empty') || '暂无数据',
-              description: t('admin.catalog.emptyDesc') || '点击右上角创建开始新增',
-            }}
-            columns={[
-              { key: 'name', label: t('admin.form.name'), minWidth: 280, render: (p) => <TextCell text={p.Name} className="text-gray-900 font-medium" /> },
-              { key: 'language', label: t('admin.catalog.form.language'), minWidth: 120, nowrap: true, render: (p) => <span className="text-sm text-gray-600">{p.Language || '-'}</span> },
-              { key: 'role', label: t('admin.catalog.form.role'), minWidth: 240, render: (p) => <NameCell name={roleNameById.get(p.RoleID)} id={String(p.RoleID)} /> },
-              { key: 'active', label: t('admin.catalog.form.active'), minWidth: 120, nowrap: true, render: (p) => <BoolBadge value={!!p.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} /> },
-              {
-                key: 'actions',
-                label: t('admin.columns.actions'),
-                minWidth: 140,
-                fixed: 'right',
-                headerClassName: 'text-right',
-                cellClassName: 'text-right',
-                render: (p) => (
-                  <div className="flex items-center justify-end gap-1">
-                    <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditPreset(p)} kind="edit" />
-                    <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeCatalogItem(p.ID)} kind="delete" />
-                  </div>
-                ),
-              },
-            ]}
-          />
-        </TableCard>
+        <DataTable<AdminContentPreset>
+          data={presets}
+          getRowKey={(row) => String(row.ID)}
+          emptyState={{
+            title: t('admin.catalog.empty') || '暂无数据',
+            description: t('admin.catalog.emptyDesc') || '点击右上角创建开始新增',
+          }}
+          columns={[
+            { key: 'name', label: t('admin.form.name'), minWidth: 280, render: (p) => <TextCell text={p.Name} className="text-gray-900 font-medium" /> },
+            { key: 'language', label: t('admin.catalog.form.language'), minWidth: 120, nowrap: true, render: (p) => <span className="text-sm text-gray-600">{p.Language || '-'}</span> },
+            { key: 'role', label: t('admin.catalog.form.role'), minWidth: 240, render: (p) => <NameCell name={roleNameById.get(p.RoleID)} id={String(p.RoleID)} /> },
+            { key: 'active', label: t('admin.catalog.form.active'), minWidth: 120, nowrap: true, render: (p) => <BoolBadge value={!!p.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} /> },
+            {
+              key: 'actions',
+              label: t('admin.columns.actions'),
+              minWidth: 140,
+              fixed: 'right',
+              headerClassName: 'text-right',
+              cellClassName: 'text-right',
+              render: (p) => (
+                <div className="flex items-center justify-end gap-1">
+                  <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditPreset(p)} kind="edit" />
+                  <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeCatalogItem(p.ID)} kind="delete" />
+                </div>
+              ),
+            },
+          ]}
+        />
       );
     }
     return null;
@@ -764,9 +762,9 @@ export const TemplatesPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-10 pb-10">
+      <div className="flex-1 overflow-hidden px-10 pb-10 flex flex-col">
         {tab === 'templates' ? (
-          <>
+          <div className="flex flex-col flex-1 overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-gray-100">
               <div className="relative w-full md:w-[360px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -788,12 +786,12 @@ export const TemplatesPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-6">
-              <TableCard>
-                <div className="overflow-x-auto no-scrollbar">
+            <div className="mt-6 flex-1 overflow-hidden">
+              <TableCard className="flex flex-col h-full">
+                <div className="flex-1 overflow-auto no-scrollbar">
                   <table className="w-full text-left border-collapse text-sm">
-                    <thead>
-                      <tr className="bg-slate-50/80 border-b border-slate-200">
+                    <thead className="sticky top-0 z-20 bg-slate-50 shadow-sm">
+                      <tr className="border-b border-slate-200">
                         <th className="px-6 py-4 font-semibold text-gray-600">ID</th>
                         <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.form.name')}</th>
                         <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.form.tags')}</th>
@@ -851,32 +849,34 @@ export const TemplatesPage: React.FC = () => {
                     </tbody>
                   </table>
                 </div>
-              </TableCard>
-              <div className="flex justify-between items-center mt-4">
-                <div className="text-sm text-gray-500">{t('admin.total')} {total}</div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))}>
-                    {t('admin.prev')}
-                  </Button>
-                  <div className="text-sm text-gray-500 min-w-[64px] text-center">
-                    {page} / {Math.max(1, Math.ceil(total / pageSize))}
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page * pageSize >= total}>
-                    {t('admin.next')}
-                  </Button>
-                  <div className="w-[96px]">
-                    <Select
-                      value={String(pageSize)}
-                      onChange={(e) => {
-                        setPageSize(parseInt(e.target.value, 10));
-                        setPage(1);
-                      }}
-                      options={[10, 20, 50].map((x) => ({ label: String(x), value: String(x) }))}
-                      className="py-1.5"
-                    />
+                <div className="shrink-0 border-t border-gray-100 bg-white px-6 py-4">
+                  <div className="flex justify-between items-center">
+                    <div className="text-sm text-gray-500">{t('admin.total')} {total}</div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(p - 1, 1))}>
+                        {t('admin.prev')}
+                      </Button>
+                      <div className="text-sm text-gray-500 min-w-[64px] text-center">
+                        {page} / {Math.max(1, Math.ceil(total / pageSize))}
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page * pageSize >= total}>
+                        {t('admin.next')}
+                      </Button>
+                      <div className="w-[96px]">
+                        <Select
+                          value={String(pageSize)}
+                          onChange={(e) => {
+                            setPageSize(parseInt(e.target.value, 10));
+                            setPage(1);
+                          }}
+                          options={[10, 20, 50].map((x) => ({ label: String(x), value: String(x) }))}
+                          className="py-1.5"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </TableCard>
             </div>
 
             <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingId ? t('admin.actions.update') : t('admin.actions.create')} size="xl">
@@ -928,9 +928,9 @@ export const TemplatesPage: React.FC = () => {
                 </div>
               </div>
             </Modal>
-          </>
+          </div>
         ) : tab === 'presets' ? (
-          <>
+          <div className="flex flex-col flex-1 overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-gray-100">
               <div className="relative w-full md:w-[360px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -947,9 +947,13 @@ export const TemplatesPage: React.FC = () => {
                 </Button>
               </div>
             </div>
-            <div className="mt-6">
-              <div className="overflow-x-auto no-scrollbar">{renderCatalogTable()}</div>
-              <CatalogPagination />
+            <div className="mt-6 flex-1 overflow-hidden">
+              <TableCard className="flex flex-col h-full">
+                {renderCatalogTable()}
+                <div className="shrink-0 border-t border-gray-100 bg-white px-6 py-4">
+                  <CatalogPagination />
+                </div>
+              </TableCard>
             </div>
 
             <Modal
@@ -971,7 +975,7 @@ export const TemplatesPage: React.FC = () => {
                 </div>
               </div>
             </Modal>
-          </>
+          </div>
         ) : null}
       </div>
     </div>

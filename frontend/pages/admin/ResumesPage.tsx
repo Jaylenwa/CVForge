@@ -88,118 +88,119 @@ export const ResumesPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-10 pb-10">
-        <TableCard>
-          <div className="overflow-x-auto no-scrollbar">
+      <div className="flex-1 overflow-hidden px-10 pb-10 flex flex-col">
+        <TableCard className="flex flex-col flex-1">
+          <div className="flex-1 overflow-auto no-scrollbar">
             <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200">
-                <th className="px-6 py-4 font-semibold text-gray-600">ID</th>
-                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.title')}</th>
-                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.user')}</th>
-                <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.template')}</th>
-                <th className="pl-6 pr-[88px] py-4 font-semibold text-gray-600 text-right align-middle">{t('admin.columns.actions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {items.map((r: AdminResume) => (
-                <tr key={r.id} className="hover:bg-indigo-50/30 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-400">#{r.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <Thumbnail r={r} />
-                      <div>
-                        <div className="text-sm font-semibold text-slate-900">{r.title}</div>
-                        <div className="text-[10px] text-slate-400 uppercase tracking-tight">{r.Theme?.Font || ''}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-slate-900">{r.userName || r.userId}</div>
-                    <div className="text-[10px] text-slate-400 uppercase tracking-tight">{new Date(r.lastModified).toLocaleString()}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{r.templateId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right align-middle">
-                    <div className="flex items-center justify-end gap-0.5">
-                      <div className="relative group">
-                        <button
-                          onClick={() => window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?id=${r.id}`, '_blank')}
-                          className="p-1.5 leading-none text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-all"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap rounded-md bg-gray-900 text-white text-xs px-2 py-1 shadow">
-                          {t('admin.actions.preview')}
-                        </div>
-                      </div>
-                      <div className="relative group">
-                        <button
-                          onClick={async () => {
-                            const ok = await confirm({ title: t('common.confirmAction'), message: t('admin.confirm.setPublic') });
-                            if (!ok) return;
-                            try { await setResumeVisibility(r.id, true); showToast(t('admin.msg.setPublicSuccess'), 'success'); }
-                            catch { showToast(t('admin.msg.setPublicFailed'), 'error'); }
-                          }}
-                          className="p-1.5 leading-none text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-all"
-                        >
-                          <Globe className="w-4 h-4" />
-                        </button>
-                        <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap rounded-md bg-gray-900 text-white text-xs px-2 py-1 shadow">
-                          {t('admin.actions.setPublic')}
-                        </div>
-                      </div>
-                      <div className="relative group">
-                        <button
-                          onClick={async () => {
-                            const ok = await confirm({ title: t('common.confirmAction'), message: t('admin.confirm.deleteResume') });
-                            if (!ok) return;
-                            try { await deleteResume(r.id); showToast(t('admin.msg.deleted'), 'success'); load(); }
-                            catch { showToast(t('admin.msg.deleteFailed'), 'error'); }
-                          }}
-                          className="p-1.5 leading-none text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-all"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap rounded-md bg-gray-900 text-white text-xs px-2 py-1 shadow">
-                          {t('admin.actions.delete')}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
+              <thead className="sticky top-0 z-20 bg-slate-50 shadow-sm">
+                <tr className="border-b border-slate-200">
+                  <th className="px-6 py-4 font-semibold text-gray-600">ID</th>
+                  <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.title')}</th>
+                  <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.user')}</th>
+                  <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.columns.template')}</th>
+                  <th className="pl-6 pr-[88px] py-4 font-semibold text-gray-600 text-right align-middle">{t('admin.columns.actions')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {items.map((r: AdminResume) => (
+                  <tr key={r.id} className="hover:bg-indigo-50/30 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-400">#{r.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <Thumbnail r={r} />
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900">{r.title}</div>
+                          <div className="text-[10px] text-slate-400 uppercase tracking-tight">{r.Theme?.Font || ''}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-slate-900">{r.userName || r.userId}</div>
+                      <div className="text-[10px] text-slate-400 uppercase tracking-tight">{new Date(r.lastModified).toLocaleString()}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{r.templateId}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right align-middle">
+                      <div className="flex items-center justify-end gap-0.5">
+                        <div className="relative group">
+                          <button
+                            onClick={() => window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?id=${r.id}`, '_blank')}
+                            className="p-1.5 leading-none text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-all"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap rounded-md bg-gray-900 text-white text-xs px-2 py-1 shadow">
+                            {t('admin.actions.preview')}
+                          </div>
+                        </div>
+                        <div className="relative group">
+                          <button
+                            onClick={async () => {
+                              const ok = await confirm({ title: t('common.confirmAction'), message: t('admin.confirm.setPublic') });
+                              if (!ok) return;
+                              try { await setResumeVisibility(r.id, true); showToast(t('admin.msg.setPublicSuccess'), 'success'); }
+                              catch { showToast(t('admin.msg.setPublicFailed'), 'error'); }
+                            }}
+                            className="p-1.5 leading-none text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-all"
+                          >
+                            <Globe className="w-4 h-4" />
+                          </button>
+                          <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap rounded-md bg-gray-900 text-white text-xs px-2 py-1 shadow">
+                            {t('admin.actions.setPublic')}
+                          </div>
+                        </div>
+                        <div className="relative group">
+                          <button
+                            onClick={async () => {
+                              const ok = await confirm({ title: t('common.confirmAction'), message: t('admin.confirm.deleteResume') });
+                              if (!ok) return;
+                              try { await deleteResume(r.id); showToast(t('admin.msg.deleted'), 'success'); load(); }
+                              catch { showToast(t('admin.msg.deleteFailed'), 'error'); }
+                            }}
+                            className="p-1.5 leading-none text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap rounded-md bg-gray-900 text-white text-xs px-2 py-1 shadow">
+                            {t('admin.actions.delete')}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="shrink-0 border-t border-gray-100 bg-white px-6 py-4">
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <div>
+                {t('admin.total')} {total}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p: number) => Math.max(p - 1, 1))}>
+                  {t('admin.prev')}
+                </Button>
+                <div className="min-w-[64px] text-center">
+                  {page} / {Math.max(1, totalPages || Math.ceil(total / pageSize))}
+                </div>
+                <Button variant="outline" size="sm" disabled={!hasNext} onClick={() => setPage((p: number) => p + 1)}>
+                  {t('admin.next')}
+                </Button>
+                <div className="w-[96px]">
+                  <Select
+                    value={String(pageSize)}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      setPage(1);
+                      setPageSize(parseInt(e.target.value, 10));
+                    }}
+                    options={[10, 20, 50].map((x) => ({ label: String(x), value: String(x) }))}
+                    className="py-1.5"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </TableCard>
-
-        <div className="mt-6 flex items-center justify-between text-sm text-gray-500">
-          <div>
-            {t('admin.total')} {total}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p: number) => Math.max(p - 1, 1))}>
-              {t('admin.prev')}
-            </Button>
-            <div className="min-w-[64px] text-center">
-              {page} / {Math.max(1, totalPages || Math.ceil(total / pageSize))}
-            </div>
-            <Button variant="outline" size="sm" disabled={!hasNext} onClick={() => setPage((p: number) => p + 1)}>
-              {t('admin.next')}
-            </Button>
-            <div className="w-[96px]">
-              <Select
-                value={String(pageSize)}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                  setPage(1);
-                  setPageSize(parseInt(e.target.value, 10));
-                }}
-                options={[10, 20, 50].map((x) => ({ label: String(x), value: String(x) }))}
-                className="py-1.5"
-              />
-            </div>
-          </div>
-        </div>
       </div>
 
       

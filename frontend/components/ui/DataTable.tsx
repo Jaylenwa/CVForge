@@ -67,7 +67,7 @@ export const DataTable = <T,>({ data, columns, getRowKey, emptyState, rowClassNa
     <div
       ref={containerRef}
       onScroll={handleScroll}
-      className="relative flex-1 overflow-x-auto no-scrollbar"
+      className="relative flex-1 overflow-auto no-scrollbar"
     >
       <table className="w-full border-collapse text-left text-sm">
         <thead className="sticky top-0 z-20 bg-gray-50 shadow-sm">

@@ -345,34 +345,33 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
       : rootCategories;
 
     return (
-      <div className="space-y-3">
-        <TableCard>
-          <div className="overflow-x-auto no-scrollbar">
-            <table className="w-full text-left table-fixed text-sm">
-              <colgroup>
-                <col className="w-[300px]" />
-                <col className="w-[320px]" />
-                <col className="w-[80px]" />
-                <col className="w-[90px]" />
-                <col className="w-[140px]" />
-              </colgroup>
-              <thead className="sticky top-0 z-20 bg-gray-50 shadow-sm">
-                <tr>
-                  <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.jobs.name') || '岗位'}</th>
-                  <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.form.tags')}</th>
-                  <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.form.order')}</th>
-                  <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.form.active')}</th>
-                  <th className="px-4 py-4 font-semibold text-gray-600 text-right sticky right-0 bg-gray-50">{t('admin.columns.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredRootCategories.map((c) => {
-                  const children = categoriesByParent.get(c.ID) || [];
-                  const rootRoles = rolesByCategory.get(c.ID) || [];
-                  const expandedKey = String(c.ID);
-                  const expanded = keyword ? true : !!expandedCategories[expandedKey];
-                  return (
-                    <React.Fragment key={c.ID}>
+      <TableCard className="flex flex-col h-full">
+        <div className="flex-1 overflow-auto no-scrollbar">
+          <table className="w-full text-left table-fixed text-sm">
+            <colgroup>
+              <col className="w-[300px]" />
+              <col className="w-[320px]" />
+              <col className="w-[80px]" />
+              <col className="w-[90px]" />
+              <col className="w-[140px]" />
+            </colgroup>
+            <thead className="sticky top-0 z-20 bg-gray-50 shadow-sm">
+              <tr>
+                <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.jobs.name') || '岗位'}</th>
+                <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.form.tags')}</th>
+                <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.form.order')}</th>
+                <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.form.active')}</th>
+                <th className="px-4 py-4 font-semibold text-gray-600 text-right sticky right-0 bg-gray-50">{t('admin.columns.actions')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredRootCategories.map((c) => {
+                const children = categoriesByParent.get(c.ID) || [];
+                const rootRoles = rolesByCategory.get(c.ID) || [];
+                const expandedKey = String(c.ID);
+                const expanded = keyword ? true : !!expandedCategories[expandedKey];
+                return (
+                  <React.Fragment key={c.ID}>
                       <tr
                         className="hover:bg-blue-50/30 transition-colors cursor-pointer"
                         onClick={() => setExpandedCategories((prev) => ({ ...prev, [expandedKey]: !prev[expandedKey] }))}
@@ -660,12 +659,11 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                       </AnimatePresence>
                     </React.Fragment>
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </TableCard>
-      </div>
+              })}
+            </tbody>
+          </table>
+        </div>
+      </TableCard>
     );
   };
 
@@ -694,8 +692,8 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
           </div>
         )}
       </div>
-      <div className={embedded ? 'flex-1 overflow-y-auto pb-10' : 'flex-1 overflow-y-auto px-10 pb-10'}>
-        <div className="overflow-x-auto no-scrollbar">
+      <div className={embedded ? 'flex-1 overflow-hidden pb-10 flex flex-col' : 'flex-1 overflow-hidden px-10 pb-10 flex flex-col'}>
+        <div className="flex-1 overflow-hidden">
           {renderTable()}
         </div>
       </div>
