@@ -4,6 +4,7 @@ export const MOCK_TEMPLATES: Template[] = [
   { id: 'TemplateMintTimeline', name: '青色时间轴', tags: ['美观', '中文', 'ATS 友好'] },
   { id: 'TemplateWaveTimeline', name: '波浪时间轴', tags: ['美观', '中文', '时间轴'] },
   { id: 'TemplateBluePhotoColumns', name: '蓝头头像三栏版', tags: ['中文', '三栏', '图标'] },
+  { id: 'TemplateBlueResumeHeader', name: '蓝顶斜杠版', tags: ['中文', '简洁', '图标'] },
   { id: 'TemplateClassic', name: '经典专业版', tags: ['专业', '简洁', 'ATS 友好'] },
   { id: 'TemplateSlate', name: '石板简洁版', tags: ['单栏', '简洁', 'ATS 友好'] },
   { id: 'TemplateBlueStripe', name: '蓝条灰底版', tags: ['中文', '清晰', 'ATS 友好'] },
