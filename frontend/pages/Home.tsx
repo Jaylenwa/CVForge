@@ -2,12 +2,13 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle, Cpu, FileCheck, Share2, Briefcase, GraduationCap, PenTool, Code } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { AppRoute } from '../types';
+import { AppRoute, ResumeData } from '../types';
 // 后端数据来源
 import { useLanguage } from '../contexts/LanguageContext';
 import { ResumeArtboard } from './editor/ResumePreview';
 import { INITIAL_RESUME } from '../services/mockData';
 import { fetchTemplateCatalog } from '../services/catalogService';
+import { applyTemplateDefaultsToResumeData } from '../utils/template-defaults';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -97,6 +98,8 @@ export const Home: React.FC = () => {
     const mmToPx = 96 / 25.4;
     const a4w = 210 * mmToPx;
     const a4h = 297 * mmToPx;
+    const rawPreviewData = { ...INITIAL_RESUME, templateId: String(template?.templateExternalId || INITIAL_RESUME.templateId) } as ResumeData;
+    const previewData = applyTemplateDefaultsToResumeData(rawPreviewData);
     return (
       <div className="group relative border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-lg">
         <div ref={containerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
@@ -107,7 +110,7 @@ export const Home: React.FC = () => {
                 className="relative select-none pointer-events-none shadow-sm bg-white"
               >
                 <ResumeArtboard
-                  data={{ ...INITIAL_RESUME, templateId: template.templateExternalId }}
+                  data={previewData}
                   scale={scale}
                   disableShadow={true}
                   showPageHint={false}
