@@ -11,6 +11,7 @@ import { TemplateMonoBar } from '../../components/templates/TemplateMonoBar';
 import { TemplateSidebarLabel } from '../../components/templates/TemplateSidebarLabel';
 import { TemplateBlueStripe } from '../../components/templates/TemplateBlueStripe';
 import { TemplateDarkHeaderIcons } from '../../components/templates/TemplateDarkHeaderIcons';
+import { TemplateWaveTimeline } from '../../components/templates/TemplateWaveTimeline';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 
@@ -67,6 +68,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     TemplateSidebarLabel: TemplateSidebarLabel,
     TemplateBlueStripe: TemplateBlueStripe,
     TemplateDarkHeaderIcons: TemplateDarkHeaderIcons,
+    TemplateWaveTimeline: TemplateWaveTimeline,
   };
 
   React.useEffect(() => {
