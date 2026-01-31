@@ -35,6 +35,13 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });
   const [tipOpen, setTipOpen] = React.useState(false);
+  const [isPrint, setIsPrint] = React.useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const mm = window.matchMedia?.('print');
+    const hash = String(window.location?.hash || '');
+    const byRoute = hash.includes('/print');
+    return byRoute || !!mm?.matches;
+  });
   const themeColor = data.Theme?.Color || '#2563eb';
 
   const hexToRgb = React.useCallback((hex: string): { r: number; g: number; b: number } | null => {
@@ -58,10 +65,29 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     TemplateSidebarLabel: TemplateSidebarLabel,
   };
 
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mm = window.matchMedia('print');
+    const byRoute = String(window.location?.hash || '').includes('/print');
+    const onChange = () => setIsPrint(mm.matches || byRoute);
+    onChange();
+
+    if (typeof mm.addEventListener === 'function') {
+      mm.addEventListener('change', onChange);
+      return () => mm.removeEventListener('change', onChange);
+    }
+    mm.addListener(onChange);
+    return () => mm.removeListener(onChange);
+  }, []);
+
   const containerStyle: React.CSSProperties = {
-    transform: `scale(${scale})`,
-    transformOrigin,
-    height: pageInfo.pageHeight > 0 ? `${pageInfo.pageHeight * pageInfo.count}px` : '297mm',
+    ...(!isPrint
+      ? {
+          transform: `scale(${scale})`,
+          transformOrigin,
+          height: pageInfo.pageHeight > 0 ? `${pageInfo.pageHeight * pageInfo.count}px` : '297mm',
+        }
+      : {}),
     ...style,
   };
 
@@ -111,6 +137,8 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     return <Comp data={data} styles={styles} disableShadow={true} />;
   };
 
+  const effectiveShowPageHint = showPageHint && !isPrint;
+
   return (
     <>
       <div 
@@ -121,7 +149,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
         >
           {renderTemplate()}
 
-          {showPageHint && pageInfo.count > 1 && pageInfo.pageHeight > 0 && (
+          {effectiveShowPageHint && pageInfo.count > 1 && pageInfo.pageHeight > 0 && (
             <div className="absolute inset-0 pointer-events-none print:hidden">
               {Array.from({ length: pageInfo.count - 1 }).map((_, idx) => {
                 const pageIndex = idx + 1;
