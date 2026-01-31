@@ -166,7 +166,7 @@ export const JobSidebar: React.FC<{
 
   return (
     <aside className="w-64 flex-shrink-0 relative hidden md:block z-40">
-      <div className="bg-white rounded-3xl border border-slate-200 p-4 shadow-sm sticky top-24 relative z-40 isolate">
+      <div className="bg-white rounded-3xl border border-slate-200 p-4 shadow-sm relative z-40 isolate">
         <div className="flex items-center gap-2 mb-6 px-3 text-slate-400">
           <ListFilter size={16} strokeWidth={2.5} />
           <span className="text-[11px] font-extrabold uppercase tracking-widest">{title}</span>
