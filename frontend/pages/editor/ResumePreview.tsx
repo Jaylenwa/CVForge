@@ -12,6 +12,7 @@ import { TemplateSidebarLabel } from '../../components/templates/TemplateSidebar
 import { TemplateBlueStripe } from '../../components/templates/TemplateBlueStripe';
 import { TemplateDarkHeaderIcons } from '../../components/templates/TemplateDarkHeaderIcons';
 import { TemplateWaveTimeline } from '../../components/templates/TemplateWaveTimeline';
+import { TemplateBluePhotoColumns } from '../../components/templates/TemplateBluePhotoColumns';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 
@@ -69,6 +70,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     TemplateBlueStripe: TemplateBlueStripe,
     TemplateDarkHeaderIcons: TemplateDarkHeaderIcons,
     TemplateWaveTimeline: TemplateWaveTimeline,
+    TemplateBluePhotoColumns: TemplateBluePhotoColumns,
   };
 
   React.useEffect(() => {
