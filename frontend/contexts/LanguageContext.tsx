@@ -311,7 +311,7 @@ const translations: Translations = {
     'pricing.month': '/mo',
     'pricing.buy': 'Buy',
     'pricing.modal.title': 'Notice',
-    'pricing.modal.planning': 'Planning in progress...',
+    'pricing.modal.planning': 'Free to use',
     'pricing.modal.close': 'Close'
     ,
     'nav.admin': 'Admin',
@@ -844,7 +844,7 @@ const translations: Translations = {
     'pricing.month': '/月',
     'pricing.buy': '购买',
     'pricing.modal.title': '提示',
-    'pricing.modal.planning': '正在规划中...',
+    'pricing.modal.planning': '免费使用',
     'pricing.modal.close': '关闭'
     ,
     'nav.admin': '管理后台',
