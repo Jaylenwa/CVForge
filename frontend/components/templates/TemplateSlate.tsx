@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getIdPhotoClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateSlate: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -136,11 +136,11 @@ export const TemplateSlate: React.FC<{ data: ResumeData; styles: any; disableSha
               <img
                 src={personal.AvatarURL}
                 alt={t('a11y.avatarAlt')}
-                className={getIdPhotoClassName('rounded-lg object-cover ring-2 ring-white shadow-sm border border-slate-200')}
+                className={getAvatarPhotoClassName()}
                 style={{ backgroundColor: '#ffffff' }}
               />
             ) : (
-              <div className={getIdPhotoClassName('rounded-lg bg-slate-200 border border-slate-200')} />
+              <div className={getAvatarPlaceholderClassName()} />
             )}
             <div className="flex-1 min-w-0 pl-8">
               <div className="min-w-0">

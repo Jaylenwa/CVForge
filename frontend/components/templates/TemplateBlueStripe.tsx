@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getIdPhotoClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -197,11 +197,11 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
               <img
                 src={personal.AvatarURL}
                 alt={t('a11y.avatarAlt')}
-                className={getIdPhotoClassName('object-cover border border-slate-300 shadow-sm')}
+                className={getAvatarPhotoClassName()}
                 style={{ backgroundColor: '#ffffff' }}
               />
             ) : (
-              <div className={getIdPhotoClassName('bg-slate-200 border border-slate-300')} />
+              <div className={getAvatarPlaceholderClassName()} />
             )}
           </div>
         </div>

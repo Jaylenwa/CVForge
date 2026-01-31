@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getIdPhotoClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -157,11 +157,11 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
                 <img
                   src={personal.AvatarURL}
                   alt={t('a11y.avatarAlt')}
-                  className={getIdPhotoClassName('object-cover')}
+                  className={getAvatarPhotoClassName()}
                   style={{ backgroundColor: '#ffffff' }}
                 />
               ) : (
-                <div className={getIdPhotoClassName('bg-white/20')} />
+                <div className={getAvatarPlaceholderClassName('bg-white/20')} />
               )}
             </div>
 

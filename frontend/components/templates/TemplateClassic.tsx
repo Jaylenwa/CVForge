@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getIdPhotoClassName, getLineHeight, getOrderedItems, getOrderedVisibleSections, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getLineHeight, getOrderedItems, getOrderedVisibleSections, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
@@ -59,15 +59,18 @@ export const TemplateClassic: React.FC<{ data: ResumeData; styles: any; disableS
             </div>
           )}
       </div>
-      {personal?.AvatarURL && (
-          <div className="order-1 md:order-2 flex-shrink-0">
-          <img 
-              src={personal.AvatarURL} 
-              alt={t('a11y.avatarAlt')} 
-              className={getIdPhotoClassName('rounded-lg object-cover border-2 shadow-sm')}
+      <div className="order-1 md:order-2 flex-shrink-0">
+        {personal?.AvatarURL ? (
+          <img
+            src={personal.AvatarURL}
+            alt={t('a11y.avatarAlt')}
+            className={getAvatarPhotoClassName()}
+            style={{ backgroundColor: '#ffffff' }}
           />
-          </div>
-      )}
+        ) : (
+          <div className={getAvatarPlaceholderClassName()} />
+        )}
+      </div>
   </div>
 
   <div className="space-y-6">

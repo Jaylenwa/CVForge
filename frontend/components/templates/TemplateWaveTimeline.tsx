@@ -5,7 +5,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getIdPhotoClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 const ScallopEdge: React.FC = () => {
   const radius = 12;
@@ -166,11 +166,11 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
                 <img
                   src={personal.AvatarURL}
                   alt={t('a11y.avatarAlt')}
-                  className={getIdPhotoClassName('rounded-sm object-cover ring-4 ring-white/90')}
+                  className={getAvatarPhotoClassName()}
                   style={{ backgroundColor: '#ffffff' }}
                 />
               ) : (
-                <div className={getIdPhotoClassName('rounded-sm bg-white/30')} />
+                <div className={getAvatarPlaceholderClassName('bg-white/30')} />
               )}
             </div>
           </div>

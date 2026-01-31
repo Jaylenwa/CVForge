@@ -5,7 +5,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { Mail, Phone, MapPin, GraduationCap, User, Briefcase, Wrench, Layers, BookOpen, Award, Heart, Image as ImageIcon } from 'lucide-react';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getIdPhotoClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
@@ -163,17 +163,21 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
                 ))}
               </div>
             </div>
-            {data.Personal?.AvatarURL && (
-              <div className="flex-shrink-0">
-                <img 
-                  src={data.Personal.AvatarURL} 
-                  alt={t('a11y.avatarAlt')} 
-                  className={getIdPhotoClassName('rounded-md object-cover ring-2 ring-white/70')}
+            <div className="flex-shrink-0">
+              {data.Personal?.AvatarURL ? (
+                <img
+                  src={data.Personal.AvatarURL}
+                  alt={t('a11y.avatarAlt')}
+                  className={getAvatarPhotoClassName()}
+                  style={{ backgroundColor: '#ffffff' }}
                 />
-              </div>
-            )}
+              ) : (
+                <div className={getAvatarPlaceholderClassName('bg-white/30')} />
+              )}
+            </div>
           </div>
         </div>
+        {/* <div className="w-full" style={{ backgroundColor: color }}>
         {/* <div className="w-full" style={{ backgroundColor: color }}>
           <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-6 block">
             <path d="M0 30 Q 300 60 600 30 T 1200 30 L 1200 60 L 0 60 Z" fill="white"></path>

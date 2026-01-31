@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getIdPhotoClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateSidebarLabel: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -130,11 +130,11 @@ export const TemplateSidebarLabel: React.FC<{ data: ResumeData; styles: any; dis
                   <img
                     src={personal.AvatarURL}
                     alt={t('a11y.avatarAlt')}
-                    className={getIdPhotoClassName('rounded-xl object-cover border border-gray-300 shadow-sm')}
+                    className={getAvatarPhotoClassName()}
                     style={{ backgroundColor: '#ffffff' }}
                   />
                 ) : (
-                  <div className={getIdPhotoClassName('rounded-xl bg-gray-200 border border-gray-300')} />
+                  <div className={getAvatarPlaceholderClassName()} />
                 )}
               </div>
               <div className="min-w-0 flex-1">

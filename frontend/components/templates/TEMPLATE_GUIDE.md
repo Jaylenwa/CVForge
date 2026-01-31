@@ -36,15 +36,25 @@
 
 模板头像必须统一为证件照物理尺寸，避免使用 `px` 或随意 `w/h`：
 
-- 尺寸：`35mm × 49mm`（比例 5:7）
+- 尺寸：`30mm × 42mm`（比例 5:7）
 - 渲染：`object-cover`（保证不同照片比例不破版）
+- 样式：统一圆角、边框与阴影；避免每个模板自定义不同边框/圆角
 
 用法示例：
 
 ```tsx
-import { getIdPhotoClassName } from './shared/templateTokens';
+import { getAvatarPhotoClassName, getAvatarPlaceholderClassName } from './shared/templateTokens';
 
-<img className={getIdPhotoClassName('rounded-md object-cover')} />
+{personal.AvatarURL ? (
+  <img
+    src={personal.AvatarURL}
+    alt={t('a11y.avatarAlt')}
+    className={getAvatarPhotoClassName()}
+    style={{ backgroundColor: '#ffffff' }}
+  />
+) : (
+  <div className={getAvatarPlaceholderClassName()} />
+)}
 ```
 
 ## Density 规范（间距与密度控制）
@@ -109,3 +119,4 @@ import { ExamSection } from './shared/ExamSection';
 - 使用 `RichText` 输出描述
 - Exam 分区使用 `ExamSection`
 - 自定义字段用 `parseCustomPairs + normalizeCustomPairs`
+- 头像使用 `getAvatarPhotoClassName + getAvatarPlaceholderClassName`
