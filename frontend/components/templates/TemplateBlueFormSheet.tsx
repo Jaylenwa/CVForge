@@ -190,13 +190,11 @@ export const TemplateBlueFormSheet: React.FC<{ data: ResumeData; styles: any; di
   }, [orderedSections]);
 
   const headerTitle = isZh ? '个人简历' : 'Resume';
-  const headerSubtitle = isZh ? '努力超越自己，每天进步一点点' : '';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none p-10`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
       <header className="text-center">
         <div className="text-3xl font-bold text-slate-900">{headerTitle}</div>
-        {headerSubtitle ? <div className="mt-2 text-sm text-slate-600">{headerSubtitle}</div> : null}
       </header>
 
       <div className="mt-6 space-y-6">
