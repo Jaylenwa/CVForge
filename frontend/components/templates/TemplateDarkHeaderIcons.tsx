@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -176,7 +176,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
 
               {(infoPairs.base.length > 0 || infoPairs.extra.length > 0 || customPairs.length > 0) ? (
                 <div className="mt-5">
-                  <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm text-white/85 leading-7">
+                  <div className={getHeaderInfoTextClassName('grid grid-cols-2 gap-x-10 gap-y-2 text-white/85')}>
                     {[...infoPairs.base, ...infoPairs.extra].map((p, idx) => (
                       <div key={`${p.label}-${idx}`} className="flex gap-2 min-w-0">
                         <div className="text-white/65 whitespace-nowrap">{p.label}:</div>

@@ -14,6 +14,7 @@ import { TemplateDarkHeaderIcons } from '../../components/templates/TemplateDark
 import { TemplateWaveTimeline } from '../../components/templates/TemplateWaveTimeline';
 import { TemplateBluePhotoColumns } from '../../components/templates/TemplateBluePhotoColumns';
 import { TemplateBlueResumeHeader } from '../../components/templates/TemplateBlueResumeHeader';
+import { TemplateTealWaveTimeline } from '../../components/templates/TemplateTealWaveTimeline';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 
@@ -73,6 +74,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     TemplateWaveTimeline: TemplateWaveTimeline,
     TemplateBluePhotoColumns: TemplateBluePhotoColumns,
     TemplateBlueResumeHeader: TemplateBlueResumeHeader,
+    TemplateTealWaveTimeline: TemplateTealWaveTimeline,
   };
 
   React.useEffect(() => {
@@ -160,7 +162,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
           {renderTemplate()}
 
           {effectiveShowPageHint && pageInfo.count > 1 && pageInfo.pageHeight > 0 && (
-            <div className="absolute inset-0 pointer-events-none print:hidden">
+            <div className="absolute inset-0 pointer-events-none print:hidden z-50">
               {Array.from({ length: pageInfo.count - 1 }).map((_, idx) => {
                 const pageIndex = idx + 1;
                 const barHeight = 34;

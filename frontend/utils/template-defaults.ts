@@ -13,6 +13,7 @@ const TEMPLATE_DEFAULT_THEMES: Record<string, Partial<ResumeTheme>> = {
   TemplateWaveTimeline: { Color: '#2f7a75' },
   TemplateBluePhotoColumns: { Color: '#2c80b9' },
   TemplateBlueResumeHeader: { Color: '#2c80b9' },
+  TemplateTealWaveTimeline: { Color: '#3b7f8a' },
 };
 
 export const getTemplateDefaultTheme = (templateId: string): Partial<ResumeTheme> | null => {

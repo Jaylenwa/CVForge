@@ -5,7 +5,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -177,7 +177,7 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
             ) : null}
 
             {(personal?.Job || personal?.JoinTime) ? (
-              <div className="mt-4 grid grid-cols-2 gap-x-10 gap-y-1 text-sm text-slate-800 leading-7">
+              <div className={`mt-4 grid grid-cols-2 gap-x-10 gap-y-1 text-slate-800 ${getHeaderInfoTextClassName()}`}>
                 {personal?.Job ? (
                   <div className="flex gap-2 min-w-0">
                     <span className="text-slate-600 whitespace-nowrap">{t('editor.fields.jobApplication')}：</span>
@@ -194,7 +194,7 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
             ) : null}
 
             {basicInfoPairs.length > 0 ? (
-              <div className="mt-3 grid grid-cols-2 gap-x-10 gap-y-1 text-sm text-slate-800 leading-7">
+              <div className={`mt-3 grid grid-cols-2 gap-x-10 gap-y-1 text-slate-800 ${getHeaderInfoTextClassName()}`}>
                 {basicInfoPairs.map((p, idx) => (
                   <div key={`${p.label}-${idx}`} className="flex gap-2 min-w-0">
                     {p.label ? <span className="text-slate-600 whitespace-nowrap">{p.label}：</span> : null}

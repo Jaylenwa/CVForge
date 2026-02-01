@@ -18,8 +18,8 @@ export type SpacingTokens = {
   listMediumClass: string;
 };
 
-export const ID_PHOTO_WIDTH_MM = 30;
-export const ID_PHOTO_HEIGHT_MM = 42;
+export const ID_PHOTO_WIDTH_MM = 25;
+export const ID_PHOTO_HEIGHT_MM = 35;
 export const ID_PHOTO_CLASSNAME = `w-[${ID_PHOTO_WIDTH_MM}mm] h-[${ID_PHOTO_HEIGHT_MM}mm]`;
 
 export const getIdPhotoClassName = (extraClassName?: string) => {
@@ -35,6 +35,12 @@ export const getAvatarPhotoClassName = (extraClassName?: string) => {
 
 export const getAvatarPlaceholderClassName = (extraClassName?: string) => {
   return getIdPhotoClassName(extraClassName ? `${AVATAR_PLACEHOLDER_BASE_CLASSNAME} ${extraClassName}` : AVATAR_PLACEHOLDER_BASE_CLASSNAME);
+};
+
+export const HEADER_INFO_TEXT_CLASSNAME = 'text-[13px] leading-6';
+
+export const getHeaderInfoTextClassName = (extraClassName?: string) => {
+  return extraClassName ? `${HEADER_INFO_TEXT_CLASSNAME} ${extraClassName}` : HEADER_INFO_TEXT_CLASSNAME;
 };
 
 export const getAccentColor = (data: ResumeData, fallback: string) => {

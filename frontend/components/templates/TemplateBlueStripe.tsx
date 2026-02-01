@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -181,7 +181,7 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
             ) : null}
 
             {headerParts.length > 0 ? (
-              <div className="mt-3 text-sm text-slate-800 flex flex-wrap items-center leading-8">
+              <div className={getHeaderInfoTextClassName('mt-3 text-slate-800 flex flex-wrap items-center')}>
                 {headerParts.map((v, idx) => (
                   <React.Fragment key={`${v}-${idx}`}>
                     {idx > 0 ? <span className="mx-2 text-slate-400">|</span> : null}

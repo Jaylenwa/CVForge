@@ -9,6 +9,7 @@
 - 日期区间：`formatDateRange(item, t, options)`（避免 `~` / `-` / `YYYY-MM` / `YYYY.MM` 混用）。
 - 自定义字段：`parseCustomPairs()` + `normalizeCustomPairs()`（统一 JSON 解析、空值过滤与 trim）。
 - 头像尺寸：`getIdPhotoClassName()`（统一证件照物理尺寸，避免 px/随意大小）。
+- Header Info 字号：`getHeaderInfoTextClassName()`（统一个人信息区域字号与行高）。
 - 富文本描述：`<RichText />`（统一 sanitize、基础排版与注入）。
 - Exam 分区：`<ExamSection />`（统一 meta+scores 的解释与表格 props）。
 
@@ -26,11 +27,17 @@
 
 ## 个人信息规范（Header Info）
 
-个人信息区（姓名、求职意向/岗位、联系方式/基础字段/自定义字段）在不同模板中必须使用同一套字号档位：
+个人信息区（姓名、求职意向/岗位、联系方式/基础字段/自定义字段）在不同模板中必须使用同一套字号档位，统一通过 `getHeaderInfoTextClassName()` 控制（默认：`text-[13px] leading-6`）。
 
-- 姓名：`text-3xl`
-- 个人信息（联系方式/字段）：`text-sm`
-- label（如“电话/邮箱/城市”）：保持更浅色，但字号仍为 `text-sm`
+推荐用法：
+
+```tsx
+import { getHeaderInfoTextClassName } from './shared/templateTokens';
+
+<div className={getHeaderInfoTextClassName('text-slate-800')}>
+  ...
+</div>
+```
 
 ## 头像规范（证件照）
 
@@ -120,3 +127,4 @@ import { ExamSection } from './shared/ExamSection';
 - Exam 分区使用 `ExamSection`
 - 自定义字段用 `parseCustomPairs + normalizeCustomPairs`
 - 头像使用 `getAvatarPhotoClassName + getAvatarPlaceholderClassName`
+- Header Info 字号用 `getHeaderInfoTextClassName`

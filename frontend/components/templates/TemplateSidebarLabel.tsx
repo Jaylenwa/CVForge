@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getLineHeight, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateSidebarLabel: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -140,7 +140,7 @@ export const TemplateSidebarLabel: React.FC<{ data: ResumeData; styles: any; dis
               <div className="min-w-0 flex-1">
                 <h1 className="text-3xl font-bold text-gray-900">{personal?.FullName}</h1>
                 {(basePairs.length > 0 || extraPairs.length > 0 || hasCustomInfo) ? (
-                  <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-sm text-gray-600 leading-6">
+                  <div className={getHeaderInfoTextClassName('mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-gray-600')}>
                     {[...basePairs, ...extraPairs].map((p, idx) => (
                       <div key={`${p.label}-${idx}`} className="flex gap-2 min-w-0">
                         <div className="text-gray-500 whitespace-nowrap">{p.label}:</div>

@@ -5,7 +5,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 const ScallopEdge: React.FC = () => {
   const radius = 12;
@@ -142,7 +142,7 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
           <div className="px-10 pt-8 pb-10 flex items-start gap-8">
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold tracking-wide text-white">{personal.FullName}</h1>
-              {personal.Job ? <p className="text-sm mt-2 text-white/90">{personal.Job}</p> : null}
+              {personal.Job ? <p className={getHeaderInfoTextClassName('mt-2 text-white/90')}>{personal.Job}</p> : null}
               {summaryHtml ? (
                 <div className="mt-2">
                   <RichText html={summaryHtml} className="text-white/90" fontSize={styles.fontSize} lineHeight={lineHeight} />
@@ -150,7 +150,7 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
               ) : null}
 
               {infoItems.length ? (
-                <div className="mt-4 flex flex-wrap gap-x-5 gap-y-3 text-sm text-white/90 leading-7">
+                <div className={getHeaderInfoTextClassName('mt-4 flex flex-wrap gap-x-5 gap-y-3 text-white/90')}>
                   {infoItems.map((it) => (
                     <span key={it.key} className="inline-flex items-center gap-1">
                       {it.icon ? it.icon : null}
