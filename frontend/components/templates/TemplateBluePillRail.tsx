@@ -4,14 +4,14 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateBluePillRail: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#607691');
-  const { lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
   const isZh = (data.language || 'zh') === 'zh';
 
   const customPairs = React.useMemo(() => normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo)), [personal?.CustomInfo]);
@@ -155,6 +155,13 @@ export const TemplateBluePillRail: React.FC<{ data: ResumeData; styles: any; dis
   const basicInfoTitle = (data.language || 'zh') === 'zh' ? '基本信息' : 'Basic Information';
   const headerMain = (data.language || 'zh') === 'zh' ? '个人简历' : 'Resume';
   const headerEn = (data.language || 'zh') === 'zh' ? 'PERSONAL RESUME' : 'PERSONAL RESUME';
+  const basicInfoGridClassName =
+    spacingMode === 'compact'
+      ? 'grid grid-cols-2 gap-x-8 gap-y-2 text-slate-800'
+      : spacingMode === 'spacious'
+        ? 'grid grid-cols-2 gap-x-12 gap-y-4 text-slate-800'
+        : 'grid grid-cols-2 gap-x-10 gap-y-3 text-slate-800';
+  const basicInfoPaddingTopClassName = spacingMode === 'compact' ? 'pt-4' : spacingMode === 'spacious' ? 'pt-6' : 'pt-5';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
@@ -174,10 +181,10 @@ export const TemplateBluePillRail: React.FC<{ data: ResumeData; styles: any; dis
 
           <section>
             <PillHeader title={basicInfoTitle} />
-            <div className="pt-5">
+            <div className={basicInfoPaddingTopClassName}>
               <div className="flex items-start gap-8">
                 <div className="flex-1 min-w-0">
-                  <div className={`grid grid-cols-2 gap-x-10 gap-y-3 ${getHeaderInfoTextClassName('text-slate-800')}`}>
+                  <div className={basicInfoGridClassName}>
                     {basicInfoPairs.map((p, idx) => (
                       <div key={`${p.label}-${idx}`} className="flex items-baseline gap-3 min-w-0">
                         <div className="w-20 text-right text-slate-500 whitespace-nowrap">{p.label}：</div>

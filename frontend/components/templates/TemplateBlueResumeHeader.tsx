@@ -5,14 +5,14 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#2c80b9');
-  const { lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const customPairs = React.useMemo(() => normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo)), [personal?.CustomInfo]);
 
@@ -150,6 +150,13 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
   };
 
   const title = String(personal?.FullName || '').trim() || ((data.language || 'zh') === 'zh' ? '简历' : 'Resume');
+  const headerPrimaryGridClassName =
+    spacingMode === 'compact'
+      ? 'mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-slate-800'
+      : spacingMode === 'spacious'
+        ? 'mt-5 grid grid-cols-2 gap-x-12 gap-y-3 text-slate-800'
+        : 'mt-4 grid grid-cols-2 gap-x-10 gap-y-2 text-slate-800';
+  const headerMetaGridClassName = spacingMode === 'compact' ? 'mt-2 grid grid-cols-2 gap-x-8 gap-y-1 text-slate-800' : spacingMode === 'spacious' ? 'mt-4 grid grid-cols-2 gap-x-12 gap-y-3 text-slate-800' : 'mt-3 grid grid-cols-2 gap-x-10 gap-y-2 text-slate-800';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
@@ -177,7 +184,7 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
             ) : null}
 
             {(personal?.Job || personal?.JoinTime) ? (
-              <div className={`mt-4 grid grid-cols-2 gap-x-10 gap-y-1 text-slate-800 ${getHeaderInfoTextClassName()}`}>
+              <div className={headerPrimaryGridClassName}>
                 {personal?.Job ? (
                   <div className="flex gap-2 min-w-0">
                     <span className="text-slate-600 whitespace-nowrap">{t('editor.fields.jobApplication')}：</span>
@@ -194,7 +201,7 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
             ) : null}
 
             {basicInfoPairs.length > 0 ? (
-              <div className={`mt-3 grid grid-cols-2 gap-x-10 gap-y-1 text-slate-800 ${getHeaderInfoTextClassName()}`}>
+              <div className={headerMetaGridClassName}>
                 {basicInfoPairs.map((p, idx) => (
                   <div key={`${p.label}-${idx}`} className="flex gap-2 min-w-0">
                     {p.label ? <span className="text-slate-600 whitespace-nowrap">{p.label}：</span> : null}

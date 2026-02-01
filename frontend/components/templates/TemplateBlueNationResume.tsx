@@ -5,14 +5,14 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateBlueNationResume: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#3aa6d8');
-  const { lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
   const isZh = (data.language || 'zh') === 'zh';
 
   const customPairs = React.useMemo(() => normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo)), [personal?.CustomInfo]);
@@ -184,6 +184,13 @@ export const TemplateBlueNationResume: React.FC<{ data: ResumeData; styles: any;
   }, [basicCells, extraHeaderCells, intentCells]);
 
   const hasHeaderInfo = headerInfo.left.length > 0 || headerInfo.right.length > 0;
+  const headerInfoClassName =
+    spacingMode === 'compact'
+      ? 'mt-2 grid grid-cols-2 gap-x-10 gap-y-1 text-slate-800'
+      : spacingMode === 'spacious'
+        ? 'mt-4 grid grid-cols-2 gap-x-16 gap-y-3 text-slate-800'
+        : 'mt-3 grid grid-cols-2 gap-x-14 gap-y-2 text-slate-800';
+  const headerInfoColClassName = spacingMode === 'compact' ? 'space-y-1' : spacingMode === 'spacious' ? 'space-y-3' : 'space-y-2';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none p-10`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
@@ -202,13 +209,13 @@ export const TemplateBlueNationResume: React.FC<{ data: ResumeData; styles: any;
           </div>
 
           {hasHeaderInfo ? (
-            <div className={`mt-3 grid grid-cols-2 gap-x-14 gap-y-2 ${getHeaderInfoTextClassName('text-slate-800')}`}>
-              <div className="space-y-2">
+            <div className={headerInfoClassName}>
+              <div className={headerInfoColClassName}>
                 {headerInfo.left.map((x, idx) => (
                   <InfoRow key={`h-l-${x.label}-${idx}`} icon={x.icon} label={x.label} value={x.value} />
                 ))}
               </div>
-              <div className="space-y-2">
+              <div className={headerInfoColClassName}>
                 {headerInfo.right.map((x, idx) => (
                   <InfoRow key={`h-r-${x.label}-${idx}`} icon={x.icon} label={x.label} value={x.value} />
                 ))}

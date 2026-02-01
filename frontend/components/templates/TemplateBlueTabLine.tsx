@@ -5,14 +5,14 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateBlueTabLine: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#4b6076');
-  const { lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const customPairs = React.useMemo(() => normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo)), [personal?.CustomInfo]);
   const orderedSections = React.useMemo(() => getOrderedVisibleSections(data.sections || []), [data.sections]);
@@ -193,6 +193,15 @@ export const TemplateBlueTabLine: React.FC<{ data: ResumeData; styles: any; disa
       return items.length > 0;
     });
   }, [orderedSections]);
+  const headerIntentClassName =
+    spacingMode === 'compact'
+      ? 'mt-2 text-slate-700 flex flex-wrap items-center'
+      : spacingMode === 'spacious'
+        ? 'mt-4 text-slate-700 flex flex-wrap items-center'
+        : 'mt-3 text-slate-700 flex flex-wrap items-center';
+  const headerIntentSeparatorClassName = spacingMode === 'compact' ? 'mx-2' : spacingMode === 'spacious' ? 'mx-4' : 'mx-3';
+  const headerInfoBlockClassName = spacingMode === 'compact' ? 'mt-2 border-y border-slate-200 text-slate-700' : spacingMode === 'spacious' ? 'mt-4 border-y border-slate-200 text-slate-700' : 'mt-3 border-y border-slate-200 text-slate-700';
+  const headerInfoCellPaddingClassName = spacingMode === 'compact' ? 'py-1.5 px-2' : spacingMode === 'spacious' ? 'py-3 px-2' : 'py-2 px-2';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
@@ -208,23 +217,23 @@ export const TemplateBlueTabLine: React.FC<{ data: ResumeData; styles: any; disa
             <div className="text-4xl font-bold tracking-wide" style={{ color }}>{headerName}</div>
 
             {intentParts.length > 0 ? (
-              <div className={`mt-3 ${getHeaderInfoTextClassName('text-slate-700 flex flex-wrap items-center')}`}>
+              <div className={headerIntentClassName}>
                 <span className="text-slate-600 whitespace-nowrap">{(data.language || 'zh') === 'zh' ? '求职意向' : t('editor.fields.jobApplication')}：</span>
                 {intentParts.map((p, idx) => (
                   <React.Fragment key={`${p}-${idx}`}>
                     <span className="ml-2 font-semibold whitespace-nowrap">{p}</span>
-                    {idx < intentParts.length - 1 ? <span className="mx-3 text-slate-400">|</span> : null}
+                    {idx < intentParts.length - 1 ? <span className={`${headerIntentSeparatorClassName} text-slate-400`}>|</span> : null}
                   </React.Fragment>
                 ))}
               </div>
             ) : null}
 
             {infoRows.length > 0 ? (
-              <div className={`mt-3 border-y border-slate-200 ${getHeaderInfoTextClassName('text-slate-700')}`}>
+              <div className={headerInfoBlockClassName}>
                 {infoRows.map((row, rowIdx) => (
                   <div key={`row-${rowIdx}`} className={`grid grid-cols-2 gap-x-6 ${rowIdx > 0 ? 'border-t border-slate-200' : ''}`}>
                     {row.map((cell, cellIdx) => (
-                      <div key={`${cell.label}-${cellIdx}`} className="flex items-center gap-3 py-2 px-2 min-w-0">
+                      <div key={`${cell.label}-${cellIdx}`} className={`flex items-center gap-3 ${headerInfoCellPaddingClassName} min-w-0`}>
                         <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center flex-shrink-0">
                           {cell.icon}
                         </div>

@@ -5,14 +5,14 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#3b7f8a');
-  const { lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const customPairs = React.useMemo(() => normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo)), [personal?.CustomInfo]);
 
@@ -181,6 +181,26 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
       return items.length > 0;
     });
   }, [orderedSections]);
+  const headerIntentClassName =
+    spacingMode === 'compact'
+      ? 'mt-2 text-white/90 flex flex-wrap items-center'
+      : spacingMode === 'spacious'
+        ? 'mt-4 text-white/90 flex flex-wrap items-center'
+        : 'mt-3 text-white/90 flex flex-wrap items-center';
+  const headerIntentSeparatorClassName = spacingMode === 'compact' ? 'mx-2' : spacingMode === 'spacious' ? 'mx-4' : 'mx-3';
+  const headerPairsGridClassName =
+    spacingMode === 'compact'
+      ? 'mt-4 grid grid-cols-2 gap-x-10 text-white/90'
+      : spacingMode === 'spacious'
+        ? 'mt-6 grid grid-cols-2 gap-x-16 text-white/90'
+        : 'mt-5 grid grid-cols-2 gap-x-14 text-white/90';
+  const headerPairsColClassName = spacingMode === 'compact' ? 'space-y-1' : spacingMode === 'spacious' ? 'space-y-3' : 'space-y-2';
+  const extraHeaderGridClassName =
+    spacingMode === 'compact'
+      ? 'mt-2 grid grid-cols-2 gap-x-10 gap-y-1 text-white/90'
+      : spacingMode === 'spacious'
+        ? 'mt-4 grid grid-cols-2 gap-x-16 gap-y-3 text-white/90'
+        : 'mt-3 grid grid-cols-2 gap-x-14 gap-y-2 text-white/90';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
@@ -191,20 +211,20 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
               {headerName ? <h1 className="text-3xl font-bold text-white">{headerName}</h1> : null}
 
               {headerIntentParts.length > 0 ? (
-                <div className={`mt-3 ${getHeaderInfoTextClassName('text-white/90 flex flex-wrap items-center')}`}>
+                <div className={headerIntentClassName}>
                   <span className="text-white/80 whitespace-nowrap">{(data.language || 'zh') === 'zh' ? '求职意向' : t('editor.fields.jobApplication')}：</span>
                   {headerIntentParts.map((p, idx) => (
                     <React.Fragment key={`${p}-${idx}`}>
                       <span className="ml-2 font-semibold whitespace-nowrap">{p}</span>
-                      {idx < headerIntentParts.length - 1 ? <span className="mx-3 text-white/55">|</span> : null}
+                      {idx < headerIntentParts.length - 1 ? <span className={`${headerIntentSeparatorClassName} text-white/55`}>|</span> : null}
                     </React.Fragment>
                   ))}
                 </div>
               ) : null}
 
               {leftHeaderPairs.length > 0 || rightHeaderPairs.length > 0 ? (
-                <div className={`mt-5 grid grid-cols-2 gap-x-14 ${getHeaderInfoTextClassName('text-white/90')}`}>
-                  <div className="space-y-2">
+                <div className={headerPairsGridClassName}>
+                  <div className={headerPairsColClassName}>
                     {leftHeaderPairs.map((p, idx) => (
                       <div key={`${p.label}-${idx}`} className="flex items-center gap-3 min-w-0">
                         <div className="w-5 h-5 flex items-center justify-center text-white/90 flex-shrink-0">{p.icon}</div>
@@ -213,7 +233,7 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
                       </div>
                     ))}
                   </div>
-                  <div className="space-y-2">
+                  <div className={headerPairsColClassName}>
                     {rightHeaderPairs.map((p, idx) => (
                       <div key={`${p.label}-${idx}`} className="flex items-center gap-3 min-w-0">
                         <div className="w-5 h-5 flex items-center justify-center text-white/90 flex-shrink-0">{p.icon}</div>
@@ -226,7 +246,7 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
               ) : null}
 
               {extraHeaderPairs.length > 0 ? (
-                <div className={`mt-3 grid grid-cols-2 gap-x-14 gap-y-2 ${getHeaderInfoTextClassName('text-white/90')}`}>
+                <div className={extraHeaderGridClassName}>
                   {extraHeaderPairs.map((p, idx) => (
                     <div key={`${p.label}-${idx}`} className="flex items-center gap-3 min-w-0">
                       <div className="w-5 h-5 flex items-center justify-center text-white/90 flex-shrink-0">{p.icon}</div>

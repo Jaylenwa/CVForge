@@ -4,14 +4,14 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#1f4a5b');
-  const { lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const hexToRgb = React.useCallback((hex: string): { r: number; g: number; b: number } | null => {
     const raw = String(hex || '').trim().replace(/^#/, '');
@@ -146,6 +146,13 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
   }, [t, personal?.Job, personal?.Phone, personal?.Email, personal?.City, personal?.Gender, normalizedAge, personal?.Degree, personal?.Money, personal?.JoinTime]);
 
   const contentSections = orderedSections.filter(s => s.type !== ResumeSectionType.Summary);
+  const headerInfoMarginTopClassName = spacingMode === 'compact' ? 'mt-4' : spacingMode === 'spacious' ? 'mt-6' : 'mt-5';
+  const headerInfoGridClassName =
+    spacingMode === 'compact'
+      ? 'grid grid-cols-2 gap-x-8 gap-y-1 text-white/85'
+      : spacingMode === 'spacious'
+        ? 'grid grid-cols-2 gap-x-12 gap-y-3 text-white/85'
+        : 'grid grid-cols-2 gap-x-10 gap-y-2 text-white/85';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
@@ -175,8 +182,8 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
               ) : null}
 
               {(infoPairs.base.length > 0 || infoPairs.extra.length > 0 || customPairs.length > 0) ? (
-                <div className="mt-5">
-                  <div className={getHeaderInfoTextClassName('grid grid-cols-2 gap-x-10 gap-y-2 text-white/85')}>
+                <div className={headerInfoMarginTopClassName}>
+                  <div className={headerInfoGridClassName}>
                     {[...infoPairs.base, ...infoPairs.extra].map((p, idx) => (
                       <div key={`${p.label}-${idx}`} className="flex gap-2 min-w-0">
                         <div className="text-white/65 whitespace-nowrap">{p.label}:</div>

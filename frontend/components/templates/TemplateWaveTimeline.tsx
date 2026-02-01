@@ -5,7 +5,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 const ScallopEdge: React.FC = () => {
   const radius = 12;
@@ -30,7 +30,7 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
   const getSectionTitle = useSectionTitle();
   const { t } = useLanguage();
   const color = getAccentColor(data, '#2f7a75');
-  const { lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const sectionsOrdered = React.useMemo(() => {
     return getOrderedVisibleSections(data.sections || []);
@@ -134,15 +134,25 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
     });
     return items;
   }, [customPairs, personal.Age, personal.Phone, personal.Email, personal.City, personal.Degree, personal.Money, personal.JoinTime, t]);
+  const headerPaddingClassName = spacingMode === 'compact' ? 'px-10 pt-6 pb-8' : spacingMode === 'spacious' ? 'px-10 pt-10 pb-12' : 'px-10 pt-8 pb-10';
+  const headerRowGapClassName = spacingMode === 'compact' ? 'gap-6' : spacingMode === 'spacious' ? 'gap-10' : 'gap-8';
+  const headerJobMarginTopClassName = spacingMode === 'compact' ? 'mt-1' : spacingMode === 'spacious' ? 'mt-3' : 'mt-2';
+  const headerInfoMarginTopClassName = spacingMode === 'compact' ? 'mt-3' : spacingMode === 'spacious' ? 'mt-5' : 'mt-4';
+  const headerInfoGapClassName =
+    spacingMode === 'compact'
+      ? 'gap-x-4 gap-y-2'
+      : spacingMode === 'spacious'
+        ? 'gap-x-6 gap-y-4'
+        : 'gap-x-5 gap-y-3';
 
   return (
     <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
       <div className="relative">
         <div className="relative" style={{ backgroundColor: color }}>
-          <div className="px-10 pt-8 pb-10 flex items-start gap-8">
+          <div className={`${headerPaddingClassName} flex items-start ${headerRowGapClassName}`}>
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold tracking-wide text-white">{personal.FullName}</h1>
-              {personal.Job ? <p className={getHeaderInfoTextClassName('mt-2 text-white/90')}>{personal.Job}</p> : null}
+              {personal.Job ? <p className={`${headerJobMarginTopClassName} text-white/90`}>{personal.Job}</p> : null}
               {summaryHtml ? (
                 <div className="mt-2">
                   <RichText html={summaryHtml} className="text-white/90" fontSize={styles.fontSize} lineHeight={lineHeight} />
@@ -150,7 +160,7 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
               ) : null}
 
               {infoItems.length ? (
-                <div className={getHeaderInfoTextClassName('mt-4 flex flex-wrap gap-x-5 gap-y-3 text-white/90')}>
+                <div className={`${headerInfoMarginTopClassName} flex flex-wrap ${headerInfoGapClassName} text-white/90`}>
                   {infoItems.map((it) => (
                     <span key={it.key} className="inline-flex items-center gap-1">
                       {it.icon ? it.icon : null}

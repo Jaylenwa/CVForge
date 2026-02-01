@@ -11,7 +11,7 @@ export const TemplateMonoBar: React.FC<{ data: ResumeData; styles: any; disableS
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#050505ff');
-  const { lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const customPairs = React.useMemo(() => {
     return normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo));
@@ -128,21 +128,25 @@ export const TemplateMonoBar: React.FC<{ data: ResumeData; styles: any; disableS
     return getOrderedVisibleSections(data.sections || []);
   }, [data.sections]);
 
+  const headerJobMarginTopClassName = spacingMode === 'compact' ? 'mt-1' : spacingMode === 'spacious' ? 'mt-3' : 'mt-2';
+  const headerPartsMarginTopClassName = spacingMode === 'compact' ? 'mt-2' : spacingMode === 'spacious' ? 'mt-4' : 'mt-3';
+  const headerPartsSeparatorClassName = spacingMode === 'compact' ? 'mx-1.5' : spacingMode === 'spacious' ? 'mx-3' : 'mx-2';
+
   return (
     <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none p-10`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
       <header className={`flex items-start gap-8 ${headerSpaceClass}`}>
         <div className="flex-1 min-w-0">
           <h1 className="text-3xl font-bold text-gray-900 truncate">{personal?.FullName}</h1>
           {personal?.Job ? (
-            <div className="mt-2 text-base text-gray-700">
+            <div className={`${headerJobMarginTopClassName} text-gray-700`}>
               {t('editor.fields.jobApplication')}：{personal.Job}
             </div>
           ) : null}
           {headerParts.length > 0 ? (
-            <div className="mt-3 text-sm text-gray-700 flex flex-wrap items-center leading-10">
+            <div className={`${headerPartsMarginTopClassName} text-gray-700 flex flex-wrap items-center`}>
               {headerParts.map((v, idx) => (
                 <React.Fragment key={`${v}-${idx}`}>
-                  {idx > 0 ? <span className="mx-2 text-gray-400">|</span> : null}
+                  {idx > 0 ? <span className={`${headerPartsSeparatorClassName} text-gray-400`}>|</span> : null}
                   <span className="whitespace-nowrap">{v}</span>
                 </React.Fragment>
               ))}

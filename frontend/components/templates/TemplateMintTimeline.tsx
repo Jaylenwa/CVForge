@@ -5,13 +5,13 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { Mail, Phone, MapPin, GraduationCap, User, Briefcase, Wrench, Layers, BookOpen, Award, Heart, Image as ImageIcon } from 'lucide-react';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
   const { t } = useLanguage();
   const color = getAccentColor(data, '#14b8a6');
-  const { lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const findJobTarget = () => {
     return data.Personal?.Job || '';
@@ -106,16 +106,21 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
       item.today
     );
   };
+  const headerPaddingClassName = spacingMode === 'compact' ? 'px-10 pt-6 pb-5' : spacingMode === 'spacious' ? 'px-10 pt-10 pb-7' : 'px-10 pt-8 pb-6';
+  const headerRowGapClassName = spacingMode === 'compact' ? 'gap-5' : spacingMode === 'spacious' ? 'gap-8' : 'gap-6';
+  const headerJobMarginTopClassName = spacingMode === 'compact' ? 'mt-1' : spacingMode === 'spacious' ? 'mt-3' : 'mt-2';
+  const headerInfoMarginTopClassName = spacingMode === 'compact' ? 'mt-3' : spacingMode === 'spacious' ? 'mt-5' : 'mt-4';
+  const headerInfoGapClassName = spacingMode === 'compact' ? 'gap-3' : spacingMode === 'spacious' ? 'gap-5' : 'gap-4';
 
   return (
     <div className={`w-full bg-white text-gray-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
       <div className="relative">
         <div className="bg-teal-500" style={{ backgroundColor: color }}>
-          <div className="px-10 pt-8 pb-6 flex items-start gap-6">
+          <div className={`${headerPaddingClassName} flex items-start ${headerRowGapClassName}`}>
             <div className="flex-1">
               <h1 className="text-3xl font-bold tracking-wide text-white">{data.Personal?.FullName}</h1>
-              {findJobTarget() && <p className={getHeaderInfoTextClassName('mt-2 text-white/90')}>{t('editor.fields.jobApplication')}：{findJobTarget()}</p>}
-              <div className={getHeaderInfoTextClassName('mt-4 flex flex-wrap gap-4 text-white/90')}>
+              {findJobTarget() && <p className={`${headerJobMarginTopClassName} text-white/90`}>{t('editor.fields.jobApplication')}：{findJobTarget()}</p>}
+              <div className={`${headerInfoMarginTopClassName} flex flex-wrap ${headerInfoGapClassName} text-white/90`}>
                 {data.Personal?.Age && (
                   <span className="inline-flex items-center gap-1">
                     <User size={16} /> {data.Personal.Age}

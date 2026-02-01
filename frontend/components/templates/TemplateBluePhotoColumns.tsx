@@ -5,14 +5,14 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateBluePhotoColumns: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const getSectionTitle = useSectionTitle();
   const { t } = useLanguage();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#2c80b9');
-  const { lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const customPairs = React.useMemo(() => normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo)), [personal?.CustomInfo]);
 
@@ -153,6 +153,13 @@ export const TemplateBluePhotoColumns: React.FC<{ data: ResumeData; styles: any;
 
     return renderTightList(items);
   };
+  const headerInfoContainerPaddingClassName = spacingMode === 'compact' ? 'pt-2 pb-4' : spacingMode === 'spacious' ? 'pt-4 pb-8' : 'pt-2.5 pb-6';
+  const headerInfoWrapClassName =
+    spacingMode === 'compact'
+      ? 'flex flex-wrap gap-x-8 gap-y-1 text-slate-800'
+      : spacingMode === 'spacious'
+        ? 'flex flex-wrap gap-x-12 gap-y-3 text-slate-800'
+        : 'flex flex-wrap gap-x-10 gap-y-2 text-slate-800';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
@@ -184,8 +191,8 @@ export const TemplateBluePhotoColumns: React.FC<{ data: ResumeData; styles: any;
 
       <div className="flex bg-white">
         <div className="w-[150px] flex-shrink-0" />
-        <div className="flex-1 min-w-0 px-10 pt-2.5 pb-6">
-          <div className={`flex flex-wrap gap-x-10 gap-y-1 text-slate-800 ${getHeaderInfoTextClassName()}`}>
+        <div className={`flex-1 min-w-0 px-10 ${headerInfoContainerPaddingClassName}`}>
+          <div className={headerInfoWrapClassName}>
             {[...infoPairs.base, ...infoPairs.extra].map((p, idx) => (
               <div key={`${p.label}-${idx}`} className="whitespace-nowrap">
                 <span className="text-slate-600">{p.label}：</span>

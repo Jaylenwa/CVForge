@@ -4,7 +4,7 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateSlate: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
@@ -12,7 +12,7 @@ export const TemplateSlate: React.FC<{ data: ResumeData; styles: any; disableSha
   const color = getAccentColor(data, '#0f172a');
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
 
-  const { lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const customPairs = React.useMemo(() => {
     return normalizeCustomPairs(parseCustomPairs(personal?.CustomInfo));
@@ -126,6 +126,12 @@ export const TemplateSlate: React.FC<{ data: ResumeData; styles: any; disableSha
       </div>
     );
   };
+  const headerInfoGridClassName =
+    spacingMode === 'compact'
+      ? 'mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-slate-700'
+      : spacingMode === 'spacious'
+        ? 'mt-5 grid grid-cols-2 gap-x-10 gap-y-3 text-slate-700'
+        : 'mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-slate-700';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
@@ -147,7 +153,7 @@ export const TemplateSlate: React.FC<{ data: ResumeData; styles: any; disableSha
                 <h1 className="text-3xl font-extrabold tracking-wide text-slate-900 truncate">{personal?.FullName}</h1>
               </div>
 
-              <div className={getHeaderInfoTextClassName('mt-4 grid grid-cols-2 gap-x-8 gap-y-2 text-slate-700')}>
+              <div className={headerInfoGridClassName}>
                 {basePairs.map((p, idx) => (
                   <div key={`${p.label}-${idx}`} className="flex gap-2 min-w-0">
                     <div className="text-slate-500 whitespace-nowrap">{p.label}:</div>
