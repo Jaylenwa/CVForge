@@ -381,7 +381,7 @@ func DefaultSeed() (SeedData, error) {
 			"Money":      "25k-35k·14薪",
 			"JoinTime":   "1 个月内",
 			"Degree":     "本科",
-			"CustomInfo": `[{"label":"技术栈","value":"Python / FastAPI / Django / PostgreSQL / Redis / Kafka"}]`,
+			"CustomInfo": `[{"label":"政治面貌","value":"党员"}]`,
 		},
 		"Theme": map[string]any{
 			"Color":    "#2563eb",
@@ -508,7 +508,7 @@ func DefaultSeed() (SeedData, error) {
 			"Money":      "30k-45k·15薪",
 			"JoinTime":   "2 周内",
 			"Degree":     "本科",
-			"CustomInfo": `[{"label":"技术栈","value":"Go / Gin / gRPC / MySQL / Redis / Kafka / Prometheus"}]`,
+			"CustomInfo": `[{"label":"政治面貌","value":"党员"}]`,
 		},
 		"Theme": map[string]any{
 			"Color":    "#14b8a6",
