@@ -16,14 +16,13 @@ import {
   parseCustomPairs,
 } from './shared/templateTokens';
 
-export const TemplateBlueFormSheet: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
+export const TemplateBlueRibbonResume: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const isZh = (data.language || 'zh') === 'zh';
-  const color = getAccentColor(data, '#2c80b9');
+  const color = getAccentColor(data, '#3aa6d8');
   const { lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
-
   const colon = isZh ? '：' : ':';
 
   const orderedSections = React.useMemo(() => getOrderedVisibleSections(data.sections || []), [data.sections]);
@@ -49,31 +48,45 @@ export const TemplateBlueFormSheet: React.FC<{ data: ResumeData; styles: any; di
     );
   }, [customPairs]);
 
-  const baseInfo = React.useMemo(() => {
+  const findMottoPair = React.useMemo(() => {
+    const targetLabels = ['座右铭', '签名', '个人签名', '格言', 'slogan', 'motto', 'tagline'];
+    return (
+      customPairs.find((p) => {
+        const label = String(p.label || '').trim().toLowerCase();
+        return label && targetLabels.some((k) => label.includes(String(k).toLowerCase()));
+      }) || null
+    );
+  }, [customPairs]);
+
+  const headerMotto = React.useMemo(() => {
+    const raw = findMottoPair ? String(findMottoPair.value || '').trim() : '';
+    return raw;
+  }, [findMottoPair]);
+
+  const basicInfo = React.useMemo(() => {
     const workYearsValue = findWorkYearsPair ? String(findWorkYearsPair.value || '').trim() : '';
     const workYearsLabel = findWorkYearsPair ? String(findWorkYearsPair.label || '').trim() : '';
 
     const left: Array<{ label: string; value: string }> = [
       { label: isZh ? '姓名' : t('editor.fields.fullName'), value: String(personal?.FullName || '').trim() },
       { label: isZh ? '性别' : t('editor.fields.gender'), value: String(personal?.Gender || '').trim() },
-      { label: workYearsLabel || (isZh ? '工作年限' : 'Work Years'), value: workYearsValue },
-      { label: isZh ? '邮箱' : t('editor.fields.email'), value: String(personal?.Email || '').trim() },
+      { label: isZh ? '电话' : t('editor.fields.phone'), value: String(personal?.Phone || '').trim() },
     ].filter((x) => x.value);
 
     const right: Array<{ label: string; value: string }> = [
       { label: isZh ? '年龄' : t('editor.fields.age'), value: normalizedAge },
-      { label: isZh ? '籍贯' : t('editor.fields.city'), value: String(personal?.City || '').trim() },
-      { label: isZh ? '电话' : t('editor.fields.phone'), value: String(personal?.Phone || '').trim() },
+      { label: workYearsLabel || (isZh ? '工作年限' : 'Work Years'), value: workYearsValue },
+      { label: isZh ? '邮箱' : t('editor.fields.email'), value: String(personal?.Email || '').trim() },
     ].filter((x) => x.value);
 
-    const excludedLabels = new Set<string>([workYearsLabel, ...left.map((x) => x.label), ...right.map((x) => x.label)].filter(Boolean));
-    const cityValue = String(personal?.City || '').trim();
+    const excludedLabels = new Set<string>(
+      [workYearsLabel, findMottoPair ? String(findMottoPair.label || '').trim() : '', ...left.map((x) => x.label), ...right.map((x) => x.label)].filter(Boolean)
+    );
     const extras = customPairs
       .map((p) => ({ label: String(p.label || '').trim(), value: String(p.value || '').trim() }))
       .filter((p) => {
         if (!p.label || !p.value) return false;
         if (excludedLabels.has(p.label)) return false;
-        if (cityValue && p.value === cityValue && (p.label.includes('城市') || p.label.includes('籍贯') || p.label === t('editor.fields.city'))) return false;
         return true;
       });
 
@@ -85,31 +98,53 @@ export const TemplateBlueFormSheet: React.FC<{ data: ResumeData; styles: any; di
     });
 
     return { left: balancedLeft, right: balancedRight };
-  }, [customPairs, findWorkYearsPair, isZh, normalizedAge, personal?.City, personal?.Email, personal?.FullName, personal?.Gender, personal?.Phone, t]);
+  }, [customPairs, findMottoPair, findWorkYearsPair, isZh, normalizedAge, personal?.Email, personal?.FullName, personal?.Gender, personal?.Phone, t]);
 
   const basicInfoWithIntent = React.useMemo(() => {
     const intentPairs: Array<{ label: string; value: string }> = [
-      { label: isZh ? '职位' : t('editor.fields.jobApplication'), value: String(personal?.Job || '').trim() },
-      { label: isZh ? '城市' : t('editor.fields.city'), value: String(personal?.City || '').trim() },
+      { label: isZh ? '意向职位' : t('editor.fields.jobApplication'), value: String(personal?.Job || '').trim() },
+      { label: isZh ? '意向城市' : t('editor.fields.city'), value: String(personal?.City || '').trim() },
       { label: isZh ? '期望薪资' : t('editor.fields.expectedSalary'), value: String(personal?.Money || '').trim() },
       { label: isZh ? '到岗时间' : t('editor.fields.joinTime'), value: String(personal?.JoinTime || '').trim() },
     ].filter((x) => x.value);
 
-    const left = [...baseInfo.left];
-    const right = [...baseInfo.right];
+    const left = [...basicInfo.left];
+    const right = [...basicInfo.right];
     intentPairs.forEach((p) => {
       if (left.length <= right.length) left.push(p);
       else right.push(p);
     });
     return { left, right };
-  }, [baseInfo.left, baseInfo.right, isZh, personal?.City, personal?.Job, personal?.JoinTime, personal?.Money, t]);
+  }, [basicInfo.left, basicInfo.right, isZh, personal?.City, personal?.Job, personal?.JoinTime, personal?.Money, t]);
 
-  const BlockHeader: React.FC<{ title: string }> = ({ title }) => (
-    <div className="w-full bg-sky-100 h-8 flex items-center">
-      <div className="h-full flex items-center px-6 text-white font-bold text-[14px]" style={{ backgroundColor: color }}>
-        {title}
+  const TopBar: React.FC = () => (
+    <div className="relative">
+      <div className="flex items-baseline justify-between">
+        <div className="text-3xl font-bold tracking-wide" style={{ color }}>
+          {isZh ? '个人简历' : 'Resume'}
+        </div>
+        {headerMotto ? <div className="text-sm text-slate-500 text-center flex-1 px-6">{headerMotto}</div> : <div className="flex-1" />}
+        <div className="w-[64px]" />
       </div>
-      <div className="flex-1" />
+      <div className="relative mt-3 h-[10px]">
+        <div className="absolute left-0 right-0 top-[6px] h-[2px] bg-slate-300" />
+        <div className="absolute left-0 top-[2px] h-[6px] w-[170px]" style={{ backgroundColor: color }} />
+        <div className="absolute left-[170px] top-[2px] h-[6px] w-[30px]" style={{ backgroundColor: color, transform: 'skewX(-35deg)', transformOrigin: 'left' }} />
+      </div>
+    </div>
+  );
+
+  const RibbonHeader: React.FC<{ title: string }> = ({ title }) => (
+    <div className="relative flex items-center">
+      <div className="h-8 flex items-center pl-6 pr-5 text-white font-bold whitespace-nowrap text-[14px]" style={{ backgroundColor: color }}>
+        <div>{title}</div>
+        <div className="ml-3 flex items-center gap-1">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <div key={idx} style={{ width: 3, height: 16, backgroundColor: 'rgba(255,255,255,0.85)', transform: 'skewX(-25deg)' }} />
+          ))}
+        </div>
+      </div>
+      <div className="flex-1 h-px bg-slate-300" />
     </div>
   );
 
@@ -188,55 +223,53 @@ export const TemplateBlueFormSheet: React.FC<{ data: ResumeData; styles: any; di
     });
   }, [orderedSections]);
 
-  const headerTitle = isZh ? '个人简历' : 'Resume';
-
   return (
-    <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none p-10`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
-      <header className="text-center">
-        <div className="text-3xl font-bold text-slate-900">{headerTitle}</div>
-      </header>
+    <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
+      <div className="relative p-10">
+        <TopBar />
 
-      <div className="mt-6 space-y-6">
-        <section>
-          <BlockHeader title={isZh ? '基本信息' : 'Basic Information'} />
-          <div className="mt-5 grid grid-cols-12 gap-8 items-start text-slate-800">
-            <div className="col-span-5 space-y-3">
-              {basicInfoWithIntent.left.map((p, idx) => (
-                <FieldRow key={`bi-l-${p.label}-${idx}`} label={p.label} value={p.value} />
-              ))}
+        <div className="mt-6 space-y-6">
+          <section>
+            <RibbonHeader title={isZh ? '基本信息' : 'Basic Information'} />
+            <div className="mt-5 grid grid-cols-12 gap-8 items-start text-slate-800">
+              <div className="col-span-5 space-y-3">
+                {basicInfoWithIntent.left.map((p, idx) => (
+                  <FieldRow key={`bi-l-${p.label}-${idx}`} label={p.label} value={p.value} />
+                ))}
+              </div>
+              <div className="col-span-5 space-y-3">
+                {basicInfoWithIntent.right.map((p, idx) => (
+                  <FieldRow key={`bi-r-${p.label}-${idx}`} label={p.label} value={p.value} />
+                ))}
+              </div>
+              <div className="col-span-2 flex justify-end">
+                {personal?.AvatarURL ? (
+                  <img src={personal.AvatarURL} alt={t('a11y.avatarAlt')} className={getAvatarPhotoClassName('shadow-none')} style={{ backgroundColor: '#ffffff' }} />
+                ) : (
+                  <div className={getAvatarPlaceholderClassName()} />
+                )}
+              </div>
             </div>
-            <div className="col-span-5 space-y-3">
-              {basicInfoWithIntent.right.map((p, idx) => (
-                <FieldRow key={`bi-r-${p.label}-${idx}`} label={p.label} value={p.value} />
-              ))}
-            </div>
-            <div className="col-span-2 flex justify-end">
-              {personal?.AvatarURL ? (
-                <img src={personal.AvatarURL} alt={t('a11y.avatarAlt')} className={getAvatarPhotoClassName('shadow-none')} style={{ backgroundColor: '#ffffff' }} />
-              ) : (
-                <div className={getAvatarPlaceholderClassName()} />
-              )}
-            </div>
+          </section>
+
+          <div className={contentGapClass}>
+            {renderable.map((section) => {
+              const body = renderSectionBody(section);
+              if (!body) return null;
+              const title = String(getSectionTitle(section) || '').trim();
+              if (!title) return null;
+              return (
+                <section key={section.id}>
+                  <RibbonHeader title={title} />
+                  <div className="mt-4">{body}</div>
+                </section>
+              );
+            })}
           </div>
-        </section>
-
-        <div className={contentGapClass}>
-          {renderable.map((section) => {
-            const body = renderSectionBody(section);
-            if (!body) return null;
-            const title = String(getSectionTitle(section) || '').trim();
-            if (!title) return null;
-            return (
-              <section key={section.id}>
-                <BlockHeader title={title} />
-                <div className="mt-4">{body}</div>
-              </section>
-            );
-          })}
         </div>
       </div>
     </div>
   );
 };
 
-export default TemplateBlueFormSheet;
+export default TemplateBlueRibbonResume;

@@ -18,6 +18,7 @@ const TEMPLATE_DEFAULT_THEMES: Record<string, Partial<ResumeTheme>> = {
   TemplateBluePillRail: { Color: '#607691' },
   TemplateBlueNationResume: { Color: '#3aa6d8' },
   TemplateBlueFormSheet: { Color: '#2c80b9' },
+  TemplateBlueRibbonResume: { Color: '#3aa6d8' },
 };
 
 export const getTemplateDefaultTheme = (templateId: string): Partial<ResumeTheme> | null => {
