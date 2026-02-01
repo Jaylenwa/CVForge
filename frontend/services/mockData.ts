@@ -13,6 +13,7 @@ export const MOCK_TEMPLATES: Template[] = [
   { id: 'TemplateMonoBar', name: '黑白竖线版', tags: ['极简', '中文', 'ATS 友好'] },
   { id: 'TemplateSidebarLabel', name: '左栏标签版', tags: ['边框', '中文', '图标'] },
   { id: 'TemplateBlueTabLine', name: '蓝灰标签线版', tags: ['中文', '清晰', '图标'] },
+  { id: 'TemplateBluePillRail', name: '蓝灰圆角标题版', tags: ['中文', '清晰', '分区'] },
 ];
 
 export const INITIAL_RESUME: ResumeData = {
