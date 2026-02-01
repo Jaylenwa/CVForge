@@ -4,14 +4,14 @@ import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ExamSection } from './shared/ExamSection';
 import { RichText } from './shared/RichText';
-import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getHeaderInfoTextClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
+import { formatDateRange, getAccentColor, getAvatarPhotoClassName, getAvatarPlaceholderClassName, getOrderedItems, getOrderedVisibleSections, getSpacingTokens, normalizeCustomPairs, parseCustomPairs } from './shared/templateTokens';
 
 export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disableShadow?: boolean }> = ({ data, styles, disableShadow }) => {
   const { t } = useLanguage();
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#2563eb');
-  const { lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const hexToRgb = React.useCallback((hex: string): { r: number; g: number; b: number } | null => {
     const raw = String(hex || '').trim().replace(/^#/, '');
@@ -159,29 +159,34 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
   };
 
   const basicInfoTitle = (data.language || 'zh') === 'zh' ? '基本信息' : 'Basic Information';
+  const headerSpaceClassName = spacingMode === 'compact' ? 'pt-4 pb-3 mb-3' : spacingMode === 'spacious' ? 'pt-8 pb-6 mb-6' : 'pt-6 pb-4 mb-4';
+  const headerRowGapClassName = spacingMode === 'compact' ? 'gap-6' : spacingMode === 'spacious' ? 'gap-10' : 'gap-8';
+  const headerJobMarginTopClassName = spacingMode === 'compact' ? 'mt-1' : spacingMode === 'spacious' ? 'mt-3' : 'mt-2';
+  const headerSummaryMarginTopClassName = spacingMode === 'compact' ? 'mt-1' : spacingMode === 'spacious' ? 'mt-3' : 'mt-2';
+  const headerPartsMarginTopClassName = spacingMode === 'compact' ? 'mt-2' : spacingMode === 'spacious' ? 'mt-4' : 'mt-3';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none p-10`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
       <HeaderBar label={basicInfoTitle} />
 
-      <header className={`relative pt-6 ${headerSpaceClass}`}>
-        <div className="flex items-start gap-8">
+      <header className={`relative ${headerSpaceClassName}`}>
+        <div className={`flex items-start ${headerRowGapClassName}`}>
           <div className="flex-1 min-w-0">
             <h1 className="text-3xl font-bold text-slate-900 truncate">{personal?.FullName}</h1>
 
             {summaryHtml ? (
               <>
-                {personal?.Job ? <div className="mt-2 text-base text-slate-700">{personal.Job}</div> : null}
-                <div className="mt-2">
+                {personal?.Job ? <div className={`${headerJobMarginTopClassName} text-slate-700`}>{personal.Job}</div> : null}
+                <div className={headerSummaryMarginTopClassName}>
                   <RichText html={summaryHtml} className="text-slate-700" fontSize={styles.fontSize} lineHeight={lineHeight} />
                 </div>
               </>
             ) : personal?.Job ? (
-              <div className="mt-2 text-base text-slate-700">{personal.Job}</div>
+              <div className={`${headerJobMarginTopClassName} text-slate-700`}>{personal.Job}</div>
             ) : null}
 
             {headerParts.length > 0 ? (
-              <div className={getHeaderInfoTextClassName('mt-3 text-slate-800 flex flex-wrap items-center')}>
+              <div className={`${headerPartsMarginTopClassName} text-slate-800 flex flex-wrap items-center`}>
                 {headerParts.map((v, idx) => (
                   <React.Fragment key={`${v}-${idx}`}>
                     {idx > 0 ? <span className="mx-2 text-slate-400">|</span> : null}
