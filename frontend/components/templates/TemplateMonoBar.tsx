@@ -150,7 +150,7 @@ export const TemplateMonoBar: React.FC<{ data: ResumeData; styles: any; disableS
           ) : null}
         </div>
 
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 mt-1">
           {personal?.AvatarURL ? (
             <img
               src={personal.AvatarURL}

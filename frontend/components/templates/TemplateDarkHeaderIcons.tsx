@@ -152,7 +152,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
       <div className="w-full border-b" style={{ backgroundColor: headerBg, borderColor: headerDivider }}>
         <div className="px-10 pt-10 pb-8">
           <div className="flex items-start gap-8">
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 mt-1">
               {personal?.AvatarURL ? (
                 <img
                   src={personal.AvatarURL}

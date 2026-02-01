@@ -17,6 +17,7 @@ import { TemplateBlueResumeHeader } from '../../components/templates/TemplateBlu
 import { TemplateTealWaveTimeline } from '../../components/templates/TemplateTealWaveTimeline';
 import { TemplateBlueTabLine } from '../../components/templates/TemplateBlueTabLine';
 import { TemplateBluePillRail } from '../../components/templates/TemplateBluePillRail';
+import { TemplateBlueNationResume } from '../../components/templates/TemplateBlueNationResume';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 
@@ -79,6 +80,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     TemplateTealWaveTimeline: TemplateTealWaveTimeline,
     TemplateBlueTabLine: TemplateBlueTabLine,
     TemplateBluePillRail: TemplateBluePillRail,
+    TemplateBlueNationResume: TemplateBlueNationResume,
   };
 
   React.useEffect(() => {

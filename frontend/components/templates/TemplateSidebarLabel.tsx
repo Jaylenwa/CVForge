@@ -125,7 +125,7 @@ export const TemplateSidebarLabel: React.FC<{ data: ResumeData; styles: any; dis
         <div className="relative border-2 border-gray-400 p-8">
           <div className={headerSpaceClass}>
             <div className="flex items-start gap-8">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 mt-1">
                 {personal?.AvatarURL ? (
                   <img
                     src={personal.AvatarURL}
