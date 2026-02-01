@@ -276,7 +276,7 @@ export const Editor: React.FC = () => {
                   className="relative select-none pointer-events-none shadow-sm bg-white"
                 >
                   <ResumeArtboard
-                    data={{ ...resumeData, templateId }}
+                    data={{ ...resumeData, templateId, Theme: applyTemplateThemeDefaults(templateId, resumeData.Theme) }}
                     scale={scale}
                     disableShadow={true}
                     showPageHint={false}
