@@ -1,4 +1,4 @@
-import { ResumeData } from '../types';
+import { ResumeData, ResumeItem, ResumeSection, ResumeSectionType } from '../types';
 
 export const getFontStack = (fontId: string): string => {
     switch (fontId) {
@@ -99,4 +99,52 @@ export const sanitizeHtml = (html: string) => {
   let out = '';
   doc.body.childNodes.forEach(n => { out += sanitizeNode(n); });
   return out;
+};
+
+const withUniqueItemIDs = (items: ResumeItem[], prefix: string): ResumeItem[] => {
+  const seen = new Set<string>();
+  return (items || []).map((it, idx) => {
+    let id = it?.id == null ? '' : String(it.id);
+    if (!id || seen.has(id)) id = `${prefix}${idx}`;
+    seen.add(id);
+    return { ...it, id, orderNum: idx };
+  });
+};
+
+const pickUniqueSectionID = (sections: ResumeSection[], preferred: string) => {
+  const used = new Set((sections || []).map((s) => (s?.id == null ? '' : String(s.id))).filter(Boolean));
+  if (!used.has(preferred)) return preferred;
+  let i = 1;
+  while (used.has(`${preferred}-${i}`)) i++;
+  return `${preferred}-${i}`;
+};
+
+export const normalizeResumeDataForRender = (data: ResumeData): ResumeData => {
+  const sections = Array.isArray(data.sections) ? (data.sections as ResumeSection[]) : [];
+  const summaries = sections.filter((s) => s?.type === ResumeSectionType.Summary);
+  if (!summaries.length) return data;
+
+  const summaryItems = summaries.flatMap((s) => (Array.isArray(s.items) ? (s.items as ResumeItem[]) : []));
+  const others = sections.filter((s) => s?.type !== ResumeSectionType.Summary);
+  const selfIndex = others.findIndex((s) => s?.type === ResumeSectionType.SelfEvaluation);
+
+  if (selfIndex >= 0) {
+    const self = others[selfIndex];
+    const mergedItems = withUniqueItemIDs([...(Array.isArray(self.items) ? (self.items as ResumeItem[]) : []), ...summaryItems], 'selfEvaluation-item-');
+    const nextSections = others.map((s, idx) => {
+      if (idx !== selfIndex) return s;
+      return { ...self, items: mergedItems, isVisible: true };
+    });
+    return { ...data, sections: nextSections };
+  }
+
+  const newSelf: ResumeSection = {
+    id: pickUniqueSectionID(others, 'selfEvaluation'),
+    type: ResumeSectionType.SelfEvaluation,
+    title: '',
+    isVisible: true,
+    items: withUniqueItemIDs(summaryItems, 'selfEvaluation-item-'),
+    orderNum: others.length,
+  };
+  return { ...data, sections: [...others, newSelf] };
 };

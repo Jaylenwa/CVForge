@@ -6,14 +6,14 @@ import { AppRoute, ResumeData } from '../types';
 // 后端数据来源
 import { useLanguage } from '../contexts/LanguageContext';
 import { ResumeArtboard } from './editor/ResumePreview';
-import { INITIAL_RESUME } from '../services/mockData';
-import { fetchTemplateCatalog } from '../services/catalogService';
+import { fetchContentPresetData, fetchTemplateCatalog } from '../services/catalogService';
 import { applyTemplateDefaultsToResumeData } from '../utils/template-defaults';
 
 export const Home: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [popularTemplates, setPopularTemplates] = React.useState<any[]>([]);
+  const [presetDataMap, setPresetDataMap] = React.useState<Record<string, any>>({});
   React.useEffect(() => {
     document.body.classList.add('no-scrollbar');
     document.documentElement.classList.add('no-scrollbar');
@@ -26,12 +26,29 @@ export const Home: React.FC = () => {
   React.useEffect(() => {
     (async () => {
       try {
-        const { templates } = await fetchTemplateCatalog();
+        const { templates } = await fetchTemplateCatalog({ language, sort: 'hot' });
         const list = (templates || []).slice().sort((a: any, b: any) => (b.usageCount ?? 0) - (a.usageCount ?? 0));
         setPopularTemplates(list.slice(0, 4));
       } catch {}
     })();
-  }, []);
+  }, [language]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const ids = Array.from(new Set(popularTemplates.map((t) => String(t?.presetId || '')).filter(Boolean)));
+      for (const id of ids) {
+        if (cancelled) return;
+        if (presetDataMap[id]) continue;
+        const parsed = await fetchContentPresetData(Number(id)).catch(() => null);
+        if (cancelled) return;
+        if (parsed && typeof parsed === 'object') {
+          setPresetDataMap((prev) => (prev[id] ? prev : { ...prev, [id]: parsed }));
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [popularTemplates]);
 
   const quickAccess = [
     { key: 'home.quick.it', icon: <Code size={20} />, query: 'IT' },
@@ -98,7 +115,29 @@ export const Home: React.FC = () => {
     const mmToPx = 96 / 25.4;
     const a4w = 210 * mmToPx;
     const a4h = 297 * mmToPx;
-    const rawPreviewData = { ...INITIAL_RESUME, templateId: String(template?.templateExternalId || INITIAL_RESUME.templateId) } as ResumeData;
+    const presetId = String(template?.presetId || '');
+    const presetData = presetId ? presetDataMap[presetId] : null;
+    const rawPreviewData: ResumeData = presetData
+      ? ({
+          id: 'preview',
+          title: String(presetData?.title || ''),
+          templateId: String(template?.templateExternalId || ''),
+          lastModified: Date.now(),
+          language: (presetData?.language || 'zh') === 'en' ? 'en' : 'zh',
+          Personal: presetData?.Personal || {},
+          Theme: presetData?.Theme || {},
+          sections: Array.isArray(presetData?.sections) ? presetData.sections : [],
+        } as any)
+      : ({
+          id: 'preview',
+          title: '',
+          templateId: String(template?.templateExternalId || ''),
+          lastModified: Date.now(),
+          language: 'zh',
+          Personal: {},
+          Theme: {},
+          sections: [],
+        } as any);
     const previewData = applyTemplateDefaultsToResumeData(rawPreviewData);
     return (
       <div className="group relative border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-lg">

@@ -1,6 +1,10 @@
 package resume
 
-import "sort"
+import (
+	"sort"
+
+	"openresume/internal/common"
+)
 
 type ResumeDTO struct {
 	ID           uint              `json:"ID"`
@@ -92,9 +96,13 @@ func ToDTO(r Resume) ResumeDTO {
 	secs := append([]ResumeSection(nil), r.Sections...)
 	sort.SliceStable(secs, func(i, j int) bool { return secs[i].OrderNum < secs[j].OrderNum })
 	for _, s := range secs {
+		typ := s.Type
+		if t, ok := common.NormalizeResumeSectionType(s.Type); ok {
+			typ = string(t)
+		}
 		sec := SectionDTO{
 			ID:        s.ID,
-			Type:       s.Type,
+			Type:       typ,
 			Title:      s.Title,
 			IsVisible:  s.IsVisible,
 			OrderNum:   s.OrderNum,

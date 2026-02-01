@@ -1,6 +1,10 @@
 package library
 
-import "gorm.io/gorm"
+import (
+	"strings"
+
+	"gorm.io/gorm"
+)
 
 type TemplateLibraryItem struct {
 	TemplateExternalID string
@@ -13,20 +17,59 @@ type TemplateLibraryItem struct {
 	IsPremium          bool
 }
 
-func (r *Repo) ListTemplateLibraryItems(roleID uint) ([]TemplateLibraryItem, error) {
+func normalizeTemplateListSort(raw string) string {
+	v := strings.TrimSpace(strings.ToLower(raw))
+	switch v {
+	case "hot", "new", "name":
+		return v
+	default:
+		return "hot"
+	}
+}
+
+func normalizeLanguage(raw string) string {
+	v := strings.TrimSpace(strings.ToLower(raw))
+	if v == "en" {
+		return "en"
+	}
+	if v == "zh" {
+		return "zh"
+	}
+	return "zh"
+}
+
+func (r *Repo) pickPresetID(roleID uint, language string) uint {
+	language = normalizeLanguage(language)
 	var presetID uint
+
+	q := r.db.Table("content_preset").
+		Select("id").
+		Where("is_active = ?", true).
+		Where("deleted_at IS NULL")
 	if roleID != 0 {
-		_ = r.db.Table("content_preset").
-			Select("id").
-			Where("role_id = ?", roleID).
-			Where("is_active = ?", true).
-			Where("deleted_at IS NULL").
-			Order("id asc").
-			Limit(1).
-			Scan(&presetID).Error
-		if presetID == 0 {
-			return []TemplateLibraryItem{}, nil
-		}
+		q = q.Where("role_id = ?", roleID)
+	}
+
+	_ = q.Where("language = ?", language).
+		Order("id asc").
+		Limit(1).
+		Scan(&presetID).Error
+	if presetID != 0 {
+		return presetID
+	}
+
+	_ = q.Order("id asc").Limit(1).Scan(&presetID).Error
+	return presetID
+}
+
+func (r *Repo) ListTemplateLibraryItems(roleID uint, language string, sort string) ([]TemplateLibraryItem, error) {
+	sort = normalizeTemplateListSort(sort)
+	presetID := r.pickPresetID(roleID, language)
+	if roleID != 0 && presetID == 0 {
+		return []TemplateLibraryItem{}, nil
+	}
+	if roleID == 0 && presetID == 0 {
+		return []TemplateLibraryItem{}, nil
 	}
 
 	type row struct {
@@ -47,7 +90,20 @@ func (r *Repo) ListTemplateLibraryItems(roleID uint) ([]TemplateLibraryItem, err
 		db = db.Select("t.external_id as template_external_id, t.name, t.tags, t.usage_count as usage_count, t.usage_count as global_usage_count")
 	}
 
-	if err := db.Order("t.name asc").Order("t.id asc").Scan(&rows).Error; err != nil {
+	switch sort {
+	case "new":
+		db = db.Order("t.id desc")
+	case "name":
+		db = db.Order("t.name asc").Order("t.id asc")
+	default:
+		if roleID != 0 {
+			db = db.Order("COALESCE(rtu.usage_count, 0) desc").Order("t.id desc")
+		} else {
+			db = db.Order("t.usage_count desc").Order("t.id desc")
+		}
+	}
+
+	if err := db.Scan(&rows).Error; err != nil {
 		return nil, err
 	}
 

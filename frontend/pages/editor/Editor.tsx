@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, Printer, Share2, Layout, Globe, Eye, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Printer, Layout, Globe, Eye, CheckCircle } from 'lucide-react';
 import { EditorForm } from './EditorForm';
 import { ResumePreview, ResumeArtboard } from './ResumePreview';
 import { API_BASE } from '../../config';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { DownloadModal } from '../../components/ui/DownloadModal';
-import { INITIAL_RESUME } from '../../services/mockData';
 import { fetchContentPresetData, listTemplateLibraryItems } from '../../services/catalogService';
 import { ResumeData, AppRoute, Language } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -18,29 +17,27 @@ export const Editor: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const resumeIdParam = searchParams.get('id');
-  const savedThemeStr = resumeIdParam ? localStorage.getItem(`resume:${resumeIdParam}:theme`) : null;
-  const initialTheme = (() => {
-    if (savedThemeStr) {
-      try {
-        const obj = JSON.parse(savedThemeStr);
-        if (obj && typeof obj === 'object') {
-          return { ...(INITIAL_RESUME.Theme || {}), ...obj };
-        }
-      } catch {}
-    }
-    return INITIAL_RESUME.Theme;
-  })();
-  const initialResumeData: ResumeData = { ...INITIAL_RESUME, Theme: initialTheme };
+  const templateParam = searchParams.get('template');
+  const initialResumeData: ResumeData = {
+    id: 'new',
+    title: '',
+    templateId: String(templateParam || ''),
+    lastModified: Date.now(),
+    language: 'zh',
+    Personal: {},
+    Theme: {},
+    sections: [],
+  };
   const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
   const [scale, setScale] = useState(1);
   const [isMobilePreview, setIsMobilePreview] = useState(false);
-  const { t, language, setLanguage } = useLanguage();
+  const { t, language } = useLanguage();
   const { showToast } = useToast();
   const [templates, setTemplates] = useState<Array<{ id: string }>>([]);
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [exportError, setExportError] = useState<{ open: boolean; title: string; details: string }>({ open: false, title: '', details: '' });
   const hasCreatedFromTemplate = useRef(false);
-  const [loading, setLoading] = useState<boolean>(!!resumeIdParam);
+  const [loading, setLoading] = useState<boolean>(!!resumeIdParam || !!templateParam);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
 
@@ -61,6 +58,7 @@ export const Editor: React.FC = () => {
 
     if (resumeId) {
         const token = localStorage.getItem('token');
+        setLoading(true);
         fetch(`${API_BASE}/resumes/${resumeId}`, { headers: { Authorization: `Bearer ${token}` } })
           .then(r => r.json())
           .then((res: any) => {
@@ -72,8 +70,8 @@ export const Editor: React.FC = () => {
                 templateId: incoming.TemplateID,
                 language: (incoming.Language || '') === 'en' ? 'en' : 'zh',
                 lastModified: incoming.LastModified,
-                Personal: { ...(INITIAL_RESUME.Personal || {}), ...(resumeData.Personal || {}), ...(incoming.Personal || {}) },
-                Theme: incoming.Theme,
+                Personal: incoming.Personal || {},
+                Theme: incoming.Theme || {},
                 sections: sectionsRaw.map((s: any) => ({
                   id: s.ID,
                   type: s.Type,
@@ -96,6 +94,10 @@ export const Editor: React.FC = () => {
               }
               setResumeData(mapped);
               setLoading(false);
+          })
+          .catch(() => {
+            setLoading(false);
+            showToast('加载失败', 'error');
           });
         return;
     }
@@ -105,22 +107,22 @@ export const Editor: React.FC = () => {
           return;
         }
         hasCreatedFromTemplate.current = true;
+        setLoading(true);
         const presetId = searchParams.get('presetId') || '';
         const roleId = searchParams.get('roleId') || '';
         const token = localStorage.getItem('token');
-        const baseSeed: ResumeData = { ...(INITIAL_RESUME as any) };
         const resolveSeed = () => {
-          if (!presetId) return Promise.resolve(baseSeed);
+          if (!presetId) return Promise.resolve(null);
           return fetchContentPresetData(Number(presetId))
-            .then((parsed) => parsed && typeof parsed === 'object' ? ({ ...(INITIAL_RESUME as any), ...(parsed as any) }) : baseSeed)
-            .catch(() => baseSeed);
+            .then((parsed) => (parsed && typeof parsed === 'object') ? parsed : null)
+            .catch(() => null);
         };
-        resolveSeed().then((seed: ResumeData) => {
-          const seedTitle = seed.title || INITIAL_RESUME.title;
-          const seedPersonal = seed.Personal || INITIAL_RESUME.Personal || ({} as any);
-          const seedThemeRaw = seed.Theme || INITIAL_RESUME.Theme || ({} as any);
+        resolveSeed().then((seed: any) => {
+          const seedTitle = String(seed?.title || '').trim() || '我的简历';
+          const seedPersonal = (seed?.Personal && typeof seed.Personal === 'object') ? seed.Personal : {};
+          const seedThemeRaw = (seed?.Theme && typeof seed.Theme === 'object') ? seed.Theme : {};
           const seedTheme = applyTemplateThemeDefaults(templateId, seedThemeRaw);
-          const seedSections = Array.isArray(seed.sections) ? seed.sections : INITIAL_RESUME.sections;
+          const seedSections = Array.isArray(seed?.sections) ? seed.sections : [];
           const payload = {
             Title: seedTitle,
             TemplateID: templateId,
@@ -150,35 +152,64 @@ export const Editor: React.FC = () => {
           fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
             .then(r => r.json())
             .then(({ id }) => {
-              const nextTheme = { ...(INITIAL_RESUME.Theme || {}), ...(seedTheme || {}) };
-              setResumeData({ ...(INITIAL_RESUME as any), ...(seed as any), templateId, id, language, Theme: nextTheme });
+              if (!id) {
+                setLoading(false);
+                showToast('创建失败', 'error');
+                return;
+              }
               const rt = searchParams.get('returnTo');
               window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}${rt ? `&returnTo=${encodeURIComponent(rt)}` : ''}`);
+              fetch(`${API_BASE}/resumes/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+                .then(r => r.json())
+                .then((res: any) => {
+                  const incoming = res || {};
+                  const sectionsRaw = (incoming.Sections || []);
+                  const mapped: ResumeData = {
+                    id: incoming.ID || Number(id),
+                    title: incoming.Title,
+                    templateId: incoming.TemplateID,
+                    language: (incoming.Language || '') === 'en' ? 'en' : 'zh',
+                    lastModified: incoming.LastModified,
+                    Personal: incoming.Personal || {},
+                    Theme: incoming.Theme || {},
+                    sections: sectionsRaw.map((s: any) => ({
+                      id: s.ID,
+                      type: s.Type,
+                      title: s.Title,
+                      isVisible: s.IsVisible,
+                      orderNum: s.OrderNum,
+                      items: (s.Items || []).map((i: any) => ({
+                        id: i.ID,
+                        title: i.Title,
+                        subtitle: i.Subtitle,
+                        major: i.Major,
+                        degree: i.Degree,
+                        timeStart: i.TimeStart,
+                        timeEnd: i.TimeEnd,
+                        today: !!i.Today,
+                        description: i.Description,
+                        orderNum: i.OrderNum
+                      })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
+                    })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
+                  }
+                  setResumeData(mapped);
+                  setLoading(false);
+                })
+                .catch(() => {
+                  setLoading(false);
+                  showToast('加载失败', 'error');
+                });
+            })
+            .catch(() => {
               setLoading(false);
+              showToast('创建失败', 'error');
             });
+        }).catch(() => {
+          setLoading(false);
+          showToast('创建失败', 'error');
         });
     }
   }, [searchParams]);
-
-  useEffect(() => {
-    const id = resumeData.id;
-    const theme = resumeData.Theme;
-    if (id && theme) {
-      try {
-        localStorage.setItem(`resume:${id}:theme`, JSON.stringify(theme));
-      } catch {}
-    }
-  }, [
-    resumeData.id,
-    resumeData.Theme?.Color,
-    resumeData.Theme?.Font,
-    resumeData.Theme?.Spacing,
-    resumeData.Theme?.FontSize
-  ]);
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   const handlePreview = () => {
     if (!resumeData.id) return;

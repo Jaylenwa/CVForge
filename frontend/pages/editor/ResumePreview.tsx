@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLanguage, LanguageProvider } from '../../contexts/LanguageContext';
 import { ResumeData } from '../../types';
-import { getThemeStyles } from '../../utils/resume-helpers';
+import { getThemeStyles, normalizeResumeDataForRender } from '../../utils/resume-helpers';
 import { AlertCircle } from 'lucide-react';
 
 import { TemplateClassic } from '../../components/templates/TemplateClassic';
@@ -42,7 +42,8 @@ export interface ArtboardProps {
 
 export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disableShadow = false, className = '', style = {}, showPageHint = true, transformOrigin = 'top left' }) => {
   const { t } = useLanguage();
-  const styles = getThemeStyles(data.Theme);
+  const renderData = React.useMemo(() => normalizeResumeDataForRender(data), [data]);
+  const styles = getThemeStyles(renderData.Theme);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = React.useState<{ pageHeight: number; contentHeight: number; count: number }>({ pageHeight: 0, contentHeight: 0, count: 1 });
   const [tipOpen, setTipOpen] = React.useState(false);
@@ -53,7 +54,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
     const byRoute = hash.includes('/print');
     return byRoute || !!mm?.matches;
   });
-  const themeColor = data.Theme?.Color || '#2563eb';
+  const themeColor = renderData.Theme?.Color || '#2563eb';
 
   const hexToRgb = React.useCallback((hex: string): { r: number; g: number; b: number } | null => {
     const raw = String(hex || '').trim().replace(/^#/, '');
@@ -125,7 +126,7 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
 
   React.useEffect(() => {
     measure();
-  }, [measure, data, scale]);
+  }, [measure, renderData, scale]);
 
   React.useEffect(() => {
     const onResize = () => measure();
@@ -152,11 +153,11 @@ export const ResumeArtboard: React.FC<ArtboardProps> = ({ data, scale = 1, disab
         handlers.forEach(({ el, handler }) => el.removeEventListener('load', handler));
       };
     }
-  }, [measure, data]);
+  }, [measure, renderData]);
 
   const renderTemplate = () => {
-    const Comp = TEMPLATE_COMPONENTS[data.templateId] || TemplateClassic;
-    return <Comp data={data} styles={styles} disableShadow={true} />;
+    const Comp = TEMPLATE_COMPONENTS[renderData.templateId] || TemplateClassic;
+    return <Comp data={renderData} styles={styles} disableShadow={true} />;
   };
 
   const effectiveShowPageHint = showPageHint && !isPrint;

@@ -2,7 +2,6 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { ResumeArtboard } from '../../pages/editor/ResumePreview';
-import { INITIAL_RESUME } from '../../services/mockData';
 import { ResumeData } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { applyTemplateDefaultsToResumeData } from '../../utils/template-defaults';
@@ -75,9 +74,27 @@ export const ResumeTemplateCard: React.FC<{
   const mmToPx = 96 / 25.4;
   const a4w = 210 * mmToPx;
   const a4h = 297 * mmToPx;
-  const rawPreviewData = presetData
-    ? ({ ...INITIAL_RESUME, ...presetData, templateId } as ResumeData)
-    : ({ ...INITIAL_RESUME, templateId } as ResumeData);
+  const rawPreviewData: ResumeData = presetData
+    ? ({
+        id: 'preview',
+        title: String((presetData as any)?.title || ''),
+        templateId,
+        lastModified: Date.now(),
+        language: ((presetData as any)?.language || 'zh') === 'en' ? 'en' : 'zh',
+        Personal: (presetData as any)?.Personal || {},
+        Theme: (presetData as any)?.Theme || {},
+        sections: Array.isArray((presetData as any)?.sections) ? (presetData as any).sections : [],
+      } as any)
+    : ({
+        id: 'preview',
+        title: '',
+        templateId,
+        lastModified: Date.now(),
+        language: 'zh',
+        Personal: {},
+        Theme: {},
+        sections: [],
+      } as any);
   const previewData = applyTemplateDefaultsToResumeData(rawPreviewData);
 
   return (

@@ -8,7 +8,6 @@ import { TableCard } from '../../components/ui/TableCard';
 import { Input, Select } from '../../components/ui/Form';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { LanguageProvider } from '../../contexts/LanguageContext';
-import { INITIAL_RESUME } from '../../services/mockData';
 import { Search, Eye, Trash2, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppRoute } from '../../types';
@@ -64,7 +63,7 @@ export const ResumesPage: React.FC = () => {
       <div className="w-10 h-12 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border border-slate-200 relative">
         <LanguageProvider languageOverride={r.language || 'zh'}>
           <ResumeArtboard
-            data={{ ...INITIAL_RESUME, templateId: r.templateId, Theme: r.Theme, language: r.language || 'zh' }}
+            data={{ id: 'preview', title: r.title || '', templateId: r.templateId, lastModified: r.lastModified || Date.now(), language: r.language || 'zh', Personal: {}, Theme: r.Theme || {}, sections: [] } as any}
             scale={thumbnailScale}
             disableShadow
             style={{ margin: 0 }}

@@ -162,39 +162,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   };
 
   useEffect(() => {
-    const required: ResumeSectionType[] = [
-      ResumeSectionType.Exam,
-      ResumeSectionType.Education,
-      ResumeSectionType.Experience,
-      ResumeSectionType.Projects,
-      ResumeSectionType.Internships,
-      ResumeSectionType.Portfolio,
-      ResumeSectionType.Skills,
-      ResumeSectionType.Awards,
-      ResumeSectionType.SelfEvaluation,
-      ResumeSectionType.Interests
-    ];
-    const existing = new Set(data.sections.map(s => s.type));
-    const toAdd: ResumeSection[] = [];
-    required.forEach(type => {
-      if (!existing.has(type)) {
-        toAdd.push({
-          id: generateUUID(),
-          type,
-          title: '',
-          isVisible: true,
-          items: type === ResumeSectionType.SelfEvaluation ? [{ id: generateUUID(), description: '' }] : []
-        });
-      }
-    });
-    if (toAdd.length) {
-      onChange({ ...data, sections: [...data.sections, ...toAdd] });
-    }
-  }, [data.sections]);
-
-  
-
-  useEffect(() => {
     const needTypesWithTime: ResumeSectionType[] = [
       ResumeSectionType.Education,
       ResumeSectionType.Experience,
@@ -209,11 +176,11 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     ];
     let changed = false;
     const nextSections = data.sections.map(s => {
-      if (s.type === ResumeSectionType.Summary || s.type === ResumeSectionType.SelfEvaluation) {
-        return s;
-      }
       if (s.items.length === 0) {
         changed = true;
+        if (s.type === ResumeSectionType.SelfEvaluation || s.type === ResumeSectionType.Summary) {
+          return { ...s, items: [{ id: generateUUID(), description: '' }] };
+        }
         if (s.type === ResumeSectionType.Exam) {
           return { ...s, items: [{ id: generateUUID(), title: '', subtitle: '', description: '' }] };
         }

@@ -21,6 +21,14 @@ func NewService() *Service {
 	return &Service{repo: DefaultRepo()}
 }
 
+type InvalidSectionTypeError struct {
+	Value string
+}
+
+func (e *InvalidSectionTypeError) Error() string {
+	return "invalid_section_type"
+}
+
 type ResumeReq struct {
 	Title      string            `json:"Title"`
 	TemplateID string            `json:"TemplateID"`
@@ -57,8 +65,11 @@ func (s *Service) ListUserResumes(uid uint) ([]Resume, error) {
 }
 
 func (s *Service) CreateResume(uid uint, req ResumeReq) (Resume, error) {
-	res := s.toModel(uid, req)
-	err := s.repo.Create(&res)
+	res, err := s.toModel(uid, req)
+	if err != nil {
+		return Resume{}, err
+	}
+	err = s.repo.Create(&res)
 	if err == nil {
 		if req.TemplateID != "" {
 			_ = s.repo.IncrementTemplateUsage(req.TemplateID)
@@ -98,7 +109,10 @@ func (s *Service) UpdateOwnedResume(c *gin.Context, id uint, req ResumeReq) (int
 	if existing.UserID != uid {
 		return 403, gorm.ErrInvalidData
 	}
-	updated := s.toModel(existing.UserID, req)
+	updated, err := s.toModel(existing.UserID, req)
+	if err != nil {
+		return 400, err
+	}
 	updated.Model.ID = existing.Model.ID
 	updated.Model.CreatedAt = existing.Model.CreatedAt
 	if err := s.repo.Replace(existing, updated); err != nil {
@@ -125,7 +139,7 @@ func (s *Service) DeleteOwnedResume(c *gin.Context, id uint) (int, error) {
 	return 200, nil
 }
 
-func (s *Service) toModel(uid uint, req ResumeReq) Resume {
+func (s *Service) toModel(uid uint, req ResumeReq) (Resume, error) {
 	r := Resume{
 		UserID:       uid,
 		Title:        req.Title,
@@ -167,8 +181,12 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 		return p.Sanitize(s)
 	}
 	for si, sct := range req.Sections {
+		typ, ok := common.NormalizeResumeSectionType(sct.Type)
+		if !ok {
+			return Resume{}, &InvalidSectionTypeError{Value: sct.Type}
+		}
 		sec := ResumeSection{
-			Type:       sct.Type,
+			Type:       string(typ),
 			Title:      sct.Title,
 			IsVisible:  sct.IsVisible,
 			OrderNum:   si,
@@ -188,5 +206,5 @@ func (s *Service) toModel(uid uint, req ResumeReq) Resume {
 		}
 		r.Sections = append(r.Sections, sec)
 	}
-	return r
+	return r, nil
 }

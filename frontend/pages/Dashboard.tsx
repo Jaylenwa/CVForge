@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, MoreVertical, Plus, Clock, Copy, Trash2, Edit2, Share2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { INITIAL_RESUME } from '../services/mockData';
 import { AppRoute, ResumeData } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 import { API_BASE } from '../config';
@@ -86,9 +85,9 @@ export const Dashboard: React.FC = () => {
         Title: cloneTitle,
         TemplateID: resume.templateId,
         Language: resume.language || 'zh',
-        Personal: resume.Personal || INITIAL_RESUME.Personal || {},
-        Theme: resume.Theme || INITIAL_RESUME.Theme || {},
-        Sections: (resume.sections || INITIAL_RESUME.sections).map(s => ({
+        Personal: resume.Personal || {},
+        Theme: resume.Theme || {},
+        Sections: (resume.sections || []).map(s => ({
           Type: s.type,
           Title: s.title,
           IsVisible: s.isVisible,

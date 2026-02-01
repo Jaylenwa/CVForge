@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+
+	"openresume/internal/common"
 )
 
 func ValidatePresetDataJSON(dataJSON string) error {
@@ -37,8 +39,12 @@ func ValidatePresetDataJSON(dataJSON string) error {
 				}
 			}
 			if typ, ok := sm["type"]; ok && typ != nil {
-				if _, ok := typ.(string); !ok {
+				str, ok := typ.(string)
+				if !ok {
 					return errors.New("invalid_schema_section_type")
+				}
+				if _, ok := common.NormalizeResumeSectionType(str); !ok {
+					return errors.New("invalid_schema_section_type_value")
 				}
 			}
 			if items, ok := sm["items"]; ok && items != nil {
@@ -50,4 +56,3 @@ func ValidatePresetDataJSON(dataJSON string) error {
 	}
 	return nil
 }
-

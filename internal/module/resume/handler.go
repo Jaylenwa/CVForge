@@ -1,6 +1,7 @@
 package resume
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -53,6 +54,11 @@ func (h *Handler) Create(c *gin.Context) {
 	}
 	res, err := h.svc.CreateResume(uid, req)
 	if err != nil {
+		var inv *InvalidSectionTypeError
+		if errors.As(err, &inv) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": inv.Error(), "type": inv.Value})
+			return
+		}
 		logger.WithCtx(c).Error("resume.create failed", zap.Error(err), zap.Uint("uid", uid))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
@@ -100,6 +106,13 @@ func (h *Handler) Update(c *gin.Context) {
 	if err != nil {
 		logger.WithCtx(c).Error("resume.update failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {
+		case 400:
+			var inv *InvalidSectionTypeError
+			if errors.As(err, &inv) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": inv.Error(), "type": inv.Value})
+				return
+			}
+			c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		case 401:
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		case 403:

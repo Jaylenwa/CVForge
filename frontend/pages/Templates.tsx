@@ -43,14 +43,12 @@ export const Templates: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const { jobCategories, jobRoles, templates } = await fetchTemplateCatalog();
+        const { jobCategories, jobRoles } = await fetchTemplateCatalog();
         setJobCategories(jobCategories.map((c) => ({ id: String(c.id), name: c.name, parentId: c.parentId == null ? '' : String(c.parentId), orderNum: c.orderNum })));
         setJobRoles(jobRoles.map((r) => ({ id: String(r.id), categoryId: String(r.categoryId), name: r.name, tags: r.tags, orderNum: r.orderNum })));
-        setTemplates(templates.map((t) => ({ templateId: String(t.templateExternalId), name: t.name, presetId: t.presetId ? String(t.presetId) : undefined, roleId: t.roleId ? String(t.roleId) : undefined, tags: t.tags, usageCount: t.usageCount, globalUsageCount: t.globalUsageCount, isPremium: t.isPremium })));
       } catch {
         setJobCategories([]);
         setJobRoles([]);
-        setTemplates([]);
         setPresetDataMap({});
       }
     })();
@@ -60,13 +58,14 @@ export const Templates: React.FC = () => {
     (async () => {
       try {
         const roleId = selectedJobRole ? Number(selectedJobRole) : undefined;
-        const items = await listTemplateLibraryItems(roleId ? { roleId } : undefined);
+        const apiSort = sortMode === 'hot' ? 'hot' : 'new';
+        const items = await listTemplateLibraryItems(roleId ? { roleId, language, sort: apiSort } : { language, sort: apiSort });
         setTemplates(items.map((t) => ({ templateId: String(t.templateExternalId), name: t.name, presetId: t.presetId ? String(t.presetId) : undefined, roleId: t.roleId ? String(t.roleId) : undefined, tags: t.tags, usageCount: t.usageCount, globalUsageCount: t.globalUsageCount, isPremium: t.isPremium })));
       } catch {
         setTemplates([]);
       }
     })();
-  }, [selectedJobRole]);
+  }, [selectedJobRole, sortMode, language]);
 
   const childCategoryIdsForSelectedRoot = useMemo(() => {
     const rootId = selectedJobCategory;
@@ -80,13 +79,7 @@ export const Templates: React.FC = () => {
     return m;
   }, [jobRoles]);
 
-  const sortedTemplates = useMemo(() => {
-    const list = templates.slice();
-    if (sortMode === 'hot') {
-      return list.sort((a, b) => (b.usageCount ?? 0) - (a.usageCount ?? 0));
-    }
-    return list.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), language === 'zh' ? 'zh' : 'en'));
-  }, [templates, sortMode, language]);
+  const sortedTemplates = useMemo(() => templates.slice(), [templates]);
 
   const handleUseTemplate = (templateId: string, presetId?: string, roleId?: string) => {
     const qs = new URLSearchParams();

@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { ResumeData } from '../../types';
 import { API_BASE } from '../../config';
 import { ResumePreview } from '../editor/ResumePreview';
-import { INITIAL_RESUME } from '../../services/mockData';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { fetchContentPresetData } from '../../services/catalogService';
 import { applyTemplateDefaultsToResumeData } from '../../utils/template-defaults';
@@ -22,14 +21,18 @@ export const PrintResume: React.FC = () => {
       let cancelled = false;
 
       const resolveSeed = () => {
-        if (!presetId) return Promise.resolve({ ...(INITIAL_RESUME as any) });
+        if (!presetId) return Promise.resolve(null);
         return fetchContentPresetData(Number(presetId))
-          .then((parsed) => parsed && typeof parsed === 'object' ? ({ ...(INITIAL_RESUME as any), ...(parsed as any) }) : (INITIAL_RESUME as any))
-          .catch(() => INITIAL_RESUME as any);
+          .then((parsed) => (parsed && typeof parsed === 'object') ? parsed : null)
+          .catch(() => null);
       };
 
-      resolveSeed().then((seed: ResumeData) => {
+      resolveSeed().then((seed: any) => {
         if (cancelled) return;
+        if (!seed) {
+          setData(null);
+          return;
+        }
         const demo: ResumeData = applyTemplateDefaultsToResumeData({ ...(seed as any), templateId: template } as ResumeData);
         setData(demo);
         setLanguage(demo.language);

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"openresume/internal/common"
 	"openresume/internal/infra/database"
 	"openresume/internal/module/preset"
 	"openresume/internal/module/taxonomy"
@@ -172,7 +173,7 @@ func DefaultSeed() (SeedData, error) {
 		"sections": []any{
 			map[string]any{
 				"id":        "exam",
-				"type":      "exam",
+				"type":      common.ResumeSectionTypeExam,
 				"title":     "报考信息",
 				"isVisible": true,
 				"items": []any{
@@ -210,7 +211,7 @@ func DefaultSeed() (SeedData, error) {
 			},
 			map[string]any{
 				"id":        "exp",
-				"type":      "experience",
+				"type":      common.ResumeSectionTypeExperience,
 				"title":     "工作经历",
 				"isVisible": true,
 				"items": []any{
@@ -234,7 +235,7 @@ func DefaultSeed() (SeedData, error) {
 			},
 			map[string]any{
 				"id":        "edu",
-				"type":      "education",
+				"type":      common.ResumeSectionTypeEducation,
 				"title":     "教育背景",
 				"isVisible": true,
 				"items": []any{
@@ -260,7 +261,7 @@ func DefaultSeed() (SeedData, error) {
 			},
 			map[string]any{
 				"id":        "skills",
-				"type":      "skills",
+				"type":      common.ResumeSectionTypeSkills,
 				"title":     "技能特长",
 				"isVisible": true,
 				"items": []any{
@@ -272,7 +273,7 @@ func DefaultSeed() (SeedData, error) {
 			},
 			map[string]any{
 				"id":        "projects",
-				"type":      "projects",
+				"type":      common.ResumeSectionTypeProjects,
 				"title":     "项目经历",
 				"isVisible": true,
 				"items": []any{
@@ -304,7 +305,7 @@ func DefaultSeed() (SeedData, error) {
 			},
 			map[string]any{
 				"id":        "intern",
-				"type":      "internships",
+				"type":      common.ResumeSectionTypeInternships,
 				"title":     "实习经验",
 				"isVisible": true,
 				"items": []any{
@@ -320,7 +321,7 @@ func DefaultSeed() (SeedData, error) {
 			},
 			map[string]any{
 				"id":        "portfolio",
-				"type":      "portfolio",
+				"type":      common.ResumeSectionTypePortfolio,
 				"title":     "个人作品",
 				"isVisible": true,
 				"items": []any{
@@ -332,7 +333,7 @@ func DefaultSeed() (SeedData, error) {
 			},
 			map[string]any{
 				"id":        "awards",
-				"type":      "awards",
+				"type":      common.ResumeSectionTypeAwards,
 				"title":     "荣誉证书",
 				"isVisible": true,
 				"items": []any{
@@ -344,7 +345,7 @@ func DefaultSeed() (SeedData, error) {
 			},
 			map[string]any{
 				"id":        "self",
-				"type":      "selfEvaluation",
+				"type":      common.ResumeSectionTypeSelfEvaluation,
 				"title":     "自我评价",
 				"isVisible": true,
 				"items": []any{
@@ -356,7 +357,7 @@ func DefaultSeed() (SeedData, error) {
 			},
 			map[string]any{
 				"id":        "interests",
-				"type":      "interests",
+				"type":      common.ResumeSectionTypeInterests,
 				"title":     "兴趣爱好",
 				"isVisible": true,
 				"items": []any{
@@ -368,7 +369,269 @@ func DefaultSeed() (SeedData, error) {
 			},
 		},
 	}
+	pythonPresetJSON := map[string]any{
+		"title":    "Python 后端开发工程师简历",
+		"language": "zh",
+		"Personal": map[string]any{
+			"FullName":   "王敏",
+			"Email":      "wangmin@example.com",
+			"Phone":      "13800000002",
+			"Job":        "Python 后端开发工程师",
+			"City":       "北京 / 杭州",
+			"Money":      "25k-35k·14薪",
+			"JoinTime":   "1 个月内",
+			"Degree":     "本科",
+			"CustomInfo": `[{"label":"技术栈","value":"Python / FastAPI / Django / PostgreSQL / Redis / Kafka"}]`,
+		},
+		"Theme": map[string]any{
+			"Color":    "#2563eb",
+			"Font":     "notosans",
+			"Spacing":  "normal",
+			"FontSize": "13",
+		},
+		"sections": []any{
+			map[string]any{
+				"id":        "summary",
+				"type":      common.ResumeSectionTypeSummary,
+				"title":     "优势概述",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "sum1",
+						"description": "<ul><li>5 年 Python 后端开发经验，熟悉 FastAPI/Django，具备从 0 到 1 业务落地与性能优化能力</li><li>熟悉 PostgreSQL/MySQL、Redis、Kafka、Celery，能构建高并发与高可用服务</li><li>具备工程化与云原生实践：Docker、Kubernetes、CI/CD、日志/监控/告警</li></ul>",
+					},
+				},
+			},
+			map[string]any{
+				"id":        "exp",
+				"type":      common.ResumeSectionTypeExperience,
+				"title":     "工作经历",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "e1",
+						"title":       "某头部电商平台",
+						"subtitle":    "Python 后端开发工程师（交易/风控）",
+						"timeStart":   "2021-05",
+						"today":       true,
+						"description": "<ul><li>负责交易域核心接口与异步链路（FastAPI + Kafka + Celery），订单创建成功率提升至 99.95%</li><li>落地 Redis 多级缓存与热点治理，核心接口 P95 从 240ms 降至 130ms</li><li>推动风控规则引擎重构，规则配置化与灰度发布，策略迭代效率提升 3 倍</li><li>完善监控与告警（Prometheus/Grafana），故障定位时间缩短 50%</li></ul>",
+					},
+					map[string]any{
+						"id":          "e2",
+						"title":       "某 SaaS 创业公司",
+						"subtitle":    "Python 后端工程师（数据与平台）",
+						"timeStart":   "2019-07",
+						"timeEnd":     "2021-04",
+						"description": "<ul><li>基于 Django 构建多租户权限、审计日志与配置中心，支撑 100+ 企业客户</li><li>实现 ETL 数据处理与任务编排（Celery + PostgreSQL），报表生成耗时下降 40%</li><li>参与 API 规范与自动化测试建设（OpenAPI + pytest），回归效率显著提升</li></ul>",
+					},
+				},
+			},
+			map[string]any{
+				"id":        "projects",
+				"type":      common.ResumeSectionTypeProjects,
+				"title":     "项目经历",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "p1",
+						"title":       "实时风控规则引擎",
+						"subtitle":    "FastAPI / Kafka / Redis / PostgreSQL",
+						"timeStart":   "2022-06",
+						"timeEnd":     "2023-03",
+						"description": "<ul><li>设计规则 DSL 与执行器，支持按商家/人群维度动态下发与快速回滚</li><li>接入 Kafka 流式事件与 Redis 画像缓存，实现毫秒级判定</li><li>完善压测与容量评估，峰值 QPS 提升 2 倍且稳定运行</li></ul>",
+					},
+					map[string]any{
+						"id":          "p2",
+						"title":       "任务编排与异步处理平台",
+						"subtitle":    "Django / Celery / Redis",
+						"timeStart":   "2020-03",
+						"timeEnd":     "2020-11",
+						"description": "<ul><li>抽象任务模板与重试/幂等机制，降低重复开发成本</li><li>实现任务可观测：状态追踪、失败原因聚合与告警推送</li></ul>",
+					},
+				},
+			},
+			map[string]any{
+				"id":        "skills",
+				"type":      common.ResumeSectionTypeSkills,
+				"title":     "技能清单",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "s1",
+						"title":       "语言与框架",
+						"subtitle":    "Python",
+						"description": "FastAPI / Django / REST API / OpenAPI",
+					},
+					map[string]any{
+						"id":          "s2",
+						"title":       "存储与中间件",
+						"subtitle":    "数据库 / 缓存 / 消息",
+						"description": "PostgreSQL / MySQL / Redis / Kafka / Celery",
+					},
+					map[string]any{
+						"id":          "s3",
+						"title":       "工程化",
+						"subtitle":    "可观测与交付",
+						"description": "Docker / Kubernetes / CI/CD / Prometheus / Grafana",
+					},
+				},
+			},
+			map[string]any{
+				"id":        "edu",
+				"type":      common.ResumeSectionTypeEducation,
+				"title":     "教育背景",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "ed1",
+						"title":       "华中科技大学",
+						"major":       "计算机科学与技术",
+						"degree":      "本科",
+						"timeStart":   "2015-09",
+						"timeEnd":     "2019-06",
+						"description": "主修数据结构、数据库、计算机网络；参与校内项目与竞赛。",
+					},
+				},
+			},
+		},
+	}
+
+	goPresetJSON := map[string]any{
+		"title":    "Go 后端开发工程师简历",
+		"language": "zh",
+		"Personal": map[string]any{
+			"FullName":   "陈浩",
+			"Email":      "chenhao@example.com",
+			"Phone":      "13800000003",
+			"Job":        "Go 后端开发工程师",
+			"City":       "上海 / 深圳",
+			"Money":      "30k-45k·15薪",
+			"JoinTime":   "2 周内",
+			"Degree":     "本科",
+			"CustomInfo": `[{"label":"技术栈","value":"Go / Gin / gRPC / MySQL / Redis / Kafka / Prometheus"}]`,
+		},
+		"Theme": map[string]any{
+			"Color":    "#14b8a6",
+			"Font":     "notosans",
+			"Spacing":  "normal",
+			"FontSize": "13",
+		},
+		"sections": []any{
+			map[string]any{
+				"id":        "summary",
+				"type":      common.ResumeSectionTypeSummary,
+				"title":     "优势概述",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "sum1",
+						"description": "<ul><li>4+ 年 Go 后端经验，熟悉微服务、gRPC、分布式一致性与高并发场景优化</li><li>熟悉 MySQL/Redis/Kafka，具备性能调优、故障治理与稳定性建设经验</li><li>熟悉可观测与云原生：Prometheus/Grafana、链路追踪、Docker/Kubernetes</li></ul>",
+					},
+				},
+			},
+			map[string]any{
+				"id":        "exp",
+				"type":      common.ResumeSectionTypeExperience,
+				"title":     "工作经历",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "e1",
+						"title":       "某大型互联网公司",
+						"subtitle":    "Go 后端开发工程师（订单/履约）",
+						"timeStart":   "2021-08",
+						"today":       true,
+						"description": "<ul><li>负责订单履约核心服务（Go + gRPC），支持日均千万级请求，接口 P95 降低 35%</li><li>建设幂等、分布式锁与补偿机制，保障高并发下的数据一致性与可恢复</li><li>推动 Redis 热点治理与降级策略，核心链路稳定性显著提升</li><li>完善可观测体系（指标/日志/追踪），重大故障恢复时间从小时级降至 20 分钟内</li></ul>",
+					},
+					map[string]any{
+						"id":          "e2",
+						"title":       "某金融科技公司",
+						"subtitle":    "后端工程师（网关/平台）",
+						"timeStart":   "2019-07",
+						"timeEnd":     "2021-07",
+						"description": "<ul><li>参与统一 API 网关建设（鉴权、限流、灰度、熔断），业务接入效率提升</li><li>落地 Kafka 异步链路与延迟队列，解耦核心服务，削峰填谷</li><li>推进数据库治理：慢 SQL 优化、索引与分库分表策略，核心查询耗时下降 60%</li></ul>",
+					},
+				},
+			},
+			map[string]any{
+				"id":        "projects",
+				"type":      common.ResumeSectionTypeProjects,
+				"title":     "项目经历",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "p1",
+						"title":       "统一鉴权与权限平台",
+						"subtitle":    "Go / gRPC / Redis / MySQL",
+						"timeStart":   "2022-02",
+						"timeEnd":     "2022-10",
+						"description": "<ul><li>设计 RBAC/ABAC 混合模型与权限缓存策略，保障一致性与性能</li><li>实现 token 轮换与多端登录控制，完善审计与告警能力</li></ul>",
+					},
+					map[string]any{
+						"id":          "p2",
+						"title":       "订单履约链路重构",
+						"subtitle":    "Go / Kafka / Redis",
+						"timeStart":   "2023-01",
+						"timeEnd":     "2023-12",
+						"description": "<ul><li>拆分履约子域与事件驱动流程，降低耦合并提升可演进性</li><li>引入 Saga 补偿与重试策略，显著降低异常订单占比</li></ul>",
+					},
+				},
+			},
+			map[string]any{
+				"id":        "skills",
+				"type":      common.ResumeSectionTypeSkills,
+				"title":     "技能清单",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "s1",
+						"title":       "后端",
+						"subtitle":    "Go",
+						"description": "Gin / gRPC / 并发与性能优化 / 微服务架构",
+					},
+					map[string]any{
+						"id":          "s2",
+						"title":       "数据库与中间件",
+						"subtitle":    "MySQL / Redis / Kafka",
+						"description": "事务与锁、索引优化、缓存一致性、消息可靠投递",
+					},
+					map[string]any{
+						"id":          "s3",
+						"title":       "稳定性与云原生",
+						"subtitle":    "可观测",
+						"description": "Prometheus / Grafana / 日志与追踪 / Docker / Kubernetes",
+					},
+				},
+			},
+			map[string]any{
+				"id":        "edu",
+				"type":      common.ResumeSectionTypeEducation,
+				"title":     "教育背景",
+				"isVisible": true,
+				"items": []any{
+					map[string]any{
+						"id":          "ed1",
+						"title":       "中山大学",
+						"major":       "软件工程",
+						"degree":      "本科",
+						"timeStart":   "2015-09",
+						"timeEnd":     "2019-06",
+						"description": "主修软件工程与分布式系统；参与校内项目实践。",
+					},
+				},
+			},
+		},
+	}
+
 	b, err := json.Marshal(presetJSON)
+	if err != nil {
+		return SeedData{}, err
+	}
+	pythonB, err := json.Marshal(pythonPresetJSON)
+	if err != nil {
+		return SeedData{}, err
+	}
+	goB, err := json.Marshal(goPresetJSON)
 	if err != nil {
 		return SeedData{}, err
 	}
@@ -1118,6 +1381,8 @@ func DefaultSeed() (SeedData, error) {
 		},
 		Presets: []SeedContentPreset{
 			{ExternalID: "it_backend_java_zh", Name: "Java 开发（中文示例）", Language: "zh", RoleExternalID: "Java", Tags: "Java,后端,中文", DataJSON: string(b), IsActive: true},
+			{ExternalID: "it_backend_python_zh", Name: "Python 开发（中文示例）", Language: "zh", RoleExternalID: "Python", Tags: "Python,后端,中文", DataJSON: string(pythonB), IsActive: true},
+			{ExternalID: "it_backend_golang_zh", Name: "Go 开发（中文示例）", Language: "zh", RoleExternalID: "golang", Tags: "Go,后端,中文", DataJSON: string(goB), IsActive: true},
 		},
 	}, nil
 }

@@ -26,7 +26,9 @@ func (h *Handler) ListTemplates(c *gin.Context) {
 			roleID = uint(n)
 		}
 	}
-	items, err := h.svc.ListTemplateLibraryItems(roleID)
+	language := strings.TrimSpace(c.Query("language"))
+	sort := strings.TrimSpace(c.Query("sort"))
+	items, err := h.svc.ListTemplateLibraryItems(roleID, language, sort)
 	if err != nil {
 		logger.WithCtx(c).Error("library.templates.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})

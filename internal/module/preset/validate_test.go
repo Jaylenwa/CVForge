@@ -16,6 +16,7 @@ func TestValidatePresetDataJSON(t *testing.T) {
 		{name: "section items must be array", input: `{"sections":[{"items":{}}]}`, wantErr: true},
 		{name: "section id must be string", input: `{"sections":[{"id":1}]}`, wantErr: true},
 		{name: "ok with sections", input: `{"sections":[{"id":"exp","type":"Experience","items":[{"id":"1"}]}]}`, wantErr: false},
+		{name: "section type value invalid", input: `{"sections":[{"id":"exp","type":"not_a_real_type","items":[]}]}`, wantErr: true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -29,4 +30,3 @@ func TestValidatePresetDataJSON(t *testing.T) {
 		})
 	}
 }
-

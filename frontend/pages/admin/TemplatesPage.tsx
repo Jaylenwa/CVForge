@@ -22,7 +22,7 @@ import { MultiSelect } from '../../components/ui/MultiSelect';
 import { DataTable } from '../../components/ui/DataTable';
 import { TableCard } from '../../components/ui/TableCard';
 import { ResumeArtboard } from '../editor/ResumePreview';
-import { INITIAL_RESUME, MOCK_TEMPLATES } from '../../services/mockData';
+import { MOCK_TEMPLATES } from '../../services/mockData';
 import { AlertCircle, AlignLeft, Check, CheckCircle2, Copy, FileJson, FileText, Layers, LayoutGrid, Minimize2, Search, Trash2 } from 'lucide-react';
 import { AppRoute } from '../../types';
 import { motion } from 'framer-motion';
@@ -367,7 +367,14 @@ export const TemplatesPage: React.FC = () => {
   const Thumbnail: React.FC<{ templateId: string }> = ({ templateId }) => {
     return (
       <div className="w-10 h-12 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border border-slate-200 relative">
-        <ResumeArtboard data={{ ...INITIAL_RESUME, templateId }} scale={thumbnailScale} disableShadow style={{ margin: 0 }} className="absolute top-0 left-0" showPageHint={false} />
+        <ResumeArtboard
+          data={{ id: 'preview', title: '', templateId, lastModified: Date.now(), language: 'zh', Personal: {}, Theme: {}, sections: [] } as any}
+          scale={thumbnailScale}
+          disableShadow
+          style={{ margin: 0 }}
+          className="absolute top-0 left-0"
+          showPageHint={false}
+        />
       </div>
     );
   };
