@@ -9,6 +9,7 @@
 
 ## 头像
 AvatarURL 使用 /avatar.avif 作为默认头像。
+AvatarURL: /avatar.avif
 
 
 ## 个人信息部分
@@ -27,3 +28,6 @@ AvatarURL 使用 /avatar.avif 作为默认头像。
 
 ## 个人作品
 个人作品根据不同的岗位生成，然后如果涉及网站类的，需要包含网站链接不能是真实的网站。
+
+## projects
+subtitle: 如xxx工程师，该字段需要为工作岗位
