@@ -15,6 +15,7 @@ export const MOCK_TEMPLATES: Template[] = [
   { id: 'TemplateBlueTabLine', name: '蓝灰标签线版', tags: ['中文', '清晰', '图标'] },
   { id: 'TemplateBluePillRail', name: '蓝灰圆角标题版', tags: ['中文', '清晰', '分区'] },
   { id: 'TemplateBlueNationResume', name: '全民简历风格', tags: ['中文', '清晰', '图标'] },
+  { id: 'TemplateBlueFormSheet', name: '蓝色表格版', tags: ['中文', '表格', '简洁'] },
 ];
 
 export const INITIAL_RESUME: ResumeData = {
