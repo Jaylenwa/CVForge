@@ -74,11 +74,32 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
   }, [findWorkYearsPair, personal?.Degree, personal?.Email, personal?.Gender, t]);
 
   const extraHeaderPairs = React.useMemo(() => {
-    const excludedLabels = new Set([String(findWorkYearsPair?.label || '').trim()]);
+    const cityValue = String(personal?.City || '').trim();
+    const excludedLabels = new Set<string>([
+      String(findWorkYearsPair?.label || '').trim(),
+      ...leftHeaderPairs.map((p) => p.label),
+      ...rightHeaderPairs.map((p) => p.label),
+    ]);
+
     return customPairs
-      .map(p => ({ icon: <User size={16} />, label: String(p.label || '').trim(), value: String(p.value || '').trim() }))
-      .filter(p => p.label && p.value && !excludedLabels.has(p.label));
-  }, [customPairs, findWorkYearsPair]);
+      .map((p) => ({ icon: <User size={16} />, label: String(p.label || '').trim(), value: String(p.value || '').trim() }))
+      .filter((p) => {
+        if (!p.label || !p.value) return false;
+        if (excludedLabels.has(p.label)) return false;
+        if (cityValue && p.value === cityValue && (p.label.includes('城市') || p.label === t('editor.fields.city'))) return false;
+        return true;
+      });
+  }, [customPairs, findWorkYearsPair?.label, leftHeaderPairs, personal?.City, rightHeaderPairs, t]);
+
+  const headerInfo = React.useMemo(() => {
+    const left = [...leftHeaderPairs];
+    const right = [...rightHeaderPairs];
+    for (const p of extraHeaderPairs) {
+      if (left.length <= right.length) left.push(p);
+      else right.push(p);
+    }
+    return { left, right };
+  }, [extraHeaderPairs, leftHeaderPairs, rightHeaderPairs]);
 
   const SectionIcon: React.FC<{ type: ResumeSectionType }> = ({ type }) => {
     switch (type) {
@@ -195,12 +216,6 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
         ? 'mt-6 grid grid-cols-2 gap-x-16 text-white/90'
         : 'mt-5 grid grid-cols-2 gap-x-14 text-white/90';
   const headerPairsColClassName = spacingMode === 'compact' ? 'space-y-1' : spacingMode === 'spacious' ? 'space-y-3' : 'space-y-2';
-  const extraHeaderGridClassName =
-    spacingMode === 'compact'
-      ? 'mt-2 grid grid-cols-2 gap-x-10 gap-y-1 text-white/90'
-      : spacingMode === 'spacious'
-        ? 'mt-4 grid grid-cols-2 gap-x-16 gap-y-3 text-white/90'
-        : 'mt-3 grid grid-cols-2 gap-x-14 gap-y-2 text-white/90';
 
   return (
     <div className={`w-full bg-white text-slate-900 h-auto ${disableShadow ? 'shadow-none' : 'shadow-lg'} print:shadow-none`} style={{ fontFamily: styles.fontFamily, lineHeight, fontSize: styles.fontSize }}>
@@ -222,10 +237,10 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
                 </div>
               ) : null}
 
-              {leftHeaderPairs.length > 0 || rightHeaderPairs.length > 0 ? (
+              {headerInfo.left.length > 0 || headerInfo.right.length > 0 ? (
                 <div className={headerPairsGridClassName}>
                   <div className={headerPairsColClassName}>
-                    {leftHeaderPairs.map((p, idx) => (
+                    {headerInfo.left.map((p, idx) => (
                       <div key={`${p.label}-${idx}`} className="flex items-center gap-3 min-w-0">
                         <div className="w-5 h-5 flex items-center justify-center text-white/90 flex-shrink-0">{p.icon}</div>
                         <div className="text-white/75 whitespace-nowrap">{p.label}：</div>
@@ -234,7 +249,7 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
                     ))}
                   </div>
                   <div className={headerPairsColClassName}>
-                    {rightHeaderPairs.map((p, idx) => (
+                    {headerInfo.right.map((p, idx) => (
                       <div key={`${p.label}-${idx}`} className="flex items-center gap-3 min-w-0">
                         <div className="w-5 h-5 flex items-center justify-center text-white/90 flex-shrink-0">{p.icon}</div>
                         <div className="text-white/75 whitespace-nowrap">{p.label}：</div>
@@ -242,18 +257,6 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
                       </div>
                     ))}
                   </div>
-                </div>
-              ) : null}
-
-              {extraHeaderPairs.length > 0 ? (
-                <div className={extraHeaderGridClassName}>
-                  {extraHeaderPairs.map((p, idx) => (
-                    <div key={`${p.label}-${idx}`} className="flex items-center gap-3 min-w-0">
-                      <div className="w-5 h-5 flex items-center justify-center text-white/90 flex-shrink-0">{p.icon}</div>
-                      <div className="text-white/75 whitespace-nowrap">{p.label}：</div>
-                      <div className="min-w-0 break-words font-semibold">{p.value}</div>
-                    </div>
-                  ))}
                 </div>
               ) : null}
             </div>
