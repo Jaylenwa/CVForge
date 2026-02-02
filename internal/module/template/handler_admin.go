@@ -23,7 +23,6 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 	var body struct {
 		ExternalID string `json:"externalId"`
 		Name       string `json:"name"`
-		Tags       string `json:"tags"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || body.ExternalID == "" || body.Name == "" {
 		logger.WithCtx(c).Error("template.admin_create bad request", zap.Error(err))
@@ -33,7 +32,6 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 	mt := Template{
 		ExternalID: body.ExternalID,
 		Name:       body.Name,
-		Tags:       body.Tags,
 	}
 	if err := h.svc.Create(mt); err != nil {
 		logger.WithCtx(c).Error("template.admin_create conflict", zap.Error(err))
@@ -46,7 +44,6 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 func (h *AdminHandler) AdminPatch(c *gin.Context) {
 	var body struct {
 		Name       *string `json:"name"`
-		Tags       *string `json:"tags"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		logger.WithCtx(c).Error("template.admin_patch bad request", zap.Error(err))
@@ -56,9 +53,6 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 	err := h.svc.Update(c.Param("id"), func(t *Template) {
 		if body.Name != nil {
 			t.Name = strings.TrimSpace(*body.Name)
-		}
-		if body.Tags != nil {
-			t.Tags = strings.TrimSpace(*body.Tags)
 		}
 	})
 	if err != nil {

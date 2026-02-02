@@ -49,7 +49,6 @@ export interface AdminJobRole {
   ID: number;
   CategoryID: number;
   Name: string;
-  Tags?: string;
   OrderNum?: number;
   IsActive: boolean;
 }
@@ -57,7 +56,6 @@ export interface AdminJobRole {
 export interface AdminCreateJobRoleReq {
   categoryId: number;
   name: string;
-  tags?: string;
   orderNum?: number;
   isActive?: boolean;
 }
@@ -67,7 +65,6 @@ export interface AdminContentPreset {
   Name: string;
   Language?: string;
   RoleID: number;
-  Tags?: string;
   DataJSON?: string;
   IsActive: boolean;
 }
@@ -76,7 +73,6 @@ export interface AdminCreateContentPresetReq {
   name: string;
   language?: string;
   roleId: number;
-  tags?: string;
   dataJson?: string;
   isActive?: boolean;
 }
@@ -238,7 +234,6 @@ export const setResumeVisibility = async (id: number, isPublic: boolean) => {
 export interface AdminTemplateReq {
   externalId: string;
   name: string;
-  tags?: string;
 }
 export const createTemplate = async (body: AdminTemplateReq) => {
   const res = await fetch(`${API_BASE}/admin/templates`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });

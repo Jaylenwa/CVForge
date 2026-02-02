@@ -9,7 +9,6 @@ import (
 type TemplateLibraryItem struct {
 	TemplateExternalID string
 	Name               string
-	Tags               string
 	UsageCount         int
 	GlobalUsageCount   int
 	PresetID           uint
@@ -75,7 +74,6 @@ func (r *Repo) ListTemplateLibraryItems(roleID uint, language string, sort strin
 	type row struct {
 		TemplateExternalID string `gorm:"column:template_external_id"`
 		Name               string `gorm:"column:name"`
-		Tags               string `gorm:"column:tags"`
 		UsageCount         int    `gorm:"column:usage_count"`
 		GlobalUsageCount   int    `gorm:"column:global_usage_count"`
 	}
@@ -85,9 +83,9 @@ func (r *Repo) ListTemplateLibraryItems(roleID uint, language string, sort strin
 
 	if roleID != 0 {
 		db = db.Joins("LEFT JOIN role_template_usage rtu ON rtu.template_external_id = t.external_id AND rtu.role_id = ?", roleID).
-			Select("t.external_id as template_external_id, t.name, t.tags, COALESCE(rtu.usage_count, 0) as usage_count, t.usage_count as global_usage_count")
+			Select("t.external_id as template_external_id, t.name, COALESCE(rtu.usage_count, 0) as usage_count, t.usage_count as global_usage_count")
 	} else {
-		db = db.Select("t.external_id as template_external_id, t.name, t.tags, t.usage_count as usage_count, t.usage_count as global_usage_count")
+		db = db.Select("t.external_id as template_external_id, t.name, t.usage_count as usage_count, t.usage_count as global_usage_count")
 	}
 
 	switch sort {
@@ -112,7 +110,6 @@ func (r *Repo) ListTemplateLibraryItems(roleID uint, language string, sort strin
 		out = append(out, TemplateLibraryItem{
 			TemplateExternalID: it.TemplateExternalID,
 			Name:               it.Name,
-			Tags:               it.Tags,
 			UsageCount:         it.UsageCount,
 			GlobalUsageCount:   it.GlobalUsageCount,
 			PresetID:           presetID,

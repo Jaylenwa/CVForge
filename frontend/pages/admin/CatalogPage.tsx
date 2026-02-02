@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Button } from '../../components/ui/Button';
-import { Checkbox, Input, Label, Select, TagInput } from '../../components/ui/Form';
+import { Checkbox, Input, Label, Select } from '../../components/ui/Form';
 import { TableCard } from '../../components/ui/TableCard';
 import { Modal } from '../../components/ui/Modal';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
@@ -26,16 +26,6 @@ type FormKind = 'category' | 'role';
 type CatalogPageProps = {
   embedded?: boolean;
 };
-
-const parseTags = (v: any): string[] => {
-  if (Array.isArray(v)) return v.map(x => String(x).trim()).filter(Boolean);
-  return String(v || '')
-    .split(',')
-    .map(x => x.trim())
-    .filter(Boolean);
-};
-
-const joinTags = (tags: any): string => parseTags(tags).join(',');
 
 export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
   const { t } = useLanguage();
@@ -126,7 +116,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
   const openCreateRole = (categoryId: number) => {
     setEditingId(null);
     setFormKind('role');
-    setForm({ categoryId, name: '', tags: [] as string[], orderNum: 0, isActive: true });
+    setForm({ categoryId, name: '', orderNum: 0, isActive: true });
     setShowForm(true);
   };
 
@@ -139,7 +129,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
   const openEditRole = (row: any) => {
     setEditingId(row.ID);
     setFormKind('role');
-    setForm({ categoryId: row.CategoryID, name: row.Name, tags: parseTags(row.Tags), orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
+    setForm({ categoryId: row.CategoryID, name: row.Name, orderNum: row.OrderNum ?? 0, isActive: !!row.IsActive });
     setShowForm(true);
   };
 
@@ -169,13 +159,13 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
         if (formKind === 'category') {
           await adminCreateJobCategory({ name: String(form.name || '').trim(), parentId: form.parentId ?? null, orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
         } else if (formKind === 'role') {
-          await adminCreateJobRole({ categoryId: Number(form.categoryId), name: String(form.name || '').trim(), tags: joinTags(form.tags), orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
+          await adminCreateJobRole({ categoryId: Number(form.categoryId), name: String(form.name || '').trim(), orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
         }
       } else {
         if (formKind === 'category') {
           await adminPatchJobCategory(editingId, { name: String(form.name || '').trim(), parentId: form.parentId ?? null, orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
         } else if (formKind === 'role') {
-          await adminPatchJobRole(editingId, { categoryId: Number(form.categoryId), name: String(form.name || '').trim(), tags: joinTags(form.tags), orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
+          await adminPatchJobRole(editingId, { categoryId: Number(form.categoryId), name: String(form.name || '').trim(), orderNum: form.orderNum ?? 0, isActive: !!form.isActive });
         }
       }
       setShowForm(false);
@@ -272,13 +262,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
             </div>
             <Checkbox label={t('admin.catalog.form.active')} checked={!!form.isActive} onChange={(checked) => setForm((p: any) => ({ ...p, isActive: checked }))} />
           </section>
-          <section className="space-y-4">
-            <SectionTitle>{t('admin.catalog.section.tags') || 'Tags'}</SectionTitle>
-            <div>
-              <Label>{t('admin.form.tags')}</Label>
-              <TagInput tags={parseTags(form.tags)} onChange={(tags) => setForm((p: any) => ({ ...p, tags }))} />
-            </div>
-          </section>
         </div>
       );
     }
@@ -318,8 +301,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
     const matchRole = (r: AdminJobRole) => {
       if (!keyword) return true;
       const name = (r.Name || '').toLowerCase();
-      const tags = (r.Tags || '').toLowerCase();
-      return name.includes(keyword) || tags.includes(keyword);
+      return name.includes(keyword);
     };
     const roleCountUnderCategory = (categoryId: number) => (rolesByCategory.get(categoryId) || []).length;
     const totalRoleCountUnderRoot = (rootId: number) => {
@@ -350,7 +332,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
           <table className="w-full text-left table-fixed text-sm">
             <colgroup>
               <col className="w-[300px]" />
-              <col className="w-[320px]" />
+              <col className="w-[240px]" />
               <col className="w-[80px]" />
               <col className="w-[90px]" />
               <col className="w-[140px]" />
@@ -358,7 +340,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
             <thead className="sticky top-0 z-20 bg-gray-50 shadow-sm">
               <tr>
                 <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.jobs.name') || '岗位'}</th>
-                <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.form.tags')}</th>
+                <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.jobs.stats')}</th>
                 <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.form.order')}</th>
                 <th className="px-4 py-4 font-semibold text-gray-600">{t('admin.catalog.form.active')}</th>
                 <th className="px-4 py-4 font-semibold text-gray-600 text-right sticky right-0 bg-gray-50">{t('admin.columns.actions')}</th>
@@ -517,24 +499,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                                 </div>
                                               </div>
                                             </td>
-                                            <td className="px-4 py-4">
-                                              <div className="flex flex-wrap gap-1.5">
-                                                {parseTags(r.Tags).slice(0, 6).map((tag) => (
-                                                  <span
-                                                    key={tag}
-                                                    title={tag}
-                                                    className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-600 font-medium hover:border-indigo-300 hover:bg-indigo-50 transition-colors max-w-[200px] truncate"
-                                                  >
-                                                    {tag}
-                                                  </span>
-                                                ))}
-                                                {parseTags(r.Tags).length > 6 ? (
-                                                  <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-500 font-medium">
-                                                    +{parseTags(r.Tags).length - 6}
-                                                  </span>
-                                                ) : null}
-                                              </div>
-                                            </td>
                                             <td className="px-4 py-4 text-sm text-gray-500">{r.OrderNum ?? 0}</td>
                                             <td className="px-4 py-4">
                                               <BoolBadge value={!!r.IsActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
@@ -616,24 +580,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                                                   <div className="min-w-0 flex-1">
                                                     <NameCell name={r.Name} />
                                                   </div>
-                                                </div>
-                                              </td>
-                                              <td className="px-4 py-4">
-                                                <div className="flex flex-wrap gap-1.5">
-                                                  {parseTags(r.Tags).slice(0, 6).map((tag) => (
-                                                    <span
-                                                      key={tag}
-                                                      title={tag}
-                                                      className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-600 font-medium hover:border-indigo-300 hover:bg-indigo-50 transition-colors max-w-[200px] truncate"
-                                                    >
-                                                      {tag}
-                                                    </span>
-                                                  ))}
-                                                  {parseTags(r.Tags).length > 6 ? (
-                                                    <span className="px-2 py-0.5 bg-slate-50 border border-slate-200 rounded text-[11px] text-slate-500 font-medium">
-                                                      +{parseTags(r.Tags).length - 6}
-                                                    </span>
-                                                  ) : null}
                                                 </div>
                                               </td>
                                               <td className="px-4 py-4 text-sm text-gray-500">{r.OrderNum ?? 0}</td>

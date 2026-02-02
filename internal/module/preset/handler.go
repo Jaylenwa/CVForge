@@ -36,7 +36,6 @@ func (h *Handler) GetByID(c *gin.Context) {
 		Name:           p.Name,
 		Language:       p.Language,
 		RoleID:         p.RoleID,
-		Tags:           splitTags(p.Tags),
 		DataJSON:       p.DataJSON,
 		IsActive:       p.IsActive,
 	})

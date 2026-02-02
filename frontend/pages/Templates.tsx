@@ -1,5 +1,4 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -16,27 +15,15 @@ export const Templates: React.FC = () => {
       document.documentElement.classList.remove('no-scrollbar');
     };
   }, []);
-  const [searchParams] = useSearchParams();
   const { t, language } = useLanguage();
   
   const [sortMode, setSortMode] = useState<'hot' | 'new'>('hot');
   const [selectedJobCategory, setSelectedJobCategory] = useState<string>('');
   const [selectedJobRole, setSelectedJobRole] = useState<string>('');
   
-
-  useEffect(() => {
-    const tag = searchParams.get('tag');
-    if (tag) {
-        // Simple mapping for demo purposes
-        if (['IT', 'Finance', 'Creative', 'General'].includes(tag)) {
-            // legacy param retained for backward compatibility; no-op for now
-        }
-    }
-  }, [searchParams]);
-
   const [jobCategories, setJobCategories] = useState<Array<{ id: string; name: string; parentId?: string; orderNum?: number }>>([]);
-  const [jobRoles, setJobRoles] = useState<Array<{ id: string; categoryId: string; name: string; tags?: string[]; orderNum?: number }>>([]);
-  const [templates, setTemplates] = useState<Array<{ templateId: string; name: string; presetId?: string; roleId?: string; tags?: string[]; usageCount?: number; globalUsageCount?: number; isPremium?: boolean }>>([]);
+  const [jobRoles, setJobRoles] = useState<Array<{ id: string; categoryId: string; name: string; orderNum?: number }>>([]);
+  const [templates, setTemplates] = useState<Array<{ templateId: string; name: string; presetId?: string; roleId?: string; usageCount?: number; globalUsageCount?: number; isPremium?: boolean }>>([]);
   const [presetDataMap, setPresetDataMap] = useState<Record<string, any>>({});
   const inFlightPresetIdsRef = useRef<Set<string>>(new Set());
 
@@ -45,7 +32,7 @@ export const Templates: React.FC = () => {
       try {
         const { jobCategories, jobRoles } = await fetchTemplateCatalog();
         setJobCategories(jobCategories.map((c) => ({ id: String(c.id), name: c.name, parentId: c.parentId == null ? '' : String(c.parentId), orderNum: c.orderNum })));
-        setJobRoles(jobRoles.map((r) => ({ id: String(r.id), categoryId: String(r.categoryId), name: r.name, tags: r.tags, orderNum: r.orderNum })));
+        setJobRoles(jobRoles.map((r) => ({ id: String(r.id), categoryId: String(r.categoryId), name: r.name, orderNum: r.orderNum })));
       } catch {
         setJobCategories([]);
         setJobRoles([]);
@@ -60,7 +47,7 @@ export const Templates: React.FC = () => {
         const roleId = selectedJobRole ? Number(selectedJobRole) : undefined;
         const apiSort = sortMode === 'hot' ? 'hot' : 'new';
         const items = await listTemplateLibraryItems(roleId ? { roleId, language, sort: apiSort } : { language, sort: apiSort });
-        setTemplates(items.map((t) => ({ templateId: String(t.templateExternalId), name: t.name, presetId: t.presetId ? String(t.presetId) : undefined, roleId: t.roleId ? String(t.roleId) : undefined, tags: t.tags, usageCount: t.usageCount, globalUsageCount: t.globalUsageCount, isPremium: t.isPremium })));
+        setTemplates(items.map((t) => ({ templateId: String(t.templateExternalId), name: t.name, presetId: t.presetId ? String(t.presetId) : undefined, roleId: t.roleId ? String(t.roleId) : undefined, usageCount: t.usageCount, globalUsageCount: t.globalUsageCount, isPremium: t.isPremium })));
       } catch {
         setTemplates([]);
       }

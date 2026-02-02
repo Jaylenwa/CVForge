@@ -182,7 +182,6 @@ func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
 	var body struct {
 		CategoryID         uint   `json:"categoryId"`
 		Name               string `json:"name"`
-		Tags               string `json:"tags"`
 		OrderNum           *int   `json:"orderNum"`
 		IsActive           *bool  `json:"isActive"`
 	}
@@ -193,7 +192,6 @@ func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
 	m := JobRole{
 		CategoryID:         body.CategoryID,
 		Name:               strings.TrimSpace(body.Name),
-		Tags:               strings.TrimSpace(body.Tags),
 	}
 	if body.OrderNum != nil {
 		m.OrderNum = *body.OrderNum
@@ -213,7 +211,6 @@ func (h *AdminHandler) AdminPatchRole(c *gin.Context) {
 	var body struct {
 		CategoryID         *uint   `json:"categoryId"`
 		Name               *string `json:"name"`
-		Tags               *string `json:"tags"`
 		OrderNum           *int    `json:"orderNum"`
 		IsActive           *bool   `json:"isActive"`
 	}
@@ -227,9 +224,6 @@ func (h *AdminHandler) AdminPatchRole(c *gin.Context) {
 	}
 	if body.Name != nil {
 		patch["name"] = strings.TrimSpace(*body.Name)
-	}
-	if body.Tags != nil {
-		patch["tags"] = strings.TrimSpace(*body.Tags)
 	}
 	if body.OrderNum != nil {
 		patch["order_num"] = *body.OrderNum

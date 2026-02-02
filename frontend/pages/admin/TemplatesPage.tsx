@@ -17,7 +17,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Checkbox, Input, Label, Select, TagInput, Textarea } from '../../components/ui/Form';
+import { Checkbox, Input, Label, Select, Textarea } from '../../components/ui/Form';
 import { MultiSelect } from '../../components/ui/MultiSelect';
 import { DataTable } from '../../components/ui/DataTable';
 import { TableCard } from '../../components/ui/TableCard';
@@ -30,7 +30,6 @@ import { motion } from 'framer-motion';
 type Row = {
   id: string;
   name: string;
-  tags: string[];
 };
 
 export const TemplatesPage: React.FC = () => {
@@ -52,16 +51,6 @@ export const TemplatesPage: React.FC = () => {
       return false;
     }
   };
-
-  const parseTags = (v: any): string[] => {
-    if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
-    return String(v || '')
-      .split(',')
-      .map((x) => x.trim())
-      .filter(Boolean);
-  };
-
-  const joinTags = (tags: any): string => parseTags(tags).join(',');
 
   const PresetJsonEditor: React.FC<{ value: string; onChange: (val: string) => void }> = ({ value, onChange }) => {
     const [isCopied, setIsCopied] = useState(false);
@@ -201,10 +190,9 @@ export const TemplatesPage: React.FC = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<{ externalId: string; name: string; tags: string[] }>({
+  const [form, setForm] = useState<{ externalId: string; name: string }>({
     externalId: '',
     name: '',
-    tags: [],
   });
   const [saving, setSaving] = useState(false);
 
@@ -226,7 +214,6 @@ export const TemplatesPage: React.FC = () => {
       const mapped = (data.items || []).map((t: any) => ({
         id: t.ExternalID || t.id,
         name: t.Name || t.name,
-        tags: typeof t.Tags === 'string' ? (t.Tags as string).split(',').map((x: string) => x.trim()).filter(Boolean) : (t.tags || []),
       }));
       setItems(mapped);
     } catch {
@@ -251,11 +238,10 @@ export const TemplatesPage: React.FC = () => {
       const body = {
         externalId: t.id,
         name: t.name,
-        tags: (t.tags || []).join(','),
       };
       try {
         if (existing.has(t.id)) {
-          await updateTemplate(t.id, { name: body.name, tags: body.tags });
+          await updateTemplate(t.id, { name: body.name });
         } else {
           await createTemplate(body);
           existing.add(t.id);
@@ -285,7 +271,7 @@ export const TemplatesPage: React.FC = () => {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ externalId: '', name: '', tags: [] });
+    setForm({ externalId: '', name: '' });
     setShowForm(true);
   };
   const openEdit = (row: Row) => {
@@ -293,20 +279,18 @@ export const TemplatesPage: React.FC = () => {
     setForm({
       externalId: row.id,
       name: row.name,
-      tags: row.tags || [],
     });
     setShowForm(true);
   };
-  const joinTemplateTags = (tags: string[]) => tags.map((t) => t.trim()).filter(Boolean).join(',');
   const submitForm = async () => {
     if (saving) return;
     setSaving(true);
     try {
       if (editingId) {
-        await updateTemplate(editingId, { name: form.name, tags: joinTemplateTags(form.tags) });
+        await updateTemplate(editingId, { name: form.name });
         showToast(t('admin.msg.templateUpdated'), 'success');
       } else {
-        await createTemplate({ externalId: form.externalId, name: form.name, tags: joinTemplateTags(form.tags) });
+        await createTemplate({ externalId: form.externalId, name: form.name });
         showToast(t('admin.msg.templateCreated'), 'success');
       }
       setShowForm(false);
@@ -521,7 +505,6 @@ export const TemplatesPage: React.FC = () => {
       name: '',
       language: '',
       roleId: '',
-      tags: [] as string[],
       dataJson: '{\n  \"title\": \"\",\n  \"language\": \"zh\",\n  \"Personal\": {},\n  \"Theme\": {},\n  \"sections\": []\n}\n',
       isActive: true,
     });
@@ -534,7 +517,6 @@ export const TemplatesPage: React.FC = () => {
       name: row.Name,
       language: row.Language || 'zh',
       roleId: String(row.RoleID),
-      tags: parseTags(row.Tags),
       dataJson: row.DataJSON || '',
       isActive: !!row.IsActive,
     });
@@ -566,7 +548,6 @@ export const TemplatesPage: React.FC = () => {
           name: String(catalogForm.name || '').trim(),
           language: String(catalogForm.language || '').trim(),
           roleId: Number(catalogForm.roleId),
-          tags: joinTags(catalogForm.tags),
           dataJson: String(catalogForm.dataJson || ''),
           isActive: !!catalogForm.isActive,
         });
@@ -575,7 +556,6 @@ export const TemplatesPage: React.FC = () => {
           name: String(catalogForm.name || '').trim(),
           language: String(catalogForm.language || '').trim(),
           roleId: Number(catalogForm.roleId),
-          tags: joinTags(catalogForm.tags),
           dataJson: String(catalogForm.dataJson || ''),
           isActive: !!catalogForm.isActive,
         });
@@ -639,13 +619,6 @@ export const TemplatesPage: React.FC = () => {
             </div>
           </div>
           <Checkbox label={t('admin.catalog.form.active')} checked={!!catalogForm.isActive} onChange={(checked) => setCatalogForm((p: any) => ({ ...p, isActive: checked }))} />
-        </section>
-        <section className="space-y-4">
-          <SectionTitle>{t('admin.catalog.section.tags') || 'Tags'}</SectionTitle>
-          <div>
-            <Label>{t('admin.form.tags')}</Label>
-            <TagInput tags={parseTags(catalogForm.tags)} onChange={(tags) => setCatalogForm((p: any) => ({ ...p, tags }))} />
-          </div>
         </section>
         <section className="space-y-4">
           <SectionTitle>{t('admin.catalog.section.data') || 'Data'}</SectionTitle>
@@ -801,7 +774,6 @@ export const TemplatesPage: React.FC = () => {
                       <tr className="border-b border-slate-200">
                         <th className="px-6 py-4 font-semibold text-gray-600">ID</th>
                         <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.form.name')}</th>
-                        <th className="px-6 py-4 font-semibold text-gray-600">{t('admin.form.tags')}</th>
                         <th className="px-6 py-4 font-semibold text-gray-600 text-right">{t('admin.columns.actions')}</th>
                       </tr>
                     </thead>
@@ -815,15 +787,6 @@ export const TemplatesPage: React.FC = () => {
                               <div>
                                 <div className="text-sm font-semibold text-slate-900">{r.name}</div>
                               </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex flex-wrap gap-1.5 max-w-[200px]">
-                              {(r.tags || []).slice(0, 6).map((tag) => (
-                                <span key={tag} className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-600 font-medium hover:border-indigo-300 hover:bg-indigo-50 transition-colors">
-                                  {tag}
-                                </span>
-                              ))}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -910,17 +873,6 @@ export const TemplatesPage: React.FC = () => {
                         <Label required htmlFor="tpl-name">{t('admin.form.name')}</Label>
                         <Input id="tpl-name" placeholder={t('admin.form.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                       </div>
-                    </div>
-                  </section>
-
-                  <section className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1 h-5 bg-blue-600 rounded-full"></div>
-                      <div className="text-sm font-semibold text-slate-900 uppercase tracking-wider">{t('admin.catalog.section.tags')}</div>
-                    </div>
-                    <div>
-                      <Label>{t('admin.form.tags')}</Label>
-                      <TagInput tags={form.tags} onChange={(tags) => setForm({ ...form, tags })} />
                     </div>
                   </section>
                 </div>

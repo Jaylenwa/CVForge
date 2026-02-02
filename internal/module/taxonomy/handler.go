@@ -57,10 +57,9 @@ func (h *Handler) ListRoles(c *gin.Context) {
 		out = append(out, JobRoleDTO{
 			ID:         it.ID,
 			CategoryID: it.CategoryID,
-			Name:               it.Name,
-			Tags:               splitTags(it.Tags),
-			OrderNum:           it.OrderNum,
-			IsActive:           it.IsActive,
+			Name:       it.Name,
+			OrderNum:   it.OrderNum,
+			IsActive:   it.IsActive,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"items": out})

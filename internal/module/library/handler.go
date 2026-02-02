@@ -39,7 +39,6 @@ func (h *Handler) ListTemplates(c *gin.Context) {
 		out = append(out, TemplateLibraryItemDTO{
 			TemplateExternalID: it.TemplateExternalID,
 			Name:               it.Name,
-			Tags:               splitTags(it.Tags),
 			UsageCount:         it.UsageCount,
 			GlobalUsageCount:   it.GlobalUsageCount,
 			PresetID:           it.PresetID,

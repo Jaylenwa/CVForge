@@ -11,14 +11,12 @@ export type JobRole = {
   id: number;
   categoryId: number;
   name: string;
-  tags?: string[];
   orderNum?: number;
 };
 
 export type TemplateLibraryItem = {
   templateExternalId: string;
   name: string;
-  tags?: string[];
   usageCount?: number;
   globalUsageCount?: number;
   presetId?: number;
@@ -31,7 +29,6 @@ export type ContentPreset = {
   name: string;
   language?: string;
   roleId?: number;
-  tags?: string[];
   dataJson?: string;
 };
 
@@ -39,18 +36,6 @@ const fetchJson = async <T>(url: string, init?: RequestInit): Promise<T> => {
   const res = await fetch(url, init);
   if (!res.ok) throw new Error(`request failed: ${res.status}`);
   return res.json();
-};
-
-const normalizeTags = (tags: unknown): string[] | undefined => {
-  if (Array.isArray(tags)) {
-    const out = tags.map((x) => String(x || '').trim()).filter(Boolean);
-    return out.length ? out : undefined;
-  }
-  if (typeof tags === 'string') {
-    const out = tags.split(',').map((x) => x.trim()).filter(Boolean);
-    return out.length ? out : undefined;
-  }
-  return undefined;
 };
 
 export const fetchTemplateCatalog = async (params?: { language?: string; sort?: 'hot' | 'new' | 'name' }) => {
@@ -76,14 +61,12 @@ export const fetchTemplateCatalog = async (params?: { language?: string; sort?: 
     id: r.id,
     categoryId: r.categoryId,
     name: r.name,
-    tags: normalizeTags(r.tags),
     orderNum: r.orderNum ?? 0
   }));
 
   const templates: TemplateLibraryItem[] = (templatesJson.items || []).map((t: any) => ({
     templateExternalId: t.templateExternalId,
     name: t.name,
-    tags: normalizeTags(t.tags),
     usageCount: t.usageCount ?? 0,
     globalUsageCount: t.globalUsageCount ?? 0,
     presetId: t.presetId || undefined,
@@ -103,7 +86,6 @@ export const listJobRoles = async (params?: { categoryId?: number; q?: string })
     id: r.id,
     categoryId: r.categoryId,
     name: r.name,
-    tags: normalizeTags(r.tags),
     orderNum: r.orderNum ?? 0
   }));
   return jobRoles;
@@ -118,7 +100,6 @@ export const listTemplateLibraryItems = async (params?: { roleId?: number; langu
   const templates: TemplateLibraryItem[] = (json.items || []).map((t: any) => ({
     templateExternalId: t.templateExternalId,
     name: t.name,
-    tags: normalizeTags(t.tags),
     usageCount: t.usageCount ?? 0,
     globalUsageCount: t.globalUsageCount ?? 0,
     presetId: t.presetId || undefined,

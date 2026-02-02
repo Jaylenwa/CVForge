@@ -36,7 +36,7 @@ func (r *Repo) ListJobRoles(categoryID uint, q string) ([]JobRole, error) {
 	}
 	if q != "" {
 		qq := "%" + strings.TrimSpace(q) + "%"
-		db = db.Where("name LIKE ? OR tags LIKE ?", qq, qq)
+		db = db.Where("name LIKE ?", qq)
 	}
 	err := db.Order("order_num asc").Order("id asc").Find(&list).Error
 	return list, err
@@ -94,7 +94,6 @@ func (r *Repo) UpsertJobRole(db *gorm.DB, rr *JobRole) error {
 		rr.ID = existing.ID
 		existing.CategoryID = rr.CategoryID
 		existing.Name = rr.Name
-		existing.Tags = rr.Tags
 		existing.OrderNum = rr.OrderNum
 		existing.IsActive = rr.IsActive
 		return db.Save(&existing).Error
@@ -150,7 +149,7 @@ func (r *Repo) AdminListJobRoles(page, size int, q string, categoryID *uint) ([]
 	db := r.db.Model(&JobRole{})
 	if q = strings.TrimSpace(q); q != "" {
 		qq := "%" + q + "%"
-		db = db.Where("name LIKE ? OR tags LIKE ?", qq, qq)
+		db = db.Where("name LIKE ?", qq)
 		if id, err := strconv.ParseUint(q, 10, 64); err == nil {
 			db = db.Or("id = ?", uint(id))
 		}

@@ -32,9 +32,32 @@ func InitDB(cfg config.Config) (*gorm.DB, error) {
 	if err = autoMigrate(); err != nil {
 		return nil, err
 	}
+	if err = dropTagColumns(); err != nil {
+		return nil, err
+	}
 
 	logger.WithCtx(nil).Info("mysql connected")
 	return DB, nil
+}
+
+func dropTagColumns() error {
+	type target struct {
+		table  string
+		column string
+	}
+	targets := []target{
+		{table: "template", column: "tags"},
+		{table: "job_role", column: "tags"},
+		{table: "content_preset", column: "tags"},
+	}
+	for _, t := range targets {
+		if DB.Migrator().HasColumn(t.table, t.column) {
+			if err := DB.Migrator().DropColumn(t.table, t.column); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func autoMigrate() error {

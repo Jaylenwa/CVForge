@@ -13,7 +13,6 @@ type Template struct {
 	DeletedAt  gorm.DeletedAt `gorm:"uniqueIndex:uk_template_external_id_deleted_at,priority:10"`        // 软删除时间（与 ExternalID 共同唯一）
 	ExternalID string         `gorm:"uniqueIndex:uk_template_external_id_deleted_at,priority:1;size:64"` // 业务外部 ID（模板唯一标识）
 	Name       string         `gorm:"size:128"`                                                          // 模板名称
-	Tags       string         `gorm:"size:256"`                                                          // 标签（逗号分隔）
 	UsageCount int            `gorm:"default:0"`                                                          // 使用次数（全局热度）
 }
 

@@ -39,7 +39,6 @@ func (r *Repo) UpsertContentPreset(db *gorm.DB, p *ContentPreset) error {
 		existing.Name = p.Name
 		existing.Language = p.Language
 		existing.RoleID = p.RoleID
-		existing.Tags = p.Tags
 		existing.DataJSON = p.DataJSON
 		existing.IsActive = p.IsActive
 		return db.Save(&existing).Error
@@ -57,7 +56,7 @@ func (r *Repo) AdminListContentPresets(page, size int, q, role, language string)
 	db := r.db.Model(&ContentPreset{})
 	if q = strings.TrimSpace(q); q != "" {
 		qq := "%" + q + "%"
-		db = db.Where("name LIKE ? OR tags LIKE ?", qq, qq)
+		db = db.Where("name LIKE ?", qq)
 		if id, err := strconv.ParseUint(q, 10, 64); err == nil {
 			db = db.Or("id = ?", uint(id))
 		}

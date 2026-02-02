@@ -74,7 +74,6 @@ func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
 		Name     string `json:"name"`
 		Language string `json:"language"`
 		RoleID   uint   `json:"roleId"`
-		Tags     string `json:"tags"`
 		DataJSON string `json:"dataJson"`
 		IsActive *bool  `json:"isActive"`
 	}
@@ -86,7 +85,6 @@ func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
 		Name:           strings.TrimSpace(body.Name),
 		Language:       strings.TrimSpace(body.Language),
 		RoleID:         body.RoleID,
-		Tags:           strings.TrimSpace(body.Tags),
 		DataJSON:       strings.TrimSpace(body.DataJSON),
 	}
 	if body.IsActive != nil {
@@ -109,7 +107,6 @@ func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
 		Name     *string `json:"name"`
 		Language *string `json:"language"`
 		RoleID   *uint   `json:"roleId"`
-		Tags     *string `json:"tags"`
 		DataJSON *string `json:"dataJson"`
 		IsActive *bool   `json:"isActive"`
 	}
@@ -126,9 +123,6 @@ func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
 	}
 	if body.RoleID != nil {
 		patch["role_id"] = *body.RoleID
-	}
-	if body.Tags != nil {
-		patch["tags"] = strings.TrimSpace(*body.Tags)
 	}
 	if body.DataJSON != nil {
 		patch["data_json"] = strings.TrimSpace(*body.DataJSON)

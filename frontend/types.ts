@@ -68,7 +68,6 @@ export interface ResumeData {
 export interface Template {
   id: string;
   name: string;
-  tags: string[];
 }
 
 export enum AppRoute {
