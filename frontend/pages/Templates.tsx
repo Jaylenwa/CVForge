@@ -7,7 +7,8 @@ import { JobSidebar } from '../components/templateLibrary/JobSidebar';
 import { ResumeTemplateCard } from '../components/templateLibrary/ResumeTemplateCard';
   
 export const Templates: React.FC = () => {
-  React.useEffect(() => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
     document.body.classList.add('no-scrollbar');
     document.documentElement.classList.add('no-scrollbar');
     return () => {
