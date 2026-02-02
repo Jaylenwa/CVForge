@@ -1,6 +1,5 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
 import { ResumeArtboard } from '../../pages/editor/ResumePreview';
 import { ResumeData } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -11,12 +10,11 @@ export const ResumeTemplateCard: React.FC<{
   title: string;
   templateId: string;
   usageCount?: number;
-  isPremium?: boolean;
   tag?: string;
   presetData?: Partial<ResumeData> | null;
   onUse: () => void;
   onPreview: () => void;
-}> = ({ title, templateId, usageCount = 0, isPremium = false, tag, presetData, onUse, onPreview }) => {
+}> = ({ title, templateId, usageCount = 0, tag, presetData, onUse, onPreview }) => {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -129,12 +127,6 @@ export const ResumeTemplateCard: React.FC<{
             </Button>
           </div>
         </div>
-
-        {isPremium ? (
-          <div className="absolute top-3 right-3 bg-amber-400 text-amber-900 text-xs font-bold px-2 py-1 rounded-full flex items-center shadow-md">
-            <Star size={12} className="mr-1 fill-current" /> {t('templates.badge.premium')}
-          </div>
-        ) : null}
       </div>
 
       <div className="p-5">

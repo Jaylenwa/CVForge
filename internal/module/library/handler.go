@@ -43,7 +43,6 @@ func (h *Handler) ListTemplates(c *gin.Context) {
 			GlobalUsageCount:   it.GlobalUsageCount,
 			PresetID:           it.PresetID,
 			RoleID:             it.RoleID,
-			IsPremium:          it.IsPremium,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"items": out})

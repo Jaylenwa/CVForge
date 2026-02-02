@@ -170,7 +170,6 @@ export const Home: React.FC = () => {
         <div className="p-3">
           <h3 className="font-medium text-gray-900 truncate">{template.name}</h3>
           <div className="flex items-center text-xs text-gray-500 mt-1 space-x-2">
-            {template.isPremium && <span className="text-yellow-600 font-bold">{t('home.badge.premium')}</span>}
           </div>
         </div>
       </div>

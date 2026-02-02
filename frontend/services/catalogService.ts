@@ -21,7 +21,6 @@ export type TemplateLibraryItem = {
   globalUsageCount?: number;
   presetId?: number;
   roleId?: number;
-  isPremium?: boolean;
 };
 
 export type ContentPreset = {
@@ -74,7 +73,6 @@ export const fetchTemplateCatalog = async (params?: { language?: string; sort?: 
     globalUsageCount: t.globalUsageCount ?? 0,
     presetId: t.presetId || undefined,
     roleId: t.roleId || undefined,
-    isPremium: !!t.isPremium
   }));
 
   return { jobCategories, jobRoles, templates };
@@ -108,7 +106,6 @@ export const listTemplateLibraryItems = async (params?: { roleId?: number; langu
     globalUsageCount: t.globalUsageCount ?? 0,
     presetId: t.presetId || undefined,
     roleId: t.roleId || undefined,
-    isPremium: !!t.isPremium
   }));
   return templates;
 };

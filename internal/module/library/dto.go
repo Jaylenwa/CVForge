@@ -7,5 +7,4 @@ type TemplateLibraryItemDTO struct {
 	GlobalUsageCount   int    `json:"globalUsageCount"`
 	PresetID           uint   `json:"presetId,omitempty"`
 	RoleID             uint   `json:"roleId,omitempty"`
-	IsPremium          bool   `json:"isPremium"`
 }

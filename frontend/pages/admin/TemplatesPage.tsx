@@ -380,7 +380,7 @@ export const TemplatesPage: React.FC = () => {
 
   const roleNameById = useMemo(() => {
     const m = new Map<number, string>();
-    for (const r of allRoles) m.set(r.ID, r.Name);
+    for (const r of allRoles) m.set(r.id, String(r.name || '').trim());
     return m;
   }, [allRoles]);
   const presetNameById = useMemo(() => {
@@ -613,7 +613,7 @@ export const TemplatesPage: React.FC = () => {
                 onChange={(e) => setCatalogForm((p: any) => ({ ...p, roleId: e.target.value }))}
                 options={[
                   { label: t('admin.form.selectPlaceholder'), value: '', disabled: true, hidden: true },
-                  ...allRoles.map((r) => ({ label: r.Name, value: String(r.ID) })),
+                  ...allRoles.map((r) => ({ label: String(r.name || '').trim() || String(r.id), value: String(r.id) })),
                 ]}
               />
             </div>

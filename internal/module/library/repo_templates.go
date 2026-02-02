@@ -13,7 +13,6 @@ type TemplateLibraryItem struct {
 	GlobalUsageCount   int
 	PresetID           uint
 	RoleID             uint
-	IsPremium          bool
 }
 
 func normalizeTemplateListSort(raw string) string {
@@ -123,7 +122,6 @@ func (r *Repo) ListTemplateLibraryItems(roleID uint, language string, sort strin
 			GlobalUsageCount:   it.GlobalUsageCount,
 			PresetID:           presetID,
 			RoleID:             roleID,
-			IsPremium:          false,
 		})
 	}
 	return out, nil

@@ -24,7 +24,7 @@ export const Templates: React.FC = () => {
   
   const [jobCategories, setJobCategories] = useState<Array<{ id: string; name: string; parentId?: string; orderNum?: number }>>([]);
   const [jobRoles, setJobRoles] = useState<Array<{ id: string; categoryId: string; name: string; orderNum?: number }>>([]);
-  const [templates, setTemplates] = useState<Array<{ templateId: string; name: string; presetId?: string; roleId?: string; usageCount?: number; globalUsageCount?: number; isPremium?: boolean }>>([]);
+  const [templates, setTemplates] = useState<Array<{ templateId: string; name: string; presetId?: string; roleId?: string; usageCount?: number; globalUsageCount?: number }>>([]);
   const [presetDataMap, setPresetDataMap] = useState<Record<string, any>>({});
   const inFlightPresetIdsRef = useRef<Set<string>>(new Set());
 
@@ -48,7 +48,7 @@ export const Templates: React.FC = () => {
         const roleId = selectedJobRole ? Number(selectedJobRole) : undefined;
         const apiSort = sortMode === 'hot' ? 'hot' : 'new';
         const items = await listTemplateLibraryItems(roleId ? { roleId, language, sort: apiSort } : { language, sort: apiSort });
-        setTemplates(items.map((t) => ({ templateId: String(t.templateExternalId), name: t.name, presetId: t.presetId ? String(t.presetId) : undefined, roleId: t.roleId ? String(t.roleId) : undefined, usageCount: t.usageCount, globalUsageCount: t.globalUsageCount, isPremium: t.isPremium })));
+        setTemplates(items.map((t) => ({ templateId: String(t.templateExternalId), name: t.name, presetId: t.presetId ? String(t.presetId) : undefined, roleId: t.roleId ? String(t.roleId) : undefined, usageCount: t.usageCount, globalUsageCount: t.globalUsageCount })));
       } catch {
         setTemplates([]);
       }
@@ -252,7 +252,6 @@ export const Templates: React.FC = () => {
                   title={it.name}
                   templateId={it.templateId}
                   usageCount={it.usageCount ?? 0}
-                  isPremium={it.isPremium ?? false}
                   tag={roleName || undefined}
                   presetData={presetId ? (presetDataMap[presetId] || null) : null}
                   onUse={() => handleUseTemplate(it.templateId, it.presetId, it.roleId || selectedJobRole || undefined)}
