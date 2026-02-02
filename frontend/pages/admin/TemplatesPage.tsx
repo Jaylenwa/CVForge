@@ -452,12 +452,34 @@ export const TemplatesPage: React.FC = () => {
 
   const refreshCatalogRefs = async () => {
     try {
-      const rs = await adminListJobRoles({ page: '1', pageSize: '2000' });
-      setAllRoles(rs.items || []);
+      const pageSize = 100;
+      const maxPages = 50;
+      let pageNum = 1;
+      const collected: AdminJobRole[] = [];
+      while (pageNum <= maxPages) {
+        const rs = await adminListJobRoles({ page: String(pageNum), pageSize: String(pageSize), language: 'zh' });
+        const chunk = rs.items || [];
+        collected.push(...chunk);
+        if (!chunk.length) break;
+        if (rs.total && collected.length >= rs.total) break;
+        pageNum += 1;
+      }
+      setAllRoles(collected);
     } catch {}
     try {
-      const ps = await adminListContentPresets({ page: '1', pageSize: '2000' });
-      setAllPresets(ps.items || []);
+      const pageSize = 100;
+      const maxPages = 50;
+      let pageNum = 1;
+      const collected: AdminContentPreset[] = [];
+      while (pageNum <= maxPages) {
+        const ps = await adminListContentPresets({ page: String(pageNum), pageSize: String(pageSize) });
+        const chunk = ps.items || [];
+        collected.push(...chunk);
+        if (!chunk.length) break;
+        if (ps.total && collected.length >= ps.total) break;
+        pageNum += 1;
+      }
+      setAllPresets(collected);
     } catch {}
     try {
       const res = await fetch(`${API_BASE}/templates`);
