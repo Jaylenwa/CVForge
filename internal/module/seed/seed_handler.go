@@ -146,12 +146,14 @@ func DefaultSeed() (SeedData, error) {
 	return SeedData{
 		Categories: seedCategories,
 		Roles:      seedRoles,
-		Presets: []SeedContentPreset{
-			{Name: "Java 开发（中文示例）", Language: "zh", RoleCode: "Java", Tags: "Java,后端,中文", DataJSON: string(presets.GenerateJavaPreset()), IsActive: true},
-			{Name: "Python 开发（中文示例）", Language: "zh", RoleCode: "Python", Tags: "Python,后端,中文", DataJSON: string(presets.GeneratePythonPreset()), IsActive: true},
-			{Name: "Go 开发（中文示例）", Language: "zh", RoleCode: "golang", Tags: "Go,后端,中文", DataJSON: string(presets.GenerateGolangPreset()), IsActive: true},
-		},
+		Presets:    seedPresets,
 	}, nil
+}
+
+var seedPresets = []SeedContentPreset{
+	{Name: "Java 开发（中文示例）", Language: "zh", RoleCode: "Java", Tags: "Java,后端,中文", DataJSON: string(presets.GenerateJavaPreset()), IsActive: true},
+	{Name: "Python 开发（中文示例）", Language: "zh", RoleCode: "Python", Tags: "Python,后端,中文", DataJSON: string(presets.GeneratePythonPreset()), IsActive: true},
+	{Name: "Go 开发（中文示例）", Language: "zh", RoleCode: "golang", Tags: "Go,后端,中文", DataJSON: string(presets.GenerateGolangPreset()), IsActive: true},
 }
 
 var seedCategories = []SeedJobCategory{
