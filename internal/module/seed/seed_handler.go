@@ -149,6 +149,11 @@ var seedPresets = []SeedContentPreset{
 	{Name: "Java 开发（中文示例）", Language: "zh", RoleCode: "Java", Tags: "Java,后端,中文", DataJSON: string(presets.GenerateJavaPreset()), IsActive: true},
 	{Name: "Python 开发（中文示例）", Language: "zh", RoleCode: "Python", Tags: "Python,后端,中文", DataJSON: string(presets.GeneratePythonPreset()), IsActive: true},
 	{Name: "Go 开发（中文示例）", Language: "zh", RoleCode: "golang", Tags: "Go,后端,中文", DataJSON: string(presets.GenerateGolangPreset()), IsActive: true},
+	{Name: "PHP 开发（中文示例）", Language: "zh", RoleCode: "php", Tags: "PHP,后端,中文", DataJSON: string(presets.GeneratePHPPreset()), IsActive: true},
+	{Name: "C/C++ 开发（中文示例）", Language: "zh", RoleCode: "c_cpp", Tags: "C,C++,后端,中文", DataJSON: string(presets.GenerateCCppPreset()), IsActive: true},
+	{Name: "C# 开发（中文示例）", Language: "zh", RoleCode: "csharp", Tags: "C#,后端,中文", DataJSON: string(presets.GenerateCSharpPreset()), IsActive: true},
+	{Name: ".NET 开发（中文示例）", Language: "zh", RoleCode: "dotnet", Tags: ".NET,后端,中文", DataJSON: string(presets.GenerateDotnetPreset()), IsActive: true},
+	{Name: "Node.js 开发（中文示例）", Language: "zh", RoleCode: "nodejs", Tags: "Node.js,后端,中文", DataJSON: string(presets.GenerateNodejsPreset()), IsActive: true},
 }
 
 var seedRoles = []SeedJobRole{

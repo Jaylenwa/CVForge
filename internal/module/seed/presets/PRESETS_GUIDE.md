@@ -24,3 +24,6 @@ subtitle: 如xxx工程师，该字段需要为工作岗位
 
 ### exp
 subtitle: 如xxx工程师，该字段需要为工作岗位
+
+### edu
+需要符合逻辑，如果学历有硕士，那么必须还要一个本科的section。同理，如果有博士，那么必须还要一个硕士的section和一个本科的section。
