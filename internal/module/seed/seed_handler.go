@@ -59,15 +59,10 @@ func NewAdminHandler() *AdminHandler {
 }
 
 func (h *AdminHandler) AdminImportDefault(c *gin.Context) {
-	seed, err := DefaultSeed()
-	if err != nil {
-		logger.WithCtx(c).Error("seed.build failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "seed error"})
-		return
-	}
+	seed := DefaultSeed()
 
 	var counts ImportCounts
-	err = database.DB.Transaction(func(tx *gorm.DB) error {
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		taxRepo := taxonomy.NewRepo(tx)
 		presetRepo := preset.NewRepo(tx)
 
@@ -142,12 +137,12 @@ func (h *AdminHandler) AdminImportDefault(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "counts": counts})
 }
 
-func DefaultSeed() (SeedData, error) {
+func DefaultSeed() SeedData {
 	return SeedData{
 		Categories: seedCategories,
 		Roles:      seedRoles,
 		Presets:    seedPresets,
-	}, nil
+	}
 }
 
 var seedPresets = []SeedContentPreset{
