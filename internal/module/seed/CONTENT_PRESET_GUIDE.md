@@ -1,33 +1,26 @@
 # Content Preset Guide
-
-
-## 生成规则
 - 所有的 content preset 都需要根据这个规则生成。
+- 预设内容里的section部分，要根据不同岗位的需求进行调整。不是所有的section都需要包含。
 
-预设内容里的section部分，要根据不同岗位的需求进行调整。不是所有的section都需要包含。
+### Personal
+"FullName":   "张伟",
+"Email":      "zhangwei@example.com",
+"Phone":      "13800000000",
+"AvatarURL":  "/avatar.avif",
+"Job":        "Java 后端开发工程师",
+"City":       "上海 / 杭州",
+"Money":      "25k-35k·14薪",
+"JoinTime":   "随时到岗",
+"Gender":     "男",
+"Age":        "28",
+"Degree":     "硕士",
+"CustomInfo": `[{"label":"政治面貌","value":"党员"}]`
 
-
-## 头像
-AvatarURL 使用 /avatar.avif 作为默认头像。
-AvatarURL: /avatar.avif
-
-
-## 个人信息部分
-名字：张伟
-电话: 13800000000
-邮箱: zhangwei@example.com
-性别: 男
-年龄: 28
-学历: 硕士
-意向城市: 上海 / 杭州
-期望薪资: 25k-35k·14薪
-入职时间: 随时到岗
-自定义信息:
-- 政治面貌: 党员
-
-
-## 个人作品
+### portfolio
 个人作品根据不同的岗位生成，然后如果涉及网站类的，需要包含网站链接不能是真实的网站。
 
-## projects
+### projects
+subtitle: 如xxx工程师，该字段需要为工作岗位
+
+### exp
 subtitle: 如xxx工程师，该字段需要为工作岗位
