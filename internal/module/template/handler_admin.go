@@ -43,7 +43,7 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 
 func (h *AdminHandler) AdminPatch(c *gin.Context) {
 	var body struct {
-		Name       *string `json:"name"`
+		Name *string `json:"name"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		logger.WithCtx(c).Error("template.admin_patch bad request", zap.Error(err))

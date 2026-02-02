@@ -32,9 +32,28 @@ func InitDB(cfg config.Config) (*gorm.DB, error) {
 	if err = autoMigrate(); err != nil {
 		return nil, err
 	}
+	if err = ensureContentPresetI18nIndex(); err != nil {
+		return nil, err
+	}
 
 	logger.WithCtx(nil).Info("mysql connected")
 	return DB, nil
+}
+
+func ensureContentPresetI18nIndex() error {
+	if DB == nil {
+		return nil
+	}
+	dialect := DB.Dialector.Name()
+	switch dialect {
+	case "sqlite":
+		_ = DB.Exec("DROP INDEX IF EXISTS uniq_content_preset_id").Error
+		_ = DB.Exec("CREATE UNIQUE INDEX IF NOT EXISTS uniq_content_preset_language ON content_preset_i18n (content_preset_id, language)").Error
+	default:
+		_ = DB.Exec("DROP INDEX uniq_content_preset_id ON content_preset_i18n").Error
+		_ = DB.Exec("CREATE UNIQUE INDEX uniq_content_preset_language ON content_preset_i18n (content_preset_id, language)").Error
+	}
+	return nil
 }
 
 func autoMigrate() error {
@@ -46,6 +65,7 @@ func autoMigrate() error {
 		&models.JobRole{},
 		&models.JobRoleI18n{},
 		&models.ContentPreset{},
+		&models.ContentPresetI18n{},
 		&models.RoleTemplateUsage{},
 		&models.Resume{},
 		&models.ResumePersonal{},

@@ -4,12 +4,12 @@ import (
 	"net/http"
 	"os"
 
+	"go.uber.org/zap"
 	"openresume/internal/infra/config"
 	"openresume/internal/infra/storage"
-	"openresume/internal/pkg/logger"
 	"openresume/internal/module/pdf"
+	"openresume/internal/pkg/logger"
 	"openresume/internal/router"
-	"go.uber.org/zap"
 )
 
 func main() {

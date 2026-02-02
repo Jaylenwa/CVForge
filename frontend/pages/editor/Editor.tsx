@@ -113,7 +113,7 @@ export const Editor: React.FC = () => {
         const token = localStorage.getItem('token');
         const resolveSeed = () => {
           if (!presetId) return Promise.resolve(null);
-          return fetchContentPresetData(Number(presetId))
+          return fetchContentPresetData(Number(presetId), undefined, language)
             .then((parsed) => (parsed && typeof parsed === 'object') ? parsed : null)
             .catch(() => null);
         };

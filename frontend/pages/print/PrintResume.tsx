@@ -10,7 +10,7 @@ import { applyTemplateDefaultsToResumeData } from '../../utils/template-defaults
 export const PrintResume: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [data, setData] = useState<ResumeData | null>(null);
-  const { setLanguage } = useLanguage();
+  const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -22,7 +22,7 @@ export const PrintResume: React.FC = () => {
 
       const resolveSeed = () => {
         if (!presetId) return Promise.resolve(null);
-        return fetchContentPresetData(Number(presetId))
+        return fetchContentPresetData(Number(presetId), undefined, language)
           .then((parsed) => (parsed && typeof parsed === 'object') ? parsed : null)
           .catch(() => null);
       };

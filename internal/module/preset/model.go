@@ -1,6 +1,10 @@
 package preset
 
-import "openresume/internal/models"
-
-type ContentPreset = models.ContentPreset
-
+type ContentPreset struct {
+	ID       uint
+	Name     string
+	Language string
+	RoleID   uint
+	DataJSON string
+	IsActive bool
+}

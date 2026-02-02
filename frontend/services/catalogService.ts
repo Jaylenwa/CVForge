@@ -113,9 +113,12 @@ export const listTemplateLibraryItems = async (params?: { roleId?: number; langu
   return templates;
 };
 
-export const fetchContentPresetData = async (presetId: number, signal?: AbortSignal): Promise<any | null> => {
+export const fetchContentPresetData = async (presetId: number, signal?: AbortSignal, language?: string): Promise<any | null> => {
   if (!presetId) return null;
-  const res = await fetch(`${API_BASE}/presets/${encodeURIComponent(presetId)}`, { signal });
+  const qs = new URLSearchParams();
+  if (language) qs.set('language', String(language));
+  const url = `${API_BASE}/presets/${encodeURIComponent(presetId)}${qs.toString() ? `?${qs.toString()}` : ''}`;
+  const res = await fetch(url, { signal });
   if (!res.ok) return null;
   const p: any = await res.json();
   const dataJson = p?.dataJson;

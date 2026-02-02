@@ -43,11 +43,11 @@ type ResumeThemeDTO struct {
 
 type SectionDTO struct {
 	ID        uint      `json:"ID"`
-	Type       string    `json:"Type"`
-	Title      string    `json:"Title"`
-	IsVisible  bool      `json:"IsVisible"`
-	OrderNum   int       `json:"OrderNum"`
-	Items      []ItemDTO `json:"Items"`
+	Type      string    `json:"Type"`
+	Title     string    `json:"Title"`
+	IsVisible bool      `json:"IsVisible"`
+	OrderNum  int       `json:"OrderNum"`
+	Items     []ItemDTO `json:"Items"`
 }
 
 type ItemDTO struct {
@@ -102,10 +102,10 @@ func ToDTO(r Resume) ResumeDTO {
 		}
 		sec := SectionDTO{
 			ID:        s.ID,
-			Type:       typ,
-			Title:      s.Title,
-			IsVisible:  s.IsVisible,
-			OrderNum:   s.OrderNum,
+			Type:      typ,
+			Title:     s.Title,
+			IsVisible: s.IsVisible,
+			OrderNum:  s.OrderNum,
 		}
 		items := append([]ResumeItem(nil), s.Items...)
 		sort.SliceStable(items, func(i, j int) bool { return items[i].OrderNum < items[j].OrderNum })

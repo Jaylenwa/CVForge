@@ -82,10 +82,11 @@ func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
 		return
 	}
 	m := ContentPreset{
-		Name:           strings.TrimSpace(body.Name),
-		Language:       strings.TrimSpace(body.Language),
-		RoleID:         body.RoleID,
-		DataJSON:       strings.TrimSpace(body.DataJSON),
+		Name:     strings.TrimSpace(body.Name),
+		Language: strings.TrimSpace(body.Language),
+		RoleID:   body.RoleID,
+		DataJSON: strings.TrimSpace(body.DataJSON),
+		IsActive: true,
 	}
 	if body.IsActive != nil {
 		m.IsActive = *body.IsActive

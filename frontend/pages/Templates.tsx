@@ -97,7 +97,7 @@ export const Templates: React.FC = () => {
       if (inFlightPresetIdsRef.current.has(presetId)) return;
       inFlightPresetIdsRef.current.add(presetId);
       try {
-        const parsed = await fetchContentPresetData(Number(presetId), signal);
+        const parsed = await fetchContentPresetData(Number(presetId), signal, language);
         if (!parsed || typeof parsed !== 'object') return;
         setPresetDataMap((prev) => (prev[presetId] ? prev : { ...prev, [presetId]: parsed }));
       } catch {

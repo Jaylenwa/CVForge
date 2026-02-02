@@ -16,4 +16,3 @@ func stableExternalID(kind string, parts ...string) string {
 	sum := hex.EncodeToString(h.Sum(nil))
 	return kind + "_" + sum[:16]
 }
-

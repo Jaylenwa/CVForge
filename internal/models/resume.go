@@ -5,11 +5,11 @@ import "gorm.io/gorm"
 type Resume struct {
 	gorm.Model
 	UserID       uint            // 所属用户 ID
-	Title        string          `gorm:"size:191"`                   // 简历标题
-	TemplateID   string          `gorm:"size:64"`                    // 布局模板 ExternalID（Template.ExternalID）
-	PresetID     *uint           `gorm:"column:preset_db_id;index"`  // 内容预设 ID
-	RoleID       *uint           `gorm:"column:role_db_id;index"`    // 岗位方向 ID
-	Language     string          `gorm:"size:8"`                     // 语言（zh/en）
+	Title        string          `gorm:"size:191"`                  // 简历标题
+	TemplateID   string          `gorm:"size:64"`                   // 布局模板 ExternalID（Template.ExternalID）
+	PresetID     *uint           `gorm:"column:preset_db_id;index"` // 内容预设 ID
+	RoleID       *uint           `gorm:"column:role_db_id;index"`   // 岗位方向 ID
+	Language     string          `gorm:"size:8"`                    // 语言（zh/en）
 	LastModified int64           // 最近更新时间戳（毫秒）
 	Personal     ResumePersonal  `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"` // 个人信息（1:1）
 	Theme        ResumeTheme     `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"` // 主题配置（1:1）

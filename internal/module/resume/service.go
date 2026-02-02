@@ -186,10 +186,10 @@ func (s *Service) toModel(uid uint, req ResumeReq) (Resume, error) {
 			return Resume{}, &InvalidSectionTypeError{Value: sct.Type}
 		}
 		sec := ResumeSection{
-			Type:       string(typ),
-			Title:      sct.Title,
-			IsVisible:  sct.IsVisible,
-			OrderNum:   si,
+			Type:      string(typ),
+			Title:     sct.Title,
+			IsVisible: sct.IsVisible,
+			OrderNum:  si,
 		}
 		for ii, it := range sct.Items {
 			sec.Items = append(sec.Items, ResumeItem{

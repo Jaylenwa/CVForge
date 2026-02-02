@@ -1,7 +1,7 @@
 package middleware
 
 import (
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
 // helper to inject Auth from main

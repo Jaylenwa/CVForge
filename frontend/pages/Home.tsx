@@ -40,7 +40,7 @@ export const Home: React.FC = () => {
       for (const id of ids) {
         if (cancelled) return;
         if (presetDataMap[id]) continue;
-        const parsed = await fetchContentPresetData(Number(id)).catch(() => null);
+        const parsed = await fetchContentPresetData(Number(id), undefined, language).catch(() => null);
         if (cancelled) return;
         if (parsed && typeof parsed === 'object') {
           setPresetDataMap((prev) => (prev[id] ? prev : { ...prev, [id]: parsed }));

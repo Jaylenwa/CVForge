@@ -25,18 +25,19 @@ func (h *Handler) GetByID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	p, err := h.svc.GetByIDActive(uint(id))
+	lang := c.Query("language")
+	p, err := h.svc.GetByIDActive(uint(id), lang)
 	if err != nil {
 		logger.WithCtx(c).Error("preset.get failed", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
 	c.JSON(http.StatusOK, ContentPresetDTO{
-		ID:             p.ID,
-		Name:           p.Name,
-		Language:       p.Language,
-		RoleID:         p.RoleID,
-		DataJSON:       p.DataJSON,
-		IsActive:       p.IsActive,
+		ID:       p.ID,
+		Name:     p.Name,
+		Language: p.Language,
+		RoleID:   p.RoleID,
+		DataJSON: p.DataJSON,
+		IsActive: p.IsActive,
 	})
 }

@@ -41,23 +41,32 @@ func (r *Repo) pickPresetID(roleID uint, language string) uint {
 	language = normalizeLanguage(language)
 	var presetID uint
 
-	q := r.db.Table("content_preset").
-		Select("id").
-		Where("is_active = ?", true).
-		Where("deleted_at IS NULL")
+	q := r.db.Table("content_preset cp").
+		Select("cp.id").
+		Joins("JOIN content_preset_i18n cpi ON cpi.content_preset_id = cp.id AND cpi.deleted_at IS NULL").
+		Where("cp.is_active = ?", true).
+		Where("cp.deleted_at IS NULL")
 	if roleID != 0 {
-		q = q.Where("role_id = ?", roleID)
+		q = q.Where("cp.role_id = ?", roleID)
 	}
 
-	_ = q.Where("language = ?", language).
-		Order("id asc").
+	_ = q.Where("cpi.language = ?", language).
+		Order("cp.id asc").
 		Limit(1).
 		Scan(&presetID).Error
 	if presetID != 0 {
 		return presetID
 	}
 
-	_ = q.Order("id asc").Limit(1).Scan(&presetID).Error
+	_ = q.Where("cpi.language = ?", "zh").
+		Order("cp.id asc").
+		Limit(1).
+		Scan(&presetID).Error
+	if presetID != 0 {
+		return presetID
+	}
+
+	_ = q.Order("cp.id asc").Limit(1).Scan(&presetID).Error
 	return presetID
 }
 

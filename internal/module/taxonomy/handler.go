@@ -29,11 +29,11 @@ func (h *Handler) ListCategories(c *gin.Context) {
 	out := make([]JobCategoryDTO, 0, len(items))
 	for _, it := range items {
 		out = append(out, JobCategoryDTO{
-			ID:               it.ID,
-			Name:             it.Name,
-			ParentID:         it.ParentID,
-			OrderNum:         it.OrderNum,
-			IsActive:         it.IsActive,
+			ID:       it.ID,
+			Name:     it.Name,
+			ParentID: it.ParentID,
+			OrderNum: it.OrderNum,
+			IsActive: it.IsActive,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"items": out})

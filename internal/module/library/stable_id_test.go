@@ -13,4 +13,3 @@ func TestStableExternalIDDeterministic(t *testing.T) {
 		t.Fatalf("expected different ids for different input")
 	}
 }
-
