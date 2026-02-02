@@ -54,7 +54,26 @@ func clampPageSize(size int) int {
 	return size
 }
 
+func pickName(names map[string]string, language string) string {
+	if len(names) == 0 {
+		return ""
+	}
+	if v := strings.TrimSpace(names[language]); v != "" {
+		return v
+	}
+	if v := strings.TrimSpace(names["zh"]); v != "" {
+		return v
+	}
+	for _, v := range names {
+		if v = strings.TrimSpace(v); v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
 func (h *AdminHandler) AdminListCategories(c *gin.Context) {
+	language := normalizeLanguage(c.Query("language"))
 	page := parseIntDefault(c.Query("page"), 1)
 	size := parseIntDefault(c.Query("pageSize"), 20)
 	q := c.Query("q")
@@ -71,23 +90,65 @@ func (h *AdminHandler) AdminListCategories(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
-	c.JSON(http.StatusOK, AdminPageResp[JobCategory]{Items: items, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
+	ids := make([]uint, 0, len(items))
+	for _, it := range items {
+		ids = append(ids, it.ID)
+	}
+	i18nList, err := h.svc.repo.ListJobCategoryI18n(ids)
+	if err != nil {
+		logger.WithCtx(c).Error("taxonomy.admin.categories.i18n.list failed", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		return
+	}
+	namesByID := map[uint]map[string]string{}
+	for _, it := range i18nList {
+		m := namesByID[it.JobCategoryID]
+		if m == nil {
+			m = map[string]string{}
+			namesByID[it.JobCategoryID] = m
+		}
+		m[it.Language] = it.Name
+	}
+	out := make([]AdminJobCategoryDTO, 0, len(items))
+	for _, it := range items {
+		names := namesByID[it.ID]
+		out = append(out, AdminJobCategoryDTO{
+			ID:       it.ID,
+			Name:     pickName(names, language),
+			Names:    names,
+			ParentID: it.ParentID,
+			OrderNum: it.OrderNum,
+			IsActive: it.IsActive,
+		})
+	}
+	c.JSON(http.StatusOK, AdminPageResp[AdminJobCategoryDTO]{Items: out, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
 }
 
 func (h *AdminHandler) AdminCreateCategory(c *gin.Context) {
 	var body struct {
-		Name     string `json:"name"`
-		ParentID *uint  `json:"parentId"`
-		OrderNum         *int   `json:"orderNum"`
-		IsActive         *bool  `json:"isActive"`
+		Name     string            `json:"name"`
+		Names    map[string]string `json:"names"`
+		ParentID *uint             `json:"parentId"`
+		OrderNum *int              `json:"orderNum"`
+		IsActive *bool             `json:"isActive"`
 	}
-	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" {
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	names := body.Names
+	if names == nil {
+		names = map[string]string{}
+	}
+	if strings.TrimSpace(names["zh"]) == "" && strings.TrimSpace(body.Name) != "" {
+		names["zh"] = body.Name
+	}
+	if strings.TrimSpace(pickName(names, "zh")) == "" && strings.TrimSpace(pickName(names, "en")) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	m := JobCategory{
-		Name:             strings.TrimSpace(body.Name),
-		ParentID:         body.ParentID,
+		ParentID: body.ParentID,
 	}
 	if body.OrderNum != nil {
 		m.OrderNum = *body.OrderNum
@@ -95,7 +156,7 @@ func (h *AdminHandler) AdminCreateCategory(c *gin.Context) {
 	if body.IsActive != nil {
 		m.IsActive = *body.IsActive
 	}
-	if err := h.svc.repo.AdminCreateJobCategory(&m); err != nil {
+	if err := h.svc.repo.AdminCreateJobCategoryWithNames(&m, names); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.categories.create failed", zap.Error(err))
 		c.JSON(http.StatusConflict, gin.H{"error": "conflict"})
 		return
@@ -105,18 +166,34 @@ func (h *AdminHandler) AdminCreateCategory(c *gin.Context) {
 
 func (h *AdminHandler) AdminPatchCategory(c *gin.Context) {
 	var body struct {
-		Name     *string `json:"name"`
-		ParentID *uint   `json:"parentId"`
-		OrderNum *int    `json:"orderNum"`
-		IsActive *bool   `json:"isActive"`
+		Name     *string           `json:"name"`
+		Names    map[string]string `json:"names"`
+		ParentID *uint             `json:"parentId"`
+		OrderNum *int              `json:"orderNum"`
+		IsActive *bool             `json:"isActive"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	patch := map[string]any{}
+	names := body.Names
+	if names == nil {
+		names = map[string]string{}
+	}
 	if body.Name != nil {
-		patch["name"] = strings.TrimSpace(*body.Name)
+		trimmed := strings.TrimSpace(*body.Name)
+		if trimmed != "" {
+			names["zh"] = trimmed
+		}
+	}
+	if v, ok := names["zh"]; ok {
+		trimmed := strings.TrimSpace(v)
+		if trimmed != "" {
+			names["zh"] = trimmed
+		} else {
+			delete(names, "zh")
+		}
 	}
 	if body.ParentID != nil {
 		patch["parent_id"] = *body.ParentID
@@ -127,7 +204,7 @@ func (h *AdminHandler) AdminPatchCategory(c *gin.Context) {
 	if body.IsActive != nil {
 		patch["is_active"] = *body.IsActive
 	}
-	if len(patch) == 0 {
+	if len(patch) == 0 && len(names) == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": true})
 		return
 	}
@@ -136,7 +213,7 @@ func (h *AdminHandler) AdminPatchCategory(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	if err := h.svc.repo.AdminPatchJobCategory(uint(id), patch); err != nil {
+	if err := h.svc.repo.AdminPatchJobCategoryWithNames(uint(id), patch, names); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.categories.patch failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
@@ -159,6 +236,7 @@ func (h *AdminHandler) AdminDeleteCategory(c *gin.Context) {
 }
 
 func (h *AdminHandler) AdminListRoles(c *gin.Context) {
+	language := normalizeLanguage(c.Query("language"))
 	page := parseIntDefault(c.Query("page"), 1)
 	size := parseIntDefault(c.Query("pageSize"), 20)
 	q := c.Query("q")
@@ -175,23 +253,65 @@ func (h *AdminHandler) AdminListRoles(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
-	c.JSON(http.StatusOK, AdminPageResp[JobRole]{Items: items, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
+	ids := make([]uint, 0, len(items))
+	for _, it := range items {
+		ids = append(ids, it.ID)
+	}
+	i18nList, err := h.svc.repo.ListJobRoleI18n(ids)
+	if err != nil {
+		logger.WithCtx(c).Error("taxonomy.admin.roles.i18n.list failed", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		return
+	}
+	namesByID := map[uint]map[string]string{}
+	for _, it := range i18nList {
+		m := namesByID[it.JobRoleID]
+		if m == nil {
+			m = map[string]string{}
+			namesByID[it.JobRoleID] = m
+		}
+		m[it.Language] = it.Name
+	}
+	out := make([]AdminJobRoleDTO, 0, len(items))
+	for _, it := range items {
+		names := namesByID[it.ID]
+		out = append(out, AdminJobRoleDTO{
+			ID:         it.ID,
+			CategoryID: it.CategoryID,
+			Name:       pickName(names, language),
+			Names:      names,
+			OrderNum:   it.OrderNum,
+			IsActive:   it.IsActive,
+		})
+	}
+	c.JSON(http.StatusOK, AdminPageResp[AdminJobRoleDTO]{Items: out, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
 }
 
 func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
 	var body struct {
-		CategoryID         uint   `json:"categoryId"`
-		Name               string `json:"name"`
-		OrderNum           *int   `json:"orderNum"`
-		IsActive           *bool  `json:"isActive"`
+		CategoryID uint              `json:"categoryId"`
+		Name       string            `json:"name"`
+		Names      map[string]string `json:"names"`
+		OrderNum   *int              `json:"orderNum"`
+		IsActive   *bool             `json:"isActive"`
 	}
-	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.Name) == "" || body.CategoryID == 0 {
+	if err := c.ShouldBindJSON(&body); err != nil || body.CategoryID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+	names := body.Names
+	if names == nil {
+		names = map[string]string{}
+	}
+	if strings.TrimSpace(names["zh"]) == "" && strings.TrimSpace(body.Name) != "" {
+		names["zh"] = body.Name
+	}
+	if strings.TrimSpace(pickName(names, "zh")) == "" && strings.TrimSpace(pickName(names, "en")) == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	m := JobRole{
-		CategoryID:         body.CategoryID,
-		Name:               strings.TrimSpace(body.Name),
+		CategoryID: body.CategoryID,
 	}
 	if body.OrderNum != nil {
 		m.OrderNum = *body.OrderNum
@@ -199,7 +319,7 @@ func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
 	if body.IsActive != nil {
 		m.IsActive = *body.IsActive
 	}
-	if err := h.svc.repo.AdminCreateJobRole(&m); err != nil {
+	if err := h.svc.repo.AdminCreateJobRoleWithNames(&m, names); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.roles.create failed", zap.Error(err))
 		c.JSON(http.StatusConflict, gin.H{"error": "conflict"})
 		return
@@ -209,21 +329,37 @@ func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
 
 func (h *AdminHandler) AdminPatchRole(c *gin.Context) {
 	var body struct {
-		CategoryID         *uint   `json:"categoryId"`
-		Name               *string `json:"name"`
-		OrderNum           *int    `json:"orderNum"`
-		IsActive           *bool   `json:"isActive"`
+		CategoryID *uint             `json:"categoryId"`
+		Name       *string           `json:"name"`
+		Names      map[string]string `json:"names"`
+		OrderNum   *int              `json:"orderNum"`
+		IsActive   *bool             `json:"isActive"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
 	patch := map[string]any{}
+	names := body.Names
+	if names == nil {
+		names = map[string]string{}
+	}
 	if body.CategoryID != nil {
 		patch["category_id"] = *body.CategoryID
 	}
 	if body.Name != nil {
-		patch["name"] = strings.TrimSpace(*body.Name)
+		trimmed := strings.TrimSpace(*body.Name)
+		if trimmed != "" {
+			names["zh"] = trimmed
+		}
+	}
+	if v, ok := names["zh"]; ok {
+		trimmed := strings.TrimSpace(v)
+		if trimmed != "" {
+			names["zh"] = trimmed
+		} else {
+			delete(names, "zh")
+		}
 	}
 	if body.OrderNum != nil {
 		patch["order_num"] = *body.OrderNum
@@ -231,7 +367,7 @@ func (h *AdminHandler) AdminPatchRole(c *gin.Context) {
 	if body.IsActive != nil {
 		patch["is_active"] = *body.IsActive
 	}
-	if len(patch) == 0 {
+	if len(patch) == 0 && len(names) == 0 {
 		c.JSON(http.StatusOK, gin.H{"success": true})
 		return
 	}
@@ -240,7 +376,7 @@ func (h *AdminHandler) AdminPatchRole(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	if err := h.svc.repo.AdminPatchJobRole(uint(id), patch); err != nil {
+	if err := h.svc.repo.AdminPatchJobRoleWithNames(uint(id), patch, names); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.roles.patch failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return

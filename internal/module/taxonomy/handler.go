@@ -19,7 +19,8 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) ListCategories(c *gin.Context) {
-	items, err := h.svc.ListJobCategories()
+	language := normalizeLanguage(c.Query("language"))
+	items, err := h.svc.ListJobCategories(language)
 	if err != nil {
 		logger.WithCtx(c).Error("taxonomy.categories.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
@@ -39,6 +40,7 @@ func (h *Handler) ListCategories(c *gin.Context) {
 }
 
 func (h *Handler) ListRoles(c *gin.Context) {
+	language := normalizeLanguage(c.Query("language"))
 	var categoryID uint
 	if v := c.Query("categoryId"); v != "" {
 		if n, err := strconv.ParseUint(v, 10, 64); err == nil {
@@ -46,7 +48,7 @@ func (h *Handler) ListRoles(c *gin.Context) {
 		}
 	}
 	q := c.Query("q")
-	items, err := h.svc.ListJobRoles(categoryID, q)
+	items, err := h.svc.ListJobRoles(language, categoryID, q)
 	if err != nil {
 		logger.WithCtx(c).Error("taxonomy.roles.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})

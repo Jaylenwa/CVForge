@@ -39,9 +39,12 @@ const fetchJson = async <T>(url: string, init?: RequestInit): Promise<T> => {
 };
 
 export const fetchTemplateCatalog = async (params?: { language?: string; sort?: 'hot' | 'new' | 'name' }) => {
+  const taxonomyQs = new URLSearchParams();
+  if (params?.language) taxonomyQs.set('language', String(params.language));
+  const taxonomySuffix = taxonomyQs.toString() ? `?${taxonomyQs.toString()}` : '';
   const [catsJson, rolesJson, templatesJson] = await Promise.all([
-    fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/categories`),
-    fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/roles`),
+    fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/categories${taxonomySuffix}`),
+    fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/roles${taxonomySuffix}`),
     (() => {
       const qs = new URLSearchParams();
       if (params?.language) qs.set('language', String(params.language));
@@ -77,10 +80,11 @@ export const fetchTemplateCatalog = async (params?: { language?: string; sort?: 
   return { jobCategories, jobRoles, templates };
 };
 
-export const listJobRoles = async (params?: { categoryId?: number; q?: string }) => {
+export const listJobRoles = async (params?: { categoryId?: number; q?: string; language?: string }) => {
   const qs = new URLSearchParams();
   if (params?.categoryId) qs.set('categoryId', String(params.categoryId));
   if (params?.q) qs.set('q', params.q);
+  if (params?.language) qs.set('language', params.language);
   const json = await fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/roles?${qs.toString()}`);
   const jobRoles: JobRole[] = (json.items || []).map((r: any) => ({
     id: r.id,

@@ -8,10 +8,10 @@ func NewService() *Service {
 	return &Service{repo: DefaultRepo()}
 }
 
-func (s *Service) ListJobCategories() ([]JobCategory, error) {
-	return s.repo.ListJobCategories()
+func (s *Service) ListJobCategories(language string) ([]JobCategoryView, error) {
+	return s.repo.ListJobCategories(language)
 }
 
-func (s *Service) ListJobRoles(categoryID uint, q string) ([]JobRole, error) {
-	return s.repo.ListJobRoles(categoryID, q)
+func (s *Service) ListJobRoles(language string, categoryID uint, q string) ([]JobRoleView, error) {
+	return s.repo.ListJobRoles(language, categoryID, q)
 }

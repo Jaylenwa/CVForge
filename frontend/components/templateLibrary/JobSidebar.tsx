@@ -23,12 +23,14 @@ const categoryIcon = (id: string) => {
 
 export const JobSidebar: React.FC<{
   title: string;
+  language?: string;
   categories: JobSidebarCategory[];
   roles: JobSidebarRole[];
   selectedCategoryId: string;
   onSelectCategory: (categoryId: string) => void;
   onSelectRole: (roleId: string) => void;
-}> = ({ title, categories, roles, selectedCategoryId, onSelectCategory, onSelectRole }) => {
+}> = ({ title, language, categories, roles, selectedCategoryId, onSelectCategory, onSelectRole }) => {
+  const sortLocale = language === 'en' ? 'en' : 'zh';
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [flyoutStyle, setFlyoutStyle] = useState<React.CSSProperties | undefined>(undefined);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -152,13 +154,13 @@ export const JobSidebar: React.FC<{
     for (const child of childCategories) {
       const roleList = (rolesByCategory[child.id] || [])
         .slice()
-        .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0) || a.name.localeCompare(b.name, 'zh'))
+        .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0) || a.name.localeCompare(b.name, sortLocale))
         .map((r) => ({ id: r.id, name: r.name } as JobMegaMenuRole));
       if (roleList.length) groups.push({ id: child.id, title: child.name, roles: roleList });
     }
     const rootRoles = (rolesByCategory[rootCategoryId] || [])
       .slice()
-      .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0) || a.name.localeCompare(b.name, 'zh'))
+      .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0) || a.name.localeCompare(b.name, sortLocale))
       .map((r) => ({ id: r.id, name: r.name } as JobMegaMenuRole));
     if (rootRoles.length) groups.push({ id: `${rootCategoryId}__other`, title: '其它', roles: rootRoles });
     return groups;

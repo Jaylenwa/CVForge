@@ -30,7 +30,7 @@ export const Templates: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const { jobCategories, jobRoles } = await fetchTemplateCatalog();
+        const { jobCategories, jobRoles } = await fetchTemplateCatalog({ language });
         setJobCategories(jobCategories.map((c) => ({ id: String(c.id), name: c.name, parentId: c.parentId == null ? '' : String(c.parentId), orderNum: c.orderNum })));
         setJobRoles(jobRoles.map((r) => ({ id: String(r.id), categoryId: String(r.categoryId), name: r.name, orderNum: r.orderNum })));
       } catch {
@@ -39,7 +39,7 @@ export const Templates: React.FC = () => {
         setPresetDataMap({});
       }
     })();
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     (async () => {
@@ -157,6 +157,7 @@ export const Templates: React.FC = () => {
       <main className="max-w-[1440px] mx-auto px-6 py-8 flex gap-8">
         <JobSidebar
           title={t('templates.sidebar.navLabel')}
+          language={language}
           categories={sidebarCategories}
           roles={sidebarRoles}
           selectedCategoryId={selectedCategoryIdForSidebar}

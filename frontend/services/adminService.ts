@@ -31,31 +31,35 @@ export const importDefaultSeed = async () => {
 };
 
 export interface AdminJobCategory {
-  ID: number;
-  Name: string;
-  ParentID?: number | null;
-  OrderNum?: number;
-  IsActive: boolean;
+  id: number;
+  name?: string;
+  names?: Record<string, string>;
+  parentId?: number | null;
+  orderNum?: number;
+  isActive: boolean;
 }
 
 export interface AdminCreateJobCategoryReq {
-  name: string;
+  name?: string;
+  names?: Record<string, string>;
   parentId?: number | null;
   orderNum?: number;
   isActive?: boolean;
 }
 
 export interface AdminJobRole {
-  ID: number;
-  CategoryID: number;
-  Name: string;
-  OrderNum?: number;
-  IsActive: boolean;
+  id: number;
+  categoryId: number;
+  name?: string;
+  names?: Record<string, string>;
+  orderNum?: number;
+  isActive: boolean;
 }
 
 export interface AdminCreateJobRoleReq {
   categoryId: number;
-  name: string;
+  name?: string;
+  names?: Record<string, string>;
   orderNum?: number;
   isActive?: boolean;
 }
