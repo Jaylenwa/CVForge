@@ -148,13 +148,23 @@ export const ConfigPage: React.FC = () => {
     return () => window.removeEventListener('resize', handler);
   }, [updateTabIndicator]);
 
+  useEffect(() => {
+    const nav = tabNavRef.current;
+    const btn = tabButtonRefs.current[activeTab];
+    if (!nav || !btn || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => updateTabIndicator());
+    ro.observe(nav);
+    ro.observe(btn);
+    return () => ro.disconnect();
+  }, [activeTab, updateTabIndicator]);
+
   return (
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4">
           <nav
             ref={tabNavRef}
-            className="relative inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start overflow-x-auto no-scrollbar"
+            className="relative inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start overflow-x-auto overflow-y-visible no-scrollbar"
             onScroll={updateTabIndicator}
           >
             <motion.div

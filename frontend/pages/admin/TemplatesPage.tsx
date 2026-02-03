@@ -350,6 +350,16 @@ export const TemplatesPage: React.FC = () => {
   }, [updateTabIndicator]);
 
   useEffect(() => {
+    const nav = tabNavRef.current;
+    const btn = tabButtonRefs.current[tab];
+    if (!nav || !btn || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => updateTabIndicator());
+    ro.observe(nav);
+    ro.observe(btn);
+    return () => ro.disconnect();
+  }, [tab, updateTabIndicator]);
+
+  useEffect(() => {
     let cancelled = false;
     const fonts = (document as any)?.fonts;
     if (fonts?.ready?.then) {
