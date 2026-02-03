@@ -372,7 +372,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
 
     return (
       <TableCard className="flex flex-col h-full">
-        <div className="flex-1 overflow-auto no-scrollbar">
+        <div className="flex-1 overflow-y-scroll overflow-x-hidden no-scrollbar" style={{ scrollbarGutter: 'stable' }}>
           <table className="w-full text-left table-fixed text-sm">
             <colgroup>
               <col className="w-[300px]" />
@@ -396,6 +396,195 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                 const rootRoles = rolesByCategory.get(c.id) || [];
                 const expandedKey = String(c.id);
                 const expanded = keyword ? true : !!expandedCategories[expandedKey];
+                const expandedRows = expanded
+                  ? [
+                      ...children.flatMap((child, idx) => {
+                        const childRoles = rolesByCategory.get(child.id) || [];
+                        const childExpandedKey = String(child.id);
+                        const childExpanded = keyword ? true : !!expandedCategories[childExpandedKey];
+                        const rows: React.ReactNode[] = [
+                          <motion.tr
+                            key={`category_${child.id}`}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.16, delay: Math.min(0.06, idx * 0.01) }}
+                            className="hover:bg-blue-50/20 transition-colors bg-white cursor-pointer"
+                            onClick={() => setExpandedCategories((prev) => ({ ...prev, [childExpandedKey]: !prev[childExpandedKey] }))}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setExpandedCategories((prev) => ({ ...prev, [childExpandedKey]: !prev[childExpandedKey] }));
+                              }
+                            }}
+                            tabIndex={0}
+                          >
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-2 pl-5">
+                                <button
+                                  type="button"
+                                  className="p-1 rounded hover:bg-slate-100 text-slate-400"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedCategories((prev) => ({ ...prev, [childExpandedKey]: !prev[childExpandedKey] }));
+                                  }}
+                                  title={childExpanded ? (t('admin.catalog.actions.collapse') || 'Collapse') : (t('admin.catalog.actions.expand') || 'Expand')}
+                                >
+                                  {childExpanded ? (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                  ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                  )}
+                                </button>
+                                <div className="min-w-0 flex-1">
+                                  <NameCell name={displayCategoryName(child)} />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-sm text-slate-400">{childRoles.length}</td>
+                            <td className="px-4 py-4 text-sm text-gray-500">{child.orderNum ?? 0}</td>
+                            <td className="px-4 py-4">
+                              <BoolBadge value={!!child.isActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
+                            </td>
+                            <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center justify-end gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => openCreateRole(child.id)}
+                                  className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                  title={t('admin.catalog.actions.addRole') || 'Add role'}
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                </button>
+                                <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditCategory(child)} kind="edit" />
+                                <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('category', child.id)} kind="delete" />
+                              </div>
+                            </td>
+                          </motion.tr>,
+                        ];
+                        if (childExpanded) {
+                          rows.push(
+                            ...childRoles.map((r, ridx) => (
+                              <motion.tr
+                                key={`role_${child.id}_${r.id}`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.16, delay: Math.min(0.06, ridx * 0.008) }}
+                                className="hover:bg-blue-50/10 transition-colors bg-white"
+                              >
+                                <td className="px-4 py-4">
+                                  <div className="flex items-start gap-2 pl-12">
+                                    <div className="w-4 h-4 text-slate-200">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <NameCell name={displayRoleName(r)} />
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-4 text-sm text-gray-500">{r.orderNum ?? 0}</td>
+                                <td className="px-4 py-4">
+                                  <BoolBadge value={!!r.isActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
+                                </td>
+                                <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
+                                  <div className="flex items-center justify-end gap-1">
+                                    <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
+                                    <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.id)} kind="delete" />
+                                  </div>
+                                </td>
+                              </motion.tr>
+                            ))
+                          );
+                        }
+                        return rows;
+                      }),
+                      ...(rootRoles.length
+                        ? (() => {
+                            const key = `${c.id}__ungrouped`;
+                            const ungroupedExpanded = keyword ? true : !!expandedCategories[key];
+                            const rows: React.ReactNode[] = [
+                              <motion.tr
+                                key={`ungrouped_${c.id}`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.16 }}
+                                className="hover:bg-blue-50/20 transition-colors bg-white cursor-pointer"
+                                onClick={() => setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }))}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
+                                  }
+                                }}
+                                tabIndex={0}
+                              >
+                                <td className="px-4 py-4">
+                                  <div className="flex items-center gap-2 pl-5">
+                                    <button
+                                      type="button"
+                                      className="p-1 rounded hover:bg-slate-100 text-slate-400"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
+                                      }}
+                                    >
+                                      {ungroupedExpanded ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                                      ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                      )}
+                                    </button>
+                                    <div className="text-sm font-medium text-slate-500">{t('admin.catalog.jobs.ungrouped') || '未分组'}</div>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-4 text-sm text-slate-400">{rootRoles.length}</td>
+                                <td className="px-4 py-4 text-sm text-gray-300">-</td>
+                                <td className="px-4 py-4 text-sm text-gray-300">-</td>
+                                <td className="px-4 py-4 sticky right-0 bg-white" onClick={(e) => e.stopPropagation()} />
+                              </motion.tr>,
+                            ];
+                            if (ungroupedExpanded) {
+                              rows.push(
+                                ...rootRoles.map((r, ridx) => (
+                                  <motion.tr
+                                    key={`root_role_${c.id}_${r.id}`}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.16, delay: Math.min(0.06, ridx * 0.008) }}
+                                    className="hover:bg-blue-50/10 transition-colors bg-white"
+                                  >
+                                    <td className="px-4 py-4">
+                                      <div className="flex items-start gap-2 pl-12">
+                                        <div className="w-4 h-4 text-slate-200">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                          <NameCell name={displayRoleName(r)} />
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-4 text-sm text-gray-500">{r.orderNum ?? 0}</td>
+                                    <td className="px-4 py-4">
+                                      <BoolBadge value={!!r.isActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
+                                    </td>
+                                    <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
+                                      <div className="flex items-center justify-end gap-1">
+                                        <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
+                                        <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.id)} kind="delete" />
+                                      </div>
+                                    </td>
+                                  </motion.tr>
+                                ))
+                              );
+                            }
+                            return rows;
+                          })()
+                        : []),
+                    ]
+                  : null;
                 return (
                   <React.Fragment key={c.id}>
                       <tr
@@ -456,196 +645,7 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
                         </td>
                       </tr>
                       <AnimatePresence initial={false}>
-                        {expanded ? (
-                          <React.Fragment key={`${c.id}__expanded`}>
-                            {children.map((child, idx) => {
-                              const childRoles = rolesByCategory.get(child.id) || [];
-                              const childExpandedKey = String(child.id);
-                              const childExpanded = keyword ? true : !!expandedCategories[childExpandedKey];
-                              return (
-                                <React.Fragment key={child.id}>
-                                  <motion.tr
-                                    initial={{ opacity: 0, y: -6 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -6 }}
-                                    transition={{ duration: 0.16, delay: Math.min(0.06, idx * 0.01) }}
-                                    className="hover:bg-blue-50/20 transition-colors bg-white cursor-pointer"
-                                    onClick={() => setExpandedCategories((prev) => ({ ...prev, [childExpandedKey]: !prev[childExpandedKey] }))}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        setExpandedCategories((prev) => ({ ...prev, [childExpandedKey]: !prev[childExpandedKey] }));
-                                      }
-                                    }}
-                                    tabIndex={0}
-                                  >
-                                    <td className="px-4 py-4">
-                                      <div className="flex items-center gap-2 pl-5">
-                                        <button
-                                          type="button"
-                                          className="p-1 rounded hover:bg-slate-100 text-slate-400"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setExpandedCategories((prev) => ({ ...prev, [childExpandedKey]: !prev[childExpandedKey] }));
-                                          }}
-                                          title={childExpanded ? (t('admin.catalog.actions.collapse') || 'Collapse') : (t('admin.catalog.actions.expand') || 'Expand')}
-                                        >
-                                          {childExpanded ? (
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                                          ) : (
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                                          )}
-                                        </button>
-                                        <div className="min-w-0 flex-1">
-                                          <NameCell name={displayCategoryName(child)} />
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td className="px-4 py-4 text-sm text-slate-400">{childRoles.length}</td>
-                                    <td className="px-4 py-4 text-sm text-gray-500">{child.orderNum ?? 0}</td>
-                                    <td className="px-4 py-4">
-                                      <BoolBadge value={!!child.isActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
-                                    </td>
-                                    <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
-                                      <div className="flex items-center justify-end gap-1">
-                                        <button
-                                          type="button"
-                                          onClick={() => openCreateRole(child.id)}
-                                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                                          title={t('admin.catalog.actions.addRole') || 'Add role'}
-                                        >
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                                        </button>
-                                        <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditCategory(child)} kind="edit" />
-                                        <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('category', child.id)} kind="delete" />
-                                      </div>
-                                    </td>
-                                  </motion.tr>
-
-                                  <AnimatePresence initial={false}>
-                                    {childExpanded
-                                      ? childRoles.map((r, ridx) => (
-                                          <motion.tr
-                                            key={r.id}
-                                            initial={{ opacity: 0, y: -6 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -6 }}
-                                            transition={{ duration: 0.16, delay: Math.min(0.06, ridx * 0.008) }}
-                                            className="hover:bg-blue-50/10 transition-colors bg-white"
-                                          >
-                                            <td className="px-4 py-4">
-                                              <div className="flex items-start gap-2 pl-12">
-                                                <div className="w-4 h-4 text-slate-200">
-                                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                  <NameCell name={displayRoleName(r)} />
-                                                </div>
-                                              </div>
-                                            </td>
-                                            <td className="px-4 py-4 text-sm text-gray-500">{r.orderNum ?? 0}</td>
-                                            <td className="px-4 py-4">
-                                              <BoolBadge value={!!r.isActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
-                                            </td>
-                                            <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
-                                              <div className="flex items-center justify-end gap-1">
-                                                <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
-                                                <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.id)} kind="delete" />
-                                              </div>
-                                            </td>
-                                          </motion.tr>
-                                        ))
-                                      : null}
-                                  </AnimatePresence>
-                                </React.Fragment>
-                              );
-                            })}
-                            {rootRoles.length ? (
-                              (() => {
-                                const key = `${c.id}__ungrouped`;
-                                const ungroupedExpanded = keyword ? true : !!expandedCategories[key];
-                                return (
-                                  <React.Fragment key={key}>
-                                    <motion.tr
-                                      initial={{ opacity: 0, y: -6 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      exit={{ opacity: 0, y: -6 }}
-                                      transition={{ duration: 0.16 }}
-                                      className="hover:bg-blue-50/20 transition-colors bg-white cursor-pointer"
-                                      onClick={() => setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }))}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                          e.preventDefault();
-                                          setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
-                                        }
-                                      }}
-                                      tabIndex={0}
-                                    >
-                                      <td className="px-4 py-4">
-                                        <div className="flex items-center gap-2 pl-5">
-                                          <button
-                                            type="button"
-                                            className="p-1 rounded hover:bg-slate-100 text-slate-400"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setExpandedCategories((prev) => ({ ...prev, [key]: !prev[key] }));
-                                            }}
-                                          >
-                                            {ungroupedExpanded ? (
-                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                                            ) : (
-                                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                                            )}
-                                          </button>
-                                          <div className="text-sm font-medium text-slate-500">{t('admin.catalog.jobs.ungrouped') || '未分组'}</div>
-                                        </div>
-                                      </td>
-                                      <td className="px-4 py-4 text-sm text-slate-400">{rootRoles.length}</td>
-                                      <td className="px-4 py-4 text-sm text-gray-300">-</td>
-                                      <td className="px-4 py-4 text-sm text-gray-300">-</td>
-                                      <td className="px-4 py-4 sticky right-0 bg-white" onClick={(e) => e.stopPropagation()} />
-                                    </motion.tr>
-                                    <AnimatePresence initial={false}>
-                                      {ungroupedExpanded
-                                        ? rootRoles.map((r, ridx) => (
-                                            <motion.tr
-                                              key={r.id}
-                                              initial={{ opacity: 0, y: -6 }}
-                                              animate={{ opacity: 1, y: 0 }}
-                                              exit={{ opacity: 0, y: -6 }}
-                                              transition={{ duration: 0.16, delay: Math.min(0.06, ridx * 0.008) }}
-                                              className="hover:bg-blue-50/10 transition-colors bg-white"
-                                            >
-                                              <td className="px-4 py-4">
-                                                <div className="flex items-start gap-2 pl-12">
-                                                  <div className="w-4 h-4 text-slate-200">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2v8"/><path d="M12 10l4 4"/><path d="M12 10l-4 4"/></svg>
-                                                  </div>
-                                                  <div className="min-w-0 flex-1">
-                                                    <NameCell name={displayRoleName(r)} />
-                                                  </div>
-                                                </div>
-                                              </td>
-                                              <td className="px-4 py-4 text-sm text-gray-500">{r.orderNum ?? 0}</td>
-                                              <td className="px-4 py-4">
-                                                <BoolBadge value={!!r.isActive} yes={t('admin.catalog.enabled') || 'Enabled'} no={t('admin.catalog.disabled') || 'Disabled'} />
-                                              </td>
-                                              <td className="px-4 py-4 text-right sticky right-0 bg-white" onClick={(e) => e.stopPropagation()}>
-                                                <div className="flex items-center justify-end gap-1">
-                                                  <IconButton title={t('common.edit') || 'Edit'} onClick={() => openEditRole(r)} kind="edit" />
-                                                  <IconButton title={t('common.delete') || 'Delete'} onClick={() => removeItem('role', r.id)} kind="delete" />
-                                                </div>
-                                              </td>
-                                            </motion.tr>
-                                          ))
-                                        : null}
-                                    </AnimatePresence>
-                                  </React.Fragment>
-                                );
-                              })()
-                            ) : null}
-                          </React.Fragment>
-                        ) : null}
+                        {expandedRows}
                       </AnimatePresence>
                     </React.Fragment>
                   );
