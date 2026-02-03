@@ -24,6 +24,7 @@ export const Home: React.FC = () => {
   }, []);
   // preview moved to dedicated print page via router
   React.useEffect(() => {
+    setPresetDataMap({});
     (async () => {
       try {
         const { templates } = await fetchTemplateCatalog({ language, sort: 'hot' });
@@ -48,7 +49,7 @@ export const Home: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [popularTemplates]);
+  }, [popularTemplates, language, presetDataMap]);
 
   const quickAccess = [
     { key: 'home.quick.it', icon: <Code size={20} />, query: 'IT' },

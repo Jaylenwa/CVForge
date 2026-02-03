@@ -29,6 +29,8 @@ export const Templates: React.FC = () => {
   const inFlightPresetIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
+    setPresetDataMap({});
+    inFlightPresetIdsRef.current.clear();
     (async () => {
       try {
         const { jobCategories, jobRoles } = await fetchTemplateCatalog({ language });
@@ -122,7 +124,7 @@ export const Templates: React.FC = () => {
     run();
 
     return () => controller.abort();
-  }, [sortedTemplates, presetDataMap]);
+  }, [sortedTemplates, presetDataMap, language]);
 
   const sidebarCategories = useMemo(() => {
     return jobCategories;
