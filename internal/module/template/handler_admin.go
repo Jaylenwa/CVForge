@@ -75,3 +75,33 @@ func (h *AdminHandler) AdminDelete(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
+
+func (h *AdminHandler) AdminSeed(c *gin.Context) {
+	var body []struct {
+		ExternalID string `json:"externalId"`
+		Name       string `json:"name"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		logger.WithCtx(c).Error("template.admin_seed bad request", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
+		return
+	}
+
+	var templates []Template
+	for _, item := range body {
+		if item.ExternalID == "" || item.Name == "" {
+			continue
+		}
+		templates = append(templates, Template{
+			ExternalID: item.ExternalID,
+			Name:       item.Name,
+		})
+	}
+
+	if err := h.svc.Seed(templates); err != nil {
+		logger.WithCtx(c).Error("template.admin_seed failed", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"success": true})
+}

@@ -105,6 +105,7 @@ func Init() *gin.Engine {
 	adm.POST("/templates", templateAdmH.AdminCreate)
 	adm.PATCH("/templates/:id", templateAdmH.AdminPatch)
 	adm.DELETE("/templates/:id", templateAdmH.AdminDelete)
+	adm.POST("/seed/templates", templateAdmH.AdminSeed)
 
 	shareAdmH := share.NewAdminHandler()
 	adm.GET("/share-links", shareAdmH.AdminList)

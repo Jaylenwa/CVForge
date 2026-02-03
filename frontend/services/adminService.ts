@@ -252,6 +252,18 @@ export const deleteTemplate = async (id: string) => {
   if (!res.ok) throw new Error('failed');
 };
 
+export const seedTemplates = async (data: AdminTemplateReq[]) => {
+  const res = await fetch(`${API_BASE}/admin/seed/templates`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(data) });
+  if (!res.ok) {
+    let msg = '';
+    try {
+      msg = (await res.text()).trim();
+    } catch {}
+    throw new Error(msg || `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<{ success: boolean }>;
+};
+
 // Shares
 export interface AdminShare {
   id: number;

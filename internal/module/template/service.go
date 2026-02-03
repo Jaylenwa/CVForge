@@ -63,3 +63,23 @@ func (s *Service) Delete(id string) error {
 	cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll))
 	return nil
 }
+
+func (s *Service) Seed(templates []Template) error {
+	for _, t := range templates {
+		existing, err := s.repo.GetByExternal(t.ExternalID)
+		if err == nil {
+			// Update if exists
+			existing.Name = t.Name
+			if err := s.repo.Save(&existing); err != nil {
+				return err
+			}
+		} else {
+			// Create if not exists
+			if err := s.repo.Create(&t); err != nil {
+				return err
+			}
+		}
+	}
+	cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll))
+	return nil
+}

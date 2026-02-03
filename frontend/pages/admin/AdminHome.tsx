@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { getAdminStats, AdminStats, importDefaultSeed } from '../../services/adminService';
+import { getAdminStats, AdminStats, importDefaultSeed, seedTemplates } from '../../services/adminService';
 import { Users, FileText, LayoutGrid, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useToast } from '../../components/ui/Toast';
+import { MOCK_TEMPLATES } from '../../services/mockData';
 
 export const AdminHome: React.FC = () => {
   const { t } = useLanguage();
@@ -12,6 +13,7 @@ export const AdminHome: React.FC = () => {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [importingSeed, setImportingSeed] = useState(false);
+  const [syncingTemplates, setSyncingTemplates] = useState(false);
 
   const reload = async () => {
     setLoading(true);
@@ -111,6 +113,28 @@ export const AdminHome: React.FC = () => {
       <div className="px-10 pt-10 pb-6">
         <div className="flex items-center justify-end">
           <div className="flex items-center space-x-3">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (syncingTemplates) return;
+                setSyncingTemplates(true);
+                try {
+                  const data = MOCK_TEMPLATES.map(t => ({ externalId: t.id, name: t.name }));
+                  await seedTemplates(data);
+                  showToast(t('admin.sync.complete') || 'Templates synced', 'success');
+                  reload();
+                } catch (e) {
+                  const msg = e instanceof Error ? e.message : String(e);
+                  const prefix = t('admin.sync.failed') || 'Failed to sync templates';
+                  showToast(msg ? `${prefix}: ${msg}` : prefix, 'error');
+                } finally {
+                  setSyncingTemplates(false);
+                }
+              }}
+              disabled={syncingTemplates}
+            >
+              {syncingTemplates ? (t('admin.sync.syncing') || 'Syncing') : (t('admin.sync.syncMockData') || 'Sync Templates')}
+            </Button>
             <Button
               variant="outline"
               onClick={async () => {

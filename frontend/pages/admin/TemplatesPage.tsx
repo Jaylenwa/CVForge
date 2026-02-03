@@ -22,7 +22,6 @@ import { MultiSelect } from '../../components/ui/MultiSelect';
 import { DataTable } from '../../components/ui/DataTable';
 import { TableCard } from '../../components/ui/TableCard';
 import { ResumeArtboard } from '../editor/ResumePreview';
-import { MOCK_TEMPLATES } from '../../services/mockData';
 import { AlertCircle, AlignLeft, Check, CheckCircle2, Copy, FileJson, FileText, Layers, LayoutGrid, Minimize2, Search, Trash2 } from 'lucide-react';
 import { AppRoute } from '../../types';
 import { motion } from 'framer-motion';
@@ -196,9 +195,6 @@ export const TemplatesPage: React.FC = () => {
   });
   const [saving, setSaving] = useState(false);
 
-  const [syncing, setSyncing] = useState(false);
-  const [syncDone, setSyncDone] = useState(0);
-  const [syncTotal, setSyncTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const mmToPx = 96 / 25.4;
@@ -225,41 +221,6 @@ export const TemplatesPage: React.FC = () => {
   useEffect(() => {
     load();
   }, []);
-
-  const handleSyncMockData = async () => {
-    if (syncing) return;
-    setSyncing(true);
-    setSyncDone(0);
-    const data = MOCK_TEMPLATES;
-    setSyncTotal(data.length);
-    const existing = new Set(items.map((i) => i.id));
-    let errors = 0;
-    for (const t of data) {
-      const body = {
-        externalId: t.id,
-        name: t.name,
-      };
-      try {
-        if (existing.has(t.id)) {
-          await updateTemplate(t.id, { name: body.name });
-        } else {
-          await createTemplate(body);
-          existing.add(t.id);
-        }
-      } catch {
-        errors += 1;
-      } finally {
-        setSyncDone((x) => x + 1);
-      }
-    }
-    setSyncing(false);
-    await load();
-    if (errors === 0) {
-      showToast(t('admin.sync.complete'), 'success');
-    } else {
-      showToast(t('admin.sync.partial').replace('{count}', String(errors)), 'error');
-    }
-  };
 
   const filtered = items.filter((i) => {
     const s = keyword.trim().toLowerCase();
@@ -811,9 +772,6 @@ export const TemplatesPage: React.FC = () => {
               </div>
               <div className="flex items-center gap-2 md:justify-end">
                 <Button onClick={openCreate}>{t('admin.actions.create')}</Button>
-                <Button variant="outline" onClick={handleSyncMockData} disabled={syncing}>
-                  {syncing ? `${syncDone}/${syncTotal} ${t('admin.sync.syncing')}` : t('admin.sync.syncMockData')}
-                </Button>
               </div>
             </div>
 
