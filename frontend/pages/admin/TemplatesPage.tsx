@@ -33,7 +33,7 @@ type Row = {
 };
 
 export const TemplatesPage: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { showToast } = useToast();
   const confirm = useConfirm();
 
@@ -457,7 +457,7 @@ export const TemplatesPage: React.FC = () => {
       let pageNum = 1;
       const collected: AdminJobRole[] = [];
       while (pageNum <= maxPages) {
-        const rs = await adminListJobRoles({ page: String(pageNum), pageSize: String(pageSize), language: 'zh' });
+        const rs = await adminListJobRoles({ page: String(pageNum), pageSize: String(pageSize), language: String(language || '') });
         const chunk = rs.items || [];
         collected.push(...chunk);
         if (!chunk.length) break;
@@ -472,7 +472,7 @@ export const TemplatesPage: React.FC = () => {
       let pageNum = 1;
       const collected: AdminContentPreset[] = [];
       while (pageNum <= maxPages) {
-        const ps = await adminListContentPresets({ page: String(pageNum), pageSize: String(pageSize) });
+        const ps = await adminListContentPresets({ page: String(pageNum), pageSize: String(pageSize), language: String(language || '') });
         const chunk = ps.items || [];
         collected.push(...chunk);
         if (!chunk.length) break;
@@ -491,13 +491,18 @@ export const TemplatesPage: React.FC = () => {
 
   useEffect(() => {
     refreshCatalogRefs();
-  }, []);
+  }, [language]);
 
   const loadCatalog = async () => {
     if (tab === 'templates') return;
     setCatalogLoading(true);
     try {
-      const resp = await adminListContentPresets({ page: String(catalogPage), pageSize: String(catalogPageSize), q: catalogQ });
+      const resp = await adminListContentPresets({
+        page: String(catalogPage),
+        pageSize: String(catalogPageSize),
+        q: catalogQ,
+        language: String(language || ''),
+      });
       setPresets(resp.items || []);
       setCatalogTotal(resp.total || 0);
     } catch {
@@ -510,7 +515,7 @@ export const TemplatesPage: React.FC = () => {
   useEffect(() => {
     if (tab === 'templates') return;
     loadCatalog();
-  }, [tab, catalogPage, catalogPageSize]);
+  }, [tab, catalogPage, catalogPageSize, language]);
 
   useEffect(() => {
     if (tab === 'templates') return;
