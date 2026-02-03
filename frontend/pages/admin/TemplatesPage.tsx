@@ -336,16 +336,30 @@ export const TemplatesPage: React.FC = () => {
     const left = btnRect.left - navRect.left + nav.scrollLeft;
     const width = btnRect.width;
     setTabIndicator({ left, width });
-  }, [tab]);
+  }, [tab, tabs]);
 
   useLayoutEffect(() => {
     updateTabIndicator();
-  }, [updateTabIndicator, tabs.length]);
+    requestAnimationFrame(() => updateTabIndicator());
+  }, [updateTabIndicator]);
 
   useEffect(() => {
     const handler = () => updateTabIndicator();
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
+  }, [updateTabIndicator]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fonts = (document as any)?.fonts;
+    if (fonts?.ready?.then) {
+      fonts.ready.then(() => {
+        if (!cancelled) updateTabIndicator();
+      });
+    }
+    return () => {
+      cancelled = true;
+    };
   }, [updateTabIndicator]);
 
   const Thumbnail: React.FC<{ templateId: string }> = ({ templateId }) => {
@@ -733,7 +747,7 @@ export const TemplatesPage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4">
           <nav
             ref={tabNavRef}
-            className="relative inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start overflow-x-auto no-scrollbar"
+            className="relative inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl self-start overflow-x-auto overflow-y-visible no-scrollbar"
             onScroll={updateTabIndicator}
           >
             <motion.div
