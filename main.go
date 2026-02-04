@@ -1,15 +1,19 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
-	"go.uber.org/zap"
 	"openresume/internal/infra/config"
 	"openresume/internal/infra/storage"
 	"openresume/internal/module/pdf"
 	"openresume/internal/pkg/logger"
 	"openresume/internal/router"
+
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -20,7 +24,10 @@ func main() {
 		logger.L().Fatal("storage init error", zap.Error(err))
 	}
 
-	if err := pdf.StartWorker(); err != nil {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	if err := pdf.StartWorker(ctx); err != nil {
 		logger.L().Fatal("pdf worker error", zap.Error(err))
 	}
 

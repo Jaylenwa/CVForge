@@ -31,6 +31,7 @@ type ExportJob struct {
 }
 
 func queueKey() string        { return "queue:pdf" }
+func processingKey() string   { return "queue:pdf:processing" }
 func jobKey(id string) string { return "job:pdf:" + id }
 
 type ExportRepo struct {
@@ -69,7 +70,8 @@ func (r *ExportRepo) Enqueue(ctx context.Context, job ExportJob) error {
 }
 
 func (r *ExportRepo) SetProcessing(ctx context.Context, id string) error {
-	return cache.RDB.Set(ctx, jobKey(id)+":status", string(ExportStatusProcessing), time.Hour*24).Err()
+	_ = cache.RDB.Set(ctx, jobKey(id)+":status", string(ExportStatusProcessing), time.Hour*24).Err()
+	return cache.RDB.Set(ctx, jobKey(id)+":processing_ts", time.Now().UnixMilli(), time.Hour*24).Err()
 }
 
 func (r *ExportRepo) SetDone(ctx context.Context, id string, url string) error {
@@ -105,6 +107,43 @@ func (r *ExportRepo) BLPop(ctx context.Context, timeout time.Duration) (string, 
 		return "", fmt.Errorf("invalid blpop result")
 	}
 	return val[1], nil
+}
+
+func (r *ExportRepo) BRPopLPush(ctx context.Context, timeout time.Duration) (string, error) {
+	id, err := cache.RDB.BRPopLPush(ctx, queueKey(), processingKey(), timeout).Result()
+	if err != nil {
+		return "", err
+	}
+	return id, nil
+}
+
+func (r *ExportRepo) Confirm(ctx context.Context, id string) error {
+	return cache.RDB.LRem(ctx, processingKey(), 1, id).Err()
+}
+
+func (r *ExportRepo) RequeueStale(ctx context.Context, ttl time.Duration) (int64, error) {
+	items, err := cache.RDB.LRange(ctx, processingKey(), 0, -1).Result()
+	if err != nil {
+		return 0, err
+	}
+	var moved int64
+	nowMs := time.Now().UnixMilli()
+	for _, id := range items {
+		tsStr := cache.RDB.Get(ctx, jobKey(id)+":processing_ts").Val()
+		var tsMs int64
+		if tsStr != "" {
+			if n, err := strconv.ParseInt(tsStr, 10, 64); err == nil {
+				tsMs = n
+			}
+		}
+		if tsMs == 0 || nowMs-tsMs > ttl.Milliseconds() {
+			_ = cache.RDB.LRem(ctx, processingKey(), 1, id).Err()
+			_ = cache.RDB.RPush(ctx, queueKey(), id).Err()
+			_ = cache.RDB.Set(ctx, jobKey(id)+":status", string(ExportStatusPending), time.Hour*24).Err()
+			moved++
+		}
+	}
+	return moved, nil
 }
 
 func (r *ExportRepo) GetJob(ctx context.Context, id string) (ExportJob, error) {

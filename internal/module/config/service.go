@@ -59,6 +59,9 @@ func (s *Service) EnsureDefaults() error {
 		// Security
 		{string(common.ConfigKeyCORSOrigins), os.Getenv("CORS_ORIGINS"), "CORS allowed origins (comma separated)", "string"},
 		{string(common.ConfigKeyFrontendBaseURL), os.Getenv("FRONTEND_BASE_URL"), "Frontend base URL", "string"},
+		// PDF worker controls
+		{"pdf_worker_concurrency", "2", "PDF worker concurrency", "int"},
+		{"pdf_queue_max", "1000", "PDF queue max length", "int"},
 	}
 	for _, d := range defaults {
 		var existing models.Config
