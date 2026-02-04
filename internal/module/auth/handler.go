@@ -2,13 +2,17 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
+	"openresume/internal/infra/config"
 	"openresume/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -307,6 +311,23 @@ func (h *Handler) Logout(c *gin.Context) {
 		logger.WithCtx(c).Error("auth.logout bad request", zap.Error(err))
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
+	}
+	auth := c.GetHeader("Authorization")
+	if strings.HasPrefix(auth, "Bearer ") {
+		tokenStr := strings.TrimPrefix(auth, "Bearer ")
+		if t, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok || token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
+				return nil, errors.New("invalid signing algorithm")
+			}
+			return []byte(config.CF.JWTSecret), nil
+		}); err == nil && t.Valid {
+			if claims, ok := t.Claims.(jwt.MapClaims); ok {
+				if uidF, ok2 := claims["uid"].(float64); ok2 && uidF > 0 {
+					_ = h.svc.GlobalLogout(uint(uidF))
+				}
+			}
+		}
+		_ = h.svc.LogoutAccess(strings.TrimPrefix(auth, "Bearer "))
 	}
 	if err := h.svc.Logout(req.RefreshToken); err != nil {
 		logger.WithCtx(c).Error("auth.logout failed", zap.Error(err))

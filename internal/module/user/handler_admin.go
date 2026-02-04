@@ -1,11 +1,14 @@
 package user
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"openresume/internal/common"
+	"openresume/internal/infra/cache"
 	"openresume/internal/infra/database"
 	"openresume/internal/pkg/logger"
 
@@ -221,6 +224,9 @@ func (h *AdminHandler) AdminBan(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
 	}
+	if cache.RDB != nil {
+		_ = cache.RDB.Set(context.Background(), common.RedisKeyUserActive.F(c.Param("id")), "0", 10*time.Minute).Err()
+	}
 	writeAudit(c, "user.ban", "user", c.Param("id"), "")
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
@@ -230,6 +236,9 @@ func (h *AdminHandler) AdminUnban(c *gin.Context) {
 		logger.WithCtx(c).Error("user.admin_unban failed", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
 		return
+	}
+	if cache.RDB != nil {
+		_ = cache.RDB.Set(context.Background(), common.RedisKeyUserActive.F(c.Param("id")), "1", 10*time.Minute).Err()
 	}
 	writeAudit(c, "user.unban", "user", c.Param("id"), "")
 	c.JSON(http.StatusOK, gin.H{"success": true})

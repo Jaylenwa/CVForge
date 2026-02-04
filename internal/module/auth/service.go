@@ -44,8 +44,13 @@ func (s *Service) FrontendBase() string {
 }
 
 func (s *Service) IssueTokens(uid uint) (string, string) {
+	var ver int = 1
+	var u User
+	if err := database.DB.Select("id, token_version").First(&u, uid).Error; err == nil && u.TokenVersion > 0 {
+		ver = u.TokenVersion
+	}
 	mk := func(exp time.Duration) string {
-		t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"uid": uid, "exp": time.Now().Add(exp).Unix(), "jti": uuid.NewString()})
+		t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"uid": uid, "ver": ver, "exp": time.Now().Add(exp).Unix(), "jti": uuid.NewString()})
 		signed, _ := t.SignedString([]byte(config.CF.JWTSecret))
 		return signed
 	}
@@ -114,6 +119,9 @@ func (s *Service) Login(email, password string) (string, string, error) {
 	if bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)) != nil {
 		return "", "", gorm.ErrInvalidData
 	}
+	if !u.IsActive {
+		return "", "", gorm.ErrInvalidTransaction
+	}
 	access, refresh := s.IssueTokens(u.ID)
 	return access, refresh, nil
 }
@@ -131,6 +139,13 @@ func (s *Service) Refresh(refreshToken string) (string, string, error) {
 		}
 	}
 	uid := uint(claims["uid"].(float64))
+	var u User
+	if err := database.DB.First(&u, uid).Error; err != nil {
+		return "", "", gorm.ErrRecordNotFound
+	}
+	if !u.IsActive {
+		return "", "", gorm.ErrInvalidTransaction
+	}
 	access, refresh := s.IssueTokens(uid)
 	return access, refresh, nil
 }
@@ -144,6 +159,36 @@ func (s *Service) Logout(refreshToken string) error {
 	jti, _ := claims["jti"].(string)
 	if jti != "" {
 		return cache.RDB.Set(context.Background(), common.RedisKeyJWTBlacklist.F(jti), "1", time.Hour*24*7).Err()
+	}
+	return nil
+}
+
+func (s *Service) LogoutAccess(accessToken string) error {
+	t, err := jwt.Parse(accessToken, func(t *jwt.Token) (interface{}, error) { return []byte(config.CF.JWTSecret), nil })
+	if err != nil || !t.Valid {
+		return gorm.ErrInvalidData
+	}
+	claims, _ := t.Claims.(jwt.MapClaims)
+	jti, _ := claims["jti"].(string)
+	var ttl time.Duration = 2 * time.Hour
+	if exp, ok := claims["exp"].(float64); ok {
+		remain := time.Until(time.Unix(int64(exp), 0))
+		if remain > 0 {
+			ttl = remain
+		}
+	}
+	if jti != "" {
+		return cache.RDB.Set(context.Background(), common.RedisKeyJWTBlacklist.F(jti), "1", ttl).Err()
+	}
+	return nil
+}
+
+func (s *Service) GlobalLogout(uid uint) error {
+	if err := database.DB.Model(&User{}).Where("id = ?", uid).Update("token_version", gorm.Expr("token_version + 1")).Error; err != nil {
+		return err
+	}
+	if cache.RDB != nil {
+		_ = cache.RDB.Set(context.Background(), common.RedisKeyUserTokenVersion.F(uid), "inc", time.Minute).Err()
 	}
 	return nil
 }

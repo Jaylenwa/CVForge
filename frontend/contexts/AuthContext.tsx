@@ -66,6 +66,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (_email: string) => { await loadUser(); };
 
   const logout = () => {
+    const token = localStorage.getItem('token') || '';
+    const refresh = localStorage.getItem('refreshToken') || '';
+    if (token || refresh) {
+      try {
+        fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ refreshToken: refresh })
+        }).catch(() => {});
+      } catch {}
+    }
     localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     if (refreshTimer.current) { window.clearTimeout(refreshTimer.current); refreshTimer.current = null; }

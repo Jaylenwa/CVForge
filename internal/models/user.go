@@ -17,6 +17,7 @@ type User struct {
 	Role         common.Role `gorm:"size:16;default:user"` // 角色（user/admin）
 	IsActive     bool        `gorm:"default:true"`         // 是否启用（封禁时为 false）
 	LastLoginAt  *time.Time  // 最近登录时间
+	TokenVersion int         `gorm:"default:1"`            // token 版本（用于全局登出与撤销）
 }
 
 func (User) TableName() string {

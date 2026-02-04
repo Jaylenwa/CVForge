@@ -11,6 +11,8 @@ const (
 	RedisKeySysConfig          RedisKey = "sysconfig:%s"
 	RedisKeyVerify             RedisKey = "verify:%s"
 	RedisKeyJWTBlacklist       RedisKey = "jwt:blacklist:%s"
+	RedisKeyUserActive         RedisKey = "user:active:%s"
+	RedisKeyUserTokenVersion   RedisKey = "user:token_ver:%s"
 	RedisKeyOAuthState         RedisKey = "oauth:state:%s"
 	RedisKeyOAuthOTT           RedisKey = "oauth:ott:%s"
 	RedisKeyTemplatesListAll   RedisKey = "templates:list:all"
