@@ -140,22 +140,22 @@ func DefaultSeed() SeedData {
 }
 
 var seedPresets = []SeedContentPreset{
-	{Name: "Java 开发（示例）", Language: "zh", RoleCode: "Java", DataJSON: string(presets.GenerateJavaPreset()), IsActive: true},
-	{Name: "Java Developer (Example)", Language: "en", RoleCode: "Java", DataJSON: string(presets.GenerateJavaPresetEn()), IsActive: true},
-	{Name: "Python 开发（示例）", Language: "zh", RoleCode: "Python", DataJSON: string(presets.GeneratePythonPreset()), IsActive: true},
-	{Name: "Python Developer (Example)", Language: "en", RoleCode: "Python", DataJSON: string(presets.GeneratePythonPresetEn()), IsActive: true},
-	{Name: "Go 开发（示例）", Language: "zh", RoleCode: "golang", DataJSON: string(presets.GenerateGolangPreset()), IsActive: true},
-	{Name: "Go Developer (Example)", Language: "en", RoleCode: "golang", DataJSON: string(presets.GenerateGolangPresetEn()), IsActive: true},
-	{Name: "PHP 开发（示例）", Language: "zh", RoleCode: "php", DataJSON: string(presets.GeneratePHPPreset()), IsActive: true},
-	{Name: "PHP Developer (Example)", Language: "en", RoleCode: "php", DataJSON: string(presets.GeneratePHPPresetEn()), IsActive: true},
-	{Name: "C/C++ 开发（示例）", Language: "zh", RoleCode: "c_cpp", DataJSON: string(presets.GenerateCCppPreset()), IsActive: true},
-	{Name: "C/C++ Developer (Example)", Language: "en", RoleCode: "c_cpp", DataJSON: string(presets.GenerateCCppPresetEn()), IsActive: true},
-	{Name: "C# 开发（示例）", Language: "zh", RoleCode: "csharp", DataJSON: string(presets.GenerateCSharpPreset()), IsActive: true},
-	{Name: "C# Developer (Example)", Language: "en", RoleCode: "csharp", DataJSON: string(presets.GenerateCSharpPresetEn()), IsActive: true},
-	{Name: ".NET 开发（示例）", Language: "zh", RoleCode: "dotnet", DataJSON: string(presets.GenerateDotnetPreset()), IsActive: true},
-	{Name: ".NET Developer (Example)", Language: "en", RoleCode: "dotnet", DataJSON: string(presets.GenerateDotnetPresetEn()), IsActive: true},
-	{Name: "Node.js 开发（示例）", Language: "zh", RoleCode: "nodejs", DataJSON: string(presets.GenerateNodejsPreset()), IsActive: true},
-	{Name: "Node.js Developer (Example)", Language: "en", RoleCode: "nodejs", DataJSON: string(presets.GenerateNodejsPresetEn()), IsActive: true},
+	{Name: "Java 开发", Language: "zh", RoleCode: "Java", DataJSON: string(presets.GenerateJavaPreset()), IsActive: true},
+	{Name: "Java Developer", Language: "en", RoleCode: "Java", DataJSON: string(presets.GenerateJavaPresetEn()), IsActive: true},
+	{Name: "Python 开发", Language: "zh", RoleCode: "Python", DataJSON: string(presets.GeneratePythonPreset()), IsActive: true},
+	{Name: "Python Developer", Language: "en", RoleCode: "Python", DataJSON: string(presets.GeneratePythonPresetEn()), IsActive: true},
+	{Name: "Go 开发", Language: "zh", RoleCode: "golang", DataJSON: string(presets.GenerateGolangPreset()), IsActive: true},
+	{Name: "Go Developer", Language: "en", RoleCode: "golang", DataJSON: string(presets.GenerateGolangPresetEn()), IsActive: true},
+	{Name: "PHP 开发", Language: "zh", RoleCode: "php", DataJSON: string(presets.GeneratePHPPreset()), IsActive: true},
+	{Name: "PHP Developer", Language: "en", RoleCode: "php", DataJSON: string(presets.GeneratePHPPresetEn()), IsActive: true},
+	{Name: "C/C++ 开发", Language: "zh", RoleCode: "c_cpp", DataJSON: string(presets.GenerateCCppPreset()), IsActive: true},
+	{Name: "C/C++ Developer", Language: "en", RoleCode: "c_cpp", DataJSON: string(presets.GenerateCCppPresetEn()), IsActive: true},
+	{Name: "C# 开发", Language: "zh", RoleCode: "csharp", DataJSON: string(presets.GenerateCSharpPreset()), IsActive: true},
+	{Name: "C# Developer", Language: "en", RoleCode: "csharp", DataJSON: string(presets.GenerateCSharpPresetEn()), IsActive: true},
+	{Name: ".NET 开发", Language: "zh", RoleCode: "dotnet", DataJSON: string(presets.GenerateDotnetPreset()), IsActive: true},
+	{Name: ".NET Developer", Language: "en", RoleCode: "dotnet", DataJSON: string(presets.GenerateDotnetPresetEn()), IsActive: true},
+	{Name: "Node.js 开发", Language: "zh", RoleCode: "nodejs", DataJSON: string(presets.GenerateNodejsPreset()), IsActive: true},
+	{Name: "Node.js Developer", Language: "en", RoleCode: "nodejs", DataJSON: string(presets.GenerateNodejsPresetEn()), IsActive: true},
 }
 
 var seedRoles = []SeedJobRole{
