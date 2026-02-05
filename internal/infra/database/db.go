@@ -35,6 +35,7 @@ func InitDB(cfg config.Config) (*gorm.DB, error) {
 	if err = ensureContentPresetI18nIndex(); err != nil {
 		return nil, err
 	}
+	// removed legacy backfill
 
 	logger.WithCtx(nil).Info("mysql connected")
 	return DB, nil
@@ -60,6 +61,7 @@ func autoMigrate() error {
 	if err := DB.AutoMigrate(
 		&models.User{},
 		&models.Template{},
+		&models.TemplateI18n{},
 		&models.JobCategory{},
 		&models.JobCategoryI18n{},
 		&models.JobRole{},
@@ -81,3 +83,5 @@ func autoMigrate() error {
 	}
 	return nil
 }
+
+// legacy backfill removed

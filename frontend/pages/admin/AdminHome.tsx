@@ -5,7 +5,7 @@ import { Users, FileText, LayoutGrid, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useToast } from '../../components/ui/Toast';
-import { MOCK_TEMPLATES } from '../../services/mockData';
+import { MOCK_TEMPLATES, MOCK_TEMPLATE_EN } from '../../services/mockData';
 
 export const AdminHome: React.FC = () => {
   const { t } = useLanguage();
@@ -119,7 +119,7 @@ export const AdminHome: React.FC = () => {
                 if (syncingTemplates) return;
                 setSyncingTemplates(true);
                 try {
-                  const data = MOCK_TEMPLATES.map(t => ({ externalId: t.id, name: t.name }));
+                  const data = MOCK_TEMPLATES.map(t => ({ externalId: t.id, names: { zh: t.name, en: MOCK_TEMPLATE_EN[t.id] || '' }, name: t.name }));
                   await seedTemplates(data);
                   showToast(t('admin.sync.complete') || 'Templates synced', 'success');
                   reload();

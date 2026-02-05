@@ -237,7 +237,8 @@ export const setResumeVisibility = async (id: number, isPublic: boolean) => {
 // Templates
 export interface AdminTemplateReq {
   externalId: string;
-  name: string;
+  name?: string;
+  names?: Record<string, string>;
 }
 export const createTemplate = async (body: AdminTemplateReq) => {
   const res = await fetch(`${API_BASE}/admin/templates`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });

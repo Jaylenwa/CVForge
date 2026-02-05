@@ -29,12 +29,26 @@ import { motion } from 'framer-motion';
 type Row = {
   id: string;
   name: string;
+  names: Record<string, string>;
 };
 
 export const TemplatesPage: React.FC = () => {
   const { t, language } = useLanguage();
   const { showToast } = useToast();
   const confirm = useConfirm();
+
+  const pickName = useCallback((names: Record<string, string> | undefined, lang: string) => {
+    if (!names) return '';
+    const v1 = String(names[lang] || '').trim();
+    if (v1) return v1;
+    const v2 = String(names.zh || '').trim();
+    if (v2) return v2;
+    for (const v of Object.values(names)) {
+      const vv = String(v || '').trim();
+      if (vv) return vv;
+    }
+    return '';
+  }, []);
 
   type TabKey = 'templates' | 'presets';
   const [tab, setTab] = useState<TabKey>('templates');
@@ -189,9 +203,9 @@ export const TemplatesPage: React.FC = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<{ externalId: string; name: string }>({
+  const [form, setForm] = useState<{ externalId: string; names: { zh: string; en: string } }>({
     externalId: '',
-    name: '',
+    names: { zh: '', en: '' },
   });
   const [saving, setSaving] = useState(false);
 
@@ -207,10 +221,12 @@ export const TemplatesPage: React.FC = () => {
     try {
       const res = await fetch(`${API_BASE}/templates`);
       const data = await res.json();
-      const mapped = (data.items || []).map((t: any) => ({
-        id: t.ExternalID || t.id,
-        name: t.Name || t.name,
-      }));
+      const mapped = (data.items || []).map((t: any) => {
+        const names = (t.Names || t.names || {}) as Record<string, string>;
+        const id = t.ExternalID || t.id;
+        const name = pickName(names, String(language || '')) || String(id || '');
+        return { id, names, name };
+      });
       setItems(mapped);
     } catch {
       showToast(t('admin.msg.loadTemplatesFailed'), 'error');
@@ -220,11 +236,11 @@ export const TemplatesPage: React.FC = () => {
   };
   useEffect(() => {
     load();
-  }, []);
+  }, [language]);
 
   const filtered = items.filter((i) => {
     const s = keyword.trim().toLowerCase();
-    const m1 = !s || i.name.toLowerCase().includes(s) || i.id.toLowerCase().includes(s);
+    const m1 = !s || i.name.toLowerCase().includes(s) || i.id.toLowerCase().includes(s) || String(i.names?.zh || '').toLowerCase().includes(s) || String(i.names?.en || '').toLowerCase().includes(s);
     return m1;
   });
   const total = filtered.length;
@@ -232,26 +248,39 @@ export const TemplatesPage: React.FC = () => {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ externalId: '', name: '' });
+    setForm({ externalId: '', names: { zh: '', en: '' } });
     setShowForm(true);
   };
   const openEdit = (row: Row) => {
     setEditingId(row.id);
     setForm({
       externalId: row.id,
-      name: row.name,
+      names: { zh: String(row.names?.zh || '').trim(), en: String(row.names?.en || '').trim() },
     });
     setShowForm(true);
   };
   const submitForm = async () => {
     if (saving) return;
+    const externalId = String(form.externalId || '').trim();
+    const names = {
+      zh: String(form.names?.zh || '').trim(),
+      en: String(form.names?.en || '').trim(),
+    };
+    if (!editingId && !externalId) {
+      showToast(language === 'zh' ? '请填写 External ID' : 'Please fill External ID', 'error');
+      return;
+    }
+    if (!names.zh && !names.en) {
+      showToast(language === 'zh' ? '请至少填写中文名或英文名' : 'Please provide Chinese or English name', 'error');
+      return;
+    }
     setSaving(true);
     try {
       if (editingId) {
-        await updateTemplate(editingId, { name: form.name });
+        await updateTemplate(editingId, { names, name: names.zh || undefined });
         showToast(t('admin.msg.templateUpdated'), 'success');
       } else {
-        await createTemplate({ externalId: form.externalId, name: form.name });
+        await createTemplate({ externalId, names, name: names.zh || undefined });
         showToast(t('admin.msg.templateCreated'), 'success');
       }
       setShowForm(false);
@@ -469,7 +498,12 @@ export const TemplatesPage: React.FC = () => {
     try {
       const res = await fetch(`${API_BASE}/templates`);
       const data = await res.json();
-      const tpls = (data.items || []).map((x: any) => ({ id: x.ExternalID || x.id, name: x.Name || x.name || (x.ExternalID || x.id) }));
+      const tpls = (data.items || []).map((x: any) => {
+        const names = (x.Names || x.names || {}) as Record<string, string>;
+        const id = x.ExternalID || x.id;
+        const name = pickName(names, String(language || '')) || String(id || '');
+        return { id, name };
+      });
       setAllTemplates(tpls);
     } catch {}
   };
@@ -858,8 +892,8 @@ export const TemplatesPage: React.FC = () => {
               </TableCard>
             </div>
 
-            <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingId ? t('admin.actions.update') : t('admin.actions.create')} size="xl">
-              <div className="flex flex-col max-h-[75vh]">
+            <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingId ? t('admin.actions.update') : t('admin.actions.create')} size="lg" compact>
+              <div className="flex flex-col max-h-[70vh]">
                 <div className="flex-1 overflow-y-auto no-scrollbar pr-1 space-y-8">
                   <section className="space-y-4">
                     <div className="flex items-center space-x-2">
@@ -879,8 +913,22 @@ export const TemplatesPage: React.FC = () => {
                         </div>
                       )}
                       <div>
-                        <Label required htmlFor="tpl-name">{t('admin.form.name')}</Label>
-                        <Input id="tpl-name" placeholder={t('admin.form.name')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                        <Label htmlFor="tpl-name-zh">{language === 'zh' ? '中文名' : 'Chinese Name'}</Label>
+                        <Input
+                          id="tpl-name-zh"
+                          placeholder={language === 'zh' ? '中文名' : 'Chinese Name'}
+                          value={form.names.zh}
+                          onChange={(e) => setForm({ ...form, names: { ...form.names, zh: e.target.value } })}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="tpl-name-en">{language === 'zh' ? '英文名' : 'English Name'}</Label>
+                        <Input
+                          id="tpl-name-en"
+                          placeholder={language === 'zh' ? '英文名' : 'English Name'}
+                          value={form.names.en}
+                          onChange={(e) => setForm({ ...form, names: { ...form.names, en: e.target.value } })}
+                        />
                       </div>
                     </div>
                   </section>

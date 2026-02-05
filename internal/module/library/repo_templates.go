@@ -71,6 +71,7 @@ func (r *Repo) pickPresetID(roleID uint, language string) uint {
 
 func (r *Repo) ListTemplateLibraryItems(roleID uint, language string, sort string) ([]TemplateLibraryItem, error) {
 	sort = normalizeTemplateListSort(sort)
+	language = normalizeLanguage(language)
 	presetID := r.pickPresetID(roleID, language)
 	if roleID != 0 && presetID == 0 {
 		return []TemplateLibraryItem{}, nil
@@ -86,21 +87,25 @@ func (r *Repo) ListTemplateLibraryItems(roleID uint, language string, sort strin
 		GlobalUsageCount   int    `gorm:"column:global_usage_count"`
 	}
 	var rows []row
+
+	nameExpr := "COALESCE(ti_req.name, ti_zh.name)"
 	db := r.db.Table("template t").
+		Joins("LEFT JOIN template_i18n ti_req ON ti_req.template_id = t.id AND ti_req.language = ? AND ti_req.deleted_at IS NULL", language).
+		Joins("LEFT JOIN template_i18n ti_zh ON ti_zh.template_id = t.id AND ti_zh.language = ? AND ti_zh.deleted_at IS NULL", "zh").
 		Where("t.deleted_at IS NULL")
 
 	if roleID != 0 {
 		db = db.Joins("LEFT JOIN role_template_usage rtu ON rtu.template_external_id = t.external_id AND rtu.role_id = ?", roleID).
-			Select("t.external_id as template_external_id, t.name, COALESCE(rtu.usage_count, 0) as usage_count, t.usage_count as global_usage_count")
+			Select("t.external_id as template_external_id, " + nameExpr + " as name, COALESCE(rtu.usage_count, 0) as usage_count, t.usage_count as global_usage_count")
 	} else {
-		db = db.Select("t.external_id as template_external_id, t.name, t.usage_count as usage_count, t.usage_count as global_usage_count")
+		db = db.Select("t.external_id as template_external_id, " + nameExpr + " as name, t.usage_count as usage_count, t.usage_count as global_usage_count")
 	}
 
 	switch sort {
 	case "new":
 		db = db.Order("t.id desc")
 	case "name":
-		db = db.Order("t.name asc").Order("t.id asc")
+		db = db.Order(nameExpr + " asc").Order("t.id asc")
 	default:
 		if roleID != 0 {
 			db = db.Order("COALESCE(rtu.usage_count, 0) desc").Order("t.id desc")

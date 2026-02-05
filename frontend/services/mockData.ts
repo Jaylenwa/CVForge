@@ -18,3 +18,22 @@ export const MOCK_TEMPLATES: Template[] = [
   { id: 'TemplateBlueFormSheet', name: '蓝色表格版' },
   { id: 'TemplateBlueRibbonResume', name: '蓝色飘带线条版' },
 ];
+
+export const MOCK_TEMPLATE_EN: Record<string, string> = {
+  TemplateMintTimeline: 'Mint Timeline',
+  TemplateWaveTimeline: 'Wave Timeline',
+  TemplateBluePhotoColumns: 'Blue Avatar Columns',
+  TemplateBlueResumeHeader: 'Blue Slash Header',
+  TemplateTealWaveTimeline: 'Teal Wave Timeline',
+  TemplateClassic: 'Classic Professional',
+  TemplateSlate: 'Slate Minimal',
+  TemplateBlueStripe: 'Blue Stripe Gray',
+  TemplateDarkHeaderIcons: 'Dark Header Icons',
+  TemplateMonoBar: 'Monochrome Vertical Bar',
+  TemplateSidebarLabel: 'Left Sidebar Labels',
+  TemplateBlueTabLine: 'Blue Gray Tab Line',
+  TemplateBluePillRail: 'Blue Gray Rounded Titles',
+  TemplateBlueNationResume: 'Nation Style Resume',
+  TemplateBlueFormSheet: 'Blue Form Sheet',
+  TemplateBlueRibbonResume: 'Blue Ribbon Resume',
+};
