@@ -48,7 +48,30 @@ func (r *Repo) Create(res *Resume) error {
 }
 
 func (r *Repo) DeleteByID(id uint) error {
-	return r.db.Delete(&Resume{Model: gorm.Model{ID: id}}).Error
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var secIDs []uint
+		if err := tx.Model(&ResumeSection{}).Where("resume_id = ?", id).Pluck("id", &secIDs).Error; err != nil {
+			return err
+		}
+		if len(secIDs) > 0 {
+			if err := tx.Where("section_id IN ?", secIDs).Delete(&ResumeItem{}).Error; err != nil {
+				return err
+			}
+		}
+		if err := tx.Where("resume_id = ?", id).Delete(&ResumeSection{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("resume_id = ?", id).Delete(&ResumePersonal{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("resume_id = ?", id).Delete(&ResumeTheme{}).Error; err != nil {
+			return err
+		}
+		if err := tx.Where("resume_id = ?", id).Delete(&ShareLink{}).Error; err != nil {
+			return err
+		}
+		return tx.Delete(&Resume{Model: gorm.Model{ID: id}}).Error
+	})
 }
 
 func (r *Repo) Replace(existing Resume, updated Resume) error {

@@ -11,9 +11,9 @@ type Resume struct {
 	RoleID       *uint           `gorm:"column:role_db_id;index"`   // 岗位方向 ID
 	Language     string          `gorm:"size:8"`                    // 语言（zh/en）
 	LastModified int64           // 最近更新时间戳（毫秒）
-	Personal     ResumePersonal  `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"` // 个人信息（1:1）
-	Theme        ResumeTheme     `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"` // 主题配置（1:1）
-	Sections     []ResumeSection `gorm:"constraint:OnDelete:CASCADE;foreignKey:ResumeID"` // 简历模块列表（1:N）
+	Personal     ResumePersonal  `gorm:"foreignKey:ResumeID"` // 个人信息（1:1）
+	Theme        ResumeTheme     `gorm:"foreignKey:ResumeID"` // 主题配置（1:1）
+	Sections     []ResumeSection `gorm:"foreignKey:ResumeID"` // 简历模块列表（1:N）
 }
 
 func (Resume) TableName() string {
@@ -61,7 +61,7 @@ type ResumeSection struct {
 	Title     string       `gorm:"size:128"` // 模块标题
 	IsVisible bool         // 是否显示
 	OrderNum  int          // 排序号（越小越靠前）
-	Items     []ResumeItem `gorm:"constraint:OnDelete:CASCADE;foreignKey:SectionID"` // 模块条目（1:N）
+	Items     []ResumeItem `gorm:"foreignKey:SectionID"` // 模块条目（1:N）
 }
 
 func (ResumeSection) TableName() string {
