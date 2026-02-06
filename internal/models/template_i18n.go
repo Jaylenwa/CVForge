@@ -1,16 +1,9 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "gorm.io/gorm"
 
 type TemplateI18n struct {
-	ID         uint `gorm:"primarykey"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	DeletedAt  gorm.DeletedAt `gorm:"index"`
+	gorm.Model
 	TemplateID uint           `gorm:"index;index:uniq_template_language,unique"`
 	Language   string         `gorm:"size:16;index:uniq_template_language,unique"`
 	Name       string         `gorm:"size:128"`
@@ -19,4 +12,3 @@ type TemplateI18n struct {
 func (TemplateI18n) TableName() string {
 	return "template_i18n"
 }
-

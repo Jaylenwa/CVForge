@@ -2,12 +2,11 @@ package models
 
 import (
 	"time"
+	"gorm.io/gorm"
 )
 
 type RoleTemplateUsage struct {
-	ID                 uint `gorm:"primarykey"`
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
+	gorm.Model
 	RoleID             uint       `gorm:"index;uniqueIndex:uk_role_template_usage_role_tpl,priority:1"`
 	TemplateExternalID string     `gorm:"size:64;index;uniqueIndex:uk_role_template_usage_role_tpl,priority:2"`
 	UsageCount         int        `gorm:"default:0"`

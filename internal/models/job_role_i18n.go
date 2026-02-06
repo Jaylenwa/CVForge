@@ -1,16 +1,9 @@
 package models
 
-import (
-	"time"
-
-	"gorm.io/gorm"
-)
+import "gorm.io/gorm"
 
 type JobRoleI18n struct {
-	ID        uint `gorm:"primarykey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	gorm.Model
 	JobRoleID uint           `gorm:"index;index:uniq_job_role_language,unique"`
 	Language  string         `gorm:"size:16;index:uniq_job_role_language,unique"`
 	Name      string         `gorm:"size:128"`
