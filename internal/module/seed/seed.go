@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -170,12 +171,28 @@ func LoadFromBytes(b []byte) (SeedData, error) {
 	return s, nil
 }
 
+func loadFromBytesNoValidate(b []byte) (SeedData, error) {
+	var s SeedData
+	if err := json.Unmarshal(b, &s); err != nil {
+		return SeedData{}, fmt.Errorf("parse seed json: %w", err)
+	}
+	return s, nil
+}
+
 func LoadFromFS(fsys fs.FS, name string) (SeedData, error) {
 	b, err := fs.ReadFile(fsys, name)
 	if err != nil {
 		return SeedData{}, fmt.Errorf("read seed file: %w", err)
 	}
 	return LoadFromBytes(b)
+}
+
+func loadFromFSNoValidate(fsys fs.FS, name string) (SeedData, error) {
+	b, err := fs.ReadFile(fsys, name)
+	if err != nil {
+		return SeedData{}, fmt.Errorf("read seed file: %w", err)
+	}
+	return loadFromBytesNoValidate(b)
 }
 
 func LoadFromFilePath(path string) (SeedData, error) {
@@ -186,14 +203,63 @@ func LoadFromFilePath(path string) (SeedData, error) {
 	return LoadFromBytes(b)
 }
 
-//go:embed default/seed.json
+func LoadFromDirPath(dir string) (SeedData, error) {
+	parts := []string{
+		"categories.json",
+		"roles.json",
+		"presets.json",
+	}
+
+	var merged SeedData
+	for _, name := range parts {
+		path := filepath.Join(dir, name)
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return SeedData{}, fmt.Errorf("read seed file: %w", err)
+		}
+		part, err := loadFromBytesNoValidate(b)
+		if err != nil {
+			return SeedData{}, err
+		}
+		merged.Categories = append(merged.Categories, part.Categories...)
+		merged.Roles = append(merged.Roles, part.Roles...)
+		merged.Presets = append(merged.Presets, part.Presets...)
+	}
+
+	if err := merged.Validate(); err != nil {
+		return SeedData{}, err
+	}
+	return merged, nil
+}
+
+//go:embed default/categories.json default/roles.json default/presets.json
 var defaultFS embed.FS
 
 //go:embed default/templates.json
 var defaultTemplatesFS embed.FS
 
 func LoadDefaultSeed() (SeedData, error) {
-	return LoadFromFS(defaultFS, "default/seed.json")
+	parts := []string{
+		"default/categories.json",
+		"default/roles.json",
+		"default/presets.json",
+	}
+
+	var merged SeedData
+	for _, name := range parts {
+		part, err := loadFromFSNoValidate(defaultFS, name)
+		if err != nil {
+			return SeedData{}, err
+		}
+		merged.Categories = append(merged.Categories, part.Categories...)
+		merged.Roles = append(merged.Roles, part.Roles...)
+		merged.Presets = append(merged.Presets, part.Presets...)
+	}
+
+	if err := merged.Validate(); err != nil {
+		return SeedData{}, err
+	}
+	return merged, nil
 }
 
 func LoadDefaultTemplateItems() ([]tplmod.SeedTemplateItem, error) {
@@ -356,14 +422,21 @@ func RunCLI(args []string) int {
 		fs := flag.NewFlagSet("openresume seed import", flag.ContinueOnError)
 		fs.SetOutput(os.Stderr)
 		filePath := fs.String("file", "", "seed json file path")
+		dirPath := fs.String("dir", "", "seed directory path (categories.json, roles.json, presets.json)")
 		if err := fs.Parse(args[1:]); err != nil {
 			return 2
 		}
-		if *filePath == "" {
-			_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed import --file path/to/seed.json")
+		if (*filePath == "" && *dirPath == "") || (*filePath != "" && *dirPath != "") {
+			_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed import --file path/to/seed.json | --dir path/to/seed-dir")
 			return 2
 		}
-		s, err := LoadFromFilePath(*filePath)
+		var s SeedData
+		var err error
+		if *dirPath != "" {
+			s, err = LoadFromDirPath(*dirPath)
+		} else {
+			s, err = LoadFromFilePath(*filePath)
+		}
 		if err != nil {
 			logger.L().Error("load seed file failed", zap.Error(err))
 			return 1

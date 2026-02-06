@@ -50,8 +50,9 @@
 
 - 初始化默认种子数据（岗位分类/岗位/内容预设）：
   - 一次性导入：`go run ./main.go seed import-default`
-  - 导入自定义文件：`go run ./main.go seed import --file db/seed/default/seed.json`
-  - 数据源文件：`db/seed/default/seed.json`
+  - 导入自定义文件：`go run ./main.go seed import --file path/to/seed.json`
+  - 从目录导入：`go run ./main.go seed import --dir internal/module/seed/default`
+  - 默认数据源文件：`internal/module/seed/default/{categories,roles,presets}.json`
   - `external_id` 是幂等键；发布后尽量保持稳定不变。
 
 - 本地启动（前端）：

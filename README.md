@@ -50,8 +50,9 @@
 
 - Initialize default seed data (taxonomy + presets):
   - Run once: `go run ./main.go seed import-default`
-  - Import from a custom file: `go run ./main.go seed import --file db/seed/default/seed.json`
-  - Source file: `db/seed/default/seed.json`
+  - Import from a custom file: `go run ./main.go seed import --file path/to/seed.json`
+  - Import from a directory: `go run ./main.go seed import --dir internal/module/seed/default`
+  - Default source files: `internal/module/seed/default/{categories,roles,presets}.json`
   - `external_id` is the idempotent key; keep it stable once published.
 
 - Run locally (frontend):

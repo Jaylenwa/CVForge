@@ -1,0 +1,894 @@
+{
+  "Categories": [
+    {
+      "ExternalID": "it",
+      "Names": {
+        "en": "Internet Industry",
+        "zh": "IT | 互联网"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance",
+      "Names": {
+        "en": "Banking Finance",
+        "zh": "金融 | 银行"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "education",
+      "Names": {
+        "en": "Education",
+        "zh": "教育 | 培训"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "healthcare",
+      "Names": {
+        "en": "Healthcare",
+        "zh": "医疗 | 健康"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "realestate",
+      "Names": {
+        "en": "Real Estate",
+        "zh": "建筑 | 房地产"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 50,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "manufacturing",
+      "Names": {
+        "en": "Manufacturing",
+        "zh": "制造 | 生产"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 60,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "logistics",
+      "Names": {
+        "en": "Logistics",
+        "zh": "交通 | 物流"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 70,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "services",
+      "Names": {
+        "en": "Service Industry",
+        "zh": "服务 | 消费"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 80,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "media",
+      "Names": {
+        "en": "Media",
+        "zh": "文化 | 传媒"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 90,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "trade",
+      "Names": {
+        "en": "Trade",
+        "zh": "贸易 | 进出口"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 100,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "energy",
+      "Names": {
+        "en": "Eco-energy",
+        "zh": "能源 | 环保"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 110,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "agriculture",
+      "Names": {
+        "en": "Agriculture",
+        "zh": "农林 | 牧渔"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 120,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "public",
+      "Names": {
+        "en": "Public Service",
+        "zh": "公共 | 非盈利"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 130,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "others",
+      "Names": {
+        "en": "Others",
+        "zh": "其他 | 岗位"
+      },
+      "ParentExternalID": "",
+      "OrderNum": 140,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "it_backend",
+      "Names": {
+        "en": "Backend Developer/Programmer",
+        "zh": "后端开发/程序员"
+      },
+      "ParentExternalID": "it",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "it_frontend",
+      "Names": {
+        "en": "Frontend Developer",
+        "zh": "前端开发"
+      },
+      "ParentExternalID": "it",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "it_mobile",
+      "Names": {
+        "en": "Mobile Developer",
+        "zh": "移动开发"
+      },
+      "ParentExternalID": "it",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "it_testing",
+      "Names": {
+        "en": "Software Tester",
+        "zh": "软件测试"
+      },
+      "ParentExternalID": "it",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "it_ops_sec_dba",
+      "Names": {
+        "en": "Operations / Security / DBA",
+        "zh": "运维 / 安全 / DBA"
+      },
+      "ParentExternalID": "it",
+      "OrderNum": 50,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "it_ai_bigdata",
+      "Names": {
+        "en": "Emerging Technologies",
+        "zh": "新兴技术"
+      },
+      "ParentExternalID": "it",
+      "OrderNum": 60,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "it_other_tech",
+      "Names": {
+        "en": "Other Technical Positions",
+        "zh": "其他技术岗"
+      },
+      "ParentExternalID": "it",
+      "OrderNum": 70,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "it_senior",
+      "Names": {
+        "en": "Senior Technical Positions",
+        "zh": "高端技术职位"
+      },
+      "ParentExternalID": "it",
+      "OrderNum": 80,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_counter_service",
+      "Names": {
+        "en": "Bank Counter/Service",
+        "zh": "银行柜台/服务"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_personal_wealth",
+      "Names": {
+        "en": "Personal Finance and Wealth Management",
+        "zh": "个人金融与理财"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_credit_approval",
+      "Names": {
+        "en": "Credit Approval",
+        "zh": "信贷/审批"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_risk_compliance",
+      "Names": {
+        "en": "Risk Management/Compliance",
+        "zh": "风险管理/合规"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_securities_invest",
+      "Names": {
+        "en": "Securities and Investment",
+        "zh": "证券与投资"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 50,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_insurance_actuary",
+      "Names": {
+        "en": "Insurance/Actuary",
+        "zh": "保险/精算"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 60,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_banking_support",
+      "Names": {
+        "en": "Banking Support",
+        "zh": "银行业务支持"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 70,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_trust_futures",
+      "Names": {
+        "en": "Trust/Futures",
+        "zh": "信托/期货类"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 80,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_bank_management",
+      "Names": {
+        "en": "Bank Management",
+        "zh": "银行管理类岗位"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 90,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "finance_intern",
+      "Names": {
+        "en": "Bank Intern/Trainee",
+        "zh": "银行新人/实习生"
+      },
+      "ParentExternalID": "finance",
+      "OrderNum": 100,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "education_teacher",
+      "Names": {
+        "en": "Teacher",
+        "zh": "教师"
+      },
+      "ParentExternalID": "education",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "education_teaching_admin",
+      "Names": {
+        "en": "Teaching Administration",
+        "zh": "教学管理"
+      },
+      "ParentExternalID": "education",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "education_student_services",
+      "Names": {
+        "en": "Student Services",
+        "zh": "学生服务"
+      },
+      "ParentExternalID": "education",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "education_training_lecturer",
+      "Names": {
+        "en": "Training/Lecturer",
+        "zh": "培训/讲师"
+      },
+      "ParentExternalID": "education",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "education_training_management",
+      "Names": {
+        "en": "Training Management",
+        "zh": "培训管理"
+      },
+      "ParentExternalID": "education",
+      "OrderNum": 50,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "healthcare_doctor",
+      "Names": {
+        "en": "Doctor",
+        "zh": "医生"
+      },
+      "ParentExternalID": "healthcare",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "healthcare_nurse",
+      "Names": {
+        "en": "Nurse",
+        "zh": "护士"
+      },
+      "ParentExternalID": "healthcare",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "healthcare_medtech",
+      "Names": {
+        "en": "Medical Technology",
+        "zh": "医学技术岗"
+      },
+      "ParentExternalID": "healthcare",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "healthcare_pharma",
+      "Names": {
+        "en": "Pharmacy",
+        "zh": "药学岗"
+      },
+      "ParentExternalID": "healthcare",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "healthcare_devices",
+      "Names": {
+        "en": "Medical Devices",
+        "zh": "医疗器械岗"
+      },
+      "ParentExternalID": "healthcare",
+      "OrderNum": 50,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "healthcare_other",
+      "Names": {
+        "en": "Other Healthcare Positions",
+        "zh": "其他医疗岗"
+      },
+      "ParentExternalID": "healthcare",
+      "OrderNum": 60,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "healthcare_intern",
+      "Names": {
+        "en": "Healthcare Intern",
+        "zh": "医药实习"
+      },
+      "ParentExternalID": "healthcare",
+      "OrderNum": 70,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "healthcare_management",
+      "Names": {
+        "en": "Healthcare Management",
+        "zh": "医疗管理"
+      },
+      "ParentExternalID": "healthcare",
+      "OrderNum": 80,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "realestate_design_planning",
+      "Names": {
+        "en": "Architecture Design/Planning",
+        "zh": "建筑设计/规划"
+      },
+      "ParentExternalID": "realestate",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "realestate_interior_landscape",
+      "Names": {
+        "en": "Interior/Landscape Design",
+        "zh": "室内/景观设计"
+      },
+      "ParentExternalID": "realestate",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "realestate_cost_budget",
+      "Names": {
+        "en": "Cost/Budget",
+        "zh": "工程造价/预算"
+      },
+      "ParentExternalID": "realestate",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "realestate_construction_mgmt",
+      "Names": {
+        "en": "Construction Management",
+        "zh": "工程施工/管理"
+      },
+      "ParentExternalID": "realestate",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "realestate_project_mgmt",
+      "Names": {
+        "en": "Project Management",
+        "zh": "项目管理"
+      },
+      "ParentExternalID": "realestate",
+      "OrderNum": 50,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "realestate_sales_planning",
+      "Names": {
+        "en": "Real Estate Sales/Planning",
+        "zh": "房地产销售/策划"
+      },
+      "ParentExternalID": "realestate",
+      "OrderNum": 60,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "realestate_property_mgmt",
+      "Names": {
+        "en": "Property Management",
+        "zh": "物业管理"
+      },
+      "ParentExternalID": "realestate",
+      "OrderNum": 70,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "mfg_mechanical",
+      "Names": {
+        "en": "Mechanical Engineering",
+        "zh": "机械制造"
+      },
+      "ParentExternalID": "manufacturing",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "mfg_electrical",
+      "Names": {
+        "en": "Electrical/Electronic Engineering",
+        "zh": "电子/电气制造"
+      },
+      "ParentExternalID": "manufacturing",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "mfg_auto_transport",
+      "Names": {
+        "en": "Automotive/Transportation Engineering",
+        "zh": "汽车/交通制造"
+      },
+      "ParentExternalID": "manufacturing",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "mfg_process_mold",
+      "Names": {
+        "en": "Process/Mold Engineering",
+        "zh": "工艺/模具工程"
+      },
+      "ParentExternalID": "manufacturing",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "mfg_prod_equip",
+      "Names": {
+        "en": "Production/Equipment Management",
+        "zh": "生产/设备管理"
+      },
+      "ParentExternalID": "manufacturing",
+      "OrderNum": 50,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "mfg_quality",
+      "Names": {
+        "en": "Quality Management",
+        "zh": "质量管理"
+      },
+      "ParentExternalID": "manufacturing",
+      "OrderNum": 60,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "mfg_rd_design",
+      "Names": {
+        "en": "Research and Development Design",
+        "zh": "研发设计"
+      },
+      "ParentExternalID": "manufacturing",
+      "OrderNum": 70,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "mfg_worker",
+      "Names": {
+        "en": "Production Worker",
+        "zh": "生产技工"
+      },
+      "ParentExternalID": "manufacturing",
+      "OrderNum": 80,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "logi_transport_service",
+      "Names": {
+        "en": "Transportation Service",
+        "zh": "运输服务"
+      },
+      "ParentExternalID": "logistics",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "logi_delivery",
+      "Names": {
+        "en": "Delivery",
+        "zh": "运输配送"
+      },
+      "ParentExternalID": "logistics",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "logi_warehouse",
+      "Names": {
+        "en": "Warehouse Management",
+        "zh": "仓储管理"
+      },
+      "ParentExternalID": "logistics",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "logi_ops",
+      "Names": {
+        "en": "Logistics Operations",
+        "zh": "物流运营"
+      },
+      "ParentExternalID": "logistics",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "logi_supply",
+      "Names": {
+        "en": "Supply Chain",
+        "zh": "供应链"
+      },
+      "ParentExternalID": "logistics",
+      "OrderNum": 50,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "svc_food",
+      "Names": {
+        "en": "Food Services",
+        "zh": "餐饮服务"
+      },
+      "ParentExternalID": "services",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "svc_hotel_travel",
+      "Names": {
+        "en": "Hotel Travel",
+        "zh": "酒店旅游"
+      },
+      "ParentExternalID": "services",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "svc_personal",
+      "Names": {
+        "en": "Personal Services",
+        "zh": "个人服务"
+      },
+      "ParentExternalID": "services",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "svc_fitness",
+      "Names": {
+        "en": "Fitness",
+        "zh": "运动健身"
+      },
+      "ParentExternalID": "services",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "svc_beauty",
+      "Names": {
+        "en": "Beauty",
+        "zh": "美容保健"
+      },
+      "ParentExternalID": "services",
+      "OrderNum": 50,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "svc_consult_translate",
+      "Names": {
+        "en": "Consultation/Translation",
+        "zh": "咨询翻译"
+      },
+      "ParentExternalID": "services",
+      "OrderNum": 60,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "svc_repair",
+      "Names": {
+        "en": "Repair",
+        "zh": "维修岗位"
+      },
+      "ParentExternalID": "services",
+      "OrderNum": 70,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "svc_other",
+      "Names": {
+        "en": "Other Services",
+        "zh": "其他服务岗"
+      },
+      "ParentExternalID": "services",
+      "OrderNum": 80,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "media_news_publishing",
+      "Names": {
+        "en": "News/Publishing",
+        "zh": "新闻/出版"
+      },
+      "ParentExternalID": "media",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "media_broadcast_tv",
+      "Names": {
+        "en": "Broadcast/TV",
+        "zh": "广播电视"
+      },
+      "ParentExternalID": "media",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "media_film_performance",
+      "Names": {
+        "en": "Film/Performance",
+        "zh": "影视演艺"
+      },
+      "ParentExternalID": "media",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "trade_foreign_trade",
+      "Names": {
+        "en": "Foreign Trade",
+        "zh": "外贸业务"
+      },
+      "ParentExternalID": "trade",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "trade_trade_support",
+      "Names": {
+        "en": "Trade Support",
+        "zh": "国际贸易支持"
+      },
+      "ParentExternalID": "trade",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "trade_crossborder_ecom",
+      "Names": {
+        "en": "Cross-Border E-Commerce",
+        "zh": "跨境电商"
+      },
+      "ParentExternalID": "trade",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "trade_translation_support",
+      "Names": {
+        "en": "Translation Support",
+        "zh": "翻译支持"
+      },
+      "ParentExternalID": "trade",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "energy_traditional",
+      "Names": {
+        "en": "Traditional Energy",
+        "zh": "传统能源"
+      },
+      "ParentExternalID": "energy",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "energy_environment",
+      "Names": {
+        "en": "Environmental Protection",
+        "zh": "环境保护"
+      },
+      "ParentExternalID": "energy",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "agri_planting",
+      "Names": {
+        "en": "Agricultural Planting",
+        "zh": "农业种植"
+      },
+      "ParentExternalID": "agriculture",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "agri_forestry",
+      "Names": {
+        "en": "Forestry",
+        "zh": "林业"
+      },
+      "ParentExternalID": "agriculture",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "agri_livestock",
+      "Names": {
+        "en": "Livestock",
+        "zh": "畜牧业"
+      },
+      "ParentExternalID": "agriculture",
+      "OrderNum": 30,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "agri_fishery",
+      "Names": {
+        "en": "Fishery",
+        "zh": "渔业水产"
+      },
+      "ParentExternalID": "agriculture",
+      "OrderNum": 40,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "public_services",
+      "Names": {
+        "en": "Public Services",
+        "zh": "公共服务"
+      },
+      "ParentExternalID": "public",
+      "OrderNum": 10,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "public_research",
+      "Names": {
+        "en": "Research",
+        "zh": "科研相关"
+      },
+      "ParentExternalID": "public",
+      "OrderNum": 20,
+      "IsActive": true
+    },
+    {
+      "ExternalID": "public_social",
+      "Names": {
+        "en": "Social Services",
+        "zh": "社会服务"
+      },
+      "ParentExternalID": "public",
+      "OrderNum": 30,
+      "IsActive": true
+    }
+  ]
+}
