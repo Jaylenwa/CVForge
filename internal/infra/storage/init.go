@@ -23,12 +23,14 @@ func Init() error {
 	if err != nil {
 		return err
 	}
-	if e := autoSeedIfEmpty(); e != nil {
-		return e
-	}
+
 	_, err = cache.InitRedis(cfg)
 	if err != nil {
 		return err
+	}
+
+	if e := autoSeedIfEmpty(); e != nil {
+		return e
 	}
 	return nil
 }

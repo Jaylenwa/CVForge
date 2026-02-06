@@ -161,6 +161,8 @@ func (s *Service) Seed(items []SeedTemplateItem) error {
 			return err
 		}
 	}
-	cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll))
+	if cache.RDB != nil {
+		cache.RDB.Del(context.Background(), string(common.RedisKeyTemplatesListAll))
+	}
 	return nil
 }
