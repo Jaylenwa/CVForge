@@ -1,18 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { getAdminStats, AdminStats, seedTemplates } from '../../services/adminService';
+import { getAdminStats, AdminStats } from '../../services/adminService';
 import { Users, FileText, LayoutGrid, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useToast } from '../../components/ui/Toast';
-import { MOCK_TEMPLATES, MOCK_TEMPLATE_EN } from '../../services/mockData';
 
 export const AdminHome: React.FC = () => {
   const { t } = useLanguage();
   const { showToast } = useToast();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [syncingTemplates, setSyncingTemplates] = useState(false);
 
   const reload = async () => {
     setLoading(true);
@@ -110,32 +108,6 @@ export const AdminHome: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-white rounded-3xl m-2 overflow-hidden shadow-sm border border-gray-100">
       <div className="px-10 pt-10 pb-6">
-        <div className="flex items-center justify-end">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="outline"
-              onClick={async () => {
-                if (syncingTemplates) return;
-                setSyncingTemplates(true);
-                try {
-                  const data = MOCK_TEMPLATES.map(t => ({ externalId: t.id, names: { zh: t.name, en: MOCK_TEMPLATE_EN[t.id] || '' }, name: t.name }));
-                  await seedTemplates(data);
-                  showToast(t('admin.sync.complete') || 'Templates synced', 'success');
-                  reload();
-                } catch (e) {
-                  const msg = e instanceof Error ? e.message : String(e);
-                  const prefix = t('admin.sync.failed') || 'Failed to sync templates';
-                  showToast(msg ? `${prefix}: ${msg}` : prefix, 'error');
-                } finally {
-                  setSyncingTemplates(false);
-                }
-              }}
-              disabled={syncingTemplates}
-            >
-              {syncingTemplates ? (t('admin.sync.syncing') || 'Syncing') : (t('admin.sync.syncMockData') || 'Sync Templates')}
-            </Button>
-          </div>
-        </div>
       </div>
       <div className="flex-1 overflow-y-auto px-10 pb-10">
         <div className="flex flex-col lg:flex-row gap-6 items-stretch">
