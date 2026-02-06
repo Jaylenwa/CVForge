@@ -48,6 +48,12 @@
   - Start: `go run ./main.go`
   - Default port: `:8080`
 
+- Initialize default seed data (taxonomy + presets):
+  - Run once: `go run ./main.go seed import-default`
+  - Import from a custom file: `go run ./main.go seed import --file db/seed/default/seed.json`
+  - Source file: `db/seed/default/seed.json`
+  - `external_id` is the idempotent key; keep it stable once published.
+
 - Run locally (frontend):
   - `cd frontend`
   - `npm install`

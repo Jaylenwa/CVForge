@@ -74,38 +74,80 @@ func (r *Repo) GetByIDActive(id uint, language string) (ContentPreset, error) {
 }
 
 func (r *Repo) UpsertContentPreset(db *gorm.DB, p *ContentPreset) error {
-	if p == nil || strings.TrimSpace(p.Name) == "" || p.RoleID == 0 {
+	if p == nil || strings.TrimSpace(p.ExternalID) == "" || strings.TrimSpace(p.Name) == "" || p.RoleID == 0 {
 		return errors.New("invalid content preset")
 	}
 	if err := ValidatePresetDataJSON(p.DataJSON); err != nil {
 		return err
 	}
+	externalID := strings.TrimSpace(p.ExternalID)
 
 	var base models.ContentPreset
 	err := db.Model(&models.ContentPreset{}).
-		Where("name = ?", strings.TrimSpace(p.Name)).
-		Where("role_id = ?", p.RoleID).
+		Where("external_id = ?", externalID).
 		First(&base).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
 	}
 
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		base = models.ContentPreset{
-			Name:     strings.TrimSpace(p.Name),
-			RoleID:   p.RoleID,
-			IsActive: p.IsActive,
-		}
-		if err := db.Create(&base).Error; err != nil {
-			return err
-		}
-	} else {
+	if err == nil {
+		base.ExternalID = &externalID
 		base.Name = strings.TrimSpace(p.Name)
 		base.RoleID = p.RoleID
 		base.IsActive = p.IsActive
 		if err := db.Save(&base).Error; err != nil {
 			return err
 		}
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
+		var legacy models.ContentPreset
+		legacyErr := db.Model(&models.ContentPreset{}).
+			Where("name = ?", strings.TrimSpace(p.Name)).
+			Where("role_id = ?", p.RoleID).
+			First(&legacy).Error
+		if legacyErr == nil {
+			if legacy.ExternalID == nil || strings.TrimSpace(*legacy.ExternalID) == "" {
+				legacy.ExternalID = &externalID
+				legacy.Name = strings.TrimSpace(p.Name)
+				legacy.RoleID = p.RoleID
+				legacy.IsActive = p.IsActive
+				if err := db.Save(&legacy).Error; err != nil {
+					return err
+				}
+				base = legacy
+			} else if strings.TrimSpace(*legacy.ExternalID) == externalID {
+				legacy.Name = strings.TrimSpace(p.Name)
+				legacy.RoleID = p.RoleID
+				legacy.IsActive = p.IsActive
+				if err := db.Save(&legacy).Error; err != nil {
+					return err
+				}
+				base = legacy
+			} else {
+				base = models.ContentPreset{
+					ExternalID: &externalID,
+					Name:       strings.TrimSpace(p.Name),
+					RoleID:     p.RoleID,
+					IsActive:   p.IsActive,
+				}
+				if err := db.Create(&base).Error; err != nil {
+					return err
+				}
+			}
+		} else if errors.Is(legacyErr, gorm.ErrRecordNotFound) {
+			base = models.ContentPreset{
+				ExternalID: &externalID,
+				Name:       strings.TrimSpace(p.Name),
+				RoleID:     p.RoleID,
+				IsActive:   p.IsActive,
+			}
+			if err := db.Create(&base).Error; err != nil {
+				return err
+			}
+		} else {
+			return legacyErr
+		}
+	} else {
+		return err
 	}
 
 	lang := normalizeLanguage(p.Language)

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { getAdminStats, AdminStats, importDefaultSeed, seedTemplates } from '../../services/adminService';
+import { getAdminStats, AdminStats, seedTemplates } from '../../services/adminService';
 import { Users, FileText, LayoutGrid, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -12,7 +12,6 @@ export const AdminHome: React.FC = () => {
   const { showToast } = useToast();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [importingSeed, setImportingSeed] = useState(false);
   const [syncingTemplates, setSyncingTemplates] = useState(false);
 
   const reload = async () => {
@@ -134,28 +133,6 @@ export const AdminHome: React.FC = () => {
               disabled={syncingTemplates}
             >
               {syncingTemplates ? (t('admin.sync.syncing') || 'Syncing') : (t('admin.sync.syncMockData') || 'Sync Templates')}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                if (importingSeed) return;
-                setImportingSeed(true);
-                try {
-                  const r = await importDefaultSeed();
-                  if (r?.success) {
-                    showToast(t('admin.msg.seedImported'), 'success');
-                  } else {
-                    showToast(t('admin.msg.seedImportFailed'), 'error');
-                  }
-                } catch {
-                  showToast(t('admin.msg.seedImportFailed'), 'error');
-                } finally {
-                  setImportingSeed(false);
-                }
-              }}
-              disabled={importingSeed}
-            >
-              {t('admin.actions.importDefaultSeed')}
             </Button>
           </div>
         </div>

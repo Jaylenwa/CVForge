@@ -13,7 +13,6 @@ import (
 	"openresume/internal/module/pdf"
 	"openresume/internal/module/preset"
 	"openresume/internal/module/resume"
-	"openresume/internal/module/seed"
 	"openresume/internal/module/share"
 	"openresume/internal/module/stats"
 	"openresume/internal/module/taxonomy"
@@ -111,9 +110,6 @@ func Init() *gin.Engine {
 	adm.GET("/share-links", shareAdmH.AdminList)
 	adm.PATCH("/share-links/:slug", shareAdmH.AdminUpdate)
 	adm.DELETE("/share-links/:slug", shareAdmH.AdminDelete)
-
-	seedAdmH := seed.NewAdminHandler()
-	adm.POST("/seed/import-default", seedAdmH.AdminImportDefault)
 
 	taxAdmH := taxonomy.NewAdminHandler()
 	adm.GET("/taxonomy/categories", taxAdmH.AdminListCategories)

@@ -24,12 +24,6 @@ export const getAdminStats = async (days = 14): Promise<AdminStats> => {
   return res.json();
 };
 
-export const importDefaultSeed = async () => {
-  const res = await fetch(`${API_BASE}/admin/seed/import-default`, { method: 'POST', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-  return res.json() as Promise<{ success: boolean; counts?: any }>;
-};
-
 export interface AdminJobCategory {
   id: number;
   name?: string;

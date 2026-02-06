@@ -48,6 +48,12 @@
   - 启动：`go run ./main.go`
   - 默认端口：`:8080`
 
+- 初始化默认种子数据（岗位分类/岗位/内容预设）：
+  - 一次性导入：`go run ./main.go seed import-default`
+  - 导入自定义文件：`go run ./main.go seed import --file db/seed/default/seed.json`
+  - 数据源文件：`db/seed/default/seed.json`
+  - `external_id` 是幂等键；发布后尽量保持稳定不变。
+
 - 本地启动（前端）：
   - `cd frontend`
   - `npm install`

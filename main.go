@@ -10,6 +10,7 @@ import (
 	"openresume/internal/infra/config"
 	"openresume/internal/infra/storage"
 	"openresume/internal/module/pdf"
+	"openresume/internal/module/seed"
 	"openresume/internal/pkg/logger"
 	"openresume/internal/router"
 
@@ -19,6 +20,14 @@ import (
 func main() {
 	logger.Init()
 	config.Load()
+
+	if len(os.Args) > 1 && os.Args[1] == "seed" {
+		if err := storage.Init(); err != nil {
+			logger.L().Fatal("storage init error", zap.Error(err))
+		}
+		os.Exit(seed.RunCLI(os.Args[2:]))
+	}
+
 	err := storage.Init()
 	if err != nil {
 		logger.L().Fatal("storage init error", zap.Error(err))

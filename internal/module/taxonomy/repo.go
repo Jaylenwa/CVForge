@@ -218,22 +218,25 @@ func (r *Repo) UpsertJobCategoryWithNames(db *gorm.DB, c *JobCategory, names map
 	if c == nil {
 		return errors.New("invalid job category")
 	}
+	if c.ExternalID == nil {
+		return errors.New("invalid job category external_id")
+	}
+	externalID := strings.TrimSpace(*c.ExternalID)
+	if externalID == "" {
+		return errors.New("invalid job category external_id")
+	}
+	c.ExternalID = &externalID
 	keyName := pickAnyName(names)
 	if keyName == "" {
 		return errors.New("invalid job category name")
 	}
 	var existing JobCategory
-	q := db.Model(&JobCategory{}).
-		Joins("JOIN job_category_i18n ON job_category_i18n.job_category_id = job_category.id AND job_category_i18n.language = 'zh' AND job_category_i18n.deleted_at IS NULL").
-		Where("job_category_i18n.name = ?", keyName)
-	if c.ParentID == nil {
-		q = q.Where("job_category.parent_id IS NULL")
-	} else {
-		q = q.Where("job_category.parent_id = ?", *c.ParentID)
-	}
-	err := q.First(&existing).Error
+	err := db.Model(&JobCategory{}).
+		Where("external_id = ?", externalID).
+		First(&existing).Error
 	if err == nil {
 		c.ID = existing.ID
+		existing.ExternalID = &externalID
 		existing.ParentID = c.ParentID
 		existing.OrderNum = c.OrderNum
 		existing.IsActive = c.IsActive
@@ -249,6 +252,33 @@ func (r *Repo) UpsertJobCategoryWithNames(db *gorm.DB, c *JobCategory, names map
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
+	}
+	var byName JobCategory
+	q := db.Model(&JobCategory{}).
+		Joins("JOIN job_category_i18n ON job_category_i18n.job_category_id = job_category.id AND job_category_i18n.language = 'zh' AND job_category_i18n.deleted_at IS NULL").
+		Where("job_category_i18n.name = ?", keyName)
+	if c.ParentID == nil {
+		q = q.Where("job_category.parent_id IS NULL")
+	} else {
+		q = q.Where("job_category.parent_id = ?", *c.ParentID)
+	}
+	if err := q.First(&byName).Error; err == nil {
+		if byName.ExternalID == nil || strings.TrimSpace(*byName.ExternalID) == "" {
+			c.ID = byName.ID
+			byName.ExternalID = &externalID
+			byName.ParentID = c.ParentID
+			byName.OrderNum = c.OrderNum
+			byName.IsActive = c.IsActive
+			if err := db.Save(&byName).Error; err != nil {
+				return err
+			}
+			for lang, name := range names {
+				if err := upsertJobCategoryI18n(db, byName.ID, lang, name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
 	}
 	if err := db.Create(c).Error; err != nil {
 		return err
@@ -271,18 +301,25 @@ func (r *Repo) UpsertJobRoleWithNames(db *gorm.DB, rr *JobRole, names map[string
 	if rr == nil || rr.CategoryID == 0 {
 		return errors.New("invalid job role")
 	}
+	if rr.ExternalID == nil {
+		return errors.New("invalid job role external_id")
+	}
+	externalID := strings.TrimSpace(*rr.ExternalID)
+	if externalID == "" {
+		return errors.New("invalid job role external_id")
+	}
+	rr.ExternalID = &externalID
 	keyName := pickAnyName(names)
 	if keyName == "" {
 		return errors.New("invalid job role name")
 	}
 	var existing JobRole
-	q := db.Model(&JobRole{}).
-		Joins("JOIN job_role_i18n ON job_role_i18n.job_role_id = job_role.id AND job_role_i18n.language = 'zh' AND job_role_i18n.deleted_at IS NULL").
-		Where("job_role.category_id = ?", rr.CategoryID).
-		Where("job_role_i18n.name = ?", keyName)
-	err := q.First(&existing).Error
+	err := db.Model(&JobRole{}).
+		Where("external_id = ?", externalID).
+		First(&existing).Error
 	if err == nil {
 		rr.ID = existing.ID
+		existing.ExternalID = &externalID
 		existing.CategoryID = rr.CategoryID
 		existing.OrderNum = rr.OrderNum
 		existing.IsActive = rr.IsActive
@@ -298,6 +335,29 @@ func (r *Repo) UpsertJobRoleWithNames(db *gorm.DB, rr *JobRole, names map[string
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return err
+	}
+	var byName JobRole
+	q := db.Model(&JobRole{}).
+		Joins("JOIN job_role_i18n ON job_role_i18n.job_role_id = job_role.id AND job_role_i18n.language = 'zh' AND job_role_i18n.deleted_at IS NULL").
+		Where("job_role.category_id = ?", rr.CategoryID).
+		Where("job_role_i18n.name = ?", keyName)
+	if err := q.First(&byName).Error; err == nil {
+		if byName.ExternalID == nil || strings.TrimSpace(*byName.ExternalID) == "" {
+			rr.ID = byName.ID
+			byName.ExternalID = &externalID
+			byName.CategoryID = rr.CategoryID
+			byName.OrderNum = rr.OrderNum
+			byName.IsActive = rr.IsActive
+			if err := db.Save(&byName).Error; err != nil {
+				return err
+			}
+			for lang, name := range names {
+				if err := upsertJobRoleI18n(db, byName.ID, lang, name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
 	}
 	if err := db.Create(rr).Error; err != nil {
 		return err
