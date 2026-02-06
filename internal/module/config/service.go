@@ -84,21 +84,20 @@ func (s *Service) EnsureDefaults() error {
 }
 
 func (s *Service) Get(key string) string {
-	// Try cache first
 	ctx := context.Background()
-	val, err := cache.RDB.Get(ctx, common.RedisKeySysConfig.F(key)).Result()
-	if err == nil {
-		return val
+	if cache.RDB != nil {
+		if val, err := cache.RDB.Get(ctx, common.RedisKeySysConfig.F(key)).Result(); err == nil {
+			return val
+		}
 	}
 
-	// Try DB
 	var cfg models.Config
 	if err := database.DB.Where("config_key = ?", key).First(&cfg).Error; err == nil {
-		// Cache it
-		cache.RDB.Set(ctx, common.RedisKeySysConfig.F(key), cfg.ConfigValue, 24*time.Hour)
+		if cache.RDB != nil {
+			cache.RDB.Set(ctx, common.RedisKeySysConfig.F(key), cfg.ConfigValue, 24*time.Hour)
+		}
 		return cfg.ConfigValue
 	}
-
 	return ""
 }
 
@@ -153,7 +152,9 @@ func (s *Service) Set(key, value, description, typeName string) error {
 	}
 
 	// Invalidate cache
-	cache.RDB.Del(context.Background(), common.RedisKeySysConfig.F(key))
+	if cache.RDB != nil {
+		cache.RDB.Del(context.Background(), common.RedisKeySysConfig.F(key))
+	}
 	return nil
 }
 
