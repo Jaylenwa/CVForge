@@ -15,6 +15,7 @@ import (
 	"openresume/internal/infra/database"
 	"openresume/internal/module/preset"
 	"openresume/internal/module/taxonomy"
+	tplmod "openresume/internal/module/template"
 	"openresume/internal/pkg/logger"
 
 	"go.uber.org/zap"
@@ -56,6 +57,7 @@ type ImportCounts struct {
 	JobCategories  int `json:"jobCategories"`
 	JobRoles       int `json:"jobRoles"`
 	ContentPresets int `json:"contentPresets"`
+	Templates      int `json:"templates"`
 }
 
 type ValidationError struct {
@@ -187,10 +189,30 @@ func LoadFromFilePath(path string) (SeedData, error) {
 //go:embed default/seed.json
 var defaultFS embed.FS
 
+//go:embed default/templates.json
+var defaultTemplatesFS embed.FS
+
 func LoadDefaultSeed() (SeedData, error) {
 	return LoadFromFS(defaultFS, "default/seed.json")
 }
 
+func LoadDefaultTemplateItems() ([]tplmod.SeedTemplateItem, error) {
+	b, err := defaultTemplatesFS.ReadFile("default/templates.json")
+	if err != nil {
+		return nil, fmt.Errorf("read default templates: %w", err)
+	}
+	var wrapper struct {
+		Templates []tplmod.SeedTemplateItem `json:"Templates"`
+	}
+	if err := json.Unmarshal(b, &wrapper); err == nil && len(wrapper.Templates) > 0 {
+		return wrapper.Templates, nil
+	}
+	var arr []tplmod.SeedTemplateItem
+	if err := json.Unmarshal(b, &arr); err == nil {
+		return arr, nil
+	}
+	return nil, fmt.Errorf("invalid default templates json")
+}
 func Import(ctx context.Context, db *gorm.DB, s SeedData) (ImportCounts, error) {
 	if db == nil {
 		return ImportCounts{}, errors.New("db is nil")
@@ -300,7 +322,7 @@ func importCategories(tx *gorm.DB, repo *taxonomy.Repo, list []SeedJobCategory, 
 
 func RunCLI(args []string) int {
 	if len(args) == 0 {
-		_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed <import-default|import> [--file path]")
+		_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed <import-default|import|templates-import> [--file path]")
 		return 2
 	}
 
@@ -314,6 +336,17 @@ func RunCLI(args []string) int {
 		counts, err := Import(context.Background(), database.DB, s)
 		if err != nil {
 			logger.L().Error("seed import failed", zap.Error(err))
+			return 1
+		}
+		// Also import default templates to align with frontend template IDs
+		if items, terr := LoadDefaultTemplateItems(); terr == nil && len(items) > 0 {
+			if ierr := tplmod.NewService().Seed(items); ierr != nil {
+				logger.L().Error("templates default import failed", zap.Error(ierr))
+				return 1
+			}
+			counts.Templates = len(items)
+		} else if terr != nil {
+			logger.L().Error("load default templates failed", zap.Error(terr))
 			return 1
 		}
 		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"success": true, "counts": counts})
@@ -344,7 +377,25 @@ func RunCLI(args []string) int {
 		return 0
 
 	default:
-		_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed <import-default|import> [--file path]")
+		_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed <import-default|import|templates-import|templates-import-default> [--file path]")
 		return 2
 	}
+}
+
+func loadTemplateItemsFromFilePath(path string) ([]tplmod.SeedTemplateItem, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read templates file: %w", err)
+	}
+	var wrapper struct {
+		Templates []tplmod.SeedTemplateItem `json:"Templates"`
+	}
+	if err := json.Unmarshal(b, &wrapper); err == nil && len(wrapper.Templates) > 0 {
+		return wrapper.Templates, nil
+	}
+	var arr []tplmod.SeedTemplateItem
+	if err := json.Unmarshal(b, &arr); err == nil {
+		return arr, nil
+	}
+	return nil, fmt.Errorf("invalid templates json")
 }

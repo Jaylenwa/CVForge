@@ -1,0 +1,20 @@
+{
+  "Templates": [
+    { "ExternalID": "TemplateMintTimeline", "Names": { "zh": "青色时间轴", "en": "Mint Timeline" } },
+    { "ExternalID": "TemplateWaveTimeline", "Names": { "zh": "波浪时间轴", "en": "Wave Timeline" } },
+    { "ExternalID": "TemplateBluePhotoColumns", "Names": { "zh": "蓝头头像三栏版", "en": "Blue Avatar Columns" } },
+    { "ExternalID": "TemplateBlueResumeHeader", "Names": { "zh": "蓝顶斜杠版", "en": "Blue Slash Header" } },
+    { "ExternalID": "TemplateTealWaveTimeline", "Names": { "zh": "青蓝波浪时间线", "en": "Teal Wave Timeline" } },
+    { "ExternalID": "TemplateClassic", "Names": { "zh": "经典专业版", "en": "Classic Professional" } },
+    { "ExternalID": "TemplateSlate", "Names": { "zh": "石板简洁版", "en": "Slate Minimal" } },
+    { "ExternalID": "TemplateBlueStripe", "Names": { "zh": "蓝条灰底版", "en": "Blue Stripe Gray" } },
+    { "ExternalID": "TemplateDarkHeaderIcons", "Names": { "zh": "深色头图标版", "en": "Dark Header Icons" } },
+    { "ExternalID": "TemplateMonoBar", "Names": { "zh": "黑白竖线版", "en": "Monochrome Vertical Bar" } },
+    { "ExternalID": "TemplateSidebarLabel", "Names": { "zh": "左栏标签版", "en": "Left Sidebar Labels" } },
+    { "ExternalID": "TemplateBlueTabLine", "Names": { "zh": "蓝灰标签线版", "en": "Blue Gray Tab Line" } },
+    { "ExternalID": "TemplateBluePillRail", "Names": { "zh": "蓝灰圆角标题版", "en": "Blue Gray Rounded Titles" } },
+    { "ExternalID": "TemplateBlueNationResume", "Names": { "zh": "全民简历风格", "en": "Nation Style Resume" } },
+    { "ExternalID": "TemplateBlueFormSheet", "Names": { "zh": "蓝色表格版", "en": "Blue Form Sheet" } },
+    { "ExternalID": "TemplateBlueRibbonResume", "Names": { "zh": "蓝色飘带线条版", "en": "Blue Ribbon Resume" } }
+  ]
+}
