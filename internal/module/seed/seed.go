@@ -1,0 +1,350 @@
+package seed
+
+import (
+	"context"
+	"embed"
+	"encoding/json"
+	"errors"
+	"flag"
+	"fmt"
+	"io/fs"
+	"os"
+	"sort"
+	"strings"
+
+	"openresume/internal/infra/database"
+	"openresume/internal/module/preset"
+	"openresume/internal/module/taxonomy"
+	"openresume/internal/pkg/logger"
+
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+)
+
+type SeedData struct {
+	Categories []SeedJobCategory   `json:"Categories"`
+	Roles      []SeedJobRole       `json:"Roles"`
+	Presets    []SeedContentPreset `json:"Presets"`
+}
+
+type SeedJobCategory struct {
+	ExternalID       string            `json:"ExternalID"`
+	Names            map[string]string `json:"Names"`
+	ParentExternalID string            `json:"ParentExternalID"`
+	OrderNum         int               `json:"OrderNum"`
+	IsActive         bool              `json:"IsActive"`
+}
+
+type SeedJobRole struct {
+	ExternalID         string            `json:"ExternalID"`
+	CategoryExternalID string            `json:"CategoryExternalID"`
+	Names              map[string]string `json:"Names"`
+	OrderNum           int               `json:"OrderNum"`
+	IsActive           bool              `json:"IsActive"`
+}
+
+type SeedContentPreset struct {
+	ExternalID string `json:"ExternalID"`
+	Name       string `json:"Name"`
+	Language   string `json:"Language"`
+	RoleCode   string `json:"RoleCode"`
+	DataJSON   string `json:"DataJSON"`
+	IsActive   bool   `json:"IsActive"`
+}
+
+type ImportCounts struct {
+	JobCategories  int `json:"jobCategories"`
+	JobRoles       int `json:"jobRoles"`
+	ContentPresets int `json:"contentPresets"`
+}
+
+type ValidationError struct {
+	Problems []string
+}
+
+func (e *ValidationError) Error() string {
+	if e == nil || len(e.Problems) == 0 {
+		return "seed validation failed"
+	}
+	var b strings.Builder
+	b.WriteString("seed validation failed:")
+	for _, p := range e.Problems {
+		b.WriteString("\n- ")
+		b.WriteString(p)
+	}
+	return b.String()
+}
+
+func (s SeedData) Validate() error {
+	var problems []string
+
+	categoryIDs := make(map[string]struct{}, len(s.Categories))
+	for i, c := range s.Categories {
+		if strings.TrimSpace(c.ExternalID) == "" {
+			problems = append(problems, fmt.Sprintf("Categories[%d].ExternalID is empty", i))
+			continue
+		}
+		if _, ok := categoryIDs[c.ExternalID]; ok {
+			problems = append(problems, fmt.Sprintf("duplicate category ExternalID: %q", c.ExternalID))
+			continue
+		}
+		categoryIDs[c.ExternalID] = struct{}{}
+		if len(c.Names) == 0 {
+			problems = append(problems, fmt.Sprintf("Categories[%d].Names is empty (%q)", i, c.ExternalID))
+		}
+	}
+	for i, c := range s.Categories {
+		if strings.TrimSpace(c.ParentExternalID) == "" {
+			continue
+		}
+		if _, ok := categoryIDs[c.ParentExternalID]; !ok {
+			problems = append(problems, fmt.Sprintf("Categories[%d] (%q) references missing ParentExternalID %q", i, c.ExternalID, c.ParentExternalID))
+		}
+	}
+
+	roleIDs := make(map[string]struct{}, len(s.Roles))
+	for i, r := range s.Roles {
+		if strings.TrimSpace(r.ExternalID) == "" {
+			problems = append(problems, fmt.Sprintf("Roles[%d].ExternalID is empty", i))
+			continue
+		}
+		if _, ok := roleIDs[r.ExternalID]; ok {
+			problems = append(problems, fmt.Sprintf("duplicate role ExternalID: %q", r.ExternalID))
+			continue
+		}
+		roleIDs[r.ExternalID] = struct{}{}
+		if strings.TrimSpace(r.CategoryExternalID) == "" {
+			problems = append(problems, fmt.Sprintf("Roles[%d] (%q) CategoryExternalID is empty", i, r.ExternalID))
+		} else if _, ok := categoryIDs[r.CategoryExternalID]; !ok {
+			problems = append(problems, fmt.Sprintf("Roles[%d] (%q) references missing CategoryExternalID %q", i, r.ExternalID, r.CategoryExternalID))
+		}
+		if len(r.Names) == 0 {
+			problems = append(problems, fmt.Sprintf("Roles[%d].Names is empty (%q)", i, r.ExternalID))
+		}
+	}
+
+	presetIDs := make(map[string]struct{}, len(s.Presets))
+	for i, p := range s.Presets {
+		if strings.TrimSpace(p.ExternalID) == "" {
+			problems = append(problems, fmt.Sprintf("Presets[%d].ExternalID is empty", i))
+		} else if _, ok := presetIDs[p.ExternalID]; ok {
+			problems = append(problems, fmt.Sprintf("duplicate preset ExternalID: %q", p.ExternalID))
+		} else {
+			presetIDs[p.ExternalID] = struct{}{}
+		}
+		if strings.TrimSpace(p.Name) == "" {
+			problems = append(problems, fmt.Sprintf("Presets[%d] (%q) Name is empty", i, p.ExternalID))
+		}
+		if strings.TrimSpace(p.Language) == "" {
+			problems = append(problems, fmt.Sprintf("Presets[%d] (%q) Language is empty", i, p.ExternalID))
+		}
+		if strings.TrimSpace(p.RoleCode) == "" {
+			problems = append(problems, fmt.Sprintf("Presets[%d] (%q) RoleCode is empty", i, p.ExternalID))
+		} else if _, ok := roleIDs[p.RoleCode]; !ok {
+			problems = append(problems, fmt.Sprintf("Presets[%d] (%q) references missing RoleCode %q", i, p.ExternalID, p.RoleCode))
+		}
+		if strings.TrimSpace(p.DataJSON) == "" {
+			problems = append(problems, fmt.Sprintf("Presets[%d] (%q) DataJSON is empty", i, p.ExternalID))
+		} else if !json.Valid([]byte(p.DataJSON)) {
+			problems = append(problems, fmt.Sprintf("Presets[%d] (%q) DataJSON is not valid json", i, p.ExternalID))
+		}
+	}
+
+	if len(problems) > 0 {
+		sort.Strings(problems)
+		return &ValidationError{Problems: problems}
+	}
+	return nil
+}
+
+func LoadFromBytes(b []byte) (SeedData, error) {
+	var s SeedData
+	if err := json.Unmarshal(b, &s); err != nil {
+		return SeedData{}, fmt.Errorf("parse seed json: %w", err)
+	}
+	if err := s.Validate(); err != nil {
+		return SeedData{}, err
+	}
+	return s, nil
+}
+
+func LoadFromFS(fsys fs.FS, name string) (SeedData, error) {
+	b, err := fs.ReadFile(fsys, name)
+	if err != nil {
+		return SeedData{}, fmt.Errorf("read seed file: %w", err)
+	}
+	return LoadFromBytes(b)
+}
+
+func LoadFromFilePath(path string) (SeedData, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return SeedData{}, fmt.Errorf("read seed file: %w", err)
+	}
+	return LoadFromBytes(b)
+}
+
+//go:embed default/seed.json
+var defaultFS embed.FS
+
+func LoadDefaultSeed() (SeedData, error) {
+	return LoadFromFS(defaultFS, "default/seed.json")
+}
+
+func Import(ctx context.Context, db *gorm.DB, s SeedData) (ImportCounts, error) {
+	if db == nil {
+		return ImportCounts{}, errors.New("db is nil")
+	}
+	if err := s.Validate(); err != nil {
+		return ImportCounts{}, err
+	}
+
+	var counts ImportCounts
+	err := db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		taxRepo := taxonomy.NewRepo(tx)
+		presetRepo := preset.NewRepo(tx)
+
+		categoryIDByExternal, err := importCategories(tx, taxRepo, s.Categories, &counts)
+		if err != nil {
+			return err
+		}
+
+		roleIDByExternal := make(map[string]uint, len(s.Roles))
+		for _, sr := range s.Roles {
+			cid := categoryIDByExternal[sr.CategoryExternalID]
+			externalID := strings.TrimSpace(sr.ExternalID)
+			m := taxonomy.JobRole{
+				ExternalID: &externalID,
+				CategoryID: cid,
+				OrderNum:   sr.OrderNum,
+				IsActive:   sr.IsActive,
+			}
+			if err := taxRepo.UpsertJobRoleWithNames(tx, &m, sr.Names); err != nil {
+				return fmt.Errorf("upsert role %q: %w", sr.ExternalID, err)
+			}
+			roleIDByExternal[sr.ExternalID] = m.ID
+			counts.JobRoles++
+		}
+
+		for _, sp := range s.Presets {
+			rid, ok := roleIDByExternal[sp.RoleCode]
+			if !ok || rid == 0 {
+				return fmt.Errorf("preset %q references missing role %q", sp.ExternalID, sp.RoleCode)
+			}
+			m := preset.ContentPreset{
+				ExternalID: sp.ExternalID,
+				Name:       sp.Name,
+				Language:   sp.Language,
+				RoleID:     rid,
+				DataJSON:   sp.DataJSON,
+				IsActive:   sp.IsActive,
+			}
+			if err := presetRepo.UpsertContentPreset(tx, &m); err != nil {
+				return fmt.Errorf("upsert preset %q: %w", sp.ExternalID, err)
+			}
+			counts.ContentPresets++
+		}
+		return nil
+	})
+	if err != nil {
+		return ImportCounts{}, err
+	}
+	return counts, nil
+}
+
+func importCategories(tx *gorm.DB, repo *taxonomy.Repo, list []SeedJobCategory, counts *ImportCounts) (map[string]uint, error) {
+	categoryIDByExternal := make(map[string]uint, len(list))
+	pending := make(map[string]SeedJobCategory, len(list))
+	for _, c := range list {
+		pending[c.ExternalID] = c
+	}
+
+	for len(pending) > 0 {
+		progress := 0
+		for externalID, sc := range pending {
+			if strings.TrimSpace(sc.ParentExternalID) != "" {
+				if _, ok := categoryIDByExternal[sc.ParentExternalID]; !ok {
+					continue
+				}
+			}
+			var parentID *uint
+			if strings.TrimSpace(sc.ParentExternalID) != "" {
+				pid := categoryIDByExternal[sc.ParentExternalID]
+				parentID = &pid
+			}
+			id := strings.TrimSpace(sc.ExternalID)
+			m := taxonomy.JobCategory{
+				ExternalID: &id,
+				ParentID:   parentID,
+				OrderNum:   sc.OrderNum,
+				IsActive:   sc.IsActive,
+			}
+			if err := repo.UpsertJobCategoryWithNames(tx, &m, sc.Names); err != nil {
+				return nil, fmt.Errorf("upsert category %q: %w", sc.ExternalID, err)
+			}
+			categoryIDByExternal[sc.ExternalID] = m.ID
+			(*counts).JobCategories++
+			delete(pending, externalID)
+			progress++
+		}
+		if progress == 0 {
+			var waiting []string
+			for k := range pending {
+				waiting = append(waiting, k)
+			}
+			return nil, fmt.Errorf("cannot resolve category parents for: %s", strings.Join(waiting, ", "))
+		}
+	}
+	return categoryIDByExternal, nil
+}
+
+func RunCLI(args []string) int {
+	if len(args) == 0 {
+		_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed <import-default|import> [--file path]")
+		return 2
+	}
+
+	switch args[0] {
+	case "import-default":
+		s, err := LoadDefaultSeed()
+		if err != nil {
+			logger.L().Error("load default seed failed", zap.Error(err))
+			return 1
+		}
+		counts, err := Import(context.Background(), database.DB, s)
+		if err != nil {
+			logger.L().Error("seed import failed", zap.Error(err))
+			return 1
+		}
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"success": true, "counts": counts})
+		return 0
+
+	case "import":
+		fs := flag.NewFlagSet("openresume seed import", flag.ContinueOnError)
+		fs.SetOutput(os.Stderr)
+		filePath := fs.String("file", "", "seed json file path")
+		if err := fs.Parse(args[1:]); err != nil {
+			return 2
+		}
+		if *filePath == "" {
+			_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed import --file path/to/seed.json")
+			return 2
+		}
+		s, err := LoadFromFilePath(*filePath)
+		if err != nil {
+			logger.L().Error("load seed file failed", zap.Error(err))
+			return 1
+		}
+		counts, err := Import(context.Background(), database.DB, s)
+		if err != nil {
+			logger.L().Error("seed import failed", zap.Error(err))
+			return 1
+		}
+		_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"success": true, "counts": counts})
+		return 0
+
+	default:
+		_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed <import-default|import> [--file path]")
+		return 2
+	}
+}
