@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"openresume/internal/common"
 	"openresume/internal/infra/cache"
@@ -101,10 +102,55 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 		}
 	}
 	items := make([]gin.H, 0, len(list))
+	viewsBySlug := map[string]uint64{}
+	lastAccessBySlug := map[string]time.Time{}
+	if cache.RDB != nil && len(list) > 0 {
+		viewKeys := make([]string, 0, len(list))
+		lastKeys := make([]string, 0, len(list))
+		for _, s := range list {
+			viewKeys = append(viewKeys, common.RedisKeyViews.F(s.Slug))
+			lastKeys = append(lastKeys, common.RedisKeyShareLastAccess.F(s.Slug))
+		}
+		if vals, err := cache.RDB.MGet(c, viewKeys...).Result(); err == nil {
+			for i, v := range vals {
+				if v == nil || i >= len(list) {
+					continue
+				}
+				switch t := v.(type) {
+				case string:
+					if n, err := strconv.ParseUint(t, 10, 64); err == nil {
+						viewsBySlug[list[i].Slug] = n
+					}
+				}
+			}
+		}
+		if vals, err := cache.RDB.MGet(c, lastKeys...).Result(); err == nil {
+			for i, v := range vals {
+				if v == nil || i >= len(list) {
+					continue
+				}
+				switch t := v.(type) {
+				case string:
+					if ms, err := strconv.ParseInt(t, 10, 64); err == nil && ms > 0 {
+						lastAccessBySlug[list[i].Slug] = time.UnixMilli(ms)
+					}
+				}
+			}
+		}
+	}
 	for _, s := range list {
 		uid := s.UserID
 		if uid == 0 {
 			uid = userIDByResume[s.ResumeID]
+		}
+		views := s.Views
+		if v, ok := viewsBySlug[s.Slug]; ok && v > 0 {
+			views = v
+		}
+		var lastAccessAt any = s.LastAccessAt
+		if t, ok := lastAccessBySlug[s.Slug]; ok {
+			tt := t
+			lastAccessAt = &tt
 		}
 		items = append(items, gin.H{
 			"id":        s.ID,
@@ -115,6 +161,10 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 			"url":       "/#/public/" + s.Slug,
 			"apiUrl":    "/public/resumes/" + s.Slug,
 			"isPublic":  s.IsPublic,
+			"hasPassword":  s.PasswordHash != "",
+			"expiresAt":    s.ExpiresAt,
+			"views":        views,
+			"lastAccessAt": lastAccessAt,
 			"createdAt": s.CreatedAt,
 		})
 	}

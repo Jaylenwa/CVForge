@@ -21,7 +21,7 @@ export const Dashboard: React.FC = () => {
   const [activeMenu, setActiveMenu] = useState<number | string | null>(null);
   const [renamingId, setRenamingId] = useState<number | string | null>(null);
   const [tempTitle, setTempTitle] = useState('');
-  const [shareModal, setShareModal] = useState<{ open: boolean; url: string; slug: string }>({ open: false, url: '', slug: '' });
+  const [shareModal, setShareModal] = useState<{ open: boolean; url: string; slug: string; resumeId: number | string; isPublic: boolean; hasPassword: boolean; password: string; clearPassword: boolean; expiresAt: string; views: number; lastAccessAt: string; saving: boolean }>({ open: false, url: '', slug: '', resumeId: '', isPublic: true, hasPassword: false, password: '', clearPassword: false, expiresAt: '', views: 0, lastAccessAt: '', saving: false });
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -134,13 +134,35 @@ export const Dashboard: React.FC = () => {
         }
         const data = await r.json();
         const uiUrl = `${window.location.origin}${window.location.pathname}#${AppRoute.Public.replace(':slug', data.slug)}`;
-        setShareModal({ open: true, url: uiUrl, slug: data.slug });
+        setShareModal(prev => ({ ...prev, open: true, url: uiUrl, slug: data.slug, resumeId, password: '', clearPassword: false }));
       } catch (err) {
         showToast(t('editor.share.failed'), 'error');
       } finally {
         setActiveMenu(null);
       }
   };
+
+  useEffect(() => {
+    (async () => {
+      if (!shareModal.open || !shareModal.resumeId) return;
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      try {
+        const r = await fetch(`${API_BASE}/resumes/${shareModal.resumeId}/share`, { headers: { Authorization: `Bearer ${token}` } });
+        if (!r.ok) return;
+        const data = await r.json();
+        const expiresAt = data?.expiresAt ? String(data.expiresAt) : '';
+        setShareModal(prev => ({
+          ...prev,
+          isPublic: !!data?.isPublic,
+          hasPassword: !!data?.hasPassword,
+          expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
+          views: Number.isFinite(data?.views) ? Number(data.views) : 0,
+          lastAccessAt: data?.lastAccessAt ? new Date(String(data.lastAccessAt)).toLocaleString() : ''
+        }));
+      } catch {}
+    })();
+  }, [shareModal.open, shareModal.resumeId]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[calc(100vh-4rem)]">
@@ -293,6 +315,94 @@ export const Dashboard: React.FC = () => {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-[13px] font-bold text-slate-700 ml-1">{t('share.settings.public')}</label>
+              <input
+                type="checkbox"
+                checked={shareModal.isPublic}
+                onChange={(e) => setShareModal(prev => ({ ...prev, isPublic: e.target.checked }))}
+                className="h-4 w-4"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-slate-700 ml-1">{t('share.settings.password')}</label>
+              <input
+                type="password"
+                value={shareModal.password}
+                onChange={(e) => setShareModal(prev => ({ ...prev, password: e.target.value, clearPassword: false }))}
+                placeholder={shareModal.hasPassword ? t('share.settings.passwordHintHas') : t('share.settings.passwordHint')}
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white"
+              />
+              {shareModal.hasPassword && (
+                <label className="flex items-center gap-2 text-sm text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={shareModal.clearPassword}
+                    onChange={(e) => setShareModal(prev => ({ ...prev, clearPassword: e.target.checked, password: e.target.checked ? '' : prev.password }))}
+                    className="h-4 w-4"
+                  />
+                  {t('share.settings.passwordClear')}
+                </label>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-[13px] font-bold text-slate-700 ml-1">{t('share.settings.expiresAt')}</label>
+              <input
+                type="datetime-local"
+                value={shareModal.expiresAt}
+                onChange={(e) => setShareModal(prev => ({ ...prev, expiresAt: e.target.value }))}
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white"
+              />
+            </div>
+            <div className="flex items-center justify-between text-sm text-slate-600">
+              <div>{t('share.settings.views')}: {shareModal.views}</div>
+              <div>{t('share.settings.lastAccessAt')}: {shareModal.lastAccessAt || '-'}</div>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                onClick={async () => {
+                  const token = localStorage.getItem('token');
+                  if (!token || !shareModal.resumeId) return;
+                  setShareModal(prev => ({ ...prev, saving: true }));
+                  try {
+                    const body: any = { isPublic: shareModal.isPublic, expiresAt: shareModal.expiresAt ? new Date(shareModal.expiresAt).toISOString() : '' };
+                    if (shareModal.clearPassword) body.password = '';
+                    else if (shareModal.password) body.password = shareModal.password;
+                    const r = await fetch(`${API_BASE}/resumes/${shareModal.resumeId}/share`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                      body: JSON.stringify(body)
+                    });
+                    if (!r.ok) throw new Error('save failed');
+                    showToast(t('share.settings.saved'), 'success');
+                    const rr = await fetch(`${API_BASE}/resumes/${shareModal.resumeId}/share`, { headers: { Authorization: `Bearer ${token}` } });
+                    if (rr.ok) {
+                      const data = await rr.json();
+                      const expiresAt = data?.expiresAt ? String(data.expiresAt) : '';
+                      setShareModal(prev => ({
+                        ...prev,
+                        isPublic: !!data?.isPublic,
+                        hasPassword: !!data?.hasPassword,
+                        password: '',
+                        clearPassword: false,
+                        expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
+                        views: Number.isFinite(data?.views) ? Number(data.views) : prev.views,
+                        lastAccessAt: data?.lastAccessAt ? new Date(String(data.lastAccessAt)).toLocaleString() : prev.lastAccessAt
+                      }));
+                    }
+                  } catch {
+                    showToast(t('share.settings.saveFailed'), 'error');
+                  } finally {
+                    setShareModal(prev => ({ ...prev, saving: false }));
+                  }
+                }}
+                disabled={shareModal.saving}
+              >
+                {t('share.settings.save')}
+              </Button>
             </div>
           </div>
           <div className="-mx-6 px-6 mt-2 pt-4 border-t bg-slate-50 flex items-center justify-between">

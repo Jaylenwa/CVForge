@@ -17,6 +17,7 @@ const (
 	RedisKeyOAuthOTT           RedisKey = "oauth:ott:%s"
 	RedisKeyTemplatesListAll   RedisKey = "templates:list:all"
 	RedisKeyViews              RedisKey = "views:%s"
+	RedisKeyShareLastAccess    RedisKey = "share:last_access:%s"
 	RedisKeyPublicResume       RedisKey = "public:resume:%s"
 	RedisKeyCircuitBreaker     RedisKey = "cb:%s"
 	RedisKeyCircuitBreakerFail RedisKey = "cb:%s:fail"

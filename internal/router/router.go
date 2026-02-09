@@ -77,7 +77,10 @@ func Init() *gin.Engine {
 
 	shareH := share.NewHandler()
 	g.POST("/resumes/:id/publish", shareH.PublishResume)
+	g.GET("/resumes/:id/share", shareH.GetSettings)
+	g.PATCH("/resumes/:id/share", shareH.UpdateSettings)
 	api.GET("/public/resumes/:slug", shareH.GetPublic)
+	api.POST("/public/resumes/:slug/auth", middleware.RateLimit(10, time.Minute), shareH.AuthPublic)
 
 	userH := user.NewHandler()
 	g.GET("/users/me", userH.Me)

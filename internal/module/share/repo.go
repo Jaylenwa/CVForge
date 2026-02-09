@@ -30,6 +30,12 @@ func (r *Repo) FindPublicBySlug(slug string) (ShareLink, error) {
 	return sl, err
 }
 
+func (r *Repo) FindBySlug(slug string) (ShareLink, error) {
+	var sl ShareLink
+	err := r.db.Where("slug = ?", slug).First(&sl).Error
+	return sl, err
+}
+
 func (r *Repo) Create(sl *ShareLink) error {
 	return r.db.Create(sl).Error
 }
