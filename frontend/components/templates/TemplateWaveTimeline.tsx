@@ -11,7 +11,6 @@ const ScallopEdge: React.FC = () => {
   const radius = 12;
   const gap = 10;
   const diameter = radius * 2;
-  const step = diameter + gap;
   const count = 64;
   return (
     <div className="absolute left-0 right-0 bottom-0 pointer-events-none" style={{ height: `${radius}px` }} aria-hidden="true">

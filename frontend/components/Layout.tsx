@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FileText, Grid, Menu, X, Star, Globe, User as UserIcon, LogOut, Settings } from 'lucide-react';
+import { FileText, Grid, Menu, X, Star, Globe, LogOut, Settings } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Avatar } from './ui/Avatar';
 import { AppRoute } from '../types';

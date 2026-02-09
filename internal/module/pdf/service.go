@@ -60,11 +60,6 @@ func (s *Service) tryMarkConsumed(ctx context.Context, key string) bool {
 	return cache.RDB.SetNX(ctx, key, "1", 10*time.Minute).Val()
 }
 
-func (s *Service) scheduleDelete(ctx context.Context, jobID string) {
-	time.Sleep(5 * time.Second)
-	s.deleteJobFile(ctx, jobID)
-}
-
 func (s *Service) deleteJobFile(ctx context.Context, jobID string) {
 	resultURL := cache.RDB.Get(ctx, jobKey(jobID)+":result").Val()
 	if resultURL == "" {

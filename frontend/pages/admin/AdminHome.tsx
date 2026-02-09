@@ -1,25 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { getAdminStats, AdminStats } from '../../services/adminService';
 import { Users, FileText, LayoutGrid, Eye } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { useToast } from '../../components/ui/Toast';
 
 export const AdminHome: React.FC = () => {
   const { t } = useLanguage();
-  const { showToast } = useToast();
   const [stats, setStats] = useState<AdminStats | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const reload = async () => {
-    setLoading(true);
-    try {
-      const s = await getAdminStats(14);
-      setStats(s);
-    } finally {
-      setLoading(false);
-    }
+    const s = await getAdminStats(14);
+    setStats(s);
   };
 
   useEffect(() => { reload(); }, []);

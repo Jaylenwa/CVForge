@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle, Cpu, FileCheck, Share2, Briefcase, GraduationCap, PenTool, Code } from 'lucide-react';
+import { ArrowRight, CheckCircle, Cpu, FileCheck, Share2, Briefcase, PenTool, Code } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { AppRoute, ResumeData } from '../types';
 // 后端数据来源

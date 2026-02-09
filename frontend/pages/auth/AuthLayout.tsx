@@ -11,14 +11,9 @@ interface AuthLayoutProps {
 }
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ 
-  children, 
-  image = "https://images.unsplash.com/photo-1586281380349-632531db7ed4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
-  quote,
-  author
+  children
 }) => {
   const { t, language, setLanguage } = useLanguage();
-  const quoteText = quote ?? t('auth.quote');
-  const authorText = author ?? t('auth.quoteAuthor');
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-8 sm:p-12 lg:p-16 relative">
       <div className="absolute top-6 left-6">

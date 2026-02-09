@@ -11,7 +11,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
   const getSectionTitle = useSectionTitle();
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const color = getAccentColor(data, '#1f4a5b');
-  const { spacingMode, lineHeight, contentGapClass, headerSpaceClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
+  const { spacingMode, lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
   const hexToRgb = React.useCallback((hex: string): { r: number; g: number; b: number } | null => {
     const raw = String(hex || '').trim().replace(/^#/, '');

@@ -37,7 +37,7 @@ export const ExamScoreTable: React.FC<ExamScoreTableProps> = ({
   const blocks: ExamSubjectScore[][] = chunk<ExamSubjectScore>(normalized, maxCols);
 
   return (
-    <div className="w-full border border-slate-200 rounded-md overflow-hidden bg-white">
+    <div className="w-full border border-slate-200 rounded-md overflow-hidden bg-white" style={{ borderColor: color }}>
       <div className="grid grid-cols-2">
         <div className="px-4 py-3 border-b border-r border-slate-200">
           <div className="text-xs text-slate-500 mb-1">{schoolLabel}</div>

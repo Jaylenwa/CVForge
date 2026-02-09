@@ -36,14 +36,7 @@ func (h *Handler) ListTemplates(c *gin.Context) {
 	}
 	out := make([]TemplateLibraryItemDTO, 0, len(items))
 	for _, it := range items {
-		out = append(out, TemplateLibraryItemDTO{
-			TemplateExternalID: it.TemplateExternalID,
-			Name:               it.Name,
-			UsageCount:         it.UsageCount,
-			GlobalUsageCount:   it.GlobalUsageCount,
-			PresetID:           it.PresetID,
-			RoleID:             it.RoleID,
-		})
+		out = append(out, TemplateLibraryItemDTO(it))
 	}
 	c.JSON(http.StatusOK, gin.H{"items": out})
 }

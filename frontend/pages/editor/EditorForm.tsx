@@ -4,7 +4,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType } from '../../types';
 import { Button } from '../../components/ui/Button';
-import { polishText, generateSummary } from '../../services/geminiService';
+import { polishText } from '../../services/geminiService';
 import { API_BASE } from '../../config';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
@@ -262,22 +262,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     updateItem(sectionId, itemId, 'description', improved);
     setIsAiLoading(false);
   };
-
-  const handleAiSummary = async () => {
-     setIsAiLoading(true);
-     // Find relevant skills for context
-     const skillsSection = data.sections.find(s => s.type === ResumeSectionType.Skills);
-    const skills = skillsSection?.items.map(i => i.description).join(', ') || 'General';
-     
-    const summary = await generateSummary(personal?.Job || '', skills);
-     
-     // Update summary section
-     const summarySection = data.sections.find(s => s.type === ResumeSectionType.Summary);
-     if (summarySection && summarySection.items.length > 0) {
-         updateItem(summarySection.id, summarySection.items[0].id, 'description', summary);
-     }
-     setIsAiLoading(false);
-  }
 
   const getLabels = (type: ResumeSectionType) => {
     return {

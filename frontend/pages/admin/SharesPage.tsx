@@ -18,16 +18,14 @@ export const SharesPage: React.FC = () => {
   const confirm = useConfirm();
   const { t } = useLanguage();
 
-  const [loading, setLoading] = useState(false);
   const load = async () => {
-    setLoading(true);
     try {
       const resp = await listShares({ page: String(page), pageSize: String(pageSize), slug: keyword });
       setItems(resp.items);
       setTotal(resp.total);
     } catch {
       showToast(t('admin.msg.loadSharesFailed'), 'error');
-    } finally { setLoading(false); }
+    }
   };
   useEffect(() => { load(); }, [page, pageSize]);
 

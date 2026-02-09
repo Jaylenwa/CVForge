@@ -19,9 +19,7 @@ export const UsersPage: React.FC = () => {
   const { showToast } = useToast();
   const { t } = useLanguage();
 
-  const [loading, setLoading] = useState(false);
   const load = async () => {
-    setLoading(true);
     try {
       const params: Record<string, string> = { page: String(page), pageSize: String(pageSize), email: keyword, name: keyword };
       if (statusFilter !== 'all') params.isActive = statusFilter;
@@ -30,7 +28,7 @@ export const UsersPage: React.FC = () => {
       setTotal(resp.total);
     } catch {
       showToast(t('admin.msg.loadUsersFailed'), 'error');
-    } finally { setLoading(false); }
+    }
   };
   useEffect(() => { load(); }, [page, pageSize, statusFilter]);
 

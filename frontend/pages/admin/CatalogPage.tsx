@@ -34,7 +34,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
 
   const [formKind, setFormKind] = useState<FormKind>('category');
   const [q, setQ] = useState('');
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
@@ -84,7 +83,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
   };
 
   const load = async () => {
-    setLoading(true);
     try {
       const cats = await adminListJobCategories({ page: '1', pageSize: '1000' });
       setAllCategories(cats.items || []);
@@ -92,8 +90,6 @@ export const CatalogPage: React.FC<CatalogPageProps> = ({ embedded }) => {
       setAllRoles(rs.items || []);
     } catch {
       showToast(t('admin.msg.loadFailed'), 'error');
-    } finally {
-      setLoading(false);
     }
   };
 

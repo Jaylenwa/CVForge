@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { User, Lock, Bell, Globe, Camera, Save } from 'lucide-react';
+import { User, Lock, Camera, Save } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { API_BASE } from '../config';
 import { useLanguage } from '../contexts/LanguageContext';

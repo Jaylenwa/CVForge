@@ -13,19 +13,6 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
   const color = getAccentColor(data, '#2563eb');
   const { spacingMode, lineHeight, contentGapClass, listTightClass, listMediumClass } = getSpacingTokens(styles);
 
-  const hexToRgb = React.useCallback((hex: string): { r: number; g: number; b: number } | null => {
-    const raw = String(hex || '').trim().replace(/^#/, '');
-    const normalized = raw.length === 3 ? raw.split('').map(c => c + c).join('') : raw;
-    if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return null;
-    const num = parseInt(normalized, 16);
-    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
-  }, []);
-
-  const gradientColor = React.useMemo(() => {
-    const rgb = hexToRgb(color) || { r: 37, g: 99, b: 235 };
-    return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.18)`;
-  }, [color, hexToRgb]);
-
   const normalizedAge = React.useMemo(() => {
     const raw = String(personal?.Age || '').trim();
     if (!raw) return '';

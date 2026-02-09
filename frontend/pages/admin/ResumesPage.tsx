@@ -9,11 +9,9 @@ import { Input, Select } from '../../components/ui/Form';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { LanguageProvider } from '../../contexts/LanguageContext';
 import { Search, Eye, Trash2, Globe } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { AppRoute } from '../../types';
 
 export const ResumesPage: React.FC = () => {
-  const navigate = useNavigate();
   const [items, setItems] = useState<AdminResume[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -25,14 +23,12 @@ export const ResumesPage: React.FC = () => {
   const { showToast } = useToast();
   const { t } = useLanguage();
 
-  const [loading, setLoading] = useState(false);
   const thumbnailWidth = 40;
   const thumbnailScale = thumbnailWidth / (210 * (96 / 25.4));
 
   
 
   const load = async () => {
-    setLoading(true);
     try {
       const resp = await listResumes({ page: String(page), pageSize: String(pageSize), title: keyword });
       setItems(resp.items);
@@ -41,7 +37,7 @@ export const ResumesPage: React.FC = () => {
       setHasNext(!!resp.hasNext && page < (resp.totalPages || Math.ceil(resp.total / resp.pageSize)));
     } catch {
       showToast(t('admin.msg.loadResumesFailed'), 'error');
-    } finally { setLoading(false); }
+    }
   };
   useEffect(() => { load(); }, [page, pageSize]);
 

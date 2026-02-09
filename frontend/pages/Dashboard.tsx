@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, MoreVertical, Plus, Clock, Copy, Trash2, Edit2, Share2 } from 'lucide-react';
+import { MoreVertical, Plus, Clock, Copy, Trash2, Edit2, Share2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { AppRoute, ResumeData } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';

@@ -89,23 +89,6 @@ export const TemplateMintTimeline: React.FC<{ data: ResumeData; styles: any; dis
   const sectionsOrdered = React.useMemo(() => {
     return getOrderedVisibleSections(data.sections || []);
   }, [data.sections]);
-
-  const hasMeaningfulContent = (item: any, type: ResumeSectionType) => {
-    if (!item) return false;
-    if (type === ResumeSectionType.Skills) {
-      return !!(item.description && String(item.description).trim());
-    }
-    return !!(
-      (item.title && String(item.title).trim()) ||
-      (item.subtitle && String(item.subtitle).trim()) ||
-      (item.major && String(item.major).trim()) ||
-      (item.degree && String(item.degree).trim()) ||
-      (item.description && String(item.description).trim()) ||
-      (item.timeStart && String(item.timeStart).trim()) ||
-      (item.timeEnd && String(item.timeEnd).trim()) ||
-      item.today
-    );
-  };
   const headerPaddingClassName = spacingMode === 'compact' ? 'px-10 pt-6 pb-5' : spacingMode === 'spacious' ? 'px-10 pt-10 pb-7' : 'px-10 pt-8 pb-6';
   const headerRowGapClassName = spacingMode === 'compact' ? 'gap-5' : spacingMode === 'spacious' ? 'gap-8' : 'gap-6';
   const headerJobMarginTopClassName = spacingMode === 'compact' ? 'mt-1' : spacingMode === 'spacious' ? 'mt-3' : 'mt-2';

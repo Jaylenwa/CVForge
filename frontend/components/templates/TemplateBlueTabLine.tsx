@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, BookOpen, Briefcase, GraduationCap, Heart, Layers, Mail, MapPin, Phone, User, Wrench } from 'lucide-react';
+import { Award, BookOpen, Briefcase, GraduationCap, Heart, Layers, Mail, Phone, User, Wrench } from 'lucide-react';
 import { ResumeData, ResumeSectionType } from '../../types';
 import { useSectionTitle } from '../../hooks/useSectionTitle';
 import { useLanguage } from '../../contexts/LanguageContext';

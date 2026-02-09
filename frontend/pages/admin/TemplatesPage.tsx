@@ -17,13 +17,12 @@ import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Checkbox, Input, Label, Select, Textarea } from '../../components/ui/Form';
-import { MultiSelect } from '../../components/ui/MultiSelect';
+import { Checkbox, Input, Label, Select } from '../../components/ui/Form';
 import { DataTable } from '../../components/ui/DataTable';
 import { TableCard } from '../../components/ui/TableCard';
 import { ResumeArtboard } from '../editor/ResumePreview';
 import { applyTemplateDefaultsToResumeData } from '../../utils/template-defaults';
-import { AlertCircle, AlignLeft, Check, CheckCircle2, Copy, FileJson, FileText, Layers, LayoutGrid, Minimize2, Search, Trash2 } from 'lucide-react';
+import { AlertCircle, AlignLeft, Check, CheckCircle2, Copy, FileJson, FileText, LayoutGrid, Minimize2, Search, Trash2 } from 'lucide-react';
 import { AppRoute } from '../../types';
 import { motion } from 'framer-motion';
 
@@ -210,15 +209,12 @@ export const TemplatesPage: React.FC = () => {
   });
   const [saving, setSaving] = useState(false);
 
-  const [loading, setLoading] = useState(false);
-
   const mmToPx = 96 / 25.4;
   const a4w = 210 * mmToPx;
   const thumbnailWidth = 40;
   const thumbnailScale = thumbnailWidth / a4w;
 
   const load = async () => {
-    setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/templates`);
       const data = await res.json();
@@ -231,8 +227,6 @@ export const TemplatesPage: React.FC = () => {
       setItems(mapped);
     } catch {
       showToast(t('admin.msg.loadTemplatesFailed'), 'error');
-    } finally {
-      setLoading(false);
     }
   };
   useEffect(() => {
@@ -372,7 +366,6 @@ export const TemplatesPage: React.FC = () => {
   const [catalogPageSize, setCatalogPageSize] = useState(20);
   const [catalogTotal, setCatalogTotal] = useState(0);
   const [catalogQ, setCatalogQ] = useState('');
-  const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogSaving, setCatalogSaving] = useState(false);
   const [catalogShowForm, setCatalogShowForm] = useState(false);
   const [catalogEditingId, setCatalogEditingId] = useState<number | null>(null);
@@ -380,7 +373,6 @@ export const TemplatesPage: React.FC = () => {
 
   const [allRoles, setAllRoles] = useState<AdminJobRole[]>([]);
   const [allPresets, setAllPresets] = useState<AdminContentPreset[]>([]);
-  const [allTemplates, setAllTemplates] = useState<Array<{ id: string; name: string }>>([]);
 
   const defaultPreviewPresetId = useMemo(() => {
     const normalize = (raw: string) => (String(raw || '').trim().toLowerCase() === 'en' ? 'en' : 'zh');
@@ -480,16 +472,6 @@ export const TemplatesPage: React.FC = () => {
     for (const r of allRoles) m.set(r.id, String(r.name || '').trim());
     return m;
   }, [allRoles]);
-  const presetNameById = useMemo(() => {
-    const m = new Map<number, string>();
-    for (const p of allPresets) m.set(p.ID, p.Name);
-    return m;
-  }, [allPresets]);
-  const templateNameById = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const tp of allTemplates) m.set(tp.id, tp.name);
-    return m;
-  }, [allTemplates]);
 
   const TextCell: React.FC<{ text?: string; className?: string }> = ({ text, className }) => {
     const v = (text || '').trim();
@@ -578,17 +560,6 @@ export const TemplatesPage: React.FC = () => {
       }
       setAllPresets(collected);
     } catch {}
-    try {
-      const res = await fetch(`${API_BASE}/templates`);
-      const data = await res.json();
-      const tpls = (data.items || []).map((x: any) => {
-        const names = (x.Names || x.names || {}) as Record<string, string>;
-        const id = x.ExternalID || x.id;
-        const name = pickName(names, String(language || '')) || String(id || '');
-        return { id, name };
-      });
-      setAllTemplates(tpls);
-    } catch {}
   };
 
   useEffect(() => {
@@ -597,7 +568,6 @@ export const TemplatesPage: React.FC = () => {
 
   const loadCatalog = async () => {
     if (tab === 'templates') return;
-    setCatalogLoading(true);
     try {
       const resp = await adminListContentPresets({
         page: String(catalogPage),
@@ -609,8 +579,6 @@ export const TemplatesPage: React.FC = () => {
       setCatalogTotal(resp.total || 0);
     } catch {
       showToast(t('admin.msg.loadFailed'), 'error');
-    } finally {
-      setCatalogLoading(false);
     }
   };
 

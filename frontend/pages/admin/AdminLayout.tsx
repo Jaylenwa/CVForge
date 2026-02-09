@@ -1,12 +1,11 @@
 import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { AppRoute } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { BarChart3, Settings, Users, FileText, LayoutGrid, Share, ChevronRight, Globe, Home } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
   const { t, language, setLanguage } = useLanguage();
-  const navigate = useNavigate();
 
   const menu = [
     { to: AppRoute.Admin, label: t('admin.menu.dashboard'), icon: <BarChart3 size={18} />, end: true },

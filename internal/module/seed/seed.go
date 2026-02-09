@@ -454,21 +454,3 @@ func RunCLI(args []string) int {
 		return 2
 	}
 }
-
-func loadTemplateItemsFromFilePath(path string) ([]tplmod.SeedTemplateItem, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("read templates file: %w", err)
-	}
-	var wrapper struct {
-		Templates []tplmod.SeedTemplateItem `json:"Templates"`
-	}
-	if err := json.Unmarshal(b, &wrapper); err == nil && len(wrapper.Templates) > 0 {
-		return wrapper.Templates, nil
-	}
-	var arr []tplmod.SeedTemplateItem
-	if err := json.Unmarshal(b, &arr); err == nil {
-		return arr, nil
-	}
-	return nil, fmt.Errorf("invalid templates json")
-}
