@@ -254,10 +254,12 @@ export const Home: React.FC = () => {
                         )
                       }
                       onPreview={() =>
-                        window.open(
-                          `${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${template.templateExternalId}`,
-                          '_blank'
-                        )
+                        (() => {
+                          const qs = new URLSearchParams();
+                          qs.set('template', String(template.templateExternalId || ''));
+                          if (template.presetId) qs.set('presetId', String(template.presetId));
+                          window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?${qs.toString()}`, '_blank');
+                        })()
                       }
                     />
                 ))}

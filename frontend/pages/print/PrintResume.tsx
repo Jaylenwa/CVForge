@@ -29,13 +29,54 @@ export const PrintResume: React.FC = () => {
 
       resolveSeed().then((seed: any) => {
         if (cancelled) return;
-        if (!seed) {
-          setData(null);
-          return;
-        }
-        const demo: ResumeData = applyTemplateDefaultsToResumeData({ ...(seed as any), templateId: template } as ResumeData);
+        const normalize = (raw: string): 'en' | 'zh' => (String(raw || '').trim().toLowerCase() === 'en' ? 'en' : 'zh');
+        const baseLang = normalize(String((seed as any)?.language || language || ''));
+        const fallback: ResumeData = applyTemplateDefaultsToResumeData({
+          id: 'preview',
+          title: baseLang === 'en' ? 'Resume' : '我的简历',
+          templateId: template,
+          lastModified: Date.now(),
+          language: baseLang,
+          Personal: {
+            FullName: baseLang === 'en' ? 'Alex Chen' : '陈小明',
+            Email: 'alex@example.com',
+            Phone: baseLang === 'en' ? '+1 555 0100' : '13800000000',
+            City: baseLang === 'en' ? 'Shanghai' : '上海',
+            Job: baseLang === 'en' ? 'Software Engineer' : '软件工程师',
+          },
+          Theme: {},
+          sections: [
+            {
+              id: 'summary',
+              type: 'summary' as any,
+              title: baseLang === 'en' ? 'Summary' : '个人总结',
+              isVisible: true,
+              items: [{ id: 's1', description: baseLang === 'en' ? 'A concise summary goes here.' : '这里是一段简短的个人简介。' }],
+            },
+            {
+              id: 'exp',
+              type: 'experience' as any,
+              title: baseLang === 'en' ? 'Experience' : '工作经历',
+              isVisible: true,
+              items: [
+                {
+                  id: 'e1',
+                  title: baseLang === 'en' ? 'Company A' : '公司 A',
+                  subtitle: baseLang === 'en' ? 'Software Engineer' : '软件工程师',
+                  timeStart: '2023-01',
+                  timeEnd: '2024-12',
+                  description: baseLang === 'en' ? 'Built features and improved performance.' : '负责功能开发与性能优化。',
+                },
+              ],
+            },
+          ],
+        });
+        const demo: ResumeData = seed
+          ? applyTemplateDefaultsToResumeData({ ...(seed as any), templateId: template } as ResumeData)
+          : fallback;
         setData(demo);
-        setLanguage(demo.language);
+        const nextLang = normalize(String((demo as any)?.language || baseLang));
+        setLanguage(nextLang);
       });
 
       return () => { cancelled = true; };

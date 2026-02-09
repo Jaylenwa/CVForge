@@ -22,6 +22,7 @@ import { MultiSelect } from '../../components/ui/MultiSelect';
 import { DataTable } from '../../components/ui/DataTable';
 import { TableCard } from '../../components/ui/TableCard';
 import { ResumeArtboard } from '../editor/ResumePreview';
+import { applyTemplateDefaultsToResumeData } from '../../utils/template-defaults';
 import { AlertCircle, AlignLeft, Check, CheckCircle2, Copy, FileJson, FileText, Layers, LayoutGrid, Minimize2, Search, Trash2 } from 'lucide-react';
 import { AppRoute } from '../../types';
 import { motion } from 'framer-motion';
@@ -304,8 +305,12 @@ export const TemplatesPage: React.FC = () => {
     }
   };
 
-  const openPreview = (id: string) => {
-    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?template=${id}`, '_blank');
+  const openPreview = (id: string, presetId?: string) => {
+    const qs = new URLSearchParams();
+    qs.set('template', id);
+    const pid = String(presetId || '').trim();
+    if (pid) qs.set('presetId', pid);
+    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Print}?${qs.toString()}`, '_blank');
   };
 
   const tabs = useMemo(
@@ -362,21 +367,6 @@ export const TemplatesPage: React.FC = () => {
     };
   }, [updateTabIndicator]);
 
-  const Thumbnail: React.FC<{ templateId: string }> = ({ templateId }) => {
-    return (
-      <div className="w-10 h-12 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border border-slate-200 relative">
-        <ResumeArtboard
-          data={{ id: 'preview', title: '', templateId, lastModified: Date.now(), language: 'zh', Personal: {}, Theme: {}, sections: [] } as any}
-          scale={thumbnailScale}
-          disableShadow
-          style={{ margin: 0 }}
-          className="absolute top-0 left-0"
-          showPageHint={false}
-        />
-      </div>
-    );
-  };
-
   const [presets, setPresets] = useState<AdminContentPreset[]>([]);
   const [catalogPage, setCatalogPage] = useState(1);
   const [catalogPageSize, setCatalogPageSize] = useState(20);
@@ -391,6 +381,99 @@ export const TemplatesPage: React.FC = () => {
   const [allRoles, setAllRoles] = useState<AdminJobRole[]>([]);
   const [allPresets, setAllPresets] = useState<AdminContentPreset[]>([]);
   const [allTemplates, setAllTemplates] = useState<Array<{ id: string; name: string }>>([]);
+
+  const defaultPreviewPresetId = useMemo(() => {
+    const normalize = (raw: string) => (String(raw || '').trim().toLowerCase() === 'en' ? 'en' : 'zh');
+    const targetLang = normalize(String(language || ''));
+    const active = allPresets.filter((p) => !!p.IsActive);
+    const picked =
+      active.find((p) => normalize(String(p.Language || '')) === targetLang) ||
+      active[0] ||
+      allPresets[0];
+    return picked?.ID ? String(picked.ID) : '';
+  }, [allPresets, language]);
+
+  const thumbnailSeed = useMemo(() => {
+    const normalize = (raw: string) => (String(raw || '').trim().toLowerCase() === 'en' ? 'en' : 'zh');
+    const targetLang = normalize(String(language || ''));
+    const active = allPresets.filter((p) => !!p.IsActive);
+    const picked =
+      active.find((p) => normalize(String(p.Language || '')) === targetLang) ||
+      active[0] ||
+      allPresets[0];
+
+    const raw = String(picked?.DataJSON || '').trim();
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') return parsed as any;
+      } catch {}
+    }
+
+    const isEn = targetLang === 'en';
+    return {
+      title: isEn ? 'Resume' : '我的简历',
+      language: isEn ? 'en' : 'zh',
+      Personal: {
+        FullName: isEn ? 'Alex Chen' : '陈小明',
+        Email: 'alex@example.com',
+        Phone: isEn ? '+1 555 0100' : '13800000000',
+        City: isEn ? 'Shanghai' : '上海',
+        Job: isEn ? 'Software Engineer' : '软件工程师',
+      },
+      Theme: {},
+      sections: [
+        {
+          id: 'summary',
+          type: 'summary',
+          title: isEn ? 'Summary' : '个人总结',
+          isVisible: true,
+          items: [{ id: 's1', description: isEn ? 'A concise summary goes here.' : '这里是一段简短的个人简介。' }],
+        },
+        {
+          id: 'exp',
+          type: 'experience',
+          title: isEn ? 'Experience' : '工作经历',
+          isVisible: true,
+          items: [
+            {
+              id: 'e1',
+              title: isEn ? 'Company A' : '公司 A',
+              subtitle: isEn ? 'Software Engineer' : '软件工程师',
+              timeStart: '2023-01',
+              timeEnd: '2024-12',
+              description: isEn ? 'Built features and improved performance.' : '负责功能开发与性能优化。',
+            },
+          ],
+        },
+      ],
+    };
+  }, [allPresets, language]);
+
+  const Thumbnail: React.FC<{ templateId: string }> = ({ templateId }) => {
+    const previewData = applyTemplateDefaultsToResumeData({
+      id: 'preview',
+      title: String((thumbnailSeed as any)?.title || ''),
+      templateId,
+      lastModified: Date.now(),
+      language: (String((thumbnailSeed as any)?.language || '').trim().toLowerCase() === 'en' ? 'en' : 'zh') as any,
+      Personal: ((thumbnailSeed as any)?.Personal && typeof (thumbnailSeed as any).Personal === 'object') ? (thumbnailSeed as any).Personal : {},
+      Theme: ((thumbnailSeed as any)?.Theme && typeof (thumbnailSeed as any).Theme === 'object') ? (thumbnailSeed as any).Theme : {},
+      sections: Array.isArray((thumbnailSeed as any)?.sections) ? (thumbnailSeed as any).sections : [],
+    } as any);
+    return (
+      <div className="w-10 h-12 bg-slate-100 rounded-md overflow-hidden flex-shrink-0 border border-slate-200 relative">
+        <ResumeArtboard
+          data={previewData as any}
+          scale={thumbnailScale}
+          disableShadow
+          style={{ margin: 0 }}
+          className="absolute top-0 left-0"
+          showPageHint={false}
+        />
+      </div>
+    );
+  };
 
   const roleNameById = useMemo(() => {
     const m = new Map<number, string>();
@@ -835,7 +918,7 @@ export const TemplatesPage: React.FC = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-right">
                             <div className="flex items-center justify-end gap-1">
                               <button
-                                onClick={() => openPreview(r.id)}
+                                onClick={() => openPreview(r.id, defaultPreviewPresetId)}
                                 className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
                                 title={t('admin.actions.preview')}
                               >
