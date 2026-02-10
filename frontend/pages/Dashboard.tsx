@@ -13,7 +13,7 @@ import { useToast } from '../components/ui/Toast';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { showToast } = useToast();
   
   
@@ -29,6 +29,7 @@ export const Dashboard: React.FC = () => {
     isPublic: boolean;
     hasPassword: boolean;
     passwordEnabled: boolean;
+    passwordEditable: boolean;
     password: string;
     expiryEnabled: boolean;
     expiresAt: string;
@@ -44,6 +45,7 @@ export const Dashboard: React.FC = () => {
     isPublic: true,
     hasPassword: false,
     passwordEnabled: false,
+    passwordEditable: true,
     password: '',
     expiryEnabled: false,
     expiresAt: '',
@@ -156,6 +158,52 @@ export const Dashboard: React.FC = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
       try {
+        const mapToUiUrl = (slug: string, pageUrl?: string) => {
+          const rel = String(pageUrl || '').trim();
+          if (rel.includes('#')) {
+            const hash = rel.slice(rel.indexOf('#'));
+            return `${window.location.origin}${window.location.pathname}${hash}`;
+          }
+          return `${window.location.origin}${window.location.pathname}#${AppRoute.Public.replace(':slug', slug)}`;
+        };
+
+        const openWithShareData = (slug: string, sdata: any) => {
+          const exp = sdata?.expiresAt ? String(sdata.expiresAt) : '';
+          const initialIsPublic = sdata?.isPublic === undefined ? true : !!sdata?.isPublic;
+          const initialHasPassword = sdata?.hasPassword === undefined ? false : !!sdata?.hasPassword;
+          const initialExpiresAt = exp ? new Date(exp).toISOString().slice(0, 16) : '';
+          const initialPassword = typeof sdata?.password === 'string' ? sdata.password : '';
+          const uiUrl = mapToUiUrl(slug, sdata?.pageUrl);
+          setShareModal(prev => ({
+            ...prev,
+            open: true,
+            url: uiUrl,
+            slug,
+            resumeId,
+            isPublic: initialIsPublic,
+            hasPassword: initialHasPassword,
+            password: initialHasPassword ? initialPassword : '',
+            passwordEnabled: !!initialIsPublic && !!initialHasPassword,
+            passwordEditable: !initialHasPassword,
+            expiryEnabled: !!initialIsPublic && !!initialExpiresAt,
+            expiresAt: initialExpiresAt,
+            views: Number.isFinite(sdata?.views) ? Number(sdata.views) : 0,
+            lastAccessAt: sdata?.lastAccessAt ? new Date(String(sdata.lastAccessAt)).toLocaleString() : ''
+          }));
+          const openSettings = !initialIsPublic || initialHasPassword || !!initialExpiresAt;
+          setShareSettingsOpen(!!openSettings);
+        };
+
+        const rs = await fetch(`${API_BASE}/resumes/${resumeId}/share`, { headers: { Authorization: `Bearer ${token}` } });
+        if (rs.ok) {
+          const sdata = await rs.json();
+          const slug = String(sdata?.slug || '').trim();
+          if (slug) {
+            openWithShareData(slug, sdata);
+            return;
+          }
+        }
+
         const r = await fetch(`${API_BASE}/resumes/${resumeId}/publish`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
         if (!r.ok) {
           let txt = '';
@@ -163,18 +211,7 @@ export const Dashboard: React.FC = () => {
           throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
         }
         const data = await r.json();
-        const uiUrl = `${window.location.origin}${window.location.pathname}#${AppRoute.Public.replace(':slug', data.slug)}`;
-        setShareModal(prev => ({
-          ...prev,
-          open: true,
-          url: uiUrl,
-          slug: data.slug,
-          resumeId,
-          password: '',
-          passwordEnabled: false,
-          expiryEnabled: false,
-          expiresAt: '',
-        }));
+        openWithShareData(String(data?.slug || ''), data);
       } catch (err) {
         showToast(t('editor.share.failed'), 'error');
       } finally {
@@ -192,17 +229,21 @@ export const Dashboard: React.FC = () => {
         if (!r.ok) return;
         const data = await r.json();
         const expiresAt = data?.expiresAt ? String(data.expiresAt) : '';
+        const password = typeof data?.password === 'string' ? data.password : '';
         setShareModal(prev => ({
           ...prev,
           isPublic: !!data?.isPublic,
           hasPassword: !!data?.hasPassword,
-          passwordEnabled: false,
-          password: '',
-          expiryEnabled: false,
+          passwordEnabled: !!data?.isPublic && !!data?.hasPassword,
+          passwordEditable: !data?.hasPassword,
+          password: data?.hasPassword ? password : '',
+          expiryEnabled: !!data?.isPublic && !!expiresAt,
           expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
           views: Number.isFinite(data?.views) ? Number(data.views) : 0,
           lastAccessAt: data?.lastAccessAt ? new Date(String(data.lastAccessAt)).toLocaleString() : ''
         }));
+        const shouldOpenSettings = !data?.isPublic || !!data?.hasPassword || !!expiresAt;
+        setShareSettingsOpen(!!shouldOpenSettings);
       } catch {}
     })();
   }, [shareModal.open, shareModal.resumeId]);
@@ -210,7 +251,6 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     if (!shareModal.open) return;
     setCopied(false);
-    setShareSettingsOpen(false);
   }, [shareModal.open]);
 
   const saveShareSettings = async (override?: Partial<ShareModalState>, options?: { silent?: boolean }) => {
@@ -223,8 +263,19 @@ export const Dashboard: React.FC = () => {
     try {
       const body: any = { isPublic: nextState.isPublic };
       if (nextState.isPublic) {
-        if (nextState.expiryEnabled && nextState.expiresAt) body.expiresAt = new Date(nextState.expiresAt).toISOString();
-        if (nextState.passwordEnabled && nextState.password) body.password = nextState.password;
+        if (nextState.expiryEnabled && nextState.expiresAt) {
+          body.expiresAt = new Date(nextState.expiresAt).toISOString();
+        } else if (!nextState.expiryEnabled && !!shareModal.expiresAt) {
+          body.expiresAt = '';
+        }
+
+        if (nextState.passwordEnabled) {
+          if ((!nextState.hasPassword || nextState.passwordEditable) && nextState.password) {
+            body.password = nextState.password;
+          }
+        } else if (nextState.hasPassword) {
+          body.password = '';
+        }
       }
 
       const r = await fetch(`${API_BASE}/resumes/${nextState.resumeId}/share`, {
@@ -239,13 +290,15 @@ export const Dashboard: React.FC = () => {
       if (rr.ok) {
         const data = await rr.json();
         const expiresAt = data?.expiresAt ? String(data.expiresAt) : '';
+        const password = typeof data?.password === 'string' ? data.password : '';
         setShareModal(prev => ({
           ...prev,
           isPublic: !!data?.isPublic,
           hasPassword: !!data?.hasPassword,
-          passwordEnabled: false,
-          password: '',
-          expiryEnabled: false,
+          passwordEnabled: !!data?.isPublic && !!data?.hasPassword,
+          passwordEditable: !data?.hasPassword,
+          password: data?.hasPassword ? password : '',
+          expiryEnabled: !!data?.isPublic && !!expiresAt,
           expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
           views: Number.isFinite(data?.views) ? Number(data.views) : prev.views,
           lastAccessAt: data?.lastAccessAt ? new Date(String(data.lastAccessAt)).toLocaleString() : prev.lastAccessAt
@@ -400,20 +453,17 @@ export const Dashboard: React.FC = () => {
 
         <div className="px-8 pb-6">
           <div className="space-y-4">
-            <div className="relative group">
+            <div className="relative">
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 block px-1">
                 {t('editor.share.link')}
               </label>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 relative flex items-center">
+              <div className="flex items-center gap-2">
+                <div className="flex-[1.2] relative flex items-center">
                   <input
                     readOnly
                     value={shareModal.url}
-                    className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 pr-12 text-slate-700 text-sm font-medium focus:outline-none focus:border-indigo-500 transition-all cursor-default"
+                    className="w-full h-12 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 pr-4 text-slate-700 text-sm font-medium focus:outline-none focus:border-indigo-500 transition-all cursor-default"
                   />
-                  <div className="absolute right-4 text-slate-300 group-hover:text-indigo-400 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                  </div>
                 </div>
                 <button
                   onClick={async () => {
@@ -426,7 +476,7 @@ export const Dashboard: React.FC = () => {
                       showToast(t('common.copyFailed'), 'error');
                     }
                   }}
-                  className={`relative flex items-center justify-center gap-2 h-12 px-6 min-w-[128px] rounded-2xl text-sm font-bold text-white transition-all transform active:scale-95 shadow-lg ${
+                  className={`relative flex items-center justify-center gap-2 h-12 px-3 min-w-[96px] rounded-2xl text-sm font-bold text-white transition-all transform active:scale-95 shadow-lg ${
                     copied
                       ? 'bg-emerald-500 shadow-emerald-200'
                       : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200'
@@ -458,11 +508,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <button
                 onClick={() => setShareSettingsOpen(p => {
-                  const next = !p;
-                  if (next) {
-                    setShareModal(prev => ({ ...prev, passwordEnabled: false, expiryEnabled: false }));
-                  }
-                  return next;
+                  return !p;
                 })}
                 className={`text-sm font-semibold flex items-center gap-1.5 transition-colors ${shareSettingsOpen ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
               >
@@ -486,8 +532,7 @@ export const Dashboard: React.FC = () => {
               <button
                 onClick={async () => {
                   if (!shareModal.isPublic) return;
-                  setShareSettingsOpen(false);
-                  setShareModal(prev => ({ ...prev, isPublic: false, passwordEnabled: false, expiryEnabled: false, password: '' }));
+                  setShareModal(prev => ({ ...prev, isPublic: false, passwordEnabled: false, passwordEditable: true, expiryEnabled: false, password: '' }));
                   await saveShareSettings({ isPublic: false }, { silent: true });
                 }}
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${!shareModal.isPublic ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
@@ -505,38 +550,46 @@ export const Dashboard: React.FC = () => {
                   <span className="text-sm font-bold text-slate-700">{t('share.settings.password')}</span>
                   <span className="text-xs text-slate-500">{t('share.settings.passwordDesc')}</span>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={shareModal.passwordEnabled}
-                    onChange={(e) => {
-                      const enabled = e.target.checked;
-                      setShareModal(prev => ({
-                        ...prev,
-                        passwordEnabled: enabled,
-                        password: enabled ? prev.password : '',
-                      }));
-                    }}
-                  />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
+                <div className="flex items-center gap-3">
+                  {shareModal.passwordEnabled && shareModal.hasPassword && !shareModal.passwordEditable ? (
+                    <button
+                      type="button"
+                      onClick={() => setShareModal(prev => ({ ...prev, passwordEditable: true, password: '' }))}
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                    >
+                      {t('share.settings.resetPassword')}
+                    </button>
+                  ) : null}
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={shareModal.passwordEnabled}
+                      onChange={(e) => {
+                        const enabled = e.target.checked;
+                        setShareModal(prev => ({
+                          ...prev,
+                          passwordEnabled: enabled,
+                          passwordEditable: enabled ? !prev.hasPassword : true,
+                          password: enabled ? prev.password : ''
+                        }));
+                      }}
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
+                </div>
               </div>
 
               {shareModal.passwordEnabled && (
                 <div className="animate-in slide-in-from-top-2 duration-200">
                   <input
-                    type="password"
+                    type="text"
                     value={shareModal.password}
                     onChange={(e) => setShareModal(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder={shareModal.hasPassword ? t('share.settings.passwordHintHas') : t('share.settings.passwordHint')}
-                    className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    disabled={shareModal.hasPassword && !shareModal.passwordEditable}
+                    placeholder={shareModal.passwordEditable ? (shareModal.hasPassword ? t('share.settings.passwordHintHas') : t('share.settings.passwordHint')) : ''}
+                    className={`w-full border border-slate-200 rounded-xl py-3 px-4 text-sm transition-all ${shareModal.hasPassword && !shareModal.passwordEditable ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500'}`}
                   />
-                  {shareModal.hasPassword && !shareModal.password ? (
-                    <div className="mt-2 text-xs text-slate-500">
-                      {t('share.settings.keepPasswordHint')}
-                    </div>
-                  ) : null}
                 </div>
               )}
 

@@ -153,19 +153,19 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 			lastAccessAt = &tt
 		}
 		items = append(items, gin.H{
-			"id":        s.ID,
-			"resumeId":  s.ResumeID,
-			"userId":    uid,
-			"userName":  nameMap[uid],
-			"slug":      s.Slug,
-			"url":       "/#/public/" + s.Slug,
-			"apiUrl":    "/public/resumes/" + s.Slug,
-			"isPublic":  s.IsPublic,
-			"hasPassword":  s.PasswordHash != "",
+			"id":           s.ID,
+			"resumeId":     s.ResumeID,
+			"userId":       uid,
+			"userName":     nameMap[uid],
+			"slug":         s.Slug,
+			"url":          "/#/public/" + s.Slug,
+			"apiUrl":       "/public/resumes/" + s.Slug,
+			"isPublic":     s.IsPublic,
+			"hasPassword":  s.Password != "",
 			"expiresAt":    s.ExpiresAt,
 			"views":        views,
 			"lastAccessAt": lastAccessAt,
-			"createdAt": s.CreatedAt,
+			"createdAt":    s.CreatedAt,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"items": items, "page": page, "pageSize": size, "total": total})

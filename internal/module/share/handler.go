@@ -147,7 +147,8 @@ func (h *Handler) GetSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"slug":         sl.Slug,
 		"isPublic":     sl.IsPublic,
-		"hasPassword":  sl.PasswordHash != "",
+		"hasPassword":  sl.Password != "",
+		"password":     sl.Password,
 		"expiresAt":    sl.ExpiresAt,
 		"views":        views,
 		"lastAccessAt": lastAccessAt,
@@ -208,7 +209,8 @@ func (h *Handler) UpdateSettings(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"slug":        sl.Slug,
 		"isPublic":    sl.IsPublic,
-		"hasPassword": sl.PasswordHash != "",
+		"hasPassword": sl.Password != "",
+		"password":    sl.Password,
 		"expiresAt":   sl.ExpiresAt,
 	})
 }

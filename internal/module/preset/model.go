@@ -1,11 +1,11 @@
 package preset
 
 type ContentPreset struct {
-	ID       uint
+	ID         uint
 	ExternalID string
-	Name     string
-	Language string
-	RoleID   uint
-	DataJSON string
-	IsActive bool
+	Name       string
+	Language   string
+	RoleID     uint
+	DataJSON   string
+	IsActive   bool
 }

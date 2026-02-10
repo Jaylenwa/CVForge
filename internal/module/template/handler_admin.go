@@ -21,8 +21,8 @@ func NewAdminHandler() *AdminHandler {
 
 func (h *AdminHandler) AdminCreate(c *gin.Context) {
 	var body struct {
-		ExternalID string `json:"externalId"`
-		Name       string `json:"name"`
+		ExternalID string            `json:"externalId"`
+		Name       string            `json:"name"`
 		Names      map[string]string `json:"names"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil || strings.TrimSpace(body.ExternalID) == "" {

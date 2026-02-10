@@ -2,6 +2,7 @@ package share
 
 import (
 	"context"
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,7 +14,6 @@ import (
 	resmod "openresume/internal/module/resume"
 
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -63,7 +63,7 @@ func (s *Service) GetPublicPayload(slug string, shareToken string) (string, int,
 	if sl.ExpiresAt != nil && time.Now().After(*sl.ExpiresAt) {
 		return "", 410, ErrExpired
 	}
-	if sl.PasswordHash != "" {
+	if sl.Password != "" {
 		if err := validateShareToken(shareToken, sl); err != nil {
 			return "", 401, ErrPasswordRequired
 		}
@@ -129,10 +129,10 @@ func (s *Service) AuthenticatePublic(slug string, password string) (string, int,
 	if sl.ExpiresAt != nil && time.Now().After(*sl.ExpiresAt) {
 		return "", 410, ErrExpired
 	}
-	if sl.PasswordHash == "" {
+	if sl.Password == "" {
 		return "", 400, errors.New("password not set")
 	}
-	if bcrypt.CompareHashAndPassword([]byte(sl.PasswordHash), []byte(password)) != nil {
+	if subtle.ConstantTimeCompare([]byte(sl.Password), []byte(password)) != 1 {
 		return "", 401, errors.New("invalid password")
 	}
 	tok, err := issueShareToken(sl, 30*time.Minute)
@@ -143,9 +143,9 @@ func (s *Service) AuthenticatePublic(slug string, password string) (string, int,
 }
 
 type UpdateSettingsInput struct {
-	IsPublic  *bool
-	Password  *string
-	ExpiresAt *time.Time
+	IsPublic       *bool
+	Password       *string
+	ExpiresAt      *time.Time
 	ClearExpiresAt bool
 }
 
@@ -202,13 +202,9 @@ func (s *Service) UpdateSettingsForUser(uid uint, resumeID uint, in UpdateSettin
 	if in.Password != nil {
 		p := *in.Password
 		if p == "" {
-			sl.PasswordHash = ""
+			sl.Password = ""
 		} else {
-			b, err := bcrypt.GenerateFromPassword([]byte(p), bcrypt.DefaultCost)
-			if err != nil {
-				return ShareLink{}, 500, err
-			}
-			sl.PasswordHash = string(b)
+			sl.Password = p
 		}
 		changed = true
 	}

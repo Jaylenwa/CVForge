@@ -46,7 +46,7 @@ func shareTokenVersion(sl ShareLink) string {
 	if sl.ExpiresAt != nil {
 		exp = fmt.Sprintf("%d", sl.ExpiresAt.Unix())
 	}
-	raw := strings.Join([]string{sl.Slug, sl.PasswordHash, exp}, "|")
+	raw := strings.Join([]string{sl.Slug, sl.Password, exp}, "|")
 	sum := sha256.Sum256([]byte(raw))
 	return hex.EncodeToString(sum[:8])
 }
