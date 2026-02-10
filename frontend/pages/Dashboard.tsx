@@ -219,8 +219,8 @@ export const Dashboard: React.FC = () => {
                      </div>
                 </div>
                 <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                        <div className="flex-1 mr-2">
+                    <div className="flex justify-between items-start mb-2 min-w-0">
+                        <div className="flex-1 mr-2 min-w-0">
                             {renamingId === resume.id ? (
                                 <div className="flex items-center" onClick={e => e.stopPropagation()}>
                                     <input 
@@ -233,14 +233,19 @@ export const Dashboard: React.FC = () => {
                                     />
                                 </div>
                             ) : (
-                                <h3 className="font-semibold text-lg text-gray-900 truncate" title={resume.title}>{resume.title}</h3>
+                                <div className="relative group/title min-w-0">
+                                    <h3 className="block font-semibold text-lg text-gray-900 truncate" aria-label={resume.title}>{resume.title}</h3>
+                                    <div className="pointer-events-none absolute left-0 bottom-full mb-1 z-50 w-max max-w-[320px] rounded-md bg-gray-900 px-2 py-1 text-xs text-white opacity-0 group-hover/title:opacity-100">
+                                        <div className="whitespace-normal break-words">{resume.title}</div>
+                                    </div>
+                                </div>
                             )}
                             <p className="text-sm text-gray-500 mt-0.5 flex items-center">
                                 <Clock size={12} className="mr-1"/> {new Date(resume.lastModified).toLocaleDateString()}
                             </p>
                         </div>
                         
-                        <div className="relative">
+                        <div className="relative flex-shrink-0">
                             <button 
                                 onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === resume.id ? null : resume.id); }}
                                 className="p-1 rounded-full hover:bg-gray-100 text-gray-500 relative z-20"
