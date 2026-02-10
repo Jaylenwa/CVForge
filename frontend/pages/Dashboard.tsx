@@ -55,6 +55,14 @@ export const Dashboard: React.FC = () => {
   });
   const [copied, setCopied] = useState(false);
   const [shareSettingsOpen, setShareSettingsOpen] = useState(false);
+  type CachedPublicSettings = {
+    passwordEnabled: boolean;
+    passwordEditable: boolean;
+    password: string;
+    expiryEnabled: boolean;
+    expiresAt: string;
+  };
+  const [cachedPublicSettings, setCachedPublicSettings] = useState<CachedPublicSettings | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -174,6 +182,13 @@ export const Dashboard: React.FC = () => {
           const initialExpiresAt = exp ? new Date(exp).toISOString().slice(0, 16) : '';
           const initialPassword = typeof sdata?.password === 'string' ? sdata.password : '';
           const uiUrl = mapToUiUrl(slug, sdata?.pageUrl);
+          setCachedPublicSettings({
+            passwordEnabled: !!initialHasPassword,
+            passwordEditable: !initialHasPassword,
+            password: initialHasPassword ? initialPassword : '',
+            expiryEnabled: !!initialExpiresAt,
+            expiresAt: initialExpiresAt,
+          });
           setShareModal(prev => ({
             ...prev,
             open: true,
@@ -230,6 +245,13 @@ export const Dashboard: React.FC = () => {
         const data = await r.json();
         const expiresAt = data?.expiresAt ? String(data.expiresAt) : '';
         const password = typeof data?.password === 'string' ? data.password : '';
+        setCachedPublicSettings({
+          passwordEnabled: !!data?.hasPassword,
+          passwordEditable: !data?.hasPassword,
+          password: data?.hasPassword ? password : '',
+          expiryEnabled: !!expiresAt,
+          expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
+        });
         setShareModal(prev => ({
           ...prev,
           isPublic: !!data?.isPublic,
@@ -249,7 +271,10 @@ export const Dashboard: React.FC = () => {
   }, [shareModal.open, shareModal.resumeId]);
 
   useEffect(() => {
-    if (!shareModal.open) return;
+    if (!shareModal.open) {
+      setCachedPublicSettings(null);
+      return;
+    }
     setCopied(false);
   }, [shareModal.open]);
 
@@ -291,6 +316,13 @@ export const Dashboard: React.FC = () => {
         const data = await rr.json();
         const expiresAt = data?.expiresAt ? String(data.expiresAt) : '';
         const password = typeof data?.password === 'string' ? data.password : '';
+        setCachedPublicSettings({
+          passwordEnabled: !!data?.hasPassword,
+          passwordEditable: !data?.hasPassword,
+          password: data?.hasPassword ? password : '',
+          expiryEnabled: !!expiresAt,
+          expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
+        });
         setShareModal(prev => ({
           ...prev,
           isPublic: !!data?.isPublic,
@@ -523,7 +555,25 @@ export const Dashboard: React.FC = () => {
           <div className="px-8 border-t border-slate-100 pt-6 space-y-6">
             <div className="grid grid-cols-2 gap-3 p-1 bg-slate-50 rounded-2xl border border-slate-200">
               <button
-                onClick={() => setShareModal(prev => ({ ...prev, isPublic: true }))}
+                onClick={() => {
+                  if (shareModal.isPublic) return;
+                  const restore = cachedPublicSettings || {
+                    passwordEnabled: !!shareModal.hasPassword,
+                    passwordEditable: !shareModal.hasPassword,
+                    password: shareModal.password,
+                    expiryEnabled: !!shareModal.expiresAt,
+                    expiresAt: shareModal.expiresAt
+                  };
+                  setShareModal(prev => ({
+                    ...prev,
+                    isPublic: true,
+                    passwordEnabled: restore.passwordEnabled,
+                    passwordEditable: restore.passwordEditable,
+                    password: restore.password,
+                    expiryEnabled: restore.expiryEnabled,
+                    expiresAt: restore.expiresAt
+                  }));
+                }}
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${shareModal.isPublic ? 'bg-white shadow-sm text-slate-800' : 'text-slate-400 hover:text-slate-600'}`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
@@ -532,6 +582,13 @@ export const Dashboard: React.FC = () => {
               <button
                 onClick={async () => {
                   if (!shareModal.isPublic) return;
+                  setCachedPublicSettings({
+                    passwordEnabled: shareModal.passwordEnabled,
+                    passwordEditable: shareModal.passwordEditable,
+                    password: shareModal.password,
+                    expiryEnabled: shareModal.expiryEnabled,
+                    expiresAt: shareModal.expiresAt
+                  });
                   setShareModal(prev => ({ ...prev, isPublic: false, passwordEnabled: false, passwordEditable: true, expiryEnabled: false, password: '' }));
                   await saveShareSettings({ isPublic: false }, { silent: true });
                 }}
