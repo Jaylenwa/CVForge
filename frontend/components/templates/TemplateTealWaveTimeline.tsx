@@ -227,7 +227,7 @@ export const TemplateTealWaveTimeline: React.FC<{ data: ResumeData; styles: any;
 
               {headerIntentParts.length > 0 ? (
                 <div className={headerIntentClassName}>
-                  <span className="text-white/80 whitespace-nowrap">{(data.language || 'zh') === 'zh' ? '求职意向' : t('editor.fields.jobApplication')}：</span>
+                  <span className="text-white/80 whitespace-nowrap">{t('editor.fields.jobApplication')}：</span>
                   {headerIntentParts.map((p, idx) => (
                     <React.Fragment key={`${p}-${idx}`}>
                       <span className="ml-2 font-semibold whitespace-nowrap">{p}</span>

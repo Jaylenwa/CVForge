@@ -145,7 +145,7 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
     return renderTightList(items);
   };
 
-  const basicInfoTitle = (data.language || 'zh') === 'zh' ? '基本信息' : 'Basic Information';
+  const basicInfoTitle = t('template.basicInfo');
   const headerSpaceClassName = spacingMode === 'compact' ? 'pt-4 pb-3 mb-3' : spacingMode === 'spacious' ? 'pt-8 pb-6 mb-6' : 'pt-6 pb-4 mb-4';
   const headerRowGapClassName = spacingMode === 'compact' ? 'gap-6' : spacingMode === 'spacious' ? 'gap-10' : 'gap-8';
   const headerJobMarginTopClassName = spacingMode === 'compact' ? 'mt-1' : spacingMode === 'spacious' ? 'mt-3' : 'mt-2';

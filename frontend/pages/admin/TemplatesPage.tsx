@@ -262,11 +262,11 @@ export const TemplatesPage: React.FC = () => {
       en: String(form.names?.en || '').trim(),
     };
     if (!editingId && !externalId) {
-      showToast(language === 'zh' ? '请填写 External ID' : 'Please fill External ID', 'error');
+      showToast(t('admin.validation.externalIdRequired'), 'error');
       return;
     }
     if (!names.zh && !names.en) {
-      showToast(language === 'zh' ? '请至少填写中文名或英文名' : 'Please provide Chinese or English name', 'error');
+      showToast(t('admin.validation.nameRequired'), 'error');
       return;
     }
     setSaving(true);
@@ -964,19 +964,19 @@ export const TemplatesPage: React.FC = () => {
                         </div>
                       )}
                       <div>
-                        <Label htmlFor="tpl-name-zh">{language === 'zh' ? '中文名' : 'Chinese Name'}</Label>
+                        <Label htmlFor="tpl-name-zh">{t('admin.form.nameZh')}</Label>
                         <Input
                           id="tpl-name-zh"
-                          placeholder={language === 'zh' ? '中文名' : 'Chinese Name'}
+                          placeholder={t('admin.form.nameZh')}
                           value={form.names.zh}
                           onChange={(e) => setForm({ ...form, names: { ...form.names, zh: e.target.value } })}
                         />
                       </div>
                       <div>
-                        <Label htmlFor="tpl-name-en">{language === 'zh' ? '英文名' : 'English Name'}</Label>
+                        <Label htmlFor="tpl-name-en">{t('admin.form.nameEn')}</Label>
                         <Input
                           id="tpl-name-en"
-                          placeholder={language === 'zh' ? '英文名' : 'English Name'}
+                          placeholder={t('admin.form.nameEn')}
                           value={form.names.en}
                           onChange={(e) => setForm({ ...form, names: { ...form.names, en: e.target.value } })}
                         />

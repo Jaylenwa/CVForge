@@ -11,9 +11,26 @@ interface ModalProps {
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   compact?: boolean;
+  hideHeader?: boolean;
+  closeOnBackdrop?: boolean;
+  overlayClassName?: string;
+  panelClassName?: string;
+  bodyClassName?: string;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md', compact }) => {
+export const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  compact,
+  hideHeader,
+  closeOnBackdrop,
+  overlayClassName,
+  panelClassName,
+  bodyClassName,
+}) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
@@ -46,6 +63,10 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
   const titleClass = compact ? 'text-base' : 'text-lg';
   const bodyClass = compact ? 'p-4' : 'p-6';
   const closeSize = compact ? 18 : 20;
+  const overlayBase = 'fixed inset-0 z-40';
+  const overlayCls = `${overlayBase} ${overlayClassName || 'bg-black bg-opacity-50'}`;
+  const panelCls = `bg-white rounded-lg shadow-xl w-full ${sizeClass} pointer-events-auto ${panelClassName || ''}`;
+  const resolvedBodyClass = bodyClassName || bodyClass;
 
   return ReactDOM.createPortal(
     <AnimatePresence>
@@ -55,7 +76,8 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className={overlayCls}
+            onClick={closeOnBackdrop ? onClose : undefined}
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <motion.div
@@ -64,23 +86,25 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 24, stiffness: 300 }}
-              className={`bg-white rounded-lg shadow-xl w-full ${sizeClass} pointer-events-auto`}
+              className={panelCls}
               role="dialog"
               aria-modal="true"
             >
-              <div className={`flex items-center justify-between border-b ${headerClass}`}>
-                <h3 className={`${titleClass} font-semibold text-gray-900`}>
-                  {title}
-                </h3>
-                <button
-                  onClick={onClose}
-                  className="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none"
-                  aria-label={t('common.close')}
-                >
-                  <X size={closeSize} />
-                </button>
-              </div>
-              <div className={bodyClass}>
+              {!hideHeader && (
+                <div className={`flex items-center justify-between border-b ${headerClass}`}>
+                  <h3 className={`${titleClass} font-semibold text-gray-900`}>
+                    {title}
+                  </h3>
+                  <button
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none"
+                    aria-label={t('common.close')}
+                  >
+                    <X size={closeSize} />
+                  </button>
+                </div>
+              )}
+              <div className={resolvedBodyClass}>
                 {children}
               </div>
             </motion.div>

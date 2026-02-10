@@ -152,9 +152,9 @@ export const TemplateBluePillRail: React.FC<{ data: ResumeData; styles: any; dis
     });
   }, [orderedSections]);
 
-  const basicInfoTitle = (data.language || 'zh') === 'zh' ? '基本信息' : 'Basic Information';
-  const headerMain = (data.language || 'zh') === 'zh' ? '个人简历' : 'Resume';
-  const headerEn = (data.language || 'zh') === 'zh' ? 'PERSONAL RESUME' : 'PERSONAL RESUME';
+  const basicInfoTitle = t('template.basicInfo');
+  const headerMain = t('template.personalResume');
+  const headerEn = 'PERSONAL RESUME';
   const basicInfoGridClassName =
     spacingMode === 'compact'
       ? 'grid grid-cols-2 gap-x-8 gap-y-2 text-slate-800'

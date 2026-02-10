@@ -182,7 +182,7 @@ export const TemplateBlueTabLine: React.FC<{ data: ResumeData; styles: any; disa
     return renderTightList(items);
   };
 
-  const headerName = String(personal?.FullName || '').trim() || ((data.language || 'zh') === 'zh' ? '简历' : 'Resume');
+  const headerName = String(personal?.FullName || '').trim() || t('common.resume');
 
   const renderable = React.useMemo(() => {
     return orderedSections.filter((section) => {
@@ -218,7 +218,7 @@ export const TemplateBlueTabLine: React.FC<{ data: ResumeData; styles: any; disa
 
             {intentParts.length > 0 ? (
               <div className={headerIntentClassName}>
-                <span className="text-slate-600 whitespace-nowrap">{(data.language || 'zh') === 'zh' ? '求职意向' : t('editor.fields.jobApplication')}：</span>
+                <span className="text-slate-600 whitespace-nowrap">{t('editor.fields.jobApplication')}：</span>
                 {intentParts.map((p, idx) => (
                   <React.Fragment key={`${p}-${idx}`}>
                     <span className="ml-2 font-semibold whitespace-nowrap">{p}</span>

@@ -149,7 +149,7 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
     return renderTightList(items);
   };
 
-  const title = String(personal?.FullName || '').trim() || ((data.language || 'zh') === 'zh' ? '简历' : 'Resume');
+  const title = String(personal?.FullName || '').trim() || t('common.resume');
   const headerPrimaryGridClassName =
     spacingMode === 'compact'
       ? 'mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-slate-800'
