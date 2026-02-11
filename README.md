@@ -100,6 +100,7 @@ System configuration keys (stored in DB; seeded from env on first run; editable 
 - `enable_email_verification`: Enable email verification during registration (default `false`)
 - SMTP: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_NAME`
 - WeChat OAuth: `WECHAT_APP_ID`, `WECHAT_APP_SECRET`, `WECHAT_REDIRECT_URI`, toggle `enabled_wechat_login`
+- WeChat MP QR login (follow to sign in): `WECHAT_MP_APP_ID`, `WECHAT_MP_APP_SECRET`, `WECHAT_MP_TOKEN` (optional `WECHAT_MP_AES_KEY`), toggle `enabled_wechat_mp_login`; callback URL is `GET/POST /api/v1/wechat/mp/callback` (must be publicly reachable over HTTPS)
 - GitHub OAuth: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`, toggle `enabled_github_login`
 - S3 storage: `S3_BUCKET`, `S3_REGION`, `S3_ENDPOINT`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, toggle `enabled_storage_s3`
 
@@ -129,6 +130,10 @@ export SMTP_FROM_NAME=""
 export WECHAT_APP_ID=""
 export WECHAT_APP_SECRET=""
 export WECHAT_REDIRECT_URI=""
+export WECHAT_MP_APP_ID=""
+export WECHAT_MP_APP_SECRET=""
+export WECHAT_MP_TOKEN=""
+export WECHAT_MP_AES_KEY=""
 export GITHUB_CLIENT_ID=""
 export GITHUB_CLIENT_SECRET=""
 export GITHUB_REDIRECT_URI=""

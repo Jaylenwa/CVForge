@@ -27,12 +27,17 @@ export const ConfigPage: React.FC = () => {
     const map: Record<string, string> = {
       enable_email_verification: 'admin.config.key.enableEmailVerification',
       enabled_wechat_login: 'admin.config.key.enableWeChatLogin',
+      enabled_wechat_mp_login: 'admin.config.key.enableWeChatMPLogin',
       enabled_github_login: 'admin.config.key.enableGithubLogin',
       wechat_app_id: 'admin.config.key.wechatAppId',
       wechat_appid: 'admin.config.key.wechatAppId',
       weChatAppID: 'admin.config.key.wechatAppId',
       wechat_app_secret: 'admin.config.key.wechatAppSecret',
       wechat_redirect_uri: 'admin.config.key.wechatRedirectUri',
+      wechat_mp_app_id: 'admin.config.key.wechatMPAppId',
+      wechat_mp_app_secret: 'admin.config.key.wechatMPAppSecret',
+      wechat_mp_token: 'admin.config.key.wechatMPToken',
+      wechat_mp_aes_key: 'admin.config.key.wechatMPAESKey',
       github_client_id: 'admin.config.key.githubClientId',
       github_clientid: 'admin.config.key.githubClientId',
       githubClientID: 'admin.config.key.githubClientId',
@@ -252,16 +257,60 @@ export const ConfigPage: React.FC = () => {
               }
               if (activeTab === 'OAuth') {
                 const wechatVal = (configs.find(c => c.key === 'enabled_wechat_login')?.value || 'false');
+                const wechatMPVal = (configs.find(c => c.key === 'enabled_wechat_mp_login')?.value || 'false');
                 const githubVal = (configs.find(c => c.key === 'enabled_github_login')?.value || 'false');
                 const wechatOn = wechatVal === 'true' || wechatVal === 'on';
+                const wechatMPOn = wechatMPVal === 'true' || wechatMPVal === 'on';
                 const githubOn = githubVal === 'true' || githubVal === 'on';
-                return items.filter(c => {
-                  if (c.key === 'enabled_wechat_login' || c.key === 'enabled_github_login') return true;
+                const isWeChatMPKey = (k: string) => k === 'enabled_wechat_mp_login' || k.startsWith('wechat_mp_') || k.includes('wechat_mp');
+                const isWeChatOAuthKey = (k: string) => (k.startsWith('wechat_') || k.includes('wechat')) && !isWeChatMPKey(k) && k !== 'enabled_wechat_login';
+                const isGithubKey = (k: string) => (k.startsWith('github_') || k.includes('github')) && k !== 'enabled_github_login';
+
+                const filtered = items.filter(c => {
+                  if (c.key === 'enabled_wechat_login' || c.key === 'enabled_wechat_mp_login' || c.key === 'enabled_github_login') return true;
                   if (c.key === 'oauth_allowed_origins') return true;
-                  if (c.key.startsWith('wechat_') || c.key.includes('wechat')) return wechatOn;
-                  if (c.key.startsWith('github_') || c.key.includes('github')) return githubOn;
+                  if (isWeChatMPKey(c.key)) return wechatMPOn;
+                  if (isWeChatOAuthKey(c.key)) return wechatOn;
+                  if (isGithubKey(c.key)) return githubOn;
                   return true;
                 });
+
+                const idx: Record<string, number> = {};
+                items.forEach((c, i) => { idx[c.key] = i; });
+                const groupRank = (k: string) => {
+                  if (k === 'enabled_wechat_login') return 0;
+                  if (isWeChatOAuthKey(k)) return 1;
+                  if (k === 'enabled_wechat_mp_login') return 2;
+                  if (isWeChatMPKey(k)) return 3;
+                  if (k === 'enabled_github_login') return 4;
+                  if (isGithubKey(k)) return 5;
+                  if (k === 'oauth_allowed_origins') return 6;
+                  return 7;
+                };
+                const fieldRank: Record<string, number> = {
+                  wechat_app_id: 0,
+                  wechat_app_secret: 1,
+                  wechat_redirect_uri: 2,
+                  wechat_mp_app_id: 0,
+                  wechat_mp_app_secret: 1,
+                  wechat_mp_token: 2,
+                  wechat_mp_aes_key: 3,
+                  github_client_id: 0,
+                  github_client_secret: 1,
+                  github_redirect_uri: 2,
+                };
+                return filtered
+                  .map((c) => ({ c, i: idx[c.key] ?? 9999 }))
+                  .sort((a, b) => {
+                    const ra = groupRank(a.c.key);
+                    const rb = groupRank(b.c.key);
+                    if (ra !== rb) return ra - rb;
+                    const fa = fieldRank[a.c.key];
+                    const fb = fieldRank[b.c.key];
+                    if (fa != null && fb != null && fa !== fb) return fa - fb;
+                    return a.i - b.i;
+                  })
+                  .map(x => x.c);
               }
               return items;
             })()).map(config => {
@@ -271,9 +320,12 @@ export const ConfigPage: React.FC = () => {
                 (activeTab === 'General' && config.key.startsWith('smtp_')) ||
                 (activeTab === 'OAuth' &&
                   config.key !== 'enabled_wechat_login' &&
+                  config.key !== 'enabled_wechat_mp_login' &&
                   config.key !== 'enabled_github_login' &&
                   config.key !== 'oauth_allowed_origins' &&
-                  (config.key.startsWith('wechat_') || config.key.includes('wechat') || config.key.startsWith('github_') || config.key.includes('github'))) ||
+                  ((config.key.startsWith('wechat_mp_') || config.key.includes('wechat_mp')) ||
+                    (config.key.startsWith('wechat_') || config.key.includes('wechat')) ||
+                    (config.key.startsWith('github_') || config.key.includes('github')))) ||
                 (activeTab === 'Storage' && config.key.startsWith('storage_s3_'));
               return (
                 <div key={config.key} className={`space-y-2 ${indent ? 'ml-8' : ''}`}>
