@@ -336,7 +336,7 @@ func (s *Service) FindOrCreateWeChatMPUser(ui weChatMPUserInfoResponse, openid s
 	}
 
 	if ui.UnionID != "" {
-		if err := database.DB.Where("provider_union_id <> '' AND provider_union_id = ? AND provider IN ?", ui.UnionID, []common.ProviderType{common.Wechat, common.WechatMP}).First(&oa).Error; err == nil {
+		if err := database.DB.Where("provider_union_id <> '' AND provider_union_id = ? AND provider = ?", ui.UnionID, common.WechatMP).First(&oa).Error; err == nil {
 			if err2 := database.DB.First(&user, oa.UserID).Error; err2 == nil {
 				return user, nil
 			}

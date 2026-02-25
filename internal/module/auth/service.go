@@ -31,10 +31,6 @@ func NewService() *Service {
 	return &Service{sysConfig: conf.NewService()}
 }
 
-func (s *Service) FeatureWeChatEnabled() bool {
-	return s.sysConfig.GetBool(string(common.ConfigKeyEnabledWechatLogin), true)
-}
-
 func (s *Service) FeatureGithubEnabled() bool {
 	return s.sysConfig.GetBool(string(common.ConfigKeyEnabledGithubLogin), true)
 }
@@ -191,116 +187,6 @@ func (s *Service) GlobalLogout(uid uint) error {
 		_ = cache.RDB.Set(context.Background(), common.RedisKeyUserTokenVersion.F(uid), "inc", time.Minute).Err()
 	}
 	return nil
-}
-
-type WechatTokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	ExpiresIn    int    `json:"expires_in"`
-	RefreshToken string `json:"refresh_token"`
-	OpenID       string `json:"openid"`
-	Scope        string `json:"scope"`
-	UnionID      string `json:"unionid"`
-	ErrCode      int    `json:"errcode"`
-	ErrMsg       string `json:"errmsg"`
-}
-type WechatUserInfo struct {
-	OpenID     string `json:"openid"`
-	Nickname   string `json:"nickname"`
-	HeadImgURL string `json:"headimgurl"`
-	UnionID    string `json:"unionid"`
-}
-
-func (s *Service) MakeWeChatLoginURL(state string) string {
-	appID := s.sysConfig.Get(string(common.ConfigKeyWeChatAppID))
-	redirectURI := s.sysConfig.Get(string(common.ConfigKeyWeChatRedirectURI))
-	if !s.sysConfig.GetBool(string(common.ConfigKeyEnabledWechatLogin), true) || appID == "" || redirectURI == "" {
-		return ""
-	}
-	params := url.Values{}
-	params.Set("appid", appID)
-	params.Set("redirect_uri", redirectURI)
-	params.Set("response_type", "code")
-	params.Set("scope", "snsapi_login")
-	params.Set("state", state)
-	return "https://open.weixin.qq.com/connect/qrconnect?" + params.Encode() + "#wechat_redirect"
-}
-
-func (s *Service) ExchangeCode(code string) (WechatTokenResponse, error) {
-	var out WechatTokenResponse
-	appID := s.sysConfig.Get(string(common.ConfigKeyWeChatAppID))
-	appSecret := s.sysConfig.Get(string(common.ConfigKeyWeChatAppSecret))
-
-	if appID == "" || appSecret == "" {
-		return out, http.ErrNotSupported
-	}
-	u := "https://api.weixin.qq.com/sns/oauth2/access_token?appid=" + url.QueryEscape(appID) +
-		"&secret=" + url.QueryEscape(appSecret) +
-		"&code=" + url.QueryEscape(code) +
-		"&grant_type=authorization_code"
-	resp, err := http.Get(u)
-	if err != nil {
-		return out, err
-	}
-	defer resp.Body.Close()
-	_ = json.NewDecoder(resp.Body).Decode(&out)
-	if out.ErrCode != 0 || out.OpenID == "" || out.AccessToken == "" {
-		return out, http.ErrHandlerTimeout
-	}
-	return out, nil
-}
-
-func (s *Service) FetchUserInfo(accessToken, openid string) (WechatUserInfo, error) {
-	var out WechatUserInfo
-	if accessToken == "" || openid == "" {
-		return out, http.ErrNotSupported
-	}
-	u := "https://api.weixin.qq.com/sns/userinfo?access_token=" + url.QueryEscape(accessToken) + "&openid=" + url.QueryEscape(openid)
-	resp, err := http.Get(u)
-	if err != nil {
-		return out, err
-	}
-	defer resp.Body.Close()
-	_ = json.NewDecoder(resp.Body).Decode(&out)
-	if out.OpenID == "" {
-		return out, http.ErrHandlerTimeout
-	}
-	return out, nil
-}
-
-func (s *Service) FindOrCreateWeChatUser(ui WechatUserInfo, tr WechatTokenResponse) (User, error) {
-	var user User
-	var oa OAuthAccount
-	q := database.DB.Where("provider = ? AND provider_union_id <> '' AND provider_union_id = ?", "wechat", ui.UnionID).First(&oa)
-	if ui.UnionID != "" && q.Error == nil {
-		if err := database.DB.First(&user, oa.UserID).Error; err == nil {
-			return user, nil
-		}
-	}
-	if err := database.DB.Where("provider = ? AND provider_open_id = ?", "wechat", tr.OpenID).First(&oa).Error; err == nil {
-		if err := database.DB.First(&user, oa.UserID).Error; err == nil {
-			return user, nil
-		}
-	}
-	user = User{
-		Name:      ui.Nickname,
-		AvatarURL: ui.HeadImgURL,
-		IsActive:  true,
-		Role:      s.initialRole(),
-	}
-	if err := database.DB.Create(&user).Error; err != nil {
-		return User{}, err
-	}
-	record := OAuthAccount{
-		UserID:          user.ID,
-		Provider:        common.Wechat,
-		ProviderOpenID:  tr.OpenID,
-		ProviderUnionID: ui.UnionID,
-	}
-	if b, e := json.Marshal(ui); e == nil {
-		record.RawProfileJSON = string(b)
-	}
-	_ = database.DB.Create(&record).Error
-	return user, nil
 }
 
 func (s *Service) SaveOAuthState(state string, data map[string]any) error {

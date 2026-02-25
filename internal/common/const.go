@@ -4,7 +4,6 @@ type ConfigKey string
 
 const (
 	ConfigKeyEnableEmailVerification ConfigKey = "enable_email_verification"
-	ConfigKeyEnabledWechatLogin      ConfigKey = "enabled_wechat_login"
 	ConfigKeyEnabledWechatMPLogin    ConfigKey = "enabled_wechat_mp_login"
 	ConfigKeyEnabledGithubLogin      ConfigKey = "enabled_github_login"
 	ConfigKeyEnabledPricingPage      ConfigKey = "enabled_pricing_page"
@@ -13,9 +12,6 @@ const (
 	ConfigKeySMTPUsername            ConfigKey = "smtp_username"
 	ConfigKeySMTPPassword            ConfigKey = "smtp_password"
 	ConfigKeySMTPFromName            ConfigKey = "smtp_from_name"
-	ConfigKeyWeChatAppID             ConfigKey = "wechat_app_id"
-	ConfigKeyWeChatAppSecret         ConfigKey = "wechat_app_secret"
-	ConfigKeyWeChatRedirectURI       ConfigKey = "wechat_redirect_uri"
 	ConfigKeyWeChatMPAppID           ConfigKey = "wechat_mp_app_id"
 	ConfigKeyWeChatMPAppSecret       ConfigKey = "wechat_mp_app_secret"
 	ConfigKeyWeChatMPToken           ConfigKey = "wechat_mp_token"
@@ -45,6 +41,5 @@ type ProviderType string
 
 const (
 	Github   ProviderType = "github"
-	Wechat   ProviderType = "wechat"
 	WechatMP ProviderType = "wechat_mp"
 )

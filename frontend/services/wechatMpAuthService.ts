@@ -17,7 +17,8 @@ export const createWeChatMPScene = async (): Promise<WeChatMPScene> => {
     headers: { 'Content-Type': 'application/json' }
   });
   if (!res.ok) {
-    throw new Error('Failed to create scene');
+    const msg = await safeReadError(res);
+    throw new Error(msg || 'Failed to create scene');
   }
   return res.json();
 };
@@ -25,7 +26,10 @@ export const createWeChatMPScene = async (): Promise<WeChatMPScene> => {
 export const getWeChatMPSceneStatus = async (scene: string): Promise<WeChatMPSceneStatus> => {
   const res = await fetch(`${API_BASE}/auth/wechat-mp/scene/${encodeURIComponent(scene)}/status`);
   if (res.status === 404) return { status: 'expired' };
-  if (!res.ok) throw new Error('Failed to fetch status');
+  if (!res.ok) {
+    const msg = await safeReadError(res);
+    throw new Error(msg || 'Failed to fetch status');
+  }
   return res.json();
 };
 
@@ -35,7 +39,21 @@ export const consumeOtt = async (ott: string): Promise<{ accessToken: string; re
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ott })
   });
-  if (!res.ok) throw new Error('Failed to consume ott');
+  if (!res.ok) {
+    const msg = await safeReadError(res);
+    throw new Error(msg || 'Failed to consume ott');
+  }
   const data = await res.json();
   return { accessToken: data.accessToken as string, refreshToken: data.refreshToken as string };
+};
+
+const safeReadError = async (res: Response): Promise<string> => {
+  try {
+    const data = (await res.json()) as any;
+    if (data && typeof data.error === 'string' && data.error.trim()) {
+      return data.error.trim();
+    }
+  } catch {
+  }
+  return '';
 };

@@ -10,11 +10,9 @@ export const getAuthConfig = async (): Promise<AuthConfig> => {
     console.error('Failed to fetch auth config:', error);
     return {
       enableEmailVerification: false,
-      enableWeChatLogin: true,
       enableWeChatMPLogin: false,
       enableGithubLogin: true,
       enablePricingPage: false,
-      weChatAppID: '',
       githubClientID: ''
     };
   }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Mail, Lock, Github, KeyRound, CheckCircle } from 'lucide-react';
+import { Mail, Lock, Github, KeyRound, CheckCircle, X } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { WeChatIcon } from '../../components/ui/WeChatIcon';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -19,7 +19,7 @@ type Props = { initialMode?: Mode };
 
 export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
   const { t } = useLanguage();
-  const { login, loginWithGithub, loginWithWeChat } = useAuth();
+  const { login, loginWithGithub } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [authConfig, setAuthConfig] = useState<AuthConfig | null>(null);
@@ -29,9 +29,7 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
   const shouldInitialAnimate = hasMountedRef.current;
   const mpPollRef = useRef<number | null>(null);
   const [mpOpen, setMpOpen] = useState(false);
-  const [mpScene, setMpScene] = useState('');
   const [mpQrUrl, setMpQrUrl] = useState('');
-  const [mpExpiresAt, setMpExpiresAt] = useState(0);
   const [mpError, setMpError] = useState('');
   const [mpExpired, setMpExpired] = useState(false);
 
@@ -124,24 +122,6 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
     }
   };
 
-  const handleWeChatLogin = async () => {
-    setLoginError('');
-    setLoginLoading(true);
-    try {
-      const success = await loginWithWeChat();
-      if (success) {
-        const from = (location.state as any)?.from?.pathname || AppRoute.Home;
-        navigate(from, { replace: true });
-      } else {
-        setLoginError(t('auth.error.general'));
-      }
-    } catch {
-      setLoginError(t('auth.error.general'));
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
   const stopMpPolling = () => {
     if (mpPollRef.current) {
       window.clearInterval(mpPollRef.current);
@@ -158,22 +138,22 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
     setMpError('');
     setMpExpired(false);
     stopMpPolling();
+    setMpQrUrl('');
+    setMpOpen(true);
     try {
       const data = await createWeChatMPScene();
       const expiresAt = Date.now() + Math.max(1, data.expiresIn) * 1000;
-      setMpScene(data.scene);
       setMpQrUrl(data.qrUrl);
-      setMpExpiresAt(expiresAt);
-      setMpOpen(true);
+      const scene = data.scene;
       mpPollRef.current = window.setInterval(async () => {
         try {
-          if (!data.scene) return;
+          if (!scene) return;
           if (Date.now() > expiresAt) {
             setMpExpired(true);
             stopMpPolling();
             return;
           }
-          const st = await getWeChatMPSceneStatus(data.scene);
+          const st = await getWeChatMPSceneStatus(scene);
           if (st.status === 'expired') {
             setMpExpired(true);
             stopMpPolling();
@@ -193,12 +173,15 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
             const from = (location.state as any)?.from?.pathname || AppRoute.Home;
             navigate(from, { replace: true });
           }
-        } catch {
-          setMpError(t('auth.error.general'));
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : '';
+          setMpError(msg || t('auth.error.general'));
         }
       }, 1200);
-    } catch {
-      setLoginError(t('auth.error.general'));
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      setMpError(msg || t('auth.error.general'));
+      setMpExpired(true);
     }
   };
 
@@ -358,7 +341,7 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
                 </Button>
               </div>
 
-              {(authConfig?.enableGithubLogin || authConfig?.enableWeChatLogin || authConfig?.enableWeChatMPLogin) && (
+              {(authConfig?.enableGithubLogin || authConfig?.enableWeChatMPLogin) && (
                 <div className="mt-6">
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
@@ -374,19 +357,6 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
                         <Button variant="outline" className="w-full flex justify-center items-center" onClick={handleGithubLogin} isLoading={loginLoading}>
                           <Github className="h-5 w-5 mr-2" />
                           {t('auth.provider.github')}
-                        </Button>
-                      </div>
-                    )}
-                    {authConfig?.enableWeChatLogin && (
-                      <div>
-                        <Button
-                          variant="outline"
-                          className="w-full flex justify-center items-center text-green-600 border-green-200 hover:bg-green-50"
-                          onClick={handleWeChatLogin}
-                          isLoading={loginLoading}
-                        >
-                          <WeChatIcon className="h-5 w-5 mr-2" />
-                          {t('auth.provider.wechat')}
                         </Button>
                       </div>
                     )}
@@ -544,33 +514,96 @@ export const Login: React.FC<Props> = ({ initialMode = 'login' }) => {
       <Modal
         isOpen={mpOpen}
         onClose={closeWeChatMPModal}
-        title={t('auth.wechatMP.title')}
-        size="sm"
+        hideHeader
+        size="md"
         closeOnBackdrop
       >
-        <div className="space-y-4">
-          <div className="text-sm text-gray-600">{t('auth.wechatMP.desc')}</div>
-          <div className="flex items-center justify-center">
-            {mpQrUrl ? (
-              <img src={mpQrUrl} alt="WeChat QR" className="w-56 h-56 rounded border border-gray-200" />
-            ) : (
-              <div className="w-56 h-56 rounded border border-gray-200 bg-gray-50" />
-            )}
+        <div className="px-2 pb-2">
+          <div className="relative pt-2">
+            <div className="text-center text-2xl font-semibold text-gray-900">{t('auth.wechatMP.title')}</div>
+            <button
+              type="button"
+              onClick={closeWeChatMPModal}
+              aria-label={t('common.close')}
+              className="absolute right-0 top-0 p-2 text-gray-400 hover:text-gray-600"
+            >
+              <X size={20} />
+            </button>
           </div>
-          {mpExpired && (
-            <div className="text-sm text-orange-600">{t('auth.wechatMP.expired')}</div>
-          )}
-          {mpError && (
-            <div className="text-sm text-red-600">{mpError}</div>
-          )}
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={closeWeChatMPModal}>
-              {t('auth.wechatMP.cancel')}
-            </Button>
-            <Button className="flex-1" onClick={openWeChatMPModal} disabled={!mpExpired}>
-              {t('auth.wechatMP.refresh')}
-            </Button>
+
+          <div className="mt-4 text-center text-sm text-gray-600">{t('auth.wechatMP.desc')}</div>
+
+          <div className="mt-4 flex items-center justify-center">
+            <div className="relative rounded-xl border border-gray-200 bg-white p-3">
+              {mpQrUrl ? (
+                <img src={mpQrUrl} alt="WeChat QR" className="h-64 w-64" />
+              ) : (
+                <div className="h-64 w-64 bg-gray-50" />
+              )}
+              {mpExpired && (
+                <button
+                  type="button"
+                  onClick={openWeChatMPModal}
+                  className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/80 text-sm font-medium text-blue-600"
+                >
+                  {t('auth.wechatMP.refresh')}
+                </button>
+              )}
+            </div>
           </div>
+
+          {mpError && <div className="mt-3 text-center text-sm text-red-600">{mpError}</div>}
+
+          <div className="mt-5 text-center text-sm text-gray-600">
+            {t('auth.wechatMP.noAccount')}{' '}
+            <button
+              type="button"
+              className="font-medium text-blue-600 hover:underline"
+              onClick={() => {
+                closeWeChatMPModal();
+                navigate(AppRoute.Register);
+              }}
+            >
+              {t('auth.wechatMP.toRegister')}
+            </button>
+          </div>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-3 text-gray-400">{t('auth.wechatMP.otherWays')}</span>
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-center gap-6">
+              <button
+                type="button"
+                onClick={closeWeChatMPModal}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50"
+                aria-label={t('auth.login')}
+              >
+                <Mail className="h-5 w-5" />
+              </button>
+              {authConfig?.enableGithubLogin && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeWeChatMPModal();
+                    void handleGithubLogin();
+                  }}
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50"
+                  aria-label={t('auth.provider.github')}
+                >
+                  <Github className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 text-center text-xs text-gray-400">{t('auth.wechatMP.terms')}</div>
         </div>
       </Modal>
     </AuthLayout>

@@ -14,7 +14,6 @@ interface AuthContextType {
   isAdmin: boolean;
   login: (email: string) => Promise<void>;
   logout: () => void;
-  loginWithWeChat: () => Promise<boolean>;
   loginWithGithub: () => Promise<boolean>;
 }
 
@@ -177,15 +176,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
   };
 
-  const loginWithWeChat = async () => {
-    return loginWithOAuth(
-      `${API_BASE}/auth/wechat/redirect?client=popup&origin=${encodeURIComponent(window.location.origin)}`,
-      'wechat_oauth',
-      480,
-      640
-    );
-  };
-
   const loginWithGithub = async () => {
     return loginWithOAuth(
       `${API_BASE}/auth/github/redirect?client=popup&origin=${encodeURIComponent(window.location.origin)}`,
@@ -196,7 +186,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, isAdmin, login, logout, loginWithWeChat, loginWithGithub }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, isAdmin, login, logout, loginWithGithub }}>
       {children}
     </AuthContext.Provider>
   );

@@ -38,11 +38,6 @@ func (s *Service) EnsureDefaults() error {
 		{string(common.ConfigKeySMTPUsername), os.Getenv("SMTP_USERNAME"), "SMTP username", "string"},
 		{string(common.ConfigKeySMTPPassword), os.Getenv("SMTP_PASSWORD"), "SMTP password", "string"},
 		{string(common.ConfigKeySMTPFromName), os.Getenv("SMTP_FROM_NAME"), "SMTP from name", "string"},
-		// WeChat OAuth
-		{string(common.ConfigKeyEnabledWechatLogin), "false", "Enable WeChat login", "bool"},
-		{string(common.ConfigKeyWeChatAppID), os.Getenv("WECHAT_APP_ID"), "WeChat AppID", "string"},
-		{string(common.ConfigKeyWeChatAppSecret), os.Getenv("WECHAT_APP_SECRET"), "WeChat App Secret", "string"},
-		{string(common.ConfigKeyWeChatRedirectURI), os.Getenv("WECHAT_REDIRECT_URI"), "WeChat Redirect URI", "string"},
 		// WeChat Official Account (MP) QR login
 		{string(common.ConfigKeyEnabledWechatMPLogin), "false", "Enable WeChat MP QR login", "bool"},
 		{string(common.ConfigKeyWeChatMPAppID), os.Getenv("WECHAT_MP_APP_ID"), "WeChat MP AppID", "string"},
@@ -174,7 +169,6 @@ func (s *Service) GetAll() ([]models.Config, error) {
 
 type PublicConfig struct {
 	EnableEmailVerification bool `json:"enableEmailVerification"`
-	EnableWeChatLogin       bool `json:"enableWeChatLogin"`
 	EnableWeChatMPLogin     bool `json:"enableWeChatMPLogin"`
 	EnableGithubLogin       bool `json:"enableGithubLogin"`
 	EnablePricingPage       bool `json:"enablePricingPage"`
@@ -184,7 +178,6 @@ func (s *Service) GetPublicConfig() PublicConfig {
 	// Read from DB once and map required keys
 	var (
 		enableEmailVerification bool
-		enableWeChatLogin       bool
 		enableWeChatMPLogin     bool
 		enableGithubLogin       bool
 		enablePricingPage       bool
@@ -196,10 +189,6 @@ func (s *Service) GetPublicConfig() PublicConfig {
 			case string(common.ConfigKeyEnableEmailVerification):
 				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
 					enableEmailVerification = b
-				}
-			case string(common.ConfigKeyEnabledWechatLogin):
-				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
-					enableWeChatLogin = b
 				}
 			case string(common.ConfigKeyEnabledWechatMPLogin):
 				if b, err := strconv.ParseBool(cfg.ConfigValue); err == nil {
@@ -218,7 +207,6 @@ func (s *Service) GetPublicConfig() PublicConfig {
 	}
 	return PublicConfig{
 		EnableEmailVerification: enableEmailVerification,
-		EnableWeChatLogin:       enableWeChatLogin,
 		EnableWeChatMPLogin:     enableWeChatMPLogin,
 		EnableGithubLogin:       enableGithubLogin,
 		EnablePricingPage:       enablePricingPage,

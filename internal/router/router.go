@@ -49,8 +49,6 @@ func Init() *gin.Engine {
 
 	authR := api.Group("/auth")
 	authR.GET("/config", confHandler.GetPublic)
-	authR.GET("/wechat/redirect", middleware.RateLimit(10, time.Minute), authH.WeChatRedirect())
-	authR.GET("/wechat/callback", middleware.RateLimit(30, time.Minute), authH.WeChatCallback())
 	authR.GET("/github/redirect", middleware.RateLimit(10, time.Minute), authH.GithubRedirect())
 	authR.GET("/github/callback", middleware.RateLimit(30, time.Minute), authH.GithubCallback())
 	authR.POST("/wechat/consume-ott", authH.ConsumeOTT)

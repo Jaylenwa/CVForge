@@ -102,10 +102,8 @@ export interface SystemConfig {
 
 export interface AuthConfig {
   enableEmailVerification: boolean;
-  enableWeChatLogin: boolean;
   enableWeChatMPLogin: boolean;
   enableGithubLogin: boolean;
   enablePricingPage: boolean;
-  weChatAppID: string;
   githubClientID: string;
 }
