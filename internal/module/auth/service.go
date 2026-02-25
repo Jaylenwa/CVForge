@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"openresume/internal/common"
@@ -93,13 +94,17 @@ func (s *Service) SendCode(email string, code string) error {
 }
 
 func (s *Service) Register(email, code, password, name string) (string, string, error) {
+	email = strings.TrimSpace(email)
+	if email == "" {
+		return "", "", http.ErrNotSupported
+	}
 	if s.sysConfig.GetBool(string(common.ConfigKeyEnableEmailVerification), true) {
 		if !s.ValidateVerifyCode(email, code) {
 			return "", "", http.ErrBodyNotAllowed
 		}
 	}
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	u := User{Email: email, PasswordHash: string(hash), Name: name, Role: s.initialRole()}
+	u := User{Email: &email, PasswordHash: string(hash), Name: name, Role: s.initialRole()}
 	if err := database.DB.Create(&u).Error; err != nil {
 		return "", "", gorm.ErrDuplicatedKey
 	}
@@ -108,6 +113,10 @@ func (s *Service) Register(email, code, password, name string) (string, string, 
 }
 
 func (s *Service) Login(email, password string) (string, string, error) {
+	email = strings.TrimSpace(email)
+	if email == "" {
+		return "", "", gorm.ErrRecordNotFound
+	}
 	var u User
 	if err := database.DB.Where("email = ?", email).First(&u).Error; err != nil {
 		return "", "", gorm.ErrRecordNotFound
@@ -217,9 +226,13 @@ func (s *Service) DelOTT(ott string) {
 }
 
 func (s *Service) SanitizeUser(u User) map[string]any {
+	email := ""
+	if u.Email != nil {
+		email = strings.TrimSpace(*u.Email)
+	}
 	return map[string]any{
 		"id":        u.ID,
-		"email":     u.Email,
+		"email":     email,
 		"name":      u.Name,
 		"avatarUrl": u.AvatarURL,
 		"language":  u.Language,
@@ -347,9 +360,9 @@ func (s *Service) FindOrCreateGithubUser(ui GithubUserInfo) (User, error) {
 	}
 
 	// Create new user
-	email := ui.Email
-	if email == "" {
-		email = "github_" + providerOpenID + "@oauth.invalid"
+	var email *string
+	if e := strings.TrimSpace(ui.Email); e != "" {
+		email = &e
 	}
 	user = User{
 		Name:      ui.Name,

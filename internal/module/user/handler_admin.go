@@ -107,9 +107,13 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	}
 	items := make([]gin.H, 0, len(list))
 	for _, u := range list {
+		email := ""
+		if u.Email != nil {
+			email = *u.Email
+		}
 		items = append(items, gin.H{
 			"id":          u.ID,
-			"email":       u.Email,
+			"email":       email,
 			"name":        u.Name,
 			"avatarUrl":   u.AvatarURL,
 			"language":    u.Language,
@@ -129,9 +133,13 @@ func (h *AdminHandler) AdminGet(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
+	email := ""
+	if u.Email != nil {
+		email = *u.Email
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"id":          u.ID,
-		"email":       u.Email,
+		"email":       email,
 		"name":        u.Name,
 		"avatarUrl":   u.AvatarURL,
 		"language":    u.Language,

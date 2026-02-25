@@ -64,7 +64,9 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 				if u.Name != "" {
 					nameMap[u.ID] = u.Name
 				} else {
-					nameMap[u.ID] = u.Email
+					if u.Email != nil {
+						nameMap[u.ID] = *u.Email
+					}
 				}
 			}
 		}

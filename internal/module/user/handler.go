@@ -26,8 +26,12 @@ func (h *Handler) Me(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
+	email := ""
+	if u.Email != nil {
+		email = *u.Email
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"email":     u.Email,
+		"email":     email,
 		"name":      u.Name,
 		"avatarUrl": u.AvatarURL,
 		"language":  u.Language,
