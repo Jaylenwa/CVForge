@@ -63,7 +63,7 @@ func (h *AdminHandler) AdminListPresets(c *gin.Context) {
 	items, total, err := h.svc.repo.AdminListContentPresets(page, size, q, role, lang)
 	if err != nil {
 		logger.WithCtx(c).Error("preset.admin.list failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, AdminPageResp[ContentPreset]{Items: items, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
@@ -146,7 +146,7 @@ func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid preset"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
@@ -160,7 +160,7 @@ func (h *AdminHandler) AdminDeletePreset(c *gin.Context) {
 	}
 	if err := h.svc.repo.AdminDeleteContentPreset(uint(id)); err != nil {
 		logger.WithCtx(c).Error("preset.admin.delete failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})

@@ -43,7 +43,7 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	q.Count(&total)
 	if err := q.Preload("Personal").Preload("Theme").Order("updated_at desc").Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
 		logger.WithCtx(c).Error("resume.admin_list failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	uidSet := make(map[uint]struct{})
@@ -64,7 +64,9 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 				if u.Name != "" {
 					nameMap[u.ID] = u.Name
 				} else {
-					nameMap[u.ID] = u.Email
+					if u.Email != nil {
+						nameMap[u.ID] = *u.Email
+					}
 				}
 			}
 		}
@@ -120,7 +122,7 @@ func (h *AdminHandler) AdminDelete(c *gin.Context) {
 	}
 	if err := database.DB.Delete(&res).Error; err != nil {
 		logger.WithCtx(c).Error("resume.admin_delete failed", zap.Error(err), zap.String("id", c.Param("id")))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	writeAudit(c, "resume.delete", "resume", c.Param("id"), "")
@@ -149,13 +151,13 @@ func (h *AdminHandler) AdminUpdateVisibility(c *gin.Context) {
 	if err := database.DB.Where("resume_id = ?", res.ID).First(&sl).Error; err != nil {
 		sl = ShareLink{ResumeID: res.ID, Slug: uuid.NewString()[:8], IsPublic: body.IsPublic}
 		if err := database.DB.Create(&sl).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 	} else {
 		sl.IsPublic = body.IsPublic
 		if err := database.DB.Save(&sl).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 	}

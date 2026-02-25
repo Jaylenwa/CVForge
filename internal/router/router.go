@@ -49,16 +49,19 @@ func Init() *gin.Engine {
 
 	authR := api.Group("/auth")
 	authR.GET("/config", confHandler.GetPublic)
-	authR.GET("/wechat/redirect", middleware.RateLimit(10, time.Minute), authH.WeChatRedirect())
-	authR.GET("/wechat/callback", middleware.RateLimit(30, time.Minute), authH.WeChatCallback())
 	authR.GET("/github/redirect", middleware.RateLimit(10, time.Minute), authH.GithubRedirect())
 	authR.GET("/github/callback", middleware.RateLimit(30, time.Minute), authH.GithubCallback())
 	authR.POST("/wechat/consume-ott", authH.ConsumeOTT)
+	authR.POST("/wechat-mp/scene/create", middleware.RateLimit(30, time.Minute), authH.WeChatMPCreateScene)
+	authR.GET("/wechat-mp/scene/:scene/status", middleware.RateLimit(300, time.Minute), authH.WeChatMPSceneStatus)
 	authR.POST("/send-code", middleware.RateLimit(3, time.Minute), authH.SendCode)
 	authR.POST("/register", middleware.RateLimit(5, time.Minute), authH.Register)
 	authR.POST("/login", middleware.RateLimit(5, time.Minute), authH.Login)
 	authR.POST("/refresh", authH.Refresh)
 	authR.POST("/logout", authH.Logout)
+
+	api.GET("/wechat/mp/callback", middleware.RateLimit(600, time.Minute), authH.WeChatMPCallbackGet)
+	api.POST("/wechat/mp/callback", middleware.RateLimit(600, time.Minute), authH.WeChatMPCallbackPost)
 
 	api.Use(middleware.RateLimitUser(120, time.Minute))
 	api.Use(middleware.DailyUV("/api/v1/healthz", "/api/v1/metrics"))

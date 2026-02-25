@@ -30,7 +30,7 @@ func (h *Handler) List(c *gin.Context) {
 	list, err := h.svc.ListUserResumes(uid)
 	if err != nil {
 		logger.WithCtx(c).Error("resume.list failed", zap.Error(err), zap.Uint("uid", uid))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	items := make([]ResumeDTO, 0, len(list))
@@ -60,7 +60,7 @@ func (h *Handler) Create(c *gin.Context) {
 			return
 		}
 		logger.WithCtx(c).Error("resume.create failed", zap.Error(err), zap.Uint("uid", uid))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"id": res.ID})
@@ -83,7 +83,7 @@ func (h *Handler) Get(c *gin.Context) {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}
@@ -120,7 +120,7 @@ func (h *Handler) Update(c *gin.Context) {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}
@@ -144,7 +144,7 @@ func (h *Handler) Delete(c *gin.Context) {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}

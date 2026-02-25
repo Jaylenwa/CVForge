@@ -1,11 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { AppRoute } from '../types';
 
 export const ProtectedAdminRoute: React.FC = () => {
-  const { isAuthenticated, loading, isAdmin } = useAuth();
+  const { isAuthenticated, loading, isAdmin, authModalOpen, openAuthModal } = useAuth();
   const location = useLocation();
+
+  useEffect(() => {
+    if (loading || isAuthenticated || authModalOpen) return;
+    const returnTo = location.pathname + location.search + location.hash;
+    openAuthModal({ mode: 'login', returnTo, source: 'protected' });
+  }, [authModalOpen, isAuthenticated, loading, location.hash, location.pathname, location.search, openAuthModal]);
 
   if (loading) {
     return (
@@ -16,7 +22,7 @@ export const ProtectedAdminRoute: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to={AppRoute.Login} replace state={{ from: location }} />;
+    return null;
   }
 
   if (!isAdmin) {

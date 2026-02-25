@@ -25,7 +25,7 @@ func (h *Handler) AdminList(c *gin.Context) {
 	configs, err := h.service.GetAll()
 	if err != nil {
 		logger.WithCtx(c).Error("config.admin_list failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch configs"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, configs)
@@ -79,7 +79,7 @@ func (h *Handler) AdminUpdate(c *gin.Context) {
 
 	for _, cfg := range req.Configs {
 		if err := h.service.Set(cfg.ConfigKey, cfg.ConfigValue, cfg.Description, cfg.Type); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update config: " + cfg.ConfigKey})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 	}

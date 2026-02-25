@@ -84,6 +84,7 @@
 - `enable_email_verification`：注册是否启用邮箱验证码（默认 `false`）
 - SMTP：`SMTP_HOST`、`SMTP_PORT`、`SMTP_USERNAME`、`SMTP_PASSWORD`、`SMTP_FROM_NAME`
 - 微信 OAuth：`WECHAT_APP_ID`、`WECHAT_APP_SECRET`、`WECHAT_REDIRECT_URI`，开关 `enabled_wechat_login`
+- 公众号扫码登录（关注即登录）：`WECHAT_MP_APP_ID`、`WECHAT_MP_APP_SECRET`、`WECHAT_MP_TOKEN`（可选 `WECHAT_MP_AES_KEY`），开关 `enabled_wechat_mp_login`；回调地址为 `GET/POST /api/v1/wechat/mp/callback`（需公网 HTTPS 可达）
 - GitHub OAuth：`GITHUB_CLIENT_ID`、`GITHUB_CLIENT_SECRET`、`GITHUB_REDIRECT_URI`，开关 `enabled_github_login`
 - S3 存储：`S3_BUCKET`、`S3_REGION`、`S3_ENDPOINT`、`S3_ACCESS_KEY`、`S3_SECRET_KEY`，开关 `enabled_storage_s3`
 
@@ -113,6 +114,10 @@ export SMTP_FROM_NAME=""
 export WECHAT_APP_ID=""
 export WECHAT_APP_SECRET=""
 export WECHAT_REDIRECT_URI=""
+export WECHAT_MP_APP_ID=""
+export WECHAT_MP_APP_SECRET=""
+export WECHAT_MP_TOKEN=""
+export WECHAT_MP_AES_KEY=""
 export GITHUB_CLIENT_ID=""
 export GITHUB_CLIENT_SECRET=""
 export GITHUB_REDIRECT_URI=""

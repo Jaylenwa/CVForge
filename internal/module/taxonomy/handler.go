@@ -23,7 +23,7 @@ func (h *Handler) ListCategories(c *gin.Context) {
 	items, err := h.svc.ListJobCategories(language)
 	if err != nil {
 		logger.WithCtx(c).Error("taxonomy.categories.list failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	out := make([]JobCategoryDTO, 0, len(items))
@@ -51,7 +51,7 @@ func (h *Handler) ListRoles(c *gin.Context) {
 	items, err := h.svc.ListJobRoles(language, categoryID, q)
 	if err != nil {
 		logger.WithCtx(c).Error("taxonomy.roles.list failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	out := make([]JobRoleDTO, 0, len(items))

@@ -36,7 +36,8 @@ func setupTestDB(t *testing.T) *gorm.DB {
 
 func TestSharePasswordAndExpiry(t *testing.T) {
 	db := setupTestDB(t)
-	u := models.User{Email: "u@example.com", IsActive: true}
+	email := "u@example.com"
+	u := models.User{Email: &email, IsActive: true}
 	if err := db.Create(&u).Error; err != nil {
 		t.Fatalf("create user: %v", err)
 	}

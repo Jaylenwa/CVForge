@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE } from '../../config';
 import { AppRoute } from '../../types';
 import { Button } from '../../components/ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
+  const { openAuthModal } = useAuth();
   const [status, setStatus] = useState<'loading' | 'error' | 'ok'>('loading');
   const [message, setMessage] = useState('');
   useEffect(() => {
@@ -50,9 +52,15 @@ export const OAuthCallback: React.FC = () => {
   if (status === 'error') return (
     <div className="p-6 text-center">
       <div className="text-red-600 mb-3">{message}</div>
-      <Button onClick={() => navigate(AppRoute.Login)}>返回登录</Button>
+      <Button
+        onClick={() => {
+          openAuthModal({ mode: 'login', returnTo: AppRoute.Home, source: 'route' });
+          navigate(AppRoute.Home, { replace: true });
+        }}
+      >
+        返回登录
+      </Button>
     </div>
   );
   return <div className="p-6 text-center">登录成功，正在跳转...</div>;
 };
-

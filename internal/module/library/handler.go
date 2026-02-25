@@ -31,7 +31,7 @@ func (h *Handler) ListTemplates(c *gin.Context) {
 	items, err := h.svc.ListTemplateLibraryItems(roleID, language, sort)
 	if err != nil {
 		logger.WithCtx(c).Error("library.templates.list failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	out := make([]TemplateLibraryItemDTO, 0, len(items))

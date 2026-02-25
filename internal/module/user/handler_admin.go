@@ -102,14 +102,18 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 	q.Count(&total)
 	if err := q.Order("id desc").Offset((page - 1) * size).Limit(size).Find(&list).Error; err != nil {
 		logger.WithCtx(c).Error("user.admin_list failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	items := make([]gin.H, 0, len(list))
 	for _, u := range list {
+		email := ""
+		if u.Email != nil {
+			email = *u.Email
+		}
 		items = append(items, gin.H{
 			"id":          u.ID,
-			"email":       u.Email,
+			"email":       email,
 			"name":        u.Name,
 			"avatarUrl":   u.AvatarURL,
 			"language":    u.Language,
@@ -129,9 +133,13 @@ func (h *AdminHandler) AdminGet(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		return
 	}
+	email := ""
+	if u.Email != nil {
+		email = *u.Email
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"id":          u.ID,
-		"email":       u.Email,
+		"email":       email,
 		"name":        u.Name,
 		"avatarUrl":   u.AvatarURL,
 		"language":    u.Language,
@@ -185,7 +193,7 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 	}
 	if err := database.DB.Save(&u).Error; err != nil {
 		logger.WithCtx(c).Error("user.admin_patch save failed", zap.Error(err), zap.String("id", c.Param("id")))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	writeAudit(c, "user.update", "user", strconv.FormatUint(uint64(u.ID), 10), "")
@@ -211,7 +219,7 @@ func (h *AdminHandler) AdminResetPassword(c *gin.Context) {
 	u.PasswordHash = string(hash)
 	if err := database.DB.Save(&u).Error; err != nil {
 		logger.WithCtx(c).Error("user.admin_reset_password save failed", zap.Error(err), zap.String("id", c.Param("id")))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	writeAudit(c, "user.reset_password", "user", strconv.FormatUint(uint64(u.ID), 10), "")
@@ -221,7 +229,7 @@ func (h *AdminHandler) AdminResetPassword(c *gin.Context) {
 func (h *AdminHandler) AdminBan(c *gin.Context) {
 	if err := database.DB.Model(&User{}).Where("id = ?", c.Param("id")).Update("is_active", false).Error; err != nil {
 		logger.WithCtx(c).Error("user.admin_ban failed", zap.Error(err), zap.String("id", c.Param("id")))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	if cache.RDB != nil {
@@ -234,7 +242,7 @@ func (h *AdminHandler) AdminBan(c *gin.Context) {
 func (h *AdminHandler) AdminUnban(c *gin.Context) {
 	if err := database.DB.Model(&User{}).Where("id = ?", c.Param("id")).Update("is_active", true).Error; err != nil {
 		logger.WithCtx(c).Error("user.admin_unban failed", zap.Error(err), zap.String("id", c.Param("id")))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	if cache.RDB != nil {

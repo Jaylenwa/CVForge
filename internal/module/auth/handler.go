@@ -31,35 +31,6 @@ func popupHTML(origin, access, refresh string, user map[string]any) string {
 	return "<!doctype html><html><head><meta charset=\"utf-8\"><title>WeChat Login</title></head><body><script>(function(){try{var data=" + string(b) + ";window.opener&&window.opener.postMessage(data,'" + origin + "');window.close();}catch(e){document.body.innerText='Login succeeded, but messaging failed';}})();</script></body></html>"
 }
 
-func (h *Handler) WeChatRedirect() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if !h.svc.FeatureWeChatEnabled() {
-			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
-			return
-		}
-		client := c.Query("client")
-		if client != "popup" && client != "redirect" {
-			client = "popup"
-		}
-		origin := c.Query("origin")
-		state := uuid.NewString()
-		st := map[string]any{
-			"client":  client,
-			"origin":  origin,
-			"ip":      c.ClientIP(),
-			"ua":      c.GetHeader("User-Agent"),
-			"created": time.Now().Unix(),
-		}
-		_ = h.svc.SaveOAuthState(state, st)
-		redir := h.svc.MakeWeChatLoginURL(state)
-		if redir == "" {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "wechat not configured"})
-			return
-		}
-		c.Redirect(http.StatusFound, redir)
-	}
-}
-
 func (h *Handler) GithubRedirect() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !h.svc.FeatureGithubEnabled() {
@@ -118,74 +89,14 @@ func (h *Handler) GithubCallback() gin.HandlerFunc {
 		tokenResp, err := h.svc.ExchangeGithubCode(code)
 		if err != nil {
 			logger.WithCtx(c).Error("auth.github exchange failed", zap.Error(err))
-			c.JSON(http.StatusBadGateway, gin.H{"error": "exchange failed"})
+			c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 			return
 		}
 		profile, _ := h.svc.FetchGithubUserInfo(tokenResp.AccessToken)
 		user, err := h.svc.FindOrCreateGithubUser(profile)
 		if err != nil {
 			logger.WithCtx(c).Error("auth.github account error", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "account error"})
-			return
-		}
-		access, refresh := h.svc.IssueTokens(user.ID)
-		if st.Client == "popup" {
-			origin := st.Origin
-			if origin == "" {
-				origin = h.svc.FrontendBase()
-			}
-			html := popupHTML(origin, access, refresh, h.svc.SanitizeUser(user))
-			c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
-			return
-		}
-		ott := uuid.NewString()
-		payload := gin.H{"accessToken": access, "refreshToken": refresh, "user": h.svc.SanitizeUser(user)}
-		_ = h.svc.SaveOTT(ott, payload)
-		u := h.svc.FrontendBase()
-		if u == "" {
-			u = "http://localhost:3000"
-		}
-		c.Redirect(http.StatusFound, u+"/#/oauth/callback?ott="+url.QueryEscape(ott))
-	}
-}
-
-func (h *Handler) WeChatCallback() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if !h.svc.FeatureWeChatEnabled() {
-			c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
-			return
-		}
-		code := c.Query("code")
-		state := c.Query("state")
-		if code == "" || state == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "missing code/state"})
-			return
-		}
-		val, err := h.svc.GetOAuthState(state)
-		if err != nil || val == "" {
-			logger.WithCtx(c).Error("auth.wechat invalid state", zap.Error(err))
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid state"})
-			return
-		}
-		h.svc.DelOAuthState(state)
-		var st struct {
-			Client string `json:"client"`
-			Origin string `json:"origin"`
-			IP     string `json:"ip"`
-			UA     string `json:"ua"`
-		}
-		_ = json.Unmarshal([]byte(val), &st)
-		tokenResp, err := h.svc.ExchangeCode(code)
-		if err != nil {
-			logger.WithCtx(c).Error("auth.wechat exchange failed", zap.Error(err))
-			c.JSON(http.StatusBadGateway, gin.H{"error": "exchange failed"})
-			return
-		}
-		profile, _ := h.svc.FetchUserInfo(tokenResp.AccessToken, tokenResp.OpenID)
-		user, err := h.svc.FindOrCreateWeChatUser(profile, tokenResp)
-		if err != nil {
-			logger.WithCtx(c).Error("auth.wechat account error", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "account error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		access, refresh := h.svc.IssueTokens(user.ID)
@@ -243,7 +154,7 @@ func (h *Handler) SendCode(c *gin.Context) {
 	_ = h.svc.SaveVerifyCode(req.Email, code)
 	if err := h.svc.SendCode(req.Email, code); err != nil {
 		logger.WithCtx(c).Error("auth.send_code failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "send failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})

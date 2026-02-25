@@ -14,7 +14,7 @@ export const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
-  const { user, isAuthenticated, logout, isAdmin } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin, openAuthModal } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const hoverCloseTimerRef = useRef<number | null>(null);
   const [showPricing, setShowPricing] = useState(false);
@@ -148,9 +148,12 @@ export const Navbar: React.FC = () => {
                 </div>
             ) : (
                 <>
-                    <Link to={AppRoute.Login}>
-                        <Button variant="ghost">{t('nav.signin')}</Button>
-                    </Link>
+                    <Button
+                      variant="ghost"
+                      onClick={() => openAuthModal({ mode: 'login', returnTo: location.pathname + location.search + location.hash, source: 'user' })}
+                    >
+                      {t('nav.signin')}
+                    </Button>
                     <Link to={AppRoute.Templates}>
                         <Button>{t('nav.getStarted')}</Button>
                     </Link>
@@ -246,9 +249,16 @@ export const Navbar: React.FC = () => {
                          </>
                      ) : (
                          <>
-                             <Link to={AppRoute.Login} onClick={() => setIsOpen(false)}>
-                                <Button className="w-full justify-center" variant="outline">{t('nav.signin')}</Button>
-                             </Link>
+                             <Button
+                               className="w-full justify-center"
+                               variant="outline"
+                               onClick={() => {
+                                 openAuthModal({ mode: 'login', returnTo: location.pathname + location.search + location.hash, source: 'user' });
+                                 setIsOpen(false);
+                               }}
+                             >
+                               {t('nav.signin')}
+                             </Button>
                              <div className="h-2"></div>
                              <Link to={AppRoute.Templates} onClick={() => setIsOpen(false)}>
                                 <Button className="w-full justify-center">{t('nav.getStarted')}</Button>
