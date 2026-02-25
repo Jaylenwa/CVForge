@@ -65,7 +65,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           localStorage.removeItem('refreshToken');
           setUser(null);
           setIsAdmin(false);
-          window.location.hash = '#/login';
+          const hash = window.location.hash || '';
+          const returnTo = hash.startsWith('#') ? hash.slice(1) : hash;
+          openAuthModal({ mode: 'login', returnTo, source: 'user' });
         }
       }
     } catch {}

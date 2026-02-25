@@ -1,24 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Briefcase, Code, Palette, Settings, User, ChevronRight, ListFilter } from 'lucide-react';
+import { Briefcase, ChevronRight, ListFilter } from 'lucide-react';
 import { JobMegaMenu, JobMegaMenuGroup, JobMegaMenuRole } from './JobMegaMenu';
 
 export type JobSidebarCategory = { id: string; name: string; parentId?: string; orderNum?: number };
 export type JobSidebarRole = { id: string; name: string; categoryId: string; orderNum?: number };
 
 const categoryIcon = (id: string) => {
-  switch (id) {
-    case 'tech':
-      return <Code size={18} />;
-    case 'product':
-      return <Palette size={18} />;
-    case 'ops':
-      return <Settings size={18} />;
-    case 'business':
-      return <Briefcase size={18} />;
-    case 'all':
-    default:
-      return <User size={18} />;
-  }
+  void id;
+  return <Briefcase size={18} />;
 };
 
 export const JobSidebar: React.FC<{

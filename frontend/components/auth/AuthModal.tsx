@@ -20,6 +20,7 @@ export const AuthModal: React.FC = () => {
   const location = useLocation();
   const { isAuthenticated, login, loginWithGithub, authModalOpen, authModalMode, authModalReturnTo, authModalSource, closeAuthModal } = useAuth();
   const [authConfig, setAuthConfig] = useState<AuthConfig | null>(null);
+  const [booting, setBooting] = useState(false);
   const [mode, setMode] = useState<Mode>('login');
   const [view, setView] = useState<View>('main');
 
@@ -160,12 +161,16 @@ export const AuthModal: React.FC = () => {
   useEffect(() => {
     if (!authModalOpen) return;
     const nextMode: Mode = authModalMode === 'register' ? 'register' : 'login';
+    setBooting(nextMode === 'login');
     resetStates(nextMode);
     getAuthConfig().then((cfg) => {
       setAuthConfig(cfg);
       if (cfg.enableWeChatMPLogin && nextMode === 'login') {
         void openWeChatMP();
+        setBooting(false);
+        return;
       }
+      setBooting(false);
     });
   }, [authModalOpen, authModalMode]);
 
@@ -282,7 +287,20 @@ export const AuthModal: React.FC = () => {
 
         <LayoutGroup>
           <AnimatePresence initial={false} mode="wait">
-            {view === 'wechat_mp' ? (
+            {booting && mode === 'login' ? (
+              <motion.div
+                key="view-loading"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
+              >
+                <div className="text-center text-2xl font-semibold text-gray-900">{t('auth.login')}</div>
+                <div className="mt-3 flex items-center justify-center">
+                  <div className="h-64 w-64 rounded-xl border border-gray-200 bg-gray-50" />
+                </div>
+              </motion.div>
+            ) : view === 'wechat_mp' ? (
               <motion.div
                 key="view-wechatmp"
                 initial={{ opacity: 0, y: 8 }}

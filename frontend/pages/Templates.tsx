@@ -1,7 +1,9 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import { fetchContentPresetData, fetchTemplateCatalog, listTemplateLibraryItems } from '../services/catalogService';
 import { JobSidebar } from '../components/templateLibrary/JobSidebar';
 import { ResumeTemplateCard } from '../components/templateLibrary/ResumeTemplateCard';
@@ -17,6 +19,8 @@ export const Templates: React.FC = () => {
     };
   }, []);
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
+  const { isAuthenticated, openAuthModal } = useAuth();
   
   const [sortMode, setSortMode] = useState<'hot' | 'new'>('hot');
   const [selectedJobCategory, setSelectedJobCategory] = useState<string>('');
@@ -77,7 +81,12 @@ export const Templates: React.FC = () => {
     if (presetId) qs.set('presetId', presetId);
     if (roleId) qs.set('roleId', roleId);
     qs.set('returnTo', AppRoute.Templates);
-    window.open(`${window.location.origin}${window.location.pathname}#${AppRoute.Editor}?${qs.toString()}`, '_blank');
+    const target = `${AppRoute.Editor}?${qs.toString()}`;
+    if (!isAuthenticated) {
+      openAuthModal({ mode: 'login', returnTo: target, source: 'user' });
+      return;
+    }
+    navigate(target);
   };
   const handlePreviewTemplate = (templateId: string, presetId?: string) => {
     const qs = new URLSearchParams();
