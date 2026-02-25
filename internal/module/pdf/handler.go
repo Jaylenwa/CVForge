@@ -70,9 +70,9 @@ func (h *Handler) GenerateImage(c *gin.Context) {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		case 503:
-			c.JSON(http.StatusNotImplemented, gin.H{"error": "image service unavailable"})
+			c.JSON(http.StatusNotImplemented, gin.H{"error": err.Error()})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "image service unavailable"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}
@@ -107,7 +107,7 @@ func (h *Handler) SubmitExport(c *gin.Context) {
 	repo := NewExportRepo(h.svc)
 	if err := repo.Enqueue(c, job); err != nil {
 		logger.WithCtx(c).Error("pdf.submit_export enqueue failed", zap.Error(err))
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "queue unavailable"})
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{"job_id": job.ID})
@@ -180,7 +180,7 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 	up, err := storage.NewFromSettings(cfg)
 	if err != nil {
 		logger.WithCtx(c).Error("pdf.export_download storage init failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "storage unavailable"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	rc, err := up.Download(c, url)

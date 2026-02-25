@@ -40,7 +40,7 @@ func (h *Handler) WeChatMPCreateScene(c *gin.Context) {
 	scene, qrURL, expireSeconds, err := h.svc.CreateWeChatMPLoginScene(context.Background())
 	if err != nil {
 		logger.WithCtx(c).Error("auth.wechatmp create scene failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "create scene failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"scene": scene, "qrUrl": qrURL, "expiresIn": expireSeconds})

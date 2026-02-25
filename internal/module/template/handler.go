@@ -21,7 +21,7 @@ func (h *Handler) ListAll(c *gin.Context) {
 	payload, err := h.svc.ListAllPayload()
 	if err != nil {
 		logger.WithCtx(c).Error("template.list_all failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.Data(http.StatusOK, "application/json", []byte(payload))

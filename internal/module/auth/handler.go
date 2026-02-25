@@ -118,14 +118,14 @@ func (h *Handler) GithubCallback() gin.HandlerFunc {
 		tokenResp, err := h.svc.ExchangeGithubCode(code)
 		if err != nil {
 			logger.WithCtx(c).Error("auth.github exchange failed", zap.Error(err))
-			c.JSON(http.StatusBadGateway, gin.H{"error": "exchange failed"})
+			c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 			return
 		}
 		profile, _ := h.svc.FetchGithubUserInfo(tokenResp.AccessToken)
 		user, err := h.svc.FindOrCreateGithubUser(profile)
 		if err != nil {
 			logger.WithCtx(c).Error("auth.github account error", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "account error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		access, refresh := h.svc.IssueTokens(user.ID)
@@ -178,14 +178,14 @@ func (h *Handler) WeChatCallback() gin.HandlerFunc {
 		tokenResp, err := h.svc.ExchangeCode(code)
 		if err != nil {
 			logger.WithCtx(c).Error("auth.wechat exchange failed", zap.Error(err))
-			c.JSON(http.StatusBadGateway, gin.H{"error": "exchange failed"})
+			c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 			return
 		}
 		profile, _ := h.svc.FetchUserInfo(tokenResp.AccessToken, tokenResp.OpenID)
 		user, err := h.svc.FindOrCreateWeChatUser(profile, tokenResp)
 		if err != nil {
 			logger.WithCtx(c).Error("auth.wechat account error", zap.Error(err))
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "account error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		access, refresh := h.svc.IssueTokens(user.ID)
@@ -243,7 +243,7 @@ func (h *Handler) SendCode(c *gin.Context) {
 	_ = h.svc.SaveVerifyCode(req.Email, code)
 	if err := h.svc.SendCode(req.Email, code); err != nil {
 		logger.WithCtx(c).Error("auth.send_code failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "send failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})

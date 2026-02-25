@@ -43,7 +43,7 @@ func (h *Handler) PublishResume(c *gin.Context) {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "resume not found"})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}
@@ -72,7 +72,7 @@ func (h *Handler) GetPublic(c *gin.Context) {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}
@@ -98,7 +98,7 @@ func (h *Handler) AuthPublic(c *gin.Context) {
 		case 410:
 			c.JSON(http.StatusGone, gin.H{"error": "expired"})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}
@@ -125,7 +125,7 @@ func (h *Handler) GetSettings(c *gin.Context) {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}
@@ -202,7 +202,7 @@ func (h *Handler) UpdateSettings(c *gin.Context) {
 		case 404:
 			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}

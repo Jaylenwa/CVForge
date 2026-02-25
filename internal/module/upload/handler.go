@@ -38,13 +38,13 @@ func (h *Handler) UploadAvatar(c *gin.Context) {
 	}
 	f, err := file.Open()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "open error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer f.Close()
 	b, err := io.ReadAll(f)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "read error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	mt := mimetype.Detect(b)
@@ -61,7 +61,7 @@ func (h *Handler) UploadAvatar(c *gin.Context) {
 	url, err := h.svc.Upload(c, name, b)
 	if err != nil {
 		logger.WithCtx(c).Error("upload avatar error", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "upload error"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	proto := c.GetHeader("X-Forwarded-Proto")
