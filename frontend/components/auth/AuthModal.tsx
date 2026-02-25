@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Mail, Lock, Github, KeyRound, CheckCircle, X } from 'lucide-react';
+import { Mail, Lock, KeyRound, CheckCircle, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
-import { WeChatIcon } from '../ui/WeChatIcon';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { loginUser, registerUser, sendVerificationCode, verifyCode } from '../../services/authService';
@@ -363,7 +362,7 @@ export const AuthModal: React.FC = () => {
                         className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50"
                         aria-label={t('auth.provider.github')}
                       >
-                        <Github className="h-5 w-5" />
+                        <img src="/github.svg" alt={t('auth.provider.github')} className="h-5 w-5" />
                       </button>
                     )}
                   </div>
@@ -481,7 +480,7 @@ export const AuthModal: React.FC = () => {
                               {authConfig?.enableGithubLogin && (
                                 <div>
                                   <Button variant="outline" className="w-full flex justify-center items-center" onClick={handleGithubLogin} isLoading={loginLoading}>
-                                    <Github className="h-5 w-5 mr-2" />
+                                    <img src="/github.svg" alt={t('auth.provider.github')} className="h-5 w-5 mr-2" />
                                     {t('auth.provider.github')}
                                   </Button>
                                 </div>
@@ -494,7 +493,7 @@ export const AuthModal: React.FC = () => {
                                     onClick={() => void openWeChatMP()}
                                     isLoading={loginLoading}
                                   >
-                                    <WeChatIcon className="h-5 w-5 mr-2" />
+                                    <img src="/wechat.svg" alt={t('auth.provider.wechatMP')} className="h-5 w-5 mr-2" />
                                     {t('auth.provider.wechatMP')}
                                   </Button>
                                 </div>
