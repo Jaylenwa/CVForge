@@ -300,7 +300,17 @@ export const Footer: React.FC = () => {
                 </div>
             </div>
             <div className="max-w-7xl mx-auto px-4 mt-4 pt-4 border-t border-slate-800 text-center text-slate-500 text-sm">
-                &copy; {new Date().getFullYear()} CVForge. {t('footer.rights')}
+                <div>
+                  &copy; {new Date().getFullYear()} CVForge. {t('footer.rights')}
+                </div>
+                <a
+                  href="https://beian.miit.gov.cn/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-block hover:text-slate-300"
+                >
+                  赣ICP备2024029737号-2
+                </a>
             </div>
         </footer>
     )
