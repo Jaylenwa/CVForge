@@ -7,6 +7,8 @@ export interface User {
   avatarUrl?: string;
 }
 
+export type AuthModalMode = 'login' | 'register';
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -15,6 +17,12 @@ interface AuthContextType {
   login: (email: string) => Promise<void>;
   logout: () => void;
   loginWithGithub: () => Promise<boolean>;
+  authModalOpen: boolean;
+  authModalMode: AuthModalMode;
+  authModalReturnTo: string;
+  authModalSource: 'user' | 'protected' | 'route' | '';
+  openAuthModal: (opts?: { mode?: AuthModalMode; returnTo?: string; source?: 'user' | 'protected' | 'route' }) => void;
+  closeAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +32,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const refreshTimer = useRef<number | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('login');
+  const [authModalReturnTo, setAuthModalReturnTo] = useState('');
+  const [authModalSource, setAuthModalSource] = useState<AuthContextType['authModalSource']>('');
 
   const loadUser = async () => {
     const token = localStorage.getItem('token');
@@ -81,6 +93,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (refreshTimer.current) { window.clearTimeout(refreshTimer.current); refreshTimer.current = null; }
     setUser(null);
     setIsAdmin(false);
+  };
+
+  const openAuthModal: AuthContextType['openAuthModal'] = (opts) => {
+    const nextMode = opts?.mode || 'login';
+    const nextReturnTo = opts?.returnTo || '';
+    const nextSource = opts?.source || '';
+    setAuthModalMode(nextMode);
+    setAuthModalReturnTo(nextReturnTo);
+    setAuthModalSource(nextSource);
+    setAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setAuthModalOpen(false);
+    setAuthModalReturnTo('');
+    setAuthModalSource('');
   };
 
   const decodeExp = (token: string) => {
@@ -186,7 +214,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, isAdmin, login, logout, loginWithGithub }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, loading, isAdmin, login, logout, loginWithGithub, authModalOpen, authModalMode, authModalReturnTo, authModalSource, openAuthModal, closeAuthModal }}>
       {children}
     </AuthContext.Provider>
   );

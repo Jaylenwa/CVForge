@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import { ConfirmDialogProvider } from './components/ui/ConfirmDialog';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { AuthModal } from './components/auth/AuthModal';
 import { Editor } from './pages/editor/Editor';
 const Home = React.lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
 const Templates = React.lazy(() => import('./pages/Templates').then(m => ({ default: m.Templates })));
@@ -44,6 +45,7 @@ const App: React.FC = () => {
           <AuthProvider>
             <Router>
               <ErrorBoundary>
+                <AuthModal />
                 <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div></div>}>
                   <Routes>
                     <Route element={<LayoutWithFooter />}>
