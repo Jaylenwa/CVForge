@@ -30,6 +30,7 @@ export const AuthModal: React.FC = () => {
   const [mpExpired, setMpExpired] = useState(false);
 
   const emailVerificationEnabled = !!(authConfig && authConfig.enableEmailVerification);
+  const extraProvidersCount = (authConfig?.enableGithubLogin ? 1 : 0) + (authConfig?.enableWeChatMPLogin ? 1 : 0);
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginLoading, setLoginLoading] = useState(false);
@@ -494,9 +495,9 @@ export const AuthModal: React.FC = () => {
                                 <span className="px-2 bg-white text-gray-500">{t('auth.orContinueWith')}</span>
                               </div>
                             </div>
-                            <div className="mt-6 grid grid-cols-2 gap-3">
+                            <div className={extraProvidersCount === 1 ? 'mt-6 flex justify-center' : 'mt-6 grid grid-cols-2 gap-3'}>
                               {authConfig?.enableGithubLogin && (
-                                <div>
+                                <div className={extraProvidersCount === 1 ? 'w-full max-w-[320px]' : undefined}>
                                   <Button variant="outline" className="w-full flex justify-center items-center" onClick={handleGithubLogin} isLoading={loginLoading}>
                                     <img src="/github.svg" alt={t('auth.provider.github')} className="h-5 w-5 mr-2" />
                                     {t('auth.provider.github')}
@@ -504,7 +505,7 @@ export const AuthModal: React.FC = () => {
                                 </div>
                               )}
                               {authConfig?.enableWeChatMPLogin && (
-                                <div>
+                                <div className={extraProvidersCount === 1 ? 'w-full max-w-[320px]' : undefined}>
                                   <Button
                                     variant="outline"
                                     className="w-full flex justify-center items-center text-green-700 border-green-200 hover:bg-green-50"
