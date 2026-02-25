@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"encoding/xml"
 	"net/http"
 	"strings"
@@ -52,22 +51,26 @@ func (h *Handler) WeChatMPSceneStatus(c *gin.Context) {
 		return
 	}
 	scene := c.Param("scene")
-	val, err := h.svc.GetDelWeChatMPScenePayload(context.Background(), scene)
-	if err != nil || val == "" {
+	payload, err := h.svc.GetWeChatMPScenePayload(context.Background(), scene)
+	if err != nil || payload.Scene == "" {
 		c.JSON(http.StatusNotFound, gin.H{"status": "expired"})
 		return
 	}
-	var payload weChatMPScenePayload
-	_ = json.Unmarshal([]byte(val), &payload)
-	if payload.Status != "ok" || payload.OTT == "" {
-		ttl := time.Until(time.Unix(payload.ExpireAt, 0))
-		if ttl > 0 {
-			_ = cache.RDB.Set(context.Background(), common.RedisKeyWeChatMPScene.F(scene), val, ttl).Err()
+	if payload.Status == "ok" && payload.OTT != "" {
+		if cache.RDB != nil {
+			_ = cache.RDB.Del(context.Background(), common.RedisKeyWeChatMPScene.F(scene)).Err()
 		}
-		c.JSON(http.StatusOK, gin.H{"status": "pending"})
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "ott": payload.OTT})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "ott": payload.OTT})
+	if payload.ExpireAt > 0 && time.Now().Unix() >= payload.ExpireAt {
+		if cache.RDB != nil {
+			_ = cache.RDB.Del(context.Background(), common.RedisKeyWeChatMPScene.F(scene)).Err()
+		}
+		c.JSON(http.StatusNotFound, gin.H{"status": "expired"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "pending"})
 }
 
 func (h *Handler) WeChatMPCallbackGet(c *gin.Context) {
@@ -177,6 +180,8 @@ func (h *Handler) WeChatMPCallbackPost(c *gin.Context) {
 		c.String(http.StatusOK, "success")
 		return
 	}
-	_, _ = h.svc.MarkWeChatMPSceneReady(context.Background(), scene, openid, user)
+	if _, e2 := h.svc.MarkWeChatMPSceneReady(context.Background(), scene, openid, user); e2 != nil {
+		logger.WithCtx(c).Error("auth.wechatmp mark scene ready failed", zap.Error(e2))
+	}
 	c.String(http.StatusOK, "success")
 }

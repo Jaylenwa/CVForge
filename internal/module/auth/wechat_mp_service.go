@@ -352,7 +352,10 @@ func (s *Service) FindOrCreateWeChatMPUser(ui weChatMPUserInfoResponse, openid s
 	if name == "" {
 		name = "WeChat User"
 	}
+	h := sha1.Sum([]byte(openid))
+	email := "wechatmp_" + hex.EncodeToString(h[:]) + "@oauth.invalid"
 	user = User{
+		Email:     email,
 		Name:      name,
 		AvatarURL: ui.HeadImgURL,
 		IsActive:  true,

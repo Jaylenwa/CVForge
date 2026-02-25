@@ -347,9 +347,13 @@ func (s *Service) FindOrCreateGithubUser(ui GithubUserInfo) (User, error) {
 	}
 
 	// Create new user
+	email := ui.Email
+	if email == "" {
+		email = "github_" + providerOpenID + "@oauth.invalid"
+	}
 	user = User{
 		Name:      ui.Name,
-		Email:     ui.Email, // GitHub might return empty email if private, but we try
+		Email:     email,
 		AvatarURL: ui.AvatarURL,
 		IsActive:  true,
 		Role:      s.initialRole(),
