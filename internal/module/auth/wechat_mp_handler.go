@@ -27,6 +27,11 @@ type weChatMPEvent struct {
 	Ticket       string   `xml:"Ticket"`
 }
 
+type weChatMPEncryptWrap struct {
+	XMLName xml.Name `xml:"xml"`
+	Encrypt string   `xml:"Encrypt"`
+}
+
 func (h *Handler) WeChatMPCreateScene(c *gin.Context) {
 	if !h.svc.FeatureWeChatMPEnabled() {
 		c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
@@ -70,11 +75,29 @@ func (h *Handler) WeChatMPCallbackGet(c *gin.Context) {
 		c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
 		return
 	}
+	msgSignature := c.Query("msg_signature")
 	signature := c.Query("signature")
 	timestamp := c.Query("timestamp")
 	nonce := c.Query("nonce")
 	echostr := c.Query("echostr")
-	if echostr == "" || !h.svc.VerifyWeChatMPSignature(signature, timestamp, nonce) {
+	if echostr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid signature"})
+		return
+	}
+	if msgSignature != "" {
+		if !h.svc.VerifyWeChatMPMsgSignature(msgSignature, timestamp, nonce, echostr) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid signature"})
+			return
+		}
+		plain, err := h.svc.decryptWeChatMPText(echostr)
+		if err != nil || plain == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid signature"})
+			return
+		}
+		c.String(http.StatusOK, plain)
+		return
+	}
+	if !h.svc.VerifyWeChatMPSignature(signature, timestamp, nonce) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid signature"})
 		return
 	}
@@ -86,19 +109,40 @@ func (h *Handler) WeChatMPCallbackPost(c *gin.Context) {
 		c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
 		return
 	}
+	msgSignature := c.Query("msg_signature")
 	signature := c.Query("signature")
 	timestamp := c.Query("timestamp")
 	nonce := c.Query("nonce")
-	if !h.svc.VerifyWeChatMPSignature(signature, timestamp, nonce) {
-		c.String(http.StatusOK, "success")
-		return
-	}
 
 	raw, err := c.GetRawData()
 	if err != nil || len(raw) == 0 {
 		c.String(http.StatusOK, "success")
 		return
 	}
+	if msgSignature != "" {
+		var wrap weChatMPEncryptWrap
+		if e := xml.Unmarshal(raw, &wrap); e != nil || strings.TrimSpace(wrap.Encrypt) == "" {
+			c.String(http.StatusOK, "success")
+			return
+		}
+		enc := strings.TrimSpace(wrap.Encrypt)
+		if !h.svc.VerifyWeChatMPMsgSignature(msgSignature, timestamp, nonce, enc) {
+			c.String(http.StatusOK, "success")
+			return
+		}
+		plain, e := h.svc.decryptWeChatMPText(enc)
+		if e != nil || plain == "" {
+			c.String(http.StatusOK, "success")
+			return
+		}
+		raw = []byte(plain)
+	} else {
+		if !h.svc.VerifyWeChatMPSignature(signature, timestamp, nonce) {
+			c.String(http.StatusOK, "success")
+			return
+		}
+	}
+
 	var ev weChatMPEvent
 	if e := xml.Unmarshal(raw, &ev); e != nil {
 		c.String(http.StatusOK, "success")

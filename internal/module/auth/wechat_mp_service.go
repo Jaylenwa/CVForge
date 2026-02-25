@@ -2,7 +2,11 @@ package auth
 
 import (
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/sha1"
+	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -79,6 +83,94 @@ func (s *Service) VerifyWeChatMPSignature(signature, timestamp, nonce string) bo
 	sort.Strings(parts)
 	h := sha1.Sum([]byte(strings.Join(parts, "")))
 	return hex.EncodeToString(h[:]) == signature
+}
+
+func (s *Service) VerifyWeChatMPMsgSignature(msgSignature, timestamp, nonce, encrypt string) bool {
+	token := s.sysConfig.Get(string(common.ConfigKeyWeChatMPToken))
+	if token == "" || msgSignature == "" || timestamp == "" || nonce == "" || encrypt == "" {
+		return false
+	}
+	parts := []string{token, timestamp, nonce, encrypt}
+	sort.Strings(parts)
+	h := sha1.Sum([]byte(strings.Join(parts, "")))
+	return hex.EncodeToString(h[:]) == msgSignature
+}
+
+func (s *Service) decryptWeChatMPText(encrypt string) (string, error) {
+	aesKey, ok := s.weChatMPAESKeyBytes()
+	if !ok {
+		return "", http.ErrNotSupported
+	}
+	wantAppID := s.sysConfig.Get(string(common.ConfigKeyWeChatMPAppID))
+	return decryptWeChatMPTextWithKey(aesKey, wantAppID, encrypt)
+}
+
+func (s *Service) weChatMPAESKeyBytes() ([]byte, bool) {
+	k := strings.TrimSpace(s.sysConfig.Get(string(common.ConfigKeyWeChatMPAESKey)))
+	if k == "" {
+		return nil, false
+	}
+	if m := len(k) % 4; m != 0 {
+		k += strings.Repeat("=", 4-m)
+	}
+	b, err := base64.StdEncoding.DecodeString(k)
+	if err != nil || len(b) != 32 {
+		return nil, false
+	}
+	return b, true
+}
+
+func decryptWeChatMPTextWithKey(aesKey []byte, appID string, encrypt string) (string, error) {
+	if len(aesKey) != 32 || encrypt == "" {
+		return "", http.ErrNotSupported
+	}
+	rawCipher, err := base64.StdEncoding.DecodeString(encrypt)
+	if err != nil {
+		return "", err
+	}
+	if len(rawCipher)%aes.BlockSize != 0 || len(rawCipher) == 0 {
+		return "", http.ErrNotSupported
+	}
+	block, err := aes.NewCipher(aesKey)
+	if err != nil {
+		return "", err
+	}
+	plain := make([]byte, len(rawCipher))
+	iv := aesKey[:aes.BlockSize]
+	cipher.NewCBCDecrypter(block, iv).CryptBlocks(plain, rawCipher)
+	plain, err = pkcs7Unpad(plain, aes.BlockSize)
+	if err != nil {
+		return "", err
+	}
+	if len(plain) < 20 {
+		return "", http.ErrNotSupported
+	}
+	msgLen := int(binary.BigEndian.Uint32(plain[16:20]))
+	if msgLen <= 0 || 20+msgLen > len(plain) {
+		return "", http.ErrNotSupported
+	}
+	msg := plain[20 : 20+msgLen]
+	appid := string(plain[20+msgLen:])
+	if appID != "" && appid != appID {
+		return "", http.ErrNotSupported
+	}
+	return string(msg), nil
+}
+
+func pkcs7Unpad(b []byte, blockSize int) ([]byte, error) {
+	if len(b) == 0 || len(b)%blockSize != 0 {
+		return nil, http.ErrNotSupported
+	}
+	pad := int(b[len(b)-1])
+	if pad <= 0 || pad > blockSize || pad > len(b) {
+		return nil, http.ErrNotSupported
+	}
+	for i := 0; i < pad; i++ {
+		if b[len(b)-1-i] != byte(pad) {
+			return nil, http.ErrNotSupported
+		}
+	}
+	return b[:len(b)-pad], nil
 }
 
 func (s *Service) getWeChatMPAccessToken(ctx context.Context) (string, error) {
