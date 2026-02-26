@@ -5,7 +5,7 @@ dist-ssr
 .idea
 .DS_Store
 .trae
-openresume.db
+cvforge.db
 __debug_*
 uploads
 makefile
