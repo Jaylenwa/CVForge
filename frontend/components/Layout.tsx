@@ -58,7 +58,7 @@ export const Navbar: React.FC = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">CVForge</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">{t('app.name')}</span>
             </Link>
             <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
               {navItems.map((item) => (
@@ -283,7 +283,7 @@ export const Footer: React.FC = () => {
         <footer className="bg-slate-900 text-white py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
-                    <h3 className="text-xl font-bold mb-4">CVForge</h3>
+                    <h3 className="text-xl font-bold mb-4">{t('app.name')}</h3>
                     <p className="text-slate-400 text-sm">{t('hero.desc')}</p>
                 </div>
                 <div>
@@ -311,7 +311,7 @@ export const Footer: React.FC = () => {
             </div>
             <div className="max-w-7xl mx-auto px-4 mt-4 pt-4 border-t border-slate-800 text-center text-slate-500 text-sm">
                 <div>
-                  &copy; {new Date().getFullYear()} CVForge. {t('footer.rights')}
+                  &copy; {new Date().getFullYear()} {t('app.name')}. {t('footer.rights')}
                 </div>
                 <a
                   href="https://beian.miit.gov.cn/"

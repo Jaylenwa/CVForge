@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Language } from '../types';
 
 interface Translations {
@@ -9,6 +9,8 @@ interface Translations {
 
 const translations: Translations = {
   en: {
+    'app.name': 'CVForge',
+    'app.title': 'CVForge - Build Your Future',
     'nav.templates': 'Templates',
     'nav.dashboard': 'My Resumes',
     'nav.pricing': 'Pricing',
@@ -580,6 +582,8 @@ const translations: Translations = {
     'admin.config.key.frontendBaseUrl': 'Frontend Base URL'
   },
   zh: {
+    'app.name': '简历匠',
+    'app.title': '简历匠 - 打造你的未来',
     'nav.templates': '模板库',
     'nav.dashboard': '我的简历',
     'nav.pricing': '订阅方案',
@@ -1164,18 +1168,25 @@ export const LanguageProvider: React.FC<{ children: ReactNode; languageOverride?
     return saved || 'en';
   });
 
+  const usedLang: Language = languageOverride || languageState;
+
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('lang', lang);
   };
 
   const t = (key: string): string => {
-    const usedLang = languageOverride || languageState;
     return translations[usedLang][key] || key;
   };
 
+  useEffect(() => {
+    document.documentElement.lang = usedLang;
+    const title = translations[usedLang]?.['app.title'] || translations[usedLang]?.['app.name'] || 'CVForge';
+    document.title = title;
+  }, [usedLang]);
+
   return (
-    <LanguageContext.Provider value={{ language: languageOverride || languageState, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language: usedLang, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
