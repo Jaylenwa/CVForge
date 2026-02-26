@@ -1,6 +1,6 @@
 package taxonomy
 
-import "openresume/internal/models"
+import "cvforge/internal/models"
 
 type JobCategory = models.JobCategory
 type JobCategoryI18n = models.JobCategoryI18n

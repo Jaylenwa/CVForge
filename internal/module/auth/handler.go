@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"openresume/internal/infra/config"
-	"openresume/internal/pkg/logger"
+	"cvforge/internal/infra/config"
+	"cvforge/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

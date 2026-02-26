@@ -11,12 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/config"
-	"openresume/internal/infra/database"
-	conf "openresume/internal/module/config"
-	"openresume/internal/pkg/mailer"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/config"
+	"cvforge/internal/infra/database"
+	conf "cvforge/internal/module/config"
+	"cvforge/internal/pkg/mailer"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"

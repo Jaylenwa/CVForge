@@ -1,5 +1,5 @@
 package pdf
 
-import "openresume/internal/models"
+import "cvforge/internal/models"
 
 type Resume = models.Resume

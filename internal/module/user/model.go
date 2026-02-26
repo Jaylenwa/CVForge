@@ -1,6 +1,6 @@
 package user
 
-import "openresume/internal/models"
+import "cvforge/internal/models"
 
 type User = models.User
 type AuditLog = models.AuditLog

@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/database"
-	conf "openresume/internal/module/config"
-	"openresume/internal/pkg/storage"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/database"
+	conf "cvforge/internal/module/config"
+	"cvforge/internal/pkg/storage"
 
 	"github.com/gin-gonic/gin"
 )

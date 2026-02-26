@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/database"
-	"openresume/internal/pkg/logger"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

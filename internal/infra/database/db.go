@@ -3,9 +3,9 @@ package database
 import (
 	"os"
 
-	"openresume/internal/infra/config"
-	"openresume/internal/models"
-	"openresume/internal/pkg/logger"
+	"cvforge/internal/infra/config"
+	"cvforge/internal/models"
+	"cvforge/internal/pkg/logger"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"

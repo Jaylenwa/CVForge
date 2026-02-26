@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"openresume/internal/infra/cache"
-	"openresume/internal/pkg/logger"
-	"openresume/internal/pkg/storage"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/pkg/logger"
+	"cvforge/internal/pkg/storage"
 
 	"go.uber.org/zap"
 )

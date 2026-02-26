@@ -8,11 +8,11 @@ import (
 	"strings"
 	"time"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/config"
-	"openresume/internal/infra/database"
-	"openresume/internal/models"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/config"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

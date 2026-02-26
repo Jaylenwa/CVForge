@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"openresume/internal/infra/config"
-	"openresume/internal/infra/database"
-	"openresume/internal/models"
+	"cvforge/internal/infra/config"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/models"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

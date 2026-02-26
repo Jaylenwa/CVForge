@@ -18,7 +18,7 @@ COPY . .
 RUN CGO_ENABLED=1 \
     GOOS=linux \
     GOARCH=$TARGETARCH \
-    go build -o /app/openresume ./main.go
+    go build -o /app/cvforge ./main.go
 
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -26,9 +26,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY --from=build /app/openresume /usr/local/bin/openresume
+COPY --from=build /app/cvforge /usr/local/bin/cvforge
 RUN mkdir -p /app/uploads
 
 ENV PORT=8080
 EXPOSE 8080
-CMD ["openresume"]
+CMD ["cvforge"]

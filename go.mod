@@ -1,4 +1,4 @@
-module openresume
+module cvforge
 
 go 1.24.0
 

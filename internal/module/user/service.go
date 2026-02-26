@@ -3,8 +3,8 @@ package user
 import (
 	"context"
 	"errors"
-	conf "openresume/internal/module/config"
-	"openresume/internal/pkg/storage"
+	conf "cvforge/internal/module/config"
+	"cvforge/internal/pkg/storage"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"

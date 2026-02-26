@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"openresume/internal/infra/cache"
+	"cvforge/internal/infra/cache"
 
 	"github.com/google/uuid"
 )

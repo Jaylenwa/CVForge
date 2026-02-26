@@ -3,9 +3,9 @@ package middleware
 import (
 	"net/http"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/database"
-	"openresume/internal/models"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/models"
 
 	"github.com/gin-gonic/gin"
 )

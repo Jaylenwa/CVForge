@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
 )
 
 type TemplateDTO struct {

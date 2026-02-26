@@ -1,7 +1,7 @@
 package models
 
 import (
-	"openresume/internal/common"
+	"cvforge/internal/common"
 
 	"gorm.io/gorm"
 )

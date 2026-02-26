@@ -3,7 +3,7 @@ package resume
 import (
 	"sort"
 
-	"openresume/internal/common"
+	"cvforge/internal/common"
 )
 
 type ResumeDTO struct {

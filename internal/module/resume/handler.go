@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"openresume/internal/middleware"
-	"openresume/internal/pkg/logger"
+	"cvforge/internal/middleware"
+	"cvforge/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

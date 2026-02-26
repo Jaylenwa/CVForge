@@ -1,8 +1,8 @@
 package upload
 
 import (
-	conf "openresume/internal/module/config"
-	"openresume/internal/pkg/storage"
+	conf "cvforge/internal/module/config"
+	"cvforge/internal/pkg/storage"
 
 	"github.com/gin-gonic/gin"
 )

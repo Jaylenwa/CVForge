@@ -4,8 +4,8 @@ import (
 	"errors"
 	"strings"
 
-	"openresume/internal/infra/database"
-	"openresume/internal/models"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/models"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"

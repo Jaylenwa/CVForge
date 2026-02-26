@@ -17,9 +17,9 @@ import (
 	"strings"
 	"time"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/database"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/database"
 
 	"github.com/google/uuid"
 )

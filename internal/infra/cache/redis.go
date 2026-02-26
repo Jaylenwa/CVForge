@@ -3,7 +3,7 @@ package cache
 import (
 	"context"
 
-	"openresume/internal/infra/config"
+	"cvforge/internal/infra/config"
 
 	"github.com/redis/go-redis/v9"
 )

@@ -2,8 +2,8 @@ package config
 
 import (
 	"net/http"
-	"openresume/internal/models"
-	"openresume/internal/pkg/logger"
+	"cvforge/internal/models"
+	"cvforge/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"

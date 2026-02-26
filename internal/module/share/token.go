@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"openresume/internal/infra/config"
+	"cvforge/internal/infra/config"
 
 	"github.com/golang-jwt/jwt/v5"
 )

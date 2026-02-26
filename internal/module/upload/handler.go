@@ -3,7 +3,7 @@ package upload
 import (
 	"io"
 	"net/http"
-	"openresume/internal/pkg/logger"
+	"cvforge/internal/pkg/logger"
 	"path/filepath"
 	"strings"
 

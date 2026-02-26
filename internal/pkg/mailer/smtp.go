@@ -18,7 +18,7 @@ type SMTPSettings struct {
 }
 
 func SendVerificationCode(smtpCfg SMTPSettings, toEmail, code string) error {
-	subject := "Your OpenResume verification code"
+	subject := "Your CVForge verification code"
 	body := fmt.Sprintf("<div style=\"font-family:Arial,sans-serif;font-size:14px;color:#333\">"+
 		"<p>Your verification code is:</p>"+
 		"<p style=\"font-size:24px;font-weight:bold;letter-spacing:4px\">%s</p>"+

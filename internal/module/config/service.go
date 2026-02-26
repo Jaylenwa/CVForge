@@ -2,11 +2,11 @@ package config
 
 import (
 	"context"
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/database"
-	"openresume/internal/models"
-	"openresume/internal/pkg/storage"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/models"
+	"cvforge/internal/pkg/storage"
 	"os"
 	"strconv"
 	"time"

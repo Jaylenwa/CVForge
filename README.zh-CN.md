@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>OpenResume</h1>
+  <h1>简历匠</h1>
   <p>AI 驱动的中英文简历制作工具，涵盖模板、导出、分享与管理后台。</p>
   <p>
     <a href="README.md">English</a> ·
@@ -98,7 +98,7 @@
 ```bash
 export PORT=8080
 export DB_DSN=""                            # 为空时使用 SQLite
-export SQLITE_PATH="openresume.db"          # SQLite 文件路径
+export SQLITE_PATH="cvforge.db"          # SQLite 文件路径
 export REDIS_ADDR="127.0.0.1:6379"
 export REDIS_PASSWORD=""
 export JWT_SECRET="请替换为强随机密钥"
@@ -140,20 +140,20 @@ VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
   - 将 `CORS_ORIGINS`、`FRONTEND_BASE_URL`、`CHROME_API_URL` 与前端的 `VITE_OAUTH_ALLOWED_ORIGINS` 替换为你的域名。
 
 ### 日志与监控
-- 请求日志：使用 Zap 的生产 JSON 格式记录 HTTP 访问，包含 method、path、status、duration、request_id。参考中间件 [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/logger.go#L11-L17) 与日志封装 [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/pkg/logger/logger.go#L10-L34)。
-- 请求 ID 关联：通过 [requestid.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/requestid.go#L8-L16) 生成/透传 X-Request-ID，并在日志中附带，便于端到端关联。
-- 指标：内置 Prometheus 指标，计数 http_requests_total 与直方图 http_request_duration_seconds；端点为 `GET /api/v1/metrics`，见 [metrics.go](file:///Users/jaylen/go/src/OpenResume/internal/pkg/metrics/metrics.go#L12-L29)。
-- Loki/Grafana（可选）：提供示例栈用于聚合容器日志与可视化，见 [docker-compose.yaml](file:///Users/jaylen/go/src/OpenResume/loki-stack/docker-compose.yaml) 与 [alloy.river](file:///Users/jaylen/go/src/OpenResume/loki-stack/alloy.river)。
+- 请求日志：使用 Zap 的生产 JSON 格式记录 HTTP 访问，包含 method、path、status、duration、request_id。参考中间件 [logger.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/logger.go#L11-L17) 与日志封装 [logger.go](file:///Users/jaylen/go/src/CVForge/internal/pkg/logger/logger.go#L10-L34)。
+- 请求 ID 关联：通过 [requestid.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/requestid.go#L8-L16) 生成/透传 X-Request-ID，并在日志中附带，便于端到端关联。
+- 指标：内置 Prometheus 指标，计数 http_requests_total 与直方图 http_request_duration_seconds；端点为 `GET /api/v1/metrics`，见 [metrics.go](file:///Users/jaylen/go/src/CVForge/internal/pkg/metrics/metrics.go#L12-L29)。
+- Loki/Grafana（可选）：提供示例栈用于聚合容器日志与可视化，见 [docker-compose.yaml](file:///Users/jaylen/go/src/CVForge/loki-stack/docker-compose.yaml) 与 [alloy.river](file:///Users/jaylen/go/src/CVForge/loki-stack/alloy.river)。
 
 ### 中间件
-- RequestID：生成/透传 `X-Request-ID`，见 [requestid.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/requestid.go#L8-L16)
-- Logger：HTTP 访问日志，见 [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/logger.go#L11-L17)
+- RequestID：生成/透传 `X-Request-ID`，见 [requestid.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/requestid.go#L8-L16)
+- Logger：HTTP 访问日志，见 [logger.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/logger.go#L11-L17)
 - Recovery：Gin 内置异常恢复
-- CORS：按系统配置允许来源，见 [cors.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/cors.go#L12-L37)
-- RateLimit（IP 级）：基于 Redis 的限流，见 [ratelimit.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/ratelimit.go#L14-L28)
-- RateLimitUser（用户级）：登录用户/匿名身份的限流，见 [ratelimit_user.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/ratelimit_user.go#L15-L34)
-- DailyUV：按日去重的 UV 统计，见 [uv.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/uv.go#L20-L41)
-- Auth / RequireRole：JWT 校验与角色控制，见 [auth.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/auth.go#L15-L54) 与 [admin.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/admin.go#L13-L41)
+- CORS：按系统配置允许来源，见 [cors.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/cors.go#L12-L37)
+- RateLimit（IP 级）：基于 Redis 的限流，见 [ratelimit.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/ratelimit.go#L14-L28)
+- RateLimitUser（用户级）：登录用户/匿名身份的限流，见 [ratelimit_user.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/ratelimit_user.go#L15-L34)
+- DailyUV：按日去重的 UV 统计，见 [uv.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/uv.go#L20-L41)
+- Auth / RequireRole：JWT 校验与角色控制，见 [auth.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/auth.go#L15-L54) 与 [admin.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/admin.go#L13-L41)
 
 ### API 概览
 - 公共接口：
@@ -190,7 +190,7 @@ VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
   - `POST /screenshot` 用于生成图片
 - 服务会导航到打印路由并执行 PDF 或截图导出；见 `internal/module/pdf/service.go:92`。
 - 确保 Chromium 已安装中文字体以正确显示 CJK 内容。
-- 提供异步导出队列：提交、查询与下载接口见上方 API；任务由内置工作线程处理与上传，参考 [worker.go](file:///Users/jaylen/go/src/OpenResume/internal/module/pdf/worker.go#L35-L76) 与 [worker.go:StartWorker](file:///Users/jaylen/go/src/OpenResume/internal/module/pdf/worker.go#L89-L104)。
+- 提供异步导出队列：提交、查询与下载接口见上方 API；任务由内置工作线程处理与上传，参考 [worker.go](file:///Users/jaylen/go/src/CVForge/internal/module/pdf/worker.go#L35-L76) 与 [worker.go:StartWorker](file:///Users/jaylen/go/src/CVForge/internal/module/pdf/worker.go#L89-L104)。
 
 ### 国际化
 - 内置语言切换，语言偏好持久化在 `localStorage`（键名 `lang`）。

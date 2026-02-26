@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"openresume/internal/infra/database"
+	"cvforge/internal/infra/database"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"

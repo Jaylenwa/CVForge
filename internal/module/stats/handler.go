@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/database"
-	"openresume/internal/models"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/models"
 
 	"context"
 

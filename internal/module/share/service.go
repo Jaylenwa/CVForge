@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"time"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/database"
-	resmod "openresume/internal/module/resume"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/database"
+	resmod "cvforge/internal/module/resume"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

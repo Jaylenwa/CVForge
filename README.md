@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>OpenResume</h1>
+  <h1>CVForge</h1>
   <p>AI-powered, bilingual resume builder with templates, exports, sharing, and admin tools.</p>
   <p>
     <a href="README.md">English</a> ·
@@ -7,7 +7,7 @@
   </p>
 </div>
 
-### What Is OpenResume
+### What Is CVForge
 - Full-stack resume builder focused on speed, ATS-friendly design, and strong UX.
 - AI assists with writing and polishing content.
 - Export to PDF/PNG using a remote Chromium instance.
@@ -70,20 +70,20 @@
    - Frontend Nginx proxies `/api/` and `/public/` to backend; see `frontend/nginx.conf`.
  
  ### Logging & Monitoring
- - Request logging: Zap production JSON logs for HTTP access, including method, path, status, duration, request_id. See middleware [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/logger.go#L11-L17) and logger wrapper [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/pkg/logger/logger.go#L10-L34).
- - Request ID propagation: `X-Request-ID` is generated/forwarded by [requestid.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/requestid.go#L8-L16) and attached to logs for end-to-end tracing.
- - Metrics: Built-in Prometheus metrics with `http_requests_total` and `http_request_duration_seconds`; endpoint `GET /api/v1/metrics`. See [metrics.go](file:///Users/jaylen/go/src/OpenResume/internal/pkg/metrics/metrics.go#L12-L29).
- - Optional Loki/Grafana stack: Example setup for container log aggregation and dashboards in [docker-compose.yaml](file:///Users/jaylen/go/src/OpenResume/loki-stack/docker-compose.yaml) and [alloy.river](file:///Users/jaylen/go/src/OpenResume/loki-stack/alloy.river).
+ - Request logging: Zap production JSON logs for HTTP access, including method, path, status, duration, request_id. See middleware [logger.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/logger.go#L11-L17) and logger wrapper [logger.go](file:///Users/jaylen/go/src/CVForge/internal/pkg/logger/logger.go#L10-L34).
+ - Request ID propagation: `X-Request-ID` is generated/forwarded by [requestid.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/requestid.go#L8-L16) and attached to logs for end-to-end tracing.
+ - Metrics: Built-in Prometheus metrics with `http_requests_total` and `http_request_duration_seconds`; endpoint `GET /api/v1/metrics`. See [metrics.go](file:///Users/jaylen/go/src/CVForge/internal/pkg/metrics/metrics.go#L12-L29).
+ - Optional Loki/Grafana stack: Example setup for container log aggregation and dashboards in [docker-compose.yaml](file:///Users/jaylen/go/src/CVForge/loki-stack/docker-compose.yaml) and [alloy.river](file:///Users/jaylen/go/src/CVForge/loki-stack/alloy.river).
  
  ### Middlewares
- - RequestID: generate/forward `X-Request-ID`, see [requestid.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/requestid.go#L8-L16)
- - Logger: HTTP access logging, see [logger.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/logger.go#L11-L17)
+ - RequestID: generate/forward `X-Request-ID`, see [requestid.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/requestid.go#L8-L16)
+ - Logger: HTTP access logging, see [logger.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/logger.go#L11-L17)
  - Recovery: Gin’s built-in panic recovery
- - CORS: allow origins per system config, see [cors.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/cors.go#L12-L37)
- - RateLimit (IP-based): Redis-backed limiting, see [ratelimit.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/ratelimit.go#L14-L28)
- - RateLimitUser (user-based): limits by logged-in user or IP, see [ratelimit_user.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/ratelimit_user.go#L15-L34)
- - DailyUV: per-day unique visitor counting, see [uv.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/uv.go#L20-L41)
- - Auth / RequireRole: JWT validation and role gating, see [auth.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/auth.go#L15-L54) and [admin.go](file:///Users/jaylen/go/src/OpenResume/internal/middleware/admin.go#L13-L41)
+ - CORS: allow origins per system config, see [cors.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/cors.go#L12-L37)
+ - RateLimit (IP-based): Redis-backed limiting, see [ratelimit.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/ratelimit.go#L14-L28)
+ - RateLimitUser (user-based): limits by logged-in user or IP, see [ratelimit_user.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/ratelimit_user.go#L15-L34)
+ - DailyUV: per-day unique visitor counting, see [uv.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/uv.go#L20-L41)
+ - Auth / RequireRole: JWT validation and role gating, see [auth.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/auth.go#L15-L54) and [admin.go](file:///Users/jaylen/go/src/CVForge/internal/middleware/admin.go#L13-L41)
  
  ### Configuration
  Backend process environment (read at startup):
@@ -114,7 +114,7 @@ Configuration examples:
 ```bash
 export PORT=8080
 export DB_DSN=""                            # use SQLite when empty
-export SQLITE_PATH="openresume.db"          # SQLite file path
+export SQLITE_PATH="cvforge.db"          # SQLite file path
 export REDIS_ADDR="127.0.0.1:6379"
 export REDIS_PASSWORD=""
 export JWT_SECRET="replace-with-a-strong-secret"
@@ -190,7 +190,7 @@ VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
    - `POST /screenshot` for image generation
  - The service navigates to the Print route and executes `page.PrintToPDF` or screenshot; see `internal/module/pdf/service.go:92`.
  - Ensure Chinese fonts are installed in Chromium for CJK content.
- - Asynchronous export queue: submit, query, and download via the endpoints above. Jobs are processed by an in-process worker and uploaded to storage; see [worker.go](file:///Users/jaylen/go/src/OpenResume/internal/module/pdf/worker.go#L35-L76) and [worker.go:StartWorker](file:///Users/jaylen/go/src/OpenResume/internal/module/pdf/worker.go#L89-L104).
+ - Asynchronous export queue: submit, query, and download via the endpoints above. Jobs are processed by an in-process worker and uploaded to storage; see [worker.go](file:///Users/jaylen/go/src/CVForge/internal/module/pdf/worker.go#L35-L76) and [worker.go:StartWorker](file:///Users/jaylen/go/src/CVForge/internal/module/pdf/worker.go#L89-L104).
 
 ### Internationalization
 - Built-in language switching persists in `localStorage` (`lang` key).

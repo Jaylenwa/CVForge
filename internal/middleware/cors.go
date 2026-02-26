@@ -3,8 +3,8 @@ package middleware
 import (
 	"strings"
 
-	"openresume/internal/common"
-	conf "openresume/internal/module/config"
+	"cvforge/internal/common"
+	conf "cvforge/internal/module/config"
 
 	"github.com/gin-gonic/gin"
 )

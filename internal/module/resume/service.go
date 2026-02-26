@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"openresume/internal/common"
-	"openresume/internal/infra/cache"
-	"openresume/internal/middleware"
+	"cvforge/internal/common"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/microcosm-cc/bluemonday"

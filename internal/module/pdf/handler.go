@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/database"
-	"openresume/internal/models"
-	"openresume/internal/pkg/logger"
-	"openresume/internal/pkg/storage"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/models"
+	"cvforge/internal/pkg/logger"
+	"cvforge/internal/pkg/storage"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

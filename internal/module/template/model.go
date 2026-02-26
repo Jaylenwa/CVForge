@@ -1,5 +1,5 @@
 package template
 
-import "openresume/internal/models"
+import "cvforge/internal/models"
 
 type Template = models.Template

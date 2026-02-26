@@ -1,6 +1,6 @@
 package share
 
-import "openresume/internal/models"
+import "cvforge/internal/models"
 
 type ShareLink = models.ShareLink
 type Resume = models.Resume

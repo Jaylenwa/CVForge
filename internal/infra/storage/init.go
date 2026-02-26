@@ -2,13 +2,13 @@ package storage
 
 import (
 	"context"
-	"openresume/internal/infra/cache"
-	"openresume/internal/infra/config"
-	"openresume/internal/infra/database"
-	"openresume/internal/models"
-	svcConfig "openresume/internal/module/config"
-	"openresume/internal/module/seed"
-	tplmod "openresume/internal/module/template"
+	"cvforge/internal/infra/cache"
+	"cvforge/internal/infra/config"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/models"
+	svcConfig "cvforge/internal/module/config"
+	"cvforge/internal/module/seed"
+	tplmod "cvforge/internal/module/template"
 )
 
 func Init() error {

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	"openresume/internal/common"
+	"cvforge/internal/common"
 )
 
 func ValidatePresetDataJSON(dataJSON string) error {

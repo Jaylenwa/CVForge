@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       PORT: "8080"
-      DB_DSN: "openresume:!@!$&#!^@tcp(mysql:3306)/openresume?charset=utf8mb4&parseTime=True&loc=Local"
+      DB_DSN: "cvforge:!@!$&#!^@tcp(mysql:3306)/cvforge?charset=utf8mb4&parseTime=True&loc=Local"
       REDIS_ADDR: "redis:6379"
       REDIS_PASSWORD: "!@!$&#!^"
       JWT_SECRET: "abcdefghijklmnopqrstuvwxyz"
@@ -14,7 +14,7 @@ services:
       FRONTEND_BASE_URL: "http://frontend"
       CHROME_API_URL: "http://chrome:3000"
     volumes:
-      - /var/lib/openresume/upload:/app/uploads
+      - /var/lib/cvforge/upload:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -43,12 +43,12 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "!@!$&#!^"
-      MYSQL_DATABASE: openresume
-      MYSQL_USER: openresume
+      MYSQL_DATABASE: cvforge
+      MYSQL_USER: cvforge
       MYSQL_PASSWORD: "!@!$&#!^"
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     volumes:
-      - /var/lib/openresume/mysql:/var/lib/mysql
+      - /var/lib/cvforge/mysql:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
@@ -63,7 +63,7 @@ services:
       REDIS_PASSWORD: "!@!$&#!^"
     command: ["redis-server", "--appendonly", "yes", "--requirepass", "!@!$&#!^"]
     volumes:
-      - /var/lib/openresume/redis:/data
+      - /var/lib/cvforge/redis:/data
     ports:
       - "63799:6379"
 

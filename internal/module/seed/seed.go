@@ -13,11 +13,11 @@ import (
 	"sort"
 	"strings"
 
-	"openresume/internal/infra/database"
-	"openresume/internal/module/preset"
-	"openresume/internal/module/taxonomy"
-	tplmod "openresume/internal/module/template"
-	"openresume/internal/pkg/logger"
+	"cvforge/internal/infra/database"
+	"cvforge/internal/module/preset"
+	"cvforge/internal/module/taxonomy"
+	tplmod "cvforge/internal/module/template"
+	"cvforge/internal/pkg/logger"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -388,7 +388,7 @@ func importCategories(tx *gorm.DB, repo *taxonomy.Repo, list []SeedJobCategory, 
 
 func RunCLI(args []string) int {
 	if len(args) == 0 {
-		_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed <import-default|import|templates-import> [--file path]")
+		_, _ = fmt.Fprintln(os.Stderr, "usage: cvforge seed <import-default|import|templates-import> [--file path]")
 		return 2
 	}
 
@@ -419,7 +419,7 @@ func RunCLI(args []string) int {
 		return 0
 
 	case "import":
-		fs := flag.NewFlagSet("openresume seed import", flag.ContinueOnError)
+		fs := flag.NewFlagSet("cvforge seed import", flag.ContinueOnError)
 		fs.SetOutput(os.Stderr)
 		filePath := fs.String("file", "", "seed json file path")
 		dirPath := fs.String("dir", "", "seed directory path (categories.json, roles.json, presets.json)")
@@ -427,7 +427,7 @@ func RunCLI(args []string) int {
 			return 2
 		}
 		if (*filePath == "" && *dirPath == "") || (*filePath != "" && *dirPath != "") {
-			_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed import --file path/to/seed.json | --dir path/to/seed-dir")
+			_, _ = fmt.Fprintln(os.Stderr, "usage: cvforge seed import --file path/to/seed.json | --dir path/to/seed-dir")
 			return 2
 		}
 		var s SeedData
@@ -450,7 +450,7 @@ func RunCLI(args []string) int {
 		return 0
 
 	default:
-		_, _ = fmt.Fprintln(os.Stderr, "usage: openresume seed <import-default|import|templates-import|templates-import-default> [--file path]")
+		_, _ = fmt.Fprintln(os.Stderr, "usage: cvforge seed <import-default|import|templates-import|templates-import-default> [--file path]")
 		return 2
 	}
 }

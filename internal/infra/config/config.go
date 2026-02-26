@@ -19,7 +19,7 @@ func Load() Config {
 	CF = Config{
 		Port:          getenv("PORT", "8080"),
 		MySQLDSN:      getenv("DB_DSN", ""),
-		SQLitePath:    getenv("SQLITE_PATH", "openresume.db"),
+		SQLitePath:    getenv("SQLITE_PATH", "cvforge.db"),
 		RedisAddr:     getenv("REDIS_ADDR", "127.0.0.1:6379"),
 		RedisPassword: getenv("REDIS_PASSWORD", ""),
 		JWTSecret:     getenv("JWT_SECRET", "abcdefghijklmnopqrstuvwxyz"),

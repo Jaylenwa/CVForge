@@ -1,7 +1,7 @@
 package share
 
 import (
-	"openresume/internal/infra/database"
+	"cvforge/internal/infra/database"
 
 	"gorm.io/gorm"
 )

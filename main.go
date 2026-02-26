@@ -7,12 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"openresume/internal/infra/config"
-	"openresume/internal/infra/storage"
-	"openresume/internal/module/pdf"
-	"openresume/internal/module/seed"
-	"openresume/internal/pkg/logger"
-	"openresume/internal/router"
+	"cvforge/internal/infra/config"
+	"cvforge/internal/infra/storage"
+	"cvforge/internal/module/pdf"
+	"cvforge/internal/module/seed"
+	"cvforge/internal/pkg/logger"
+	"cvforge/internal/router"
 
 	"go.uber.org/zap"
 )

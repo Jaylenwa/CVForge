@@ -30,20 +30,20 @@ loki.process "pipeline" {
 
   stage.static_labels {
     values = {
-      job = "openresume",
+      job = "cvforge",
     }
   }
 
   stage.match {
-    selector = "{container_name!~\"^/?openresume-.*\"}"
+    selector = "{container_name!~\"^/?cvforge-.*\"}"
     action = "drop"
-    drop_counter_reason = "non_openresume_container"
+    drop_counter_reason = "non_cvforge_container"
   }
 
   stage.docker {}
 
   stage.match {
-    selector = "{container_name=~\"^/?openresume-backend.*\"}"
+    selector = "{container_name=~\"^/?cvforge-backend.*\"}"
     action = "keep"
     stage.json {
       expressions = {
