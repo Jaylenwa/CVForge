@@ -1,16 +1,16 @@
 # ===== 可配置变量 =====
-IMAGE_NAME := openresume-backend:latest
-TAR_NAME := openresume-backend.tar
+IMAGE_NAME := cvforge-backend:latest
+TAR_NAME := cvforge-backend.tar
 DOCKERFILE := Dockerfile
-FRONTEND_IMAGE_NAME := openresume-frontend:latest
-FRONTEND_TAR_NAME := openresume-frontend.tar
+FRONTEND_IMAGE_NAME := cvforge-frontend:latest
+FRONTEND_TAR_NAME := cvforge-frontend.tar
 FRONTEND_DOCKERFILE := frontend/Dockerfile
 
 REMOTE_USER := root
 REMOTE_HOST := 182.254.166.74
 REMOTE_PORT := 22
 REMOTE_DIR := /root/docker
-REMOTE_COMPOSE_DIR := /root/OpenResume
+REMOTE_COMPOSE_DIR := /root/CVForge
 
 # ===== 平台控制 =====
 PLATFORM := linux/amd64

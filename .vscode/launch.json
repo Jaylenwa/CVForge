@@ -15,7 +15,7 @@
                 "CHROME_API_URL": "http://localhost:3001",
                 "FRONTEND_BASE_URL": "http://host.docker.internal:3000",
                 "GORM_LOG": "DEV",
-                // "DB_DSN": "openresume:!@!$&#!^@tcp(182.254.166.74:33066)/openresume?charset=utf8mb4&parseTime=True&loc=Local",
+                // "DB_DSN": "cvforge:!@!$&#!^@tcp(182.254.166.74:33066)/cvforge?charset=utf8mb4&parseTime=True&loc=Local",
             }
         }
     ]
