@@ -101,7 +101,20 @@ export const UsersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {items.map((u: AdminUser) => (
+                {items.map((u: AdminUser) => {
+                  const email = String(u.email || '').trim();
+                  const provider = String(u.loginProvider || (u.providers && u.providers[0]) || (email ? 'email' : '')).toLowerCase();
+                  const providerLabel = provider === 'github' ? 'GitHub' : provider === 'wechat_mp' ? 'WeChat' : '-';
+
+                  const icon = email
+                    ? <Mail className="w-3 h-3" />
+                    : provider === 'github'
+                      ? <img src="/github.svg" alt="GitHub" className="w-3 h-3" />
+                      : provider === 'wechat_mp'
+                        ? <img src="/wechat.svg" alt="WeChat" className="w-3 h-3" />
+                        : null;
+
+                  return (
                   <tr key={u.id} className="hover:bg-blue-50/30 transition-colors">
                     <td className="px-6 py-4 text-sm text-gray-500 font-mono">#{u.id}</td>
                     <td className="px-6 py-4">
@@ -112,8 +125,8 @@ export const UsersPage: React.FC = () => {
                         <div>
                           <div className="text-sm font-semibold text-gray-900">{u.name || '-'}</div>
                           <div className="text-xs text-gray-500 flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {u.email}
+                            {icon}
+                            {email || providerLabel}
                           </div>
                         </div>
                       </div>
@@ -179,7 +192,8 @@ export const UsersPage: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

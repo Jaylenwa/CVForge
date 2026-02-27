@@ -64,6 +64,51 @@ func parseIntDefault(s string, d int) int {
 	return n
 }
 
+func fetchOAuthProviders(userIDs []uint) (map[uint][]common.ProviderType, error) {
+	out := make(map[uint][]common.ProviderType, len(userIDs))
+	if len(userIDs) == 0 {
+		return out, nil
+	}
+
+	var rows []struct {
+		UserID   uint                `gorm:"column:user_id"`
+		Provider common.ProviderType `gorm:"column:provider"`
+	}
+	if err := database.DB.Model(&OAuthAccount{}).Select("user_id, provider").Where("user_id IN ?", userIDs).Find(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	sets := make(map[uint]map[common.ProviderType]struct{}, len(userIDs))
+	for _, r := range rows {
+		if r.UserID == 0 || r.Provider == "" {
+			continue
+		}
+		s, ok := sets[r.UserID]
+		if !ok {
+			s = map[common.ProviderType]struct{}{}
+			sets[r.UserID] = s
+		}
+		s[r.Provider] = struct{}{}
+	}
+
+	for uid, s := range sets {
+		ordered := make([]common.ProviderType, 0, len(s))
+		if _, ok := s[common.WechatMP]; ok {
+			ordered = append(ordered, common.WechatMP)
+			delete(s, common.WechatMP)
+		}
+		if _, ok := s[common.Github]; ok {
+			ordered = append(ordered, common.Github)
+			delete(s, common.Github)
+		}
+		for p := range s {
+			ordered = append(ordered, p)
+		}
+		out[uid] = ordered
+	}
+	return out, nil
+}
+
 func (h *AdminHandler) AdminList(c *gin.Context) {
 	page := parseIntDefault(c.Query("page"), 1)
 	size := parseIntDefault(c.Query("pageSize"), 20)
@@ -105,22 +150,46 @@ func (h *AdminHandler) AdminList(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	userIDs := make([]uint, 0, len(list))
+	for _, u := range list {
+		userIDs = append(userIDs, u.ID)
+	}
+	providersMap, err := fetchOAuthProviders(userIDs)
+	if err != nil {
+		logger.WithCtx(c).Error("user.admin_list fetch oauth providers failed", zap.Error(err))
+		providersMap = map[uint][]common.ProviderType{}
+	}
+
 	items := make([]gin.H, 0, len(list))
 	for _, u := range list {
 		email := ""
 		if u.Email != nil {
 			email = *u.Email
 		}
+		providers := providersMap[u.ID]
+		providerStrs := make([]string, 0, len(providers))
+		for _, p := range providers {
+			providerStrs = append(providerStrs, string(p))
+		}
+		loginProvider := ""
+		if strings.TrimSpace(email) != "" {
+			loginProvider = "email"
+		} else if len(providers) > 0 {
+			loginProvider = string(providers[0])
+		}
 		items = append(items, gin.H{
-			"id":          u.ID,
-			"email":       email,
-			"name":        u.Name,
-			"avatarUrl":   u.AvatarURL,
-			"language":    u.Language,
-			"role":        u.Role,
-			"isActive":    u.IsActive,
-			"lastLoginAt": u.LastLoginAt,
-			"createdAt":   u.CreatedAt,
+			"id":            u.ID,
+			"email":         email,
+			"name":          u.Name,
+			"avatarUrl":     u.AvatarURL,
+			"language":      u.Language,
+			"role":          u.Role,
+			"isActive":      u.IsActive,
+			"lastLoginAt":   u.LastLoginAt,
+			"createdAt":     u.CreatedAt,
+			"providers":     providerStrs,
+			"loginProvider": loginProvider,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"items": items, "page": page, "pageSize": size, "total": total})
@@ -137,17 +206,35 @@ func (h *AdminHandler) AdminGet(c *gin.Context) {
 	if u.Email != nil {
 		email = *u.Email
 	}
+	providersMap, err := fetchOAuthProviders([]uint{u.ID})
+	if err != nil {
+		logger.WithCtx(c).Error("user.admin_get fetch oauth providers failed", zap.Error(err), zap.String("id", c.Param("id")))
+		providersMap = map[uint][]common.ProviderType{}
+	}
+	providers := providersMap[u.ID]
+	providerStrs := make([]string, 0, len(providers))
+	for _, p := range providers {
+		providerStrs = append(providerStrs, string(p))
+	}
+	loginProvider := ""
+	if strings.TrimSpace(email) != "" {
+		loginProvider = "email"
+	} else if len(providers) > 0 {
+		loginProvider = string(providers[0])
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"id":          u.ID,
-		"email":       email,
-		"name":        u.Name,
-		"avatarUrl":   u.AvatarURL,
-		"language":    u.Language,
-		"role":        u.Role,
-		"isActive":    u.IsActive,
-		"lastLoginAt": u.LastLoginAt,
-		"createdAt":   u.CreatedAt,
-		"updatedAt":   u.UpdatedAt,
+		"id":            u.ID,
+		"email":         email,
+		"name":          u.Name,
+		"avatarUrl":     u.AvatarURL,
+		"language":      u.Language,
+		"role":          u.Role,
+		"isActive":      u.IsActive,
+		"lastLoginAt":   u.LastLoginAt,
+		"createdAt":     u.CreatedAt,
+		"updatedAt":     u.UpdatedAt,
+		"providers":     providerStrs,
+		"loginProvider": loginProvider,
 	})
 }
 

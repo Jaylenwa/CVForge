@@ -380,6 +380,7 @@ func (s *Service) MarkWeChatMPSceneReady(ctx context.Context, scene, openid stri
 		return "", http.ErrNotSupported
 	}
 
+	s.TouchLastLoginAt(user.ID)
 	access, refresh := s.IssueTokens(user.ID)
 	ott := uuidNoDash()
 	payload := map[string]any{

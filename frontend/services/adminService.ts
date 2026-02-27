@@ -151,6 +151,8 @@ export interface AdminUser {
   role: string;
   isActive: boolean;
   lastLoginAt?: string;
+  providers?: string[];
+  loginProvider?: string;
 }
 
 export const listUsers = async (params: Record<string, string>) => {

@@ -54,6 +54,14 @@ func (s *Service) IssueTokens(uid uint) (string, string) {
 	return mk(2 * time.Hour), mk(7 * 24 * time.Hour)
 }
 
+func (s *Service) TouchLastLoginAt(uid uint) {
+	if uid == 0 {
+		return
+	}
+	now := time.Now()
+	_ = database.DB.Model(&User{}).Where("id = ?", uid).Update("last_login_at", &now).Error
+}
+
 func (s *Service) initialRole() common.Role {
 	var n int64
 	database.DB.Model(&User{}).Count(&n)
@@ -104,7 +112,8 @@ func (s *Service) Register(email, code, password, name string) (string, string, 
 		}
 	}
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	u := User{Email: &email, PasswordHash: string(hash), Name: name, Role: s.initialRole()}
+	now := time.Now()
+	u := User{Email: &email, PasswordHash: string(hash), Name: name, Role: s.initialRole(), LastLoginAt: &now}
 	if err := database.DB.Create(&u).Error; err != nil {
 		return "", "", gorm.ErrDuplicatedKey
 	}
@@ -127,6 +136,7 @@ func (s *Service) Login(email, password string) (string, string, error) {
 	if !u.IsActive {
 		return "", "", gorm.ErrInvalidTransaction
 	}
+	s.TouchLastLoginAt(u.ID)
 	access, refresh := s.IssueTokens(u.ID)
 	return access, refresh, nil
 }

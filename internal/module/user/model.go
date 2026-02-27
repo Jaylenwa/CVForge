@@ -4,3 +4,4 @@ import "cvforge/internal/models"
 
 type User = models.User
 type AuditLog = models.AuditLog
+type OAuthAccount = models.OAuthAccount

@@ -99,6 +99,7 @@ func (h *Handler) GithubCallback() gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		h.svc.TouchLastLoginAt(user.ID)
 		access, refresh := h.svc.IssueTokens(user.ID)
 		if st.Client == "popup" {
 			origin := st.Origin
