@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/binary"
@@ -11,6 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math/big"
 	"net/http"
 	"net/url"
 	"sort"
@@ -348,9 +350,9 @@ func (s *Service) FindOrCreateWeChatMPUser(ui weChatMPUserInfoResponse, openid s
 		}
 	}
 
-	name := ui.Nickname
+	name := strings.TrimSpace(ui.Nickname)
 	if name == "" {
-		name = "WeChat User"
+		name = "用户_" + randAlphaNum(5)
 	}
 	user = User{
 		Name:      name,
@@ -417,6 +419,19 @@ func uuidNoDash() string {
 	u := uuid.NewString()
 	u = strings.ReplaceAll(u, "-", "")
 	return u
+}
+
+func randAlphaNum(n int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	if n <= 0 {
+		return ""
+	}
+	out := make([]byte, n)
+	for i := 0; i < n; i++ {
+		v, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		out[i] = charset[v.Int64()]
+	}
+	return string(out)
 }
 
 func readAllBody(r io.Reader) []byte {
