@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { X, CheckCircle, AlertCircle } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'info';
@@ -15,6 +15,12 @@ interface ToastContextType {
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
+
+let externalShowToast: ((message: string, type?: ToastType) => void) | null = null;
+
+export const toast = (message: string, type: ToastType = 'info') => {
+  externalShowToast?.(message, type);
+};
 
 export const useToast = () => {
   const context = useContext(ToastContext);
@@ -41,6 +47,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3100);
   }, []);
+
+  useEffect(() => {
+    externalShowToast = showToast;
+    return () => {
+      if (externalShowToast === showToast) externalShowToast = null;
+    };
+  }, [showToast]);
 
   const removeToast = (id: string) => {
     setToasts((prev) => prev.map(t => t.id === id ? { ...t, entered: false } : t));

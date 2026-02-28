@@ -42,6 +42,8 @@ const translations: Translations = {
     'common.loading': 'Loading...',
     'common.copied': 'Copied',
     'common.copyFailed': 'Copy failed',
+    'toast.rateLimited': 'Too many requests. Please try again later.',
+    'toast.rateLimitedRetry': 'Too many requests. Please retry in {seconds}s.',
     'editor.content': 'Content',
     'editor.design': 'Design',
     'editor.personal': 'Personal Information',
@@ -615,6 +617,8 @@ const translations: Translations = {
     'common.loading': '加载中...',
     'common.copied': '已复制',
     'common.copyFailed': '复制失败',
+    'toast.rateLimited': '请求过于频繁，请稍后再试',
+    'toast.rateLimitedRetry': '请求过于频繁，请在 {seconds} 秒后重试',
     'editor.content': '内容编辑',
     'editor.design': '外观设计',
     'editor.personal': '个人信息',
@@ -1152,6 +1156,22 @@ const translations: Translations = {
     'admin.config.key.corsOrigins': 'CORS 允许来源',
     'admin.config.key.frontendBaseUrl': '前端基础地址'
   }
+};
+
+export const getStoredLanguage = (): Language => {
+  const saved = localStorage.getItem('lang') as Language | null;
+  return saved || 'en';
+};
+
+export const tGlobal = (key: string, vars?: Record<string, string | number>): string => {
+  const lang = getStoredLanguage();
+  let out = translations[lang]?.[key] || translations.en?.[key] || key;
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      out = out.split(`{${k}}`).join(String(v));
+    }
+  }
+  return out;
 };
 
 interface LanguageContextType {
