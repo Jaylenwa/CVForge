@@ -11,15 +11,15 @@
 - 在 `.env.local` 配置环境变量：
 
 ```bash
-VITE_API_BASE=/api/v1
+VITE_API_BASE=http://localhost:8080
 VITE_OAUTH_ALLOWED_ORIGINS=http://localhost:3000
 ```
 
 - 启动开发：`npm run dev`（默认 `http://localhost:3000`）
-- 开发代理：`/api` 与 `/public` 会代理到 `http://localhost:8080`（见 `frontend/vite.config.ts`）
+- 如需本地对接后端，可在 Vite 开发服务器中配置转发
 
 ## 环境变量
-- `VITE_API_BASE`：API 基路径或 URL，默认 `/api/v1`
+- `VITE_API_BASE`：后端基础路径或 URL
 - `VITE_OAUTH_ALLOWED_ORIGINS`：允许进行 OAuth 弹窗消息通信的来源（逗号分隔）
 
 ## Docker 部署
