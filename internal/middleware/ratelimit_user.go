@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,7 +9,21 @@ import (
 	"cvforge/internal/infra/cache"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
+
+var rateLimitUserIncrExpireScript = redis.NewScript(`
+local current = redis.call("INCR", KEYS[1])
+if current == 1 then
+  redis.call("PEXPIRE", KEYS[1], ARGV[1])
+else
+  local ttl = redis.call("PTTL", KEYS[1])
+  if ttl < 0 then
+    redis.call("PEXPIRE", KEYS[1], ARGV[1])
+  end
+end
+return current
+`)
 
 func RateLimitUser(limit int64, window time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -21,10 +34,12 @@ func RateLimitUser(limit int64, window time.Duration) gin.HandlerFunc {
 			uid = c.ClientIP()
 		}
 		key := common.RedisKeyRateLimitUser.F(c.FullPath(), uid)
-		cnt, err := cache.RDB.Incr(context.Background(), key).Result()
-		if err == nil && cnt == 1 {
-			_ = cache.RDB.Expire(context.Background(), key, window).Err()
+		ctx := c.Request.Context()
+		windowMs := window.Milliseconds()
+		if windowMs <= 0 {
+			windowMs = 1
 		}
+		cnt, err := rateLimitUserIncrExpireScript.Run(ctx, cache.RDB, []string{key}, windowMs).Int64()
 		if err == nil && cnt > limit {
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "rate limited"})
 			return
