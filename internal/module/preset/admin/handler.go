@@ -1,25 +1,26 @@
-package preset
+package admin
 
 import (
 	"net/http"
 	"strconv"
 	"strings"
 
+	presetmod "cvforge/internal/module/preset"
 	"cvforge/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-type AdminHandler struct {
+type Handler struct {
 	svc *Service
 }
 
-func NewAdminHandler() *AdminHandler {
-	return &AdminHandler{svc: NewService()}
+func NewHandler() *Handler {
+	return &Handler{svc: NewService()}
 }
 
-type AdminPageResp[T any] struct {
+type PageResp[T any] struct {
 	Items    []T   `json:"items"`
 	Page     int   `json:"page"`
 	PageSize int   `json:"pageSize"`
@@ -54,22 +55,22 @@ func clampPageSize(size int) int {
 	return size
 }
 
-func (h *AdminHandler) AdminListPresets(c *gin.Context) {
+func (h *Handler) AdminListPresets(c *gin.Context) {
 	page := parseIntDefault(c.Query("page"), 1)
 	size := parseIntDefault(c.Query("pageSize"), 20)
 	q := c.Query("q")
 	role := c.Query("roleId")
 	lang := c.Query("language")
-	items, total, err := h.svc.repo.AdminListContentPresets(page, size, q, role, lang)
+	items, total, err := h.svc.AdminListContentPresets(page, size, q, role, lang)
 	if err != nil {
 		logger.WithCtx(c).Error("preset.admin.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, AdminPageResp[ContentPreset]{Items: items, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
+	c.JSON(http.StatusOK, PageResp[presetmod.ContentPreset]{Items: items, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
 }
 
-func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
+func (h *Handler) AdminCreatePreset(c *gin.Context) {
 	var body struct {
 		Name     string `json:"name"`
 		Language string `json:"language"`
@@ -81,7 +82,7 @@ func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	m := ContentPreset{
+	m := presetmod.ContentPreset{
 		Name:     strings.TrimSpace(body.Name),
 		Language: strings.TrimSpace(body.Language),
 		RoleID:   body.RoleID,
@@ -91,7 +92,7 @@ func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
 	if body.IsActive != nil {
 		m.IsActive = *body.IsActive
 	}
-	if err := h.svc.repo.AdminCreateContentPreset(&m); err != nil {
+	if err := h.svc.AdminCreateContentPreset(&m); err != nil {
 		logger.WithCtx(c).Error("preset.admin.create failed", zap.Error(err))
 		if strings.HasPrefix(err.Error(), "invalid_") {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid preset"})
@@ -103,7 +104,7 @@ func (h *AdminHandler) AdminCreatePreset(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
+func (h *Handler) AdminPatchPreset(c *gin.Context) {
 	var body struct {
 		Name     *string `json:"name"`
 		Language *string `json:"language"`
@@ -140,7 +141,7 @@ func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	if err := h.svc.repo.AdminPatchContentPreset(uint(id), patch); err != nil {
+	if err := h.svc.AdminPatchContentPreset(uint(id), patch); err != nil {
 		logger.WithCtx(c).Error("preset.admin.patch failed", zap.Error(err))
 		if strings.HasPrefix(err.Error(), "invalid_") {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid preset"})
@@ -152,16 +153,17 @@ func (h *AdminHandler) AdminPatchPreset(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func (h *AdminHandler) AdminDeletePreset(c *gin.Context) {
+func (h *Handler) AdminDeletePreset(c *gin.Context) {
 	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	if err := h.svc.repo.AdminDeleteContentPreset(uint(id)); err != nil {
+	if err := h.svc.AdminDeleteContentPreset(uint(id)); err != nil {
 		logger.WithCtx(c).Error("preset.admin.delete failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
+

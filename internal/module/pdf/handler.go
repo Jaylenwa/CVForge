@@ -9,8 +9,6 @@ import (
 	"strings"
 
 	"cvforge/internal/infra/cache"
-	"cvforge/internal/infra/database"
-	"cvforge/internal/models"
 	"cvforge/internal/pkg/logger"
 	"cvforge/internal/pkg/storage"
 
@@ -63,7 +61,9 @@ func (h *Handler) GenerateImage(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	img, code, err := h.svc.GenerateImage(c, uint(id))
+	authHeader := c.GetHeader("Authorization")
+	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+	img, code, err := h.svc.GenerateImageWithToken(uint(id), token)
 	if err != nil {
 		logger.WithCtx(c).Error("image.generate failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {
@@ -157,12 +157,14 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 		}
 	}
 	job, _ := repo.GetJob(c, id)
-	var r models.Resume
+	title := ""
 	if job.ResumeID != 0 {
-		_ = database.DB.Where("id = ?", job.ResumeID).First(&r).Error
+		if t, err := h.svc.ResumeTitle(job.ResumeID); err == nil {
+			title = t
+		}
 	}
 	c.Header("Content-Type", "application/pdf")
-	disp := sanitizeFilename(r.Title)
+	disp := sanitizeFilename(title)
 	if disp == "" {
 		disp = sanitizeFilename(jobFilename)
 	}
@@ -183,7 +185,7 @@ func (h *Handler) ExportDownload(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	rc, err := up.Download(c, url)
+	rc, err := up.Download(c.Request.Context(), url)
 	if err != nil {
 		logger.WithCtx(c).Error("pdf.export_download download failed", zap.Error(err), zap.String("url", url))
 		c.JSON(http.StatusNotFound, gin.H{"error": "file not found"})

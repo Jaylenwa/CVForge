@@ -72,7 +72,12 @@ func (h *Handler) Get(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	res, code, err := h.svc.GetOwnedResume(c, uint(id), true)
+	uid, ok := middleware.UID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	res, code, err := h.svc.GetOwnedResume(uid, uint(id), true)
 	if err != nil {
 		logger.WithCtx(c).Error("resume.get failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {
@@ -102,7 +107,12 @@ func (h *Handler) Update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	code, err := h.svc.UpdateOwnedResume(c, uint(id), req)
+	uid, ok := middleware.UID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	code, err := h.svc.UpdateOwnedResume(uid, uint(id), req)
 	if err != nil {
 		logger.WithCtx(c).Error("resume.update failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {
@@ -133,7 +143,12 @@ func (h *Handler) Delete(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	code, err := h.svc.DeleteOwnedResume(c, uint(id))
+	uid, ok := middleware.UID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	code, err := h.svc.DeleteOwnedResume(uid, uint(id))
 	if err != nil {
 		logger.WithCtx(c).Error("resume.delete failed", zap.Error(err), zap.Int("code", code), zap.String("id", c.Param("id")))
 		switch code {

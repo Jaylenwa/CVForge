@@ -1,4 +1,4 @@
-package template
+package admin
 
 import (
 	"net/http"
@@ -11,15 +11,33 @@ import (
 	"gorm.io/gorm"
 )
 
-type AdminHandler struct {
+type Handler struct {
 	svc *Service
 }
 
-func NewAdminHandler() *AdminHandler {
-	return &AdminHandler{svc: NewService()}
+func NewHandler() *Handler {
+	return &Handler{svc: NewService()}
 }
 
-func (h *AdminHandler) AdminCreate(c *gin.Context) {
+func pickName(names map[string]string, language string) string {
+	if len(names) == 0 {
+		return ""
+	}
+	if v := strings.TrimSpace(names[language]); v != "" {
+		return v
+	}
+	if v := strings.TrimSpace(names["zh"]); v != "" {
+		return v
+	}
+	for _, v := range names {
+		if v = strings.TrimSpace(v); v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
+func (h *Handler) AdminCreate(c *gin.Context) {
 	var body struct {
 		ExternalID string            `json:"externalId"`
 		Name       string            `json:"name"`
@@ -51,7 +69,7 @@ func (h *AdminHandler) AdminCreate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func (h *AdminHandler) AdminPatch(c *gin.Context) {
+func (h *Handler) AdminPatch(c *gin.Context) {
 	var body struct {
 		Name  *string           `json:"name"`
 		Names map[string]string `json:"names"`
@@ -107,7 +125,7 @@ func (h *AdminHandler) AdminPatch(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func (h *AdminHandler) AdminDelete(c *gin.Context) {
+func (h *Handler) AdminDelete(c *gin.Context) {
 	if err := h.svc.Delete(c.Param("id")); err != nil {
 		logger.WithCtx(c).Error("template.admin_delete failed", zap.Error(err), zap.String("id", c.Param("id")))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -115,3 +133,4 @@ func (h *AdminHandler) AdminDelete(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
+

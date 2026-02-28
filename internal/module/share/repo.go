@@ -1,6 +1,8 @@
 package share
 
 import (
+	"time"
+
 	"cvforge/internal/infra/database"
 
 	"gorm.io/gorm"
@@ -42,4 +44,34 @@ func (r *Repo) Create(sl *ShareLink) error {
 
 func (r *Repo) Save(sl *ShareLink) error {
 	return r.db.Save(sl).Error
+}
+
+func (r *Repo) FindResumeByID(resumeID uint) (Resume, error) {
+	var res Resume
+	err := r.db.Where("id = ?", resumeID).First(&res).Error
+	return res, err
+}
+
+func (r *Repo) FindResumeWithPublicPreloadsByID(resumeID uint) (Resume, error) {
+	var res Resume
+	err := r.db.Where("id = ?", resumeID).
+		Preload("Personal").
+		Preload("Theme").
+		Preload("Sections.Items").
+		First(&res).Error
+	return res, err
+}
+
+func (r *Repo) UpdateViewsAndLastAccess(id uint, views uint64, lastAccessAt time.Time) error {
+	return r.db.Model(&ShareLink{}).Where("id = ?", id).Updates(map[string]any{
+		"views":          views,
+		"last_access_at": lastAccessAt,
+	}).Error
+}
+
+func (r *Repo) IncrementViewsAndLastAccess(id uint, lastAccessAt time.Time) error {
+	return r.db.Model(&ShareLink{}).Where("id = ?", id).Updates(map[string]any{
+		"views":          gorm.Expr("views + 1"),
+		"last_access_at": lastAccessAt,
+	}).Error
 }

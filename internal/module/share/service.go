@@ -10,7 +10,6 @@ import (
 
 	"cvforge/internal/common"
 	"cvforge/internal/infra/cache"
-	"cvforge/internal/infra/database"
 	resmod "cvforge/internal/module/resume"
 
 	"github.com/google/uuid"
@@ -26,23 +25,23 @@ func NewService() *Service {
 }
 
 func (s *Service) PublishResumeForUser(uid uint, id uint) (ShareLink, int, error) {
-	var res Resume
-	if err := database.DB.Where("id = ?", id).First(&res).Error; err != nil {
+	res, err := s.repo.FindResumeByID(id)
+	if err != nil {
 		return ShareLink{}, 404, err
 	}
 	if res.UserID != uid {
 		return ShareLink{}, 403, gorm.ErrInvalidData
 	}
-	var sl ShareLink
-	if err := database.DB.Where("resume_id = ?", res.ID).First(&sl).Error; err != nil {
+	sl, err := s.repo.FindByResumeID(res.ID)
+	if err != nil {
 		sl = ShareLink{ResumeID: res.ID, UserID: uid, Slug: uuid.NewString()[:8], IsPublic: true}
-		_ = database.DB.Create(&sl).Error
+		_ = s.repo.Create(&sl)
 	} else {
 		sl.IsPublic = true
 		if sl.UserID == 0 {
 			sl.UserID = uid
 		}
-		_ = database.DB.Save(&sl).Error
+		_ = s.repo.Save(&sl)
 	}
 	return sl, 200, nil
 }
@@ -77,7 +76,7 @@ func (s *Service) GetPublicPayload(slug string, shareToken string) (string, int,
 		}
 	}
 	var res Resume
-	if err := database.DB.Where("id = ?", sl.ResumeID).Preload("Personal").Preload("Theme").Preload("Sections.Items").First(&res).Error; err != nil {
+	if res, err = s.repo.FindResumeWithPublicPreloadsByID(sl.ResumeID); err != nil {
 		return "", 404, err
 	}
 	payload := resmod.ToDTO(res)
@@ -106,16 +105,10 @@ func (s *Service) trackAccess(ctx context.Context, sl ShareLink) {
 			_, _ = fmt.Sscanf(views, "%d", &n)
 			cnt = n
 		}
-		_ = database.DB.Model(&ShareLink{}).Where("id = ?", sl.ID).Updates(map[string]any{
-			"views":          cnt,
-			"last_access_at": now,
-		}).Error
+		_ = s.repo.UpdateViewsAndLastAccess(sl.ID, cnt, now)
 		return
 	}
-	_ = database.DB.Model(&ShareLink{}).Where("id = ?", sl.ID).Updates(map[string]any{
-		"views":          gorm.Expr("views + 1"),
-		"last_access_at": now,
-	}).Error
+	_ = s.repo.IncrementViewsAndLastAccess(sl.ID, now)
 }
 
 func (s *Service) AuthenticatePublic(slug string, password string) (string, int, error) {
@@ -150,8 +143,8 @@ type UpdateSettingsInput struct {
 }
 
 func (s *Service) GetSettingsForUser(uid uint, resumeID uint) (ShareLink, int, error) {
-	var res Resume
-	if err := database.DB.Where("id = ?", resumeID).First(&res).Error; err != nil {
+	res, err := s.repo.FindResumeByID(resumeID)
+	if err != nil {
 		return ShareLink{}, 404, err
 	}
 	if res.UserID != uid {
@@ -169,8 +162,8 @@ func (s *Service) GetSettingsForUser(uid uint, resumeID uint) (ShareLink, int, e
 }
 
 func (s *Service) UpdateSettingsForUser(uid uint, resumeID uint, in UpdateSettingsInput) (ShareLink, int, error) {
-	var res Resume
-	if err := database.DB.Where("id = ?", resumeID).First(&res).Error; err != nil {
+	res, err := s.repo.FindResumeByID(resumeID)
+	if err != nil {
 		return ShareLink{}, 404, err
 	}
 	if res.UserID != uid {

@@ -7,24 +7,28 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"cvforge/internal/common"
 	"cvforge/internal/infra/cache"
-	"cvforge/internal/infra/database"
 	conf "cvforge/internal/module/config"
 	"cvforge/internal/pkg/storage"
-
-	"github.com/gin-gonic/gin"
 )
 
 type Service struct {
+	repo      *Repo
 	sysConfig *conf.Service
 }
 
 func NewService() *Service {
-	return &Service{sysConfig: conf.NewService()}
+	return &Service{
+		repo:      DefaultRepo(),
+		sysConfig: conf.NewService(),
+	}
+}
+
+func (s *Service) ResumeTitle(id uint) (string, error) {
+	return s.repo.FindResumeTitle(id)
 }
 
 func (s *Service) cbOpen(svc string) bool {
@@ -80,8 +84,7 @@ func (s *Service) GeneratePDFWithToken(id uint, token string) ([]byte, int, erro
 	if s.cbOpen(common.CBCircuitPDF) {
 		return nil, 503, fmt.Errorf("cb")
 	}
-	var res Resume
-	if err := database.DB.Where("id = ?", id).Preload("Sections.Items").First(&res).Error; err != nil {
+	if _, err := s.repo.FindResumeWithSections(id); err != nil {
 		return nil, 404, err
 	}
 	if s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) == "" {
@@ -159,20 +162,17 @@ func (s *Service) GeneratePDFWithToken(id uint, token string) ([]byte, int, erro
 	return buf, 200, nil
 }
 
-func (s *Service) GenerateImage(c *gin.Context, id uint) ([]byte, int, error) {
+func (s *Service) GenerateImageWithToken(id uint, token string) ([]byte, int, error) {
 	if s.cbOpen(common.CBCircuitImage) {
 		return nil, 503, fmt.Errorf("cb")
 	}
-	var res Resume
-	if err := database.DB.Where("id = ?", id).Preload("Sections.Items").First(&res).Error; err != nil {
+	if _, err := s.repo.FindResumeWithSections(id); err != nil {
 		return nil, 404, err
 	}
 	if s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) == "" {
 		return nil, 503, fmt.Errorf("fe empty")
 	}
 	dest := s.sysConfig.Get(string(common.ConfigKeyFrontendBaseURL)) + "/#/print?id=" + fmt.Sprintf("%d", id)
-	authHeader := c.GetHeader("Authorization")
-	token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
 	reqBody := ScreenshotRequest{
 		URL: dest,
 		Options: map[string]any{

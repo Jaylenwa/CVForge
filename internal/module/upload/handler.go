@@ -58,7 +58,7 @@ func (h *Handler) UploadAvatar(c *gin.Context) {
 		return
 	}
 	name := uuid.NewString() + ext
-	url, err := h.svc.Upload(c, name, b)
+	url, err := h.svc.Upload(c.Request.Context(), name, b)
 	if err != nil {
 		logger.WithCtx(c).Error("upload avatar error", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

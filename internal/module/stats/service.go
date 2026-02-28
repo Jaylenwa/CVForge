@@ -1,24 +1,19 @@
 package stats
 
 import (
-	"net/http"
-	"strconv"
+	"context"
 	"time"
 
 	"cvforge/internal/common"
 	"cvforge/internal/infra/cache"
-	"cvforge/internal/infra/database"
-	"cvforge/internal/models"
-
-	"context"
-
-	"github.com/gin-gonic/gin"
 )
 
-type Handler struct{}
+type Service struct {
+	repo *Repo
+}
 
-func NewHandler() *Handler {
-	return &Handler{}
+func NewService() *Service {
+	return &Service{repo: DefaultRepo()}
 }
 
 type StatsResponse struct {
@@ -38,23 +33,19 @@ type StatsResponse struct {
 	GeneratedAt int64 `json:"generatedAt"`
 }
 
-func (h *Handler) AdminStats(c *gin.Context) {
-	days := 14
-	if v := c.Query("days"); v != "" {
-		if n, err := strconv.Atoi(v); err == nil && n > 0 && n <= 60 {
-			days = n
-		}
+func (s *Service) AdminStats(days int) (StatsResponse, error) {
+	if days <= 0 {
+		days = 14
+	}
+	if days > 60 {
+		days = 60
 	}
 
-	var userTotal int64
-	var resumeTotal int64
-	var templateTotal int64
-	_ = database.DB.Model(&models.User{}).Count(&userTotal).Error
-	_ = database.DB.Model(&models.Resume{}).Count(&resumeTotal).Error
-	_ = database.DB.Model(&models.Template{}).Count(&templateTotal).Error
+	userTotal, _ := s.repo.CountUsers()
+	resumeTotal, _ := s.repo.CountResumes()
+	templateTotal, _ := s.repo.CountTemplates()
 
 	now := time.Now()
-	// Truncate to local midnight
 	end := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Add(24 * time.Hour)
 
 	dates := make([]string, 0, days)
@@ -69,12 +60,9 @@ func (h *Handler) AdminStats(c *gin.Context) {
 
 		dates = append(dates, dayStart.Format("2006-01-02"))
 
-		var uc int64
-		var rc int64
-		var tc int64
-		_ = database.DB.Model(&models.User{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&uc).Error
-		_ = database.DB.Model(&models.Resume{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&rc).Error
-		_ = database.DB.Model(&models.Template{}).Where("created_at >= ? AND created_at < ?", dayStart, dayEnd).Count(&tc).Error
+		uc, _ := s.repo.CountUsersCreatedBetween(dayStart, dayEnd)
+		rc, _ := s.repo.CountResumesCreatedBetween(dayStart, dayEnd)
+		tc, _ := s.repo.CountTemplatesCreatedBetween(dayStart, dayEnd)
 		var vc int64
 		if cache.RDB != nil {
 			key := common.RedisKeyUVDay.F(dayStart.Format("2006-01-02"))
@@ -106,6 +94,6 @@ func (h *Handler) AdminStats(c *gin.Context) {
 			out.Totals.VisitorsToday = n
 		}
 	}
-
-	c.JSON(http.StatusOK, out)
+	return out, nil
 }
+

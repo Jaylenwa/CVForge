@@ -1,25 +1,36 @@
-package taxonomy
+package admin
 
 import (
 	"net/http"
 	"strconv"
 	"strings"
 
+	taxmod "cvforge/internal/module/taxonomy"
 	"cvforge/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-type AdminHandler struct {
+type Handler struct {
 	svc *Service
 }
 
-func NewAdminHandler() *AdminHandler {
-	return &AdminHandler{svc: NewService()}
+func NewHandler() *Handler {
+	return &Handler{svc: NewService()}
 }
 
-type AdminPageResp[T any] struct {
+func normalizeLanguage(lang string) string {
+	lang = strings.ToLower(strings.TrimSpace(lang))
+	switch lang {
+	case "en", "zh":
+		return lang
+	default:
+		return "zh"
+	}
+}
+
+type PageResp[T any] struct {
 	Items    []T   `json:"items"`
 	Page     int   `json:"page"`
 	PageSize int   `json:"pageSize"`
@@ -72,7 +83,7 @@ func pickName(names map[string]string, language string) string {
 	return ""
 }
 
-func (h *AdminHandler) AdminListCategories(c *gin.Context) {
+func (h *Handler) AdminListCategories(c *gin.Context) {
 	language := normalizeLanguage(c.Query("language"))
 	page := parseIntDefault(c.Query("page"), 1)
 	size := parseIntDefault(c.Query("pageSize"), 20)
@@ -84,7 +95,7 @@ func (h *AdminHandler) AdminListCategories(c *gin.Context) {
 			parentID = &x
 		}
 	}
-	items, total, err := h.svc.repo.AdminListJobCategories(page, size, q, parentID)
+	items, total, err := h.svc.AdminListJobCategories(page, size, q, parentID)
 	if err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.categories.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -94,7 +105,7 @@ func (h *AdminHandler) AdminListCategories(c *gin.Context) {
 	for _, it := range items {
 		ids = append(ids, it.ID)
 	}
-	i18nList, err := h.svc.repo.ListJobCategoryI18n(ids)
+	i18nList, err := h.svc.ListJobCategoryI18n(ids)
 	if err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.categories.i18n.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -109,10 +120,10 @@ func (h *AdminHandler) AdminListCategories(c *gin.Context) {
 		}
 		m[it.Language] = it.Name
 	}
-	out := make([]AdminJobCategoryDTO, 0, len(items))
+	out := make([]taxmod.AdminJobCategoryDTO, 0, len(items))
 	for _, it := range items {
 		names := namesByID[it.ID]
-		out = append(out, AdminJobCategoryDTO{
+		out = append(out, taxmod.AdminJobCategoryDTO{
 			ID:       it.ID,
 			Name:     pickName(names, language),
 			Names:    names,
@@ -121,10 +132,10 @@ func (h *AdminHandler) AdminListCategories(c *gin.Context) {
 			IsActive: it.IsActive,
 		})
 	}
-	c.JSON(http.StatusOK, AdminPageResp[AdminJobCategoryDTO]{Items: out, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
+	c.JSON(http.StatusOK, PageResp[taxmod.AdminJobCategoryDTO]{Items: out, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
 }
 
-func (h *AdminHandler) AdminCreateCategory(c *gin.Context) {
+func (h *Handler) AdminCreateCategory(c *gin.Context) {
 	var body struct {
 		Name     string            `json:"name"`
 		Names    map[string]string `json:"names"`
@@ -147,7 +158,7 @@ func (h *AdminHandler) AdminCreateCategory(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	m := JobCategory{
+	m := taxmod.JobCategory{
 		ParentID: body.ParentID,
 	}
 	if body.OrderNum != nil {
@@ -156,7 +167,7 @@ func (h *AdminHandler) AdminCreateCategory(c *gin.Context) {
 	if body.IsActive != nil {
 		m.IsActive = *body.IsActive
 	}
-	if err := h.svc.repo.AdminCreateJobCategoryWithNames(&m, names); err != nil {
+	if err := h.svc.AdminCreateJobCategoryWithNames(&m, names); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.categories.create failed", zap.Error(err))
 		c.JSON(http.StatusConflict, gin.H{"error": "conflict"})
 		return
@@ -164,7 +175,7 @@ func (h *AdminHandler) AdminCreateCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func (h *AdminHandler) AdminPatchCategory(c *gin.Context) {
+func (h *Handler) AdminPatchCategory(c *gin.Context) {
 	var body struct {
 		Name     *string           `json:"name"`
 		Names    map[string]string `json:"names"`
@@ -213,7 +224,7 @@ func (h *AdminHandler) AdminPatchCategory(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	if err := h.svc.repo.AdminPatchJobCategoryWithNames(uint(id), patch, names); err != nil {
+	if err := h.svc.AdminPatchJobCategoryWithNames(uint(id), patch, names); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.categories.patch failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -221,13 +232,13 @@ func (h *AdminHandler) AdminPatchCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func (h *AdminHandler) AdminDeleteCategory(c *gin.Context) {
+func (h *Handler) AdminDeleteCategory(c *gin.Context) {
 	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	if err := h.svc.repo.AdminDeleteJobCategory(uint(id)); err != nil {
+	if err := h.svc.AdminDeleteJobCategory(uint(id)); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.categories.delete failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -235,7 +246,7 @@ func (h *AdminHandler) AdminDeleteCategory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func (h *AdminHandler) AdminListRoles(c *gin.Context) {
+func (h *Handler) AdminListRoles(c *gin.Context) {
 	language := normalizeLanguage(c.Query("language"))
 	page := parseIntDefault(c.Query("page"), 1)
 	size := parseIntDefault(c.Query("pageSize"), 20)
@@ -247,7 +258,7 @@ func (h *AdminHandler) AdminListRoles(c *gin.Context) {
 			categoryID = &x
 		}
 	}
-	items, total, err := h.svc.repo.AdminListJobRoles(page, size, q, categoryID)
+	items, total, err := h.svc.AdminListJobRoles(page, size, q, categoryID)
 	if err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.roles.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -257,7 +268,7 @@ func (h *AdminHandler) AdminListRoles(c *gin.Context) {
 	for _, it := range items {
 		ids = append(ids, it.ID)
 	}
-	i18nList, err := h.svc.repo.ListJobRoleI18n(ids)
+	i18nList, err := h.svc.ListJobRoleI18n(ids)
 	if err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.roles.i18n.list failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -272,10 +283,10 @@ func (h *AdminHandler) AdminListRoles(c *gin.Context) {
 		}
 		m[it.Language] = it.Name
 	}
-	out := make([]AdminJobRoleDTO, 0, len(items))
+	out := make([]taxmod.AdminJobRoleDTO, 0, len(items))
 	for _, it := range items {
 		names := namesByID[it.ID]
-		out = append(out, AdminJobRoleDTO{
+		out = append(out, taxmod.AdminJobRoleDTO{
 			ID:         it.ID,
 			CategoryID: it.CategoryID,
 			Name:       pickName(names, language),
@@ -284,10 +295,10 @@ func (h *AdminHandler) AdminListRoles(c *gin.Context) {
 			IsActive:   it.IsActive,
 		})
 	}
-	c.JSON(http.StatusOK, AdminPageResp[AdminJobRoleDTO]{Items: out, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
+	c.JSON(http.StatusOK, PageResp[taxmod.AdminJobRoleDTO]{Items: out, Page: clampPage(page), PageSize: clampPageSize(size), Total: total})
 }
 
-func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
+func (h *Handler) AdminCreateRole(c *gin.Context) {
 	var body struct {
 		CategoryID uint              `json:"categoryId"`
 		Name       string            `json:"name"`
@@ -310,7 +321,7 @@ func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	m := JobRole{
+	m := taxmod.JobRole{
 		CategoryID: body.CategoryID,
 	}
 	if body.OrderNum != nil {
@@ -319,7 +330,7 @@ func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
 	if body.IsActive != nil {
 		m.IsActive = *body.IsActive
 	}
-	if err := h.svc.repo.AdminCreateJobRoleWithNames(&m, names); err != nil {
+	if err := h.svc.AdminCreateJobRoleWithNames(&m, names); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.roles.create failed", zap.Error(err))
 		c.JSON(http.StatusConflict, gin.H{"error": "conflict"})
 		return
@@ -327,7 +338,7 @@ func (h *AdminHandler) AdminCreateRole(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func (h *AdminHandler) AdminPatchRole(c *gin.Context) {
+func (h *Handler) AdminPatchRole(c *gin.Context) {
 	var body struct {
 		CategoryID *uint             `json:"categoryId"`
 		Name       *string           `json:"name"`
@@ -376,7 +387,7 @@ func (h *AdminHandler) AdminPatchRole(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	if err := h.svc.repo.AdminPatchJobRoleWithNames(uint(id), patch, names); err != nil {
+	if err := h.svc.AdminPatchJobRoleWithNames(uint(id), patch, names); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.roles.patch failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -384,16 +395,17 @@ func (h *AdminHandler) AdminPatchRole(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
 
-func (h *AdminHandler) AdminDeleteRole(c *gin.Context) {
+func (h *Handler) AdminDeleteRole(c *gin.Context) {
 	id, err := strconv.ParseUint(strings.TrimSpace(c.Param("id")), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bad request"})
 		return
 	}
-	if err := h.svc.repo.AdminDeleteJobRole(uint(id)); err != nil {
+	if err := h.svc.AdminDeleteJobRole(uint(id)); err != nil {
 		logger.WithCtx(c).Error("taxonomy.admin.roles.delete failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"success": true})
 }
+

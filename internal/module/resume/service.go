@@ -6,9 +6,7 @@ import (
 
 	"cvforge/internal/common"
 	"cvforge/internal/infra/cache"
-	"cvforge/internal/middleware"
 
-	"github.com/gin-gonic/gin"
 	"github.com/microcosm-cc/bluemonday"
 	"gorm.io/gorm"
 )
@@ -82,9 +80,8 @@ func (s *Service) CreateResume(uid uint, req ResumeReq) (Resume, error) {
 	return res, err
 }
 
-func (s *Service) GetOwnedResume(c *gin.Context, id uint, preload bool) (Resume, int, error) {
-	uid, ok := middleware.UID(c)
-	if !ok {
+func (s *Service) GetOwnedResume(uid uint, id uint, preload bool) (Resume, int, error) {
+	if uid == 0 {
 		return Resume{}, 401, gorm.ErrInvalidTransaction
 	}
 	res, err := s.repo.FindByID(id, preload)
@@ -97,9 +94,8 @@ func (s *Service) GetOwnedResume(c *gin.Context, id uint, preload bool) (Resume,
 	return res, 200, nil
 }
 
-func (s *Service) UpdateOwnedResume(c *gin.Context, id uint, req ResumeReq) (int, error) {
-	uid, ok := middleware.UID(c)
-	if !ok {
+func (s *Service) UpdateOwnedResume(uid uint, id uint, req ResumeReq) (int, error) {
+	if uid == 0 {
 		return 401, gorm.ErrInvalidTransaction
 	}
 	existing, err := s.repo.FindByID(id, false)
@@ -121,9 +117,8 @@ func (s *Service) UpdateOwnedResume(c *gin.Context, id uint, req ResumeReq) (int
 	return 200, nil
 }
 
-func (s *Service) DeleteOwnedResume(c *gin.Context, id uint) (int, error) {
-	uid, ok := middleware.UID(c)
-	if !ok {
+func (s *Service) DeleteOwnedResume(uid uint, id uint) (int, error) {
+	if uid == 0 {
 		return 401, gorm.ErrInvalidTransaction
 	}
 	existing, err := s.repo.FindByID(id, false)
