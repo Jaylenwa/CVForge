@@ -48,6 +48,9 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
 
   const personal = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
   const theme = (data.Theme || {}) as NonNullable<ResumeData['Theme']>;
+  const orderedSections = React.useMemo(() => {
+    return (data.sections || []).slice().sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
+  }, [data.sections]);
   const parseCustomList = (): Array<{ label: string; value: string }> => {
     try {
       const raw = personal?.CustomInfo;
@@ -143,7 +146,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       ResumeSectionType.Skills,
       ResumeSectionType.Awards,
     ].includes(type);
-    const nextSections = data.sections.map(s => {
+    const nextSections = orderedSections.map(s => {
       if (s.id !== sectionId) return s;
       if (isSingleItemSection(s.type) && s.items.length >= 1) return s;
       const items = [...s.items, newItem].map((it, idx) => ({ ...it, orderNum: idx }));
@@ -153,7 +156,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   };
 
   const removeItem = (sectionId: SectionId, itemId: ItemId) => {
-    const nextSections = data.sections.map(s => {
+    const nextSections = orderedSections.map(s => {
       if (s.id !== sectionId) return s;
       const items = s.items.filter(i => i.id !== itemId).map((it, idx) => ({ ...it, orderNum: idx }));
       return { ...s, items };
@@ -202,7 +205,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
   const removeSection = async (sectionId: SectionId) => {
       const ok = await confirm({ title: t('common.confirmAction'), message: t('editor.removeSection'), variant: 'danger' });
       if (!ok) return;
-      const next = data.sections.filter(s => s.id !== sectionId).map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
+      const next = orderedSections.filter(s => s.id !== sectionId).map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
       onChange({ ...data, sections: next });
   };
 
@@ -211,20 +214,37 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     if (!summaries.length) return;
     const selfIndex = data.sections.findIndex(s => s.type === ResumeSectionType.SelfEvaluation);
     const otherSections = data.sections.filter(s => s.type !== ResumeSectionType.Summary);
+    const normalize = (sections: ResumeSection[]) => {
+      return (sections || [])
+        .slice()
+        .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0))
+        .map((s, idx) => ({
+          ...s,
+          orderNum: idx,
+          items: (s.items || [])
+            .slice()
+            .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0))
+            .map((it, ii) => ({ ...it, orderNum: ii })),
+        }));
+    };
+    const summaryItems = summaries
+      .flatMap(s => s.items.length ? s.items : [{ id: generateUUID(), description: '' }])
+      .map((it, idx) => ({ ...it, orderNum: idx }));
     if (selfIndex >= 0) {
       const self = data.sections[selfIndex];
-      const mergedItems = [...self.items, ...summaries.flatMap(s => s.items.length ? s.items : [{ id: generateUUID(), description: '' }])];
+      const mergedItems = [...(self.items || []), ...summaryItems].map((it, idx) => ({ ...it, orderNum: idx }));
       const merged = otherSections.map(s => s.type === ResumeSectionType.SelfEvaluation ? { ...s, items: mergedItems, isVisible: true } : s);
-      onChange({ ...data, sections: merged });
+      onChange({ ...data, sections: normalize(merged) });
     } else {
       const newSelf: ResumeSection = {
         id: generateUUID(),
         type: ResumeSectionType.SelfEvaluation,
         title: '',
         isVisible: true,
-        items: summaries.flatMap(s => s.items.length ? s.items : [{ id: generateUUID(), description: '' }])
+        items: summaryItems,
+        orderNum: Math.min(...summaries.map(s => (s.orderNum ?? otherSections.length)))
       };
-      onChange({ ...data, sections: [...otherSections, newSelf] });
+      onChange({ ...data, sections: normalize([...otherSections, newSelf]) });
     }
   }, [data.sections]);
 
@@ -238,18 +258,18 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       title: '',
       isVisible: true,
       items: [{ id: generateUUID(), title: '', description: '', orderNum: 0 }],
-      orderNum: (data.sections.length || 0)
+      orderNum: (orderedSections.length || 0)
     };
-    const next = [...data.sections, newSection].map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
+    const next = [...orderedSections, newSection].map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
     onChange({ ...data, sections: next });
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (active.id !== over?.id) {
-        const oldIndex = data.sections.findIndex((s) => s.id === active.id);
-        const newIndex = data.sections.findIndex((s) => s.id === over?.id);
-        const movedArr = arrayMove(data.sections, oldIndex, newIndex) as ResumeSection[];
+        const oldIndex = orderedSections.findIndex((s) => s.id === active.id);
+        const newIndex = orderedSections.findIndex((s) => s.id === over?.id);
+        const movedArr = arrayMove(orderedSections, oldIndex, newIndex) as ResumeSection[];
         const moved = movedArr.map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
         onChange({ ...data, sections: moved });
     }
@@ -493,10 +513,10 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
         onDragEnd={handleDragEnd}
       >
           <SortableContext 
-            items={data.sections.map(s => s.id)}
+            items={orderedSections.map(s => s.id)}
             strategy={verticalListSortingStrategy}
           >
-            {data.sections.map((section) => (
+            {orderedSections.map((section) => (
                 <SortableSection
                     key={section.id}
                     section={section}
