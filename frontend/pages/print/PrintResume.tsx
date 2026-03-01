@@ -16,6 +16,10 @@ export const PrintResume: React.FC = () => {
     const id = searchParams.get('id');
     const template = searchParams.get('template');
     const presetId = searchParams.get('presetId') || '';
+    const toOrderNum = (v: any): number | undefined => {
+      const n = typeof v === 'number' ? v : Number(v);
+      return Number.isFinite(n) ? n : undefined;
+    };
 
     if (template && !id) {
       let cancelled = false;
@@ -101,7 +105,7 @@ export const PrintResume: React.FC = () => {
             type: s.Type,
             title: s.Title,
             isVisible: s.IsVisible,
-            orderNum: s.OrderNum,
+            orderNum: toOrderNum(s.OrderNum),
             items: (s.Items || []).map((i: any) => ({
               id: i.ID,
               title: i.Title,
@@ -112,7 +116,7 @@ export const PrintResume: React.FC = () => {
               timeEnd: i.TimeEnd,
               today: !!i.Today,
               description: i.Description,
-              orderNum: i.OrderNum
+              orderNum: toOrderNum(i.OrderNum)
             })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
           })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
         };
