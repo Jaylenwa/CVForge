@@ -141,7 +141,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     const isSingleItemSection = (type: ResumeSectionType) => [
       ResumeSectionType.Interests,
       ResumeSectionType.SelfEvaluation,
-      ResumeSectionType.Summary,
       ResumeSectionType.Portfolio,
       ResumeSectionType.Skills,
       ResumeSectionType.Awards,
@@ -181,7 +180,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     const nextSections = data.sections.map(s => {
       if (s.items.length === 0) {
         changed = true;
-        if (s.type === ResumeSectionType.SelfEvaluation || s.type === ResumeSectionType.Summary) {
+        if (s.type === ResumeSectionType.SelfEvaluation) {
           return { ...s, items: [{ id: generateUUID(), description: '' }] };
         }
         if (s.type === ResumeSectionType.Exam) {
@@ -208,45 +207,6 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
       const next = orderedSections.filter(s => s.id !== sectionId).map((s, idx) => ({ ...s, orderNum: idx, items: s.items.map((it, ii) => ({ ...it, orderNum: ii })) }));
       onChange({ ...data, sections: next });
   };
-
-  useEffect(() => {
-    const summaries = data.sections.filter(s => s.type === ResumeSectionType.Summary);
-    if (!summaries.length) return;
-    const selfIndex = data.sections.findIndex(s => s.type === ResumeSectionType.SelfEvaluation);
-    const otherSections = data.sections.filter(s => s.type !== ResumeSectionType.Summary);
-    const normalize = (sections: ResumeSection[]) => {
-      return (sections || [])
-        .slice()
-        .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0))
-        .map((s, idx) => ({
-          ...s,
-          orderNum: idx,
-          items: (s.items || [])
-            .slice()
-            .sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0))
-            .map((it, ii) => ({ ...it, orderNum: ii })),
-        }));
-    };
-    const summaryItems = summaries
-      .flatMap(s => s.items.length ? s.items : [{ id: generateUUID(), description: '' }])
-      .map((it, idx) => ({ ...it, orderNum: idx }));
-    if (selfIndex >= 0) {
-      const self = data.sections[selfIndex];
-      const mergedItems = [...(self.items || []), ...summaryItems].map((it, idx) => ({ ...it, orderNum: idx }));
-      const merged = otherSections.map(s => s.type === ResumeSectionType.SelfEvaluation ? { ...s, items: mergedItems, isVisible: true } : s);
-      onChange({ ...data, sections: normalize(merged) });
-    } else {
-      const newSelf: ResumeSection = {
-        id: generateUUID(),
-        type: ResumeSectionType.SelfEvaluation,
-        title: '',
-        isVisible: true,
-        items: summaryItems,
-        orderNum: Math.min(...summaries.map(s => (s.orderNum ?? otherSections.length)))
-      };
-      onChange({ ...data, sections: normalize([...otherSections, newSelf]) });
-    }
-  }, [data.sections]);
 
   useEffect(() => {
   }, [data.sections]);
@@ -535,12 +495,11 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                       section.type === ResumeSectionType.Interests ? <Heart size={18}/> :
                       section.type === ResumeSectionType.Exam ? <BookOpen size={18}/> :
                       section.type === ResumeSectionType.SelfEvaluation ? <User size={18}/> :
-                      section.type === ResumeSectionType.Summary ? <Sparkles size={18}/> :
                       section.type === ResumeSectionType.Custom ? <LayoutTemplate size={18}/> :
                       <Type size={18}/>
                     }
                     onAddItem={
-                      [ResumeSectionType.Interests, ResumeSectionType.SelfEvaluation, ResumeSectionType.Summary, ResumeSectionType.Portfolio, ResumeSectionType.Skills, ResumeSectionType.Awards, ResumeSectionType.Exam].includes(section.type)
+                      [ResumeSectionType.Interests, ResumeSectionType.SelfEvaluation, ResumeSectionType.Portfolio, ResumeSectionType.Skills, ResumeSectionType.Awards, ResumeSectionType.Exam].includes(section.type)
                         ? undefined
                         : () => addItem(section.id)
                     }
@@ -758,7 +717,7 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
                             <RichTextEditor
                                 value={item.description}
                                 onChange={(val) => updateItem(section.id, item.id, 'description', val)}
-                                aiContext={section.type === ResumeSectionType.Experience ? 'Work Experience' : (section.type === ResumeSectionType.Summary ? 'Resume Summary' : undefined)}
+                                aiContext={section.type === ResumeSectionType.Experience ? 'Work Experience' : undefined}
                                 minRows={section.type === ResumeSectionType.Skills ? 3 : 4}
                                 maxHeight={300}
                             />

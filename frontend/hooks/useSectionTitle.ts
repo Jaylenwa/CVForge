@@ -5,7 +5,6 @@ export const useSectionTitle = () => {
 
   const DEFAULTS: Record<string, string[]> = {
     personal: ['Personal Information', '个人信息'],
-    summary: ['Professional Summary', '个人总结'],
     experience: ['Work Experience', '工作经历'],
     education: ['Education', '教育背景'],
     skills: ['Skills', '技能特长'],

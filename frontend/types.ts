@@ -1,6 +1,5 @@
 export enum ResumeSectionType {
   Personal = 'personal',
-  Summary = 'summary',
   Experience = 'experience',
   Education = 'education',
   Skills = 'skills',

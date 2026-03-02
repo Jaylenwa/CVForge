@@ -104,7 +104,7 @@ export const TemplateSidebarLabel: React.FC<{ data: ResumeData; styles: any; dis
 
   const getDisplayedTitle = (section: any) => {
     if ((data.language || 'zh') === 'zh') {
-      if (section.type === ResumeSectionType.Summary) return '优势分析';
+      if (section.type === ResumeSectionType.SelfEvaluation) return '优势分析';
       if (section.type === ResumeSectionType.Personal) return '基本信息';
     }
     return getSectionTitle(section);

@@ -416,9 +416,9 @@ export const TemplatesPage: React.FC = () => {
       Theme: {},
       sections: [
         {
-          id: 'summary',
-          type: 'summary',
-          title: isEn ? 'Summary' : '个人总结',
+          id: 'selfEvaluation',
+          type: 'selfEvaluation',
+          title: isEn ? 'Self Evaluation' : '自我评价',
           isVisible: true,
           items: [{ id: 's1', description: isEn ? 'A concise summary goes here.' : '这里是一段简短的个人简介。' }],
         },

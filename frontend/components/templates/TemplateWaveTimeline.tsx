@@ -35,9 +35,9 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
     return getOrderedVisibleSections(data.sections || []);
   }, [data.sections]);
 
-  const summaryHtml = React.useMemo(() => {
-    const summary = sectionsOrdered.find(s => s.type === ResumeSectionType.Summary);
-    const items = getOrderedItems(summary?.items || []);
+  const selfEvaluationHtml = React.useMemo(() => {
+    const selfEvaluation = sectionsOrdered.find(s => s.type === ResumeSectionType.SelfEvaluation);
+    const items = getOrderedItems(selfEvaluation?.items || []);
     const html = items.map(it => String(it.description || '').trim()).filter(Boolean).join('<br/>');
     return html;
   }, [sectionsOrdered]);
@@ -152,9 +152,9 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold tracking-wide text-white">{personal.FullName}</h1>
               {personal.Job ? <p className={`${headerJobMarginTopClassName} text-white/90`}>{personal.Job}</p> : null}
-              {summaryHtml ? (
+              {selfEvaluationHtml ? (
                 <div className="mt-2">
-                  <RichText html={summaryHtml} className="text-white/90" fontSize={styles.fontSize} lineHeight={lineHeight} />
+                  <RichText html={selfEvaluationHtml} className="text-white/90" fontSize={styles.fontSize} lineHeight={lineHeight} />
                 </div>
               ) : null}
 
@@ -191,6 +191,7 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
       <div className={`px-10 pt-8 pb-10 ${contentGapClass}`}>
         {(() => {
           const renderable = sectionsOrdered.filter((section) => {
+            if (section.type === ResumeSectionType.SelfEvaluation) return false;
             if (section.type === ResumeSectionType.Exam) return true;
             const items = getOrderedItems(section.items || []).filter((it: any) => hasMeaningfulContent(it, section.type));
             return items.length > 0;

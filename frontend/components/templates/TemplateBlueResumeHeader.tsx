@@ -18,9 +18,9 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
 
   const orderedSections = React.useMemo(() => getOrderedVisibleSections(data.sections || []), [data.sections]);
 
-  const summaryHtml = React.useMemo(() => {
-    const summary = orderedSections.find(s => s.type === ResumeSectionType.Summary);
-    const items = getOrderedItems(summary?.items || []);
+  const selfEvaluationHtml = React.useMemo(() => {
+    const selfEvaluation = orderedSections.find(s => s.type === ResumeSectionType.SelfEvaluation);
+    const items = getOrderedItems(selfEvaluation?.items || []);
     const html = items.map(it => String(it.description || '').trim()).filter(Boolean).join('<br/>');
     return html;
   }, [orderedSections]);
@@ -177,9 +177,9 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
           <div className="flex-1 min-w-0">
             <h1 className="text-4xl font-bold text-slate-900">{title}</h1>
 
-            {summaryHtml ? (
+            {selfEvaluationHtml ? (
               <div className="mt-4">
-                <RichText html={summaryHtml} className="text-slate-700" fontSize={styles.fontSize} lineHeight={lineHeight} />
+                <RichText html={selfEvaluationHtml} className="text-slate-700" fontSize={styles.fontSize} lineHeight={lineHeight} />
               </div>
             ) : null}
 
@@ -232,7 +232,7 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
       <div className={`px-10 pt-8 pb-10 ${contentGapClass}`}>
         {orderedSections.map((section) => {
           if (!section?.isVisible) return null;
-          if (section.type === ResumeSectionType.Summary) return null;
+          if (section.type === ResumeSectionType.SelfEvaluation) return null;
           const title = String(getSectionTitle(section) || '').trim();
           const body = renderSectionBody(section);
           if (!title || !body) return null;

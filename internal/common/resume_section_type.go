@@ -6,7 +6,6 @@ type ResumeSectionType string
 
 const (
 	ResumeSectionTypePersonal       ResumeSectionType = "personal"
-	ResumeSectionTypeSummary        ResumeSectionType = "summary"
 	ResumeSectionTypeExperience     ResumeSectionType = "experience"
 	ResumeSectionTypeEducation      ResumeSectionType = "education"
 	ResumeSectionTypeSkills         ResumeSectionType = "skills"
@@ -22,7 +21,6 @@ const (
 
 var resumeSectionTypeByKey = map[string]ResumeSectionType{
 	"personal":       ResumeSectionTypePersonal,
-	"summary":        ResumeSectionTypeSummary,
 	"experience":     ResumeSectionTypeExperience,
 	"education":      ResumeSectionTypeEducation,
 	"skills":         ResumeSectionTypeSkills,

@@ -121,30 +121,11 @@ const pickUniqueSectionID = (sections: ResumeSection[], preferred: string) => {
 
 export const normalizeResumeDataForRender = (data: ResumeData): ResumeData => {
   const sections = Array.isArray(data.sections) ? (data.sections as ResumeSection[]) : [];
-  const summaries = sections.filter((s) => s?.type === ResumeSectionType.Summary);
-  if (!summaries.length) return data;
+  const selfIndex = sections.findIndex((s) => s?.type === ResumeSectionType.SelfEvaluation);
+  if (selfIndex < 0) return data;
 
-  const summaryItems = summaries.flatMap((s) => (Array.isArray(s.items) ? (s.items as ResumeItem[]) : []));
-  const others = sections.filter((s) => s?.type !== ResumeSectionType.Summary);
-  const selfIndex = others.findIndex((s) => s?.type === ResumeSectionType.SelfEvaluation);
-
-  if (selfIndex >= 0) {
-    const self = others[selfIndex];
-    const mergedItems = withUniqueItemIDs([...(Array.isArray(self.items) ? (self.items as ResumeItem[]) : []), ...summaryItems], 'selfEvaluation-item-');
-    const nextSections = others.map((s, idx) => {
-      if (idx !== selfIndex) return s;
-      return { ...self, items: mergedItems, isVisible: true };
-    });
-    return { ...data, sections: nextSections };
-  }
-
-  const newSelf: ResumeSection = {
-    id: pickUniqueSectionID(others, 'selfEvaluation'),
-    type: ResumeSectionType.SelfEvaluation,
-    title: '',
-    isVisible: true,
-    items: withUniqueItemIDs(summaryItems, 'selfEvaluation-item-'),
-    orderNum: others.length,
-  };
-  return { ...data, sections: [...others, newSelf] };
+  const self = sections[selfIndex];
+  const mergedItems = withUniqueItemIDs((Array.isArray(self.items) ? (self.items as ResumeItem[]) : []), 'selfEvaluation-item-');
+  const nextSections = sections.map((s, idx) => idx === selfIndex ? { ...self, items: mergedItems } : s);
+  return { ...data, sections: nextSections };
 };

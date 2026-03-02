@@ -222,7 +222,6 @@ export const TemplateBluePhotoColumns: React.FC<{ data: ResumeData; styles: any;
       <div className={`px-10 pb-10 ${contentGapClass}`}>
         {orderedSections.map((section) => {
           if (!section?.isVisible) return null;
-          if (section.type === ResumeSectionType.Summary) return null;
           const body = renderSectionBody(section);
           if (!body) return null;
           return (

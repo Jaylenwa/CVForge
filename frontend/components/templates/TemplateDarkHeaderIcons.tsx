@@ -39,9 +39,9 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
 
   const orderedSections = React.useMemo(() => getOrderedVisibleSections(data.sections || []), [data.sections]);
 
-  const summaryHtml = React.useMemo(() => {
-    const summary = orderedSections.find(s => s.type === ResumeSectionType.Summary);
-    const items = getOrderedItems(summary?.items || []);
+  const selfEvaluationHtml = React.useMemo(() => {
+    const selfEvaluation = orderedSections.find(s => s.type === ResumeSectionType.SelfEvaluation);
+    const items = getOrderedItems(selfEvaluation?.items || []);
     const html = items.map(it => String(it.description || '').trim()).filter(Boolean).join('<br/>');
     return html;
   }, [orderedSections]);
@@ -118,7 +118,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
   );
 
   const renderSectionBody = (section: any) => {
-    if (section.type === ResumeSectionType.Summary) return null;
+    if (section.type === ResumeSectionType.SelfEvaluation) return null;
     if (section.type === ResumeSectionType.Exam) return <ExamSection section={section} color={color} t={t} />;
     const items = getOrderedItems(section.items || []);
     if (section.type === ResumeSectionType.Education) return renderEducation(items);
@@ -145,7 +145,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
     return { base, extra };
   }, [t, personal?.Job, personal?.Phone, personal?.Email, personal?.City, personal?.Gender, normalizedAge, personal?.Degree, personal?.Money, personal?.JoinTime]);
 
-  const contentSections = orderedSections.filter(s => s.type !== ResumeSectionType.Summary);
+  const contentSections = orderedSections.filter(s => s.type !== ResumeSectionType.SelfEvaluation);
   const headerInfoMarginTopClassName = spacingMode === 'compact' ? 'mt-4' : spacingMode === 'spacious' ? 'mt-6' : 'mt-5';
   const headerInfoGridClassName =
     spacingMode === 'compact'
@@ -175,9 +175,9 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
             <div className="min-w-0 flex-1">
               <h1 className="text-3xl font-bold text-white break-words">{personal?.FullName}</h1>
 
-              {summaryHtml ? (
+              {selfEvaluationHtml ? (
                 <div className="mt-3">
-                  <RichText html={summaryHtml} className="text-white/85" fontSize={styles.fontSize} lineHeight={lineHeight} />
+                  <RichText html={selfEvaluationHtml} className="text-white/90" fontSize={styles.fontSize} lineHeight={lineHeight} />
                 </div>
               ) : null}
 

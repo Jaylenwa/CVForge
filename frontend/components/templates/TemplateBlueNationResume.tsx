@@ -137,7 +137,6 @@ export const TemplateBlueNationResume: React.FC<{ data: ResumeData; styles: any;
   const renderable = React.useMemo(() => {
     return orderedSections.filter((section) => {
       if (!section?.isVisible) return false;
-      if (section.type === ResumeSectionType.Summary) return false;
       if (section.type === ResumeSectionType.Exam) return true;
       const items = getOrderedItems(section.items || []);
       return items.length > 0;

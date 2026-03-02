@@ -52,9 +52,9 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
     return getOrderedVisibleSections(data.sections || []);
   }, [data.sections]);
 
-  const summaryHtml = React.useMemo(() => {
-    const summary = orderedSections.find(s => s.type === ResumeSectionType.Summary);
-    const items = getOrderedItems(summary?.items || []);
+  const selfEvaluationHtml = React.useMemo(() => {
+    const selfEvaluation = orderedSections.find(s => s.type === ResumeSectionType.SelfEvaluation);
+    const items = getOrderedItems(selfEvaluation?.items || []);
     const html = items.map(it => String(it.description || '').trim()).filter(Boolean).join('<br/>');
     return html;
   }, [orderedSections]);
@@ -133,7 +133,7 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
   );
 
   const renderSection = (section: any) => {
-    if (section.type === ResumeSectionType.Summary) return null;
+    if (section.type === ResumeSectionType.SelfEvaluation) return null;
     if (section.type === ResumeSectionType.Exam) return <ExamSection section={section} color={color} t={t} />;
 
     const items = getOrderedItems(section.items || []);
@@ -161,11 +161,11 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
           <div className="flex-1 min-w-0">
             <h1 className="text-3xl font-bold text-slate-900 truncate">{personal?.FullName}</h1>
 
-            {summaryHtml ? (
+            {selfEvaluationHtml ? (
               <>
                 {personal?.Job ? <div className={`${headerJobMarginTopClassName} text-slate-700`}>{personal.Job}</div> : null}
                 <div className={headerSummaryMarginTopClassName}>
-                  <RichText html={summaryHtml} className="text-slate-700" fontSize={styles.fontSize} lineHeight={lineHeight} />
+                  <RichText html={selfEvaluationHtml} className="text-slate-700" fontSize={styles.fontSize} lineHeight={lineHeight} />
                 </div>
               </>
             ) : personal?.Job ? (
@@ -201,7 +201,7 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
 
       <div className={contentGapClass}>
         {orderedSections.map(section => {
-          if (section.type === ResumeSectionType.Summary) return null;
+          if (section.type === ResumeSectionType.SelfEvaluation) return null;
           return (
             <section key={section.id}>
               <SectionBar section={section} />
