@@ -39,13 +39,6 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
 
   const orderedSections = React.useMemo(() => getOrderedVisibleSections(data.sections || []), [data.sections]);
 
-  const selfEvaluationHtml = React.useMemo(() => {
-    const selfEvaluation = orderedSections.find(s => s.type === ResumeSectionType.SelfEvaluation);
-    const items = getOrderedItems(selfEvaluation?.items || []);
-    const html = items.map(it => String(it.description || '').trim()).filter(Boolean).join('<br/>');
-    return html;
-  }, [orderedSections]);
-
   const normalizedAge = React.useMemo(() => {
     const raw = String(personal?.Age || '').trim();
     if (!raw) return '';
@@ -118,7 +111,11 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
   );
 
   const renderSectionBody = (section: any) => {
-    if (section.type === ResumeSectionType.SelfEvaluation) return null;
+    if (section.type === ResumeSectionType.SelfEvaluation) {
+      const items = getOrderedItems(section.items || []);
+      if (!items.length) return null;
+      return renderTightList(items);
+    }
     if (section.type === ResumeSectionType.Exam) return <ExamSection section={section} color={color} t={t} />;
     const items = getOrderedItems(section.items || []);
     if (section.type === ResumeSectionType.Education) return renderEducation(items);
@@ -145,7 +142,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
     return { base, extra };
   }, [t, personal?.Job, personal?.Phone, personal?.Email, personal?.City, personal?.Gender, normalizedAge, personal?.Degree, personal?.Money, personal?.JoinTime]);
 
-  const contentSections = orderedSections.filter(s => s.type !== ResumeSectionType.SelfEvaluation);
+  const contentSections = orderedSections;
   const headerInfoMarginTopClassName = spacingMode === 'compact' ? 'mt-4' : spacingMode === 'spacious' ? 'mt-6' : 'mt-5';
   const headerInfoGridClassName =
     spacingMode === 'compact'
@@ -174,12 +171,6 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
 
             <div className="min-w-0 flex-1">
               <h1 className="text-3xl font-bold text-white break-words">{personal?.FullName}</h1>
-
-              {selfEvaluationHtml ? (
-                <div className="mt-3">
-                  <RichText html={selfEvaluationHtml} className="text-white/90" fontSize={styles.fontSize} lineHeight={lineHeight} />
-                </div>
-              ) : null}
 
               {(infoPairs.base.length > 0 || infoPairs.extra.length > 0 || customPairs.length > 0) ? (
                 <div className={headerInfoMarginTopClassName}>

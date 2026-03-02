@@ -52,13 +52,6 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
     return getOrderedVisibleSections(data.sections || []);
   }, [data.sections]);
 
-  const selfEvaluationHtml = React.useMemo(() => {
-    const selfEvaluation = orderedSections.find(s => s.type === ResumeSectionType.SelfEvaluation);
-    const items = getOrderedItems(selfEvaluation?.items || []);
-    const html = items.map(it => String(it.description || '').trim()).filter(Boolean).join('<br/>');
-    return html;
-  }, [orderedSections]);
-
   const formatRange = (item: any) => formatDateRange(item, t, { separatorVariant: 'dash', normalizeMonthSeparator: '.' });
 
   const HeaderBar: React.FC<{ label: string }> = ({ label }) => (
@@ -133,7 +126,11 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
   );
 
   const renderSection = (section: any) => {
-    if (section.type === ResumeSectionType.SelfEvaluation) return null;
+    if (section.type === ResumeSectionType.SelfEvaluation) {
+      const items = getOrderedItems(section.items || []);
+      if (!items.length) return null;
+      return renderTightList(items);
+    }
     if (section.type === ResumeSectionType.Exam) return <ExamSection section={section} color={color} t={t} />;
 
     const items = getOrderedItems(section.items || []);
@@ -161,16 +158,7 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
           <div className="flex-1 min-w-0">
             <h1 className="text-3xl font-bold text-slate-900 truncate">{personal?.FullName}</h1>
 
-            {selfEvaluationHtml ? (
-              <>
-                {personal?.Job ? <div className={`${headerJobMarginTopClassName} text-slate-700`}>{personal.Job}</div> : null}
-                <div className={headerSummaryMarginTopClassName}>
-                  <RichText html={selfEvaluationHtml} className="text-slate-700" fontSize={styles.fontSize} lineHeight={lineHeight} />
-                </div>
-              </>
-            ) : personal?.Job ? (
-              <div className={`${headerJobMarginTopClassName} text-slate-700`}>{personal.Job}</div>
-            ) : null}
+            {personal?.Job ? <div className={`${headerJobMarginTopClassName} text-slate-700`}>{personal.Job}</div> : null}
 
             {headerParts.length > 0 ? (
               <div className={`${headerPartsMarginTopClassName} text-slate-800 flex flex-wrap items-center`}>
@@ -201,7 +189,6 @@ export const TemplateBlueStripe: React.FC<{ data: ResumeData; styles: any; disab
 
       <div className={contentGapClass}>
         {orderedSections.map(section => {
-          if (section.type === ResumeSectionType.SelfEvaluation) return null;
           return (
             <section key={section.id}>
               <SectionBar section={section} />

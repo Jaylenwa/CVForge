@@ -35,13 +35,6 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
     return getOrderedVisibleSections(data.sections || []);
   }, [data.sections]);
 
-  const selfEvaluationHtml = React.useMemo(() => {
-    const selfEvaluation = sectionsOrdered.find(s => s.type === ResumeSectionType.SelfEvaluation);
-    const items = getOrderedItems(selfEvaluation?.items || []);
-    const html = items.map(it => String(it.description || '').trim()).filter(Boolean).join('<br/>');
-    return html;
-  }, [sectionsOrdered]);
-
   const customPairs = React.useMemo(() => {
     return normalizeCustomPairs(parseCustomPairs(data.Personal?.CustomInfo));
   }, [data.Personal?.CustomInfo]);
@@ -152,11 +145,6 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold tracking-wide text-white">{personal.FullName}</h1>
               {personal.Job ? <p className={`${headerJobMarginTopClassName} text-white/90`}>{personal.Job}</p> : null}
-              {selfEvaluationHtml ? (
-                <div className="mt-2">
-                  <RichText html={selfEvaluationHtml} className="text-white/90" fontSize={styles.fontSize} lineHeight={lineHeight} />
-                </div>
-              ) : null}
 
               {infoItems.length ? (
                 <div className={`${headerInfoMarginTopClassName} flex flex-wrap ${headerInfoGapClassName} text-white/90`}>
@@ -191,7 +179,6 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
       <div className={`px-10 pt-8 pb-10 ${contentGapClass}`}>
         {(() => {
           const renderable = sectionsOrdered.filter((section) => {
-            if (section.type === ResumeSectionType.SelfEvaluation) return false;
             if (section.type === ResumeSectionType.Exam) return true;
             const items = getOrderedItems(section.items || []).filter((it: any) => hasMeaningfulContent(it, section.type));
             return items.length > 0;
@@ -223,6 +210,18 @@ export const TemplateWaveTimeline: React.FC<{ data: ResumeData; styles: any; dis
 
                   {section.type === ResumeSectionType.Exam ? (
                     <ExamSection section={section} color={color} t={t} />
+                  ) : section.type === ResumeSectionType.SelfEvaluation ? (
+                    <div className={listTightClass}>
+                      {items.map((item: any) => (
+                        <div key={item.id} className="relative">
+                          {item.title ? <div className="text-sm font-semibold text-gray-900">{item.title}</div> : null}
+                          {item.subtitle ? <div className="text-sm text-gray-700 mt-0.5">{item.subtitle}</div> : null}
+                          {item.description ? (
+                            <RichText html={item.description} className="text-gray-700 mt-1" fontSize={styles.fontSize} lineHeight={lineHeight} />
+                          ) : null}
+                        </div>
+                      ))}
+                    </div>
                   ) : section.type === ResumeSectionType.Skills ? (
                     <div className={listTightClass}>
                       {items.map((item: any) => (
