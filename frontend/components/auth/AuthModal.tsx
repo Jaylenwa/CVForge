@@ -273,7 +273,6 @@ export const AuthModal: React.FC = () => {
       onClose={handleClose}
       hideHeader
       size="md"
-      closeOnBackdrop
       bodyClassName="p-0"
     >
       <div className="relative p-6">
@@ -369,7 +368,7 @@ export const AuthModal: React.FC = () => {
                       className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50"
                       aria-label={t('auth.login')}
                     >
-                      <Mail className="h-5 w-5" />
+                      <Mail className="h-6 w-6" />
                     </button>
                     {authConfig?.enableGithubLogin && (
                       <button
@@ -381,7 +380,7 @@ export const AuthModal: React.FC = () => {
                         className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50"
                         aria-label={t('auth.provider.github')}
                       >
-                        <img src="/github.svg" alt={t('auth.provider.github')} className="h-5 w-5" />
+                        <img src="/github.svg" alt={t('auth.provider.github')} className="h-7 w-7" />
                       </button>
                     )}
                   </div>
@@ -495,27 +494,28 @@ export const AuthModal: React.FC = () => {
                                 <span className="px-2 bg-white text-gray-500">{t('auth.orContinueWith')}</span>
                               </div>
                             </div>
-                            <div className={extraProvidersCount === 1 ? 'mt-6 flex justify-center' : 'mt-6 grid grid-cols-2 gap-3'}>
+                            <div className="mt-6 flex items-center justify-center gap-6">
                               {authConfig?.enableGithubLogin && (
-                                <div className={extraProvidersCount === 1 ? 'w-full max-w-[320px]' : undefined}>
-                                  <Button variant="outline" className="w-full flex justify-center items-center" onClick={handleGithubLogin} isLoading={loginLoading}>
-                                    <img src="/github.svg" alt={t('auth.provider.github')} className="h-5 w-5 mr-2" />
-                                    {t('auth.provider.github')}
-                                  </Button>
-                                </div>
+                                <button
+                                  type="button"
+                                  onClick={handleGithubLogin}
+                                  disabled={loginLoading}
+                                  aria-label={t('auth.provider.github')}
+                                  className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                  <img src="/github.svg" alt={t('auth.provider.github')} className="h-7 w-7" />
+                                </button>
                               )}
                               {authConfig?.enableWeChatMPLogin && (
-                                <div className={extraProvidersCount === 1 ? 'w-full max-w-[320px]' : undefined}>
-                                  <Button
-                                    variant="outline"
-                                    className="w-full flex justify-center items-center text-green-700 border-green-200 hover:bg-green-50"
-                                    onClick={() => void openWeChatMP()}
-                                    isLoading={loginLoading}
-                                  >
-                                    <img src="/wechat.svg" alt={t('auth.provider.wechatMP')} className="h-5 w-5 mr-2" />
-                                    {t('auth.provider.wechatMP')}
-                                  </Button>
-                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void openWeChatMP()}
+                                  disabled={loginLoading}
+                                  aria-label={t('auth.provider.wechatMP')}
+                                  className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                  <img src="/wechat.svg" alt={t('auth.provider.wechatMP')} className="h-7 w-7" />
+                                </button>
                               )}
                             </div>
                           </div>
