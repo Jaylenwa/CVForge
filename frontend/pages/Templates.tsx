@@ -1,5 +1,4 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { AppRoute } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -19,7 +18,6 @@ export const Templates: React.FC = () => {
     };
   }, []);
   const { t, language } = useLanguage();
-  const navigate = useNavigate();
   const { isAuthenticated, openAuthModal } = useAuth();
   
   const [sortMode, setSortMode] = useState<'hot' | 'new'>('hot');
@@ -86,7 +84,7 @@ export const Templates: React.FC = () => {
       openAuthModal({ mode: 'login', returnTo: target, source: 'user' });
       return;
     }
-    navigate(target);
+    window.open(`${window.location.origin}${window.location.pathname}#${target}`, '_blank');
   };
   const handlePreviewTemplate = (templateId: string, presetId?: string) => {
     const qs = new URLSearchParams();
