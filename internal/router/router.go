@@ -34,9 +34,9 @@ import (
 
 func Init() *gin.Engine {
 	router := gin.New()
+	router.Use(middleware.CORS())
 	router.Use(middleware.RequestID(), middleware.Logger(), gin.Recovery(), metrics.Middleware())
 	api := router.Group("/api/v1")
-	router.Use(middleware.CORS())
 
 	confHandler := conf.NewHandler()
 	authH := auth.NewHandler()

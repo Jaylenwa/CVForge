@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -268,7 +267,7 @@ func (h *Handler) WeChatMPCreateScene(c *gin.Context) {
 		c.JSON(http.StatusNotImplemented, gin.H{"error": "feature disabled"})
 		return
 	}
-	scene, qrURL, expireSeconds, err := h.svc.CreateWeChatMPLoginScene(context.Background())
+	scene, qrURL, expireSeconds, err := h.svc.CreateWeChatMPLoginScene(c.Request.Context())
 	if err != nil {
 		logger.WithCtx(c).Error("auth.wechatmp create scene failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -283,21 +282,21 @@ func (h *Handler) WeChatMPSceneStatus(c *gin.Context) {
 		return
 	}
 	scene := c.Param("scene")
-	payload, err := h.svc.GetWeChatMPScenePayload(context.Background(), scene)
+	payload, err := h.svc.GetWeChatMPScenePayload(c.Request.Context(), scene)
 	if err != nil || payload.Scene == "" {
 		c.JSON(http.StatusNotFound, gin.H{"status": "expired"})
 		return
 	}
 	if payload.Status == "ok" && payload.OTT != "" {
 		if cache.RDB != nil {
-			_ = cache.RDB.Del(context.Background(), common.RedisKeyWeChatMPScene.F(scene)).Err()
+			_ = cache.RDB.Del(c.Request.Context(), common.RedisKeyWeChatMPScene.F(scene)).Err()
 		}
 		c.JSON(http.StatusOK, gin.H{"status": "ok", "ott": payload.OTT})
 		return
 	}
 	if payload.ExpireAt > 0 && time.Now().Unix() >= payload.ExpireAt {
 		if cache.RDB != nil {
-			_ = cache.RDB.Del(context.Background(), common.RedisKeyWeChatMPScene.F(scene)).Err()
+			_ = cache.RDB.Del(c.Request.Context(), common.RedisKeyWeChatMPScene.F(scene)).Err()
 		}
 		c.JSON(http.StatusNotFound, gin.H{"status": "expired"})
 		return
@@ -399,20 +398,20 @@ func (h *Handler) WeChatMPCallbackPost(c *gin.Context) {
 		return
 	}
 
-	p, e := h.svc.GetWeChatMPScenePayload(context.Background(), scene)
+	p, e := h.svc.GetWeChatMPScenePayload(c.Request.Context(), scene)
 	if e != nil || p.Scene == "" || p.Status != "pending" {
 		c.String(http.StatusOK, "success")
 		return
 	}
 
-	ui, _ := h.svc.FetchWeChatMPUserInfo(context.Background(), openid)
+	ui, _ := h.svc.FetchWeChatMPUserInfo(c.Request.Context(), openid)
 	user, err := h.svc.FindOrCreateWeChatMPUser(ui, openid)
 	if err != nil {
 		logger.WithCtx(c).Error("auth.wechatmp account error", zap.Error(err))
 		c.String(http.StatusOK, "success")
 		return
 	}
-	if _, e2 := h.svc.MarkWeChatMPSceneReady(context.Background(), scene, openid, user); e2 != nil {
+	if _, e2 := h.svc.MarkWeChatMPSceneReady(c.Request.Context(), scene, openid, user); e2 != nil {
 		logger.WithCtx(c).Error("auth.wechatmp mark scene ready failed", zap.Error(e2))
 	}
 	c.String(http.StatusOK, "success")

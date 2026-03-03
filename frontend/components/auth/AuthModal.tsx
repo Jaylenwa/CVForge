@@ -189,7 +189,11 @@ export const AuthModal: React.FC = () => {
         await login(loginForm.email);
         await finishAuth();
       } else {
-        setLoginError(t('auth.error.invalidCredentials'));
+        if (result.error === 'invalid_credentials') {
+          setLoginError(t('auth.error.invalidCredentials'));
+        } else {
+          setLoginError(t('auth.error.general'));
+        }
       }
     } catch {
       setLoginError(t('auth.error.general'));
@@ -252,6 +256,8 @@ export const AuthModal: React.FC = () => {
       } else {
         if (res.error === 'invalid_code' && emailVerificationEnabled) {
           setRegisterError(t('auth.error.invalidCode'));
+        } else if (res.error === 'invalid_email') {
+          setRegisterError(t('auth.error.invalidEmail'));
         } else {
           setRegisterError(t('auth.error.registrationFailed'));
         }

@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './index.css';
 import App from '../App';
 import { toast } from '../components/ui/Toast';
 import { tGlobal } from '../contexts/LanguageContext';
