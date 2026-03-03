@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig(() => {
     return {
@@ -22,7 +23,7 @@ export default defineConfig(() => {
       optimizeDeps: {
         exclude: ['framer-motion'],
       },
-      plugins: [react()],
+      plugins: [tailwindcss(), react()],
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
