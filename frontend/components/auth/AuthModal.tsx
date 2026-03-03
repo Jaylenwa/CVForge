@@ -576,7 +576,7 @@ export const AuthModal: React.FC = () => {
                                 {t('auth.verificationCode')}
                               </label>
                               <div className="mt-1 flex space-x-2">
-                                <div className="relative rounded-md shadow-sm flex-grow">
+                                <div className="relative rounded-md shadow-sm grow">
                                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <KeyRound className="h-5 w-5 text-gray-400" />
                                   </div>
