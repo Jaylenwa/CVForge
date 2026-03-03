@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { User, Lock, Camera, Save } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { API_BASE } from '../config';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Button } from '../components/ui/Button';
 import { Avatar } from '../components/ui/Avatar';
+import { apiRequest, apiVoid } from '../services/apiClient';
 
 export const Settings: React.FC = () => {
   const { user, login } = useAuth();
@@ -31,8 +31,7 @@ export const Settings: React.FC = () => {
     const form = new FormData();
     form.append('file', file);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/upload/avatar`, { method: 'POST', headers: token ? { Authorization: `Bearer ${token}` } : undefined, body: form });
+      const res = await apiRequest('/upload/avatar', { method: 'POST', auth: true, body: form });
       if (res.status === 401) {
         alert('登录已过期，请重新登录');
         return;
@@ -48,17 +47,15 @@ export const Settings: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/users/profile`, {
+      await apiVoid('/users/profile', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        auth: true,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: formData.name, avatarURL: formData.avatarUrl, language })
       });
-      if (res.ok) {
-        login(formData.email);
-        setSuccessMsg(t('settings.success.profileUpdated'));
-        setTimeout(() => setSuccessMsg(''), 3000);
-      }
+      login(formData.email);
+      setSuccessMsg(t('settings.success.profileUpdated'));
+      setTimeout(() => setSuccessMsg(''), 3000);
     } finally {
       setIsLoading(false);
     }
@@ -68,17 +65,15 @@ export const Settings: React.FC = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/users/password`, {
+      await apiVoid('/users/password', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        auth: true,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentPassword: formData.currentPassword, newPassword: formData.newPassword })
       });
-      if (res.ok) {
-        setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
-        setSuccessMsg(t('settings.success.passwordUpdated'));
-        setTimeout(() => setSuccessMsg(''), 3000);
-      }
+      setFormData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+      setSuccessMsg(t('settings.success.passwordUpdated'));
+      setTimeout(() => setSuccessMsg(''), 3000);
     } finally {
       setIsLoading(false);
     }

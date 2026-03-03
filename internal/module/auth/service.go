@@ -36,6 +36,11 @@ type Service struct {
 	sysConfig *conf.Service
 }
 
+var (
+	ErrInvalidEmail      = errors.New("invalid_email")
+	ErrInvalidVerifyCode = errors.New("invalid_verify_code")
+)
+
 func NewService() *Service {
 	return &Service{
 		repo:      DefaultRepo(),
@@ -113,18 +118,18 @@ func (s *Service) SendCode(email string, code string) error {
 func (s *Service) Register(email, code, password, name string) (string, string, error) {
 	email = strings.TrimSpace(email)
 	if email == "" {
-		return "", "", http.ErrNotSupported
+		return "", "", ErrInvalidEmail
 	}
 	if s.sysConfig.GetBool(string(common.ConfigKeyEnableEmailVerification), true) {
 		if !s.ValidateVerifyCode(email, code) {
-			return "", "", http.ErrBodyNotAllowed
+			return "", "", ErrInvalidVerifyCode
 		}
 	}
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	now := time.Now()
 	u := User{Email: &email, PasswordHash: string(hash), Name: name, Role: s.initialRole(), LastLoginAt: &now}
 	if err := s.repo.CreateUser(&u); err != nil {
-		return "", "", gorm.ErrDuplicatedKey
+		return "", "", err
 	}
 	access, refresh := s.IssueTokens(u.ID)
 	return access, refresh, nil

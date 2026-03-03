@@ -25,21 +25,6 @@ export const getThemeStyles = (theme?: { Color?: string; Font?: string; Spacing?
   return { fontFamily, spacingMultiplier, fontSize };
 };
 
-export const hasExtraPersonalInfo = (data: ResumeData) => {
-    const p = (data.Personal || {}) as NonNullable<ResumeData['Personal']>;
-    const customArr = (() => {
-        try {
-            const raw = p?.CustomInfo;
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed)) return parsed;
-            }
-        } catch {}
-        return [];
-    })();
-    return !!(p?.Gender || p?.Age || p?.Degree || (customArr && customArr.length > 0));
-};
-
 export const sanitizeHtml = (html: string) => {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html || '', 'text/html');
@@ -109,14 +94,6 @@ const withUniqueItemIDs = (items: ResumeItem[], prefix: string): ResumeItem[] =>
     seen.add(id);
     return { ...it, id, orderNum: idx };
   });
-};
-
-const pickUniqueSectionID = (sections: ResumeSection[], preferred: string) => {
-  const used = new Set((sections || []).map((s) => (s?.id == null ? '' : String(s.id))).filter(Boolean));
-  if (!used.has(preferred)) return preferred;
-  let i = 1;
-  while (used.has(`${preferred}-${i}`)) i++;
-  return `${preferred}-${i}`;
 };
 
 export const normalizeResumeDataForRender = (data: ResumeData): ResumeData => {

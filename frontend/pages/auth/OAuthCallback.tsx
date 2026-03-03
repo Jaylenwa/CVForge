@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { API_BASE } from '../../config';
 import { AppRoute } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
+import { apiJson } from '../../services/apiClient';
 
 export const OAuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -20,17 +20,11 @@ export const OAuthCallback: React.FC = () => {
     }
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/auth/wechat/consume-ott`, {
+        const data = await apiJson<any>('/auth/wechat/consume-ott', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ott })
         });
-        if (!res.ok) {
-          setStatus('error');
-          setMessage('登录失败');
-          return;
-        }
-        const data = await res.json();
         const at = data.accessToken as string;
         const rt = data.refreshToken as string;
         if (!at || !rt) {

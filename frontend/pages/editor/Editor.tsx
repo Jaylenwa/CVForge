@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { DownloadModal } from '../../components/ui/DownloadModal';
 import { fetchContentPresetData, listTemplateLibraryItems } from '../../services/catalogService';
+import { apiJson, apiRequest, apiVoid } from '../../services/apiClient';
 import { ResumeData, AppRoute, Language } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useToast } from '../../components/ui/Toast';
@@ -61,48 +62,51 @@ export const Editor: React.FC = () => {
     };
 
     if (resumeId) {
-        const token = localStorage.getItem('token');
         setLoading(true);
-        fetch(`${API_BASE}/resumes/${resumeId}`, { headers: { Authorization: `Bearer ${token}` } })
-          .then(r => r.json())
-          .then((res: any) => {
-              const incoming = res || {};
-              const sectionsRaw = (incoming.Sections || []);
-              const mapped: ResumeData = {
-                id: incoming.ID || Number(resumeId),
-                title: incoming.Title,
-                templateId: incoming.TemplateID,
-                language: (incoming.Language || '') === 'en' ? 'en' : 'zh',
-                lastModified: incoming.LastModified,
-                Personal: incoming.Personal || {},
-                Theme: incoming.Theme || {},
-                sections: sectionsRaw.map((s: any) => ({
-                  id: s.ID,
-                  type: s.Type,
-                  title: s.Title,
-                  isVisible: s.IsVisible,
-                  orderNum: toOrderNum(s.OrderNum),
-                  items: (s.Items || []).map((i: any) => ({
-                    id: i.ID,
-                    title: i.Title,
-                    subtitle: i.Subtitle,
-                    major: i.Major,
-                    degree: i.Degree,
-                    timeStart: i.TimeStart,
-                    timeEnd: i.TimeEnd,
-                    today: !!i.Today,
-                    description: i.Description,
-                    orderNum: toOrderNum(i.OrderNum)
-                  })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
-                })).sort((a: any, b: any) => (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0)
-              }
-              setResumeData(mapped);
-              setLoading(false);
-          })
-          .catch(() => {
-            setLoading(false);
+        (async () => {
+          try {
+            const res = await apiJson<any>(`/resumes/${resumeId}`, { auth: true });
+            const incoming = res || {};
+            const sectionsRaw = (incoming.Sections || []);
+            const mapped: ResumeData = {
+              id: incoming.ID || Number(resumeId),
+              title: incoming.Title,
+              templateId: incoming.TemplateID,
+              language: (incoming.Language || '') === 'en' ? 'en' : 'zh',
+              lastModified: incoming.LastModified,
+              Personal: incoming.Personal || {},
+              Theme: incoming.Theme || {},
+              sections: sectionsRaw.map((s: any) => ({
+                id: s.ID,
+                type: s.Type,
+                title: s.Title,
+                isVisible: s.IsVisible,
+                orderNum: toOrderNum(s.OrderNum),
+                items: (s.Items || []).map((i: any) => ({
+                  id: i.ID,
+                  title: i.Title,
+                  subtitle: i.Subtitle,
+                  major: i.Major,
+                  degree: i.Degree,
+                  timeStart: i.TimeStart,
+                  timeEnd: i.TimeEnd,
+                  today: !!i.Today,
+                  description: i.Description,
+                  orderNum: toOrderNum(i.OrderNum)
+                })).sort((a: any, b: any) =>
+                  (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0
+                )
+              })).sort((a: any, b: any) =>
+                (Number.isFinite(b.orderNum) || Number.isFinite(a.orderNum)) ? ((a.orderNum ?? 0) - (b.orderNum ?? 0)) : 0
+              )
+            };
+            setResumeData(mapped);
+          } catch {
             showToast('加载失败', 'error');
-          });
+          } finally {
+            setLoading(false);
+          }
+        })();
         return;
     }
 
@@ -114,7 +118,6 @@ export const Editor: React.FC = () => {
         setLoading(true);
         const presetId = searchParams.get('presetId') || '';
         const roleId = searchParams.get('roleId') || '';
-        const token = localStorage.getItem('token');
         const resolveSeed = () => {
           if (!presetId) return Promise.resolve(null);
           return fetchContentPresetData(Number(presetId), undefined, language)
@@ -153,8 +156,7 @@ export const Editor: React.FC = () => {
               }))
             }))
           };
-          fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
-            .then(r => r.json())
+          apiJson<any>('/resumes', { method: 'POST', auth: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
             .then(({ id }) => {
               if (!id) {
                 setLoading(false);
@@ -163,8 +165,7 @@ export const Editor: React.FC = () => {
               }
               const rt = searchParams.get('returnTo');
               window.history.replaceState(null, '', `#${AppRoute.Editor}?id=${id}${rt ? `&returnTo=${encodeURIComponent(rt)}` : ''}`);
-              fetch(`${API_BASE}/resumes/${id}`, { headers: { Authorization: `Bearer ${token}` } })
-                .then(r => r.json())
+              apiJson<any>(`/resumes/${id}`, { auth: true })
                 .then((res: any) => {
                   const incoming = res || {};
                   const sectionsRaw = (incoming.Sections || []);
@@ -333,7 +334,6 @@ export const Editor: React.FC = () => {
   };
 
   const handleSave = () => {
-    const token = localStorage.getItem('token');
     const payload = {
       Title: resumeData.title,
       TemplateID: resumeData.templateId,
@@ -360,14 +360,12 @@ export const Editor: React.FC = () => {
         }))
       }))
     };
-    fetch(`${API_BASE}/resumes/${resumeData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
-      .then(() => {
-        showToast(t('editor.success.saved'), 'success');
-      });
+    apiVoid(`/resumes/${resumeData.id}`, { method: 'PUT', auth: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(() => showToast(t('editor.success.saved'), 'success'))
+      .catch(() => {});
   };
 
   const handleSaveLanguage = (lang: Language) => {
-    const token = localStorage.getItem('token');
     const payload = {
       Title: resumeData.title,
       TemplateID: resumeData.templateId,
@@ -394,26 +392,18 @@ export const Editor: React.FC = () => {
         }))
       }))
     };
-    fetch(`${API_BASE}/resumes/${resumeData.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
-      .then(() => {
-        showToast(t('editor.success.saved'), 'success');
-      });
+    apiVoid(`/resumes/${resumeData.id}`, { method: 'PUT', auth: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(() => showToast(t('editor.success.saved'), 'success'))
+      .catch(() => {});
   };
 
   const handleExportPDF = async (): Promise<void> => {
-    const token = localStorage.getItem('token');
     if (!resumeData.id) return;
-    const submit = await fetch(`${API_BASE}/pdf/exports?resumeId=${encodeURIComponent(resumeData.id)}`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-    if (!submit.ok) {
-      let txt = '';
-      try { txt = await submit.text(); } catch {}
-      throw new Error(`HTTP ${submit.status} ${submit.statusText}${txt ? ' - ' + txt : ''}`);
-    }
-    const { job_id } = await submit.json();
+    const submit = await apiJson<{ job_id: string }>('/pdf/exports?resumeId=' + encodeURIComponent(resumeData.id), { method: 'POST', auth: true });
+    const job_id = submit.job_id;
     const start = Date.now();
     while (true) {
-      const st = await fetch(`${API_BASE}/pdf/exports/${job_id}`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await st.json();
+      const data = await apiJson<any>(`/pdf/exports/${job_id}`, { auth: true });
       if (data.status === 'done') {
         const a = document.createElement('a');
         const base = API_BASE.replace(/\/+$/, '');
@@ -439,9 +429,8 @@ export const Editor: React.FC = () => {
   };
 
   const handleExportImage = async (): Promise<void> => {
-    const token = localStorage.getItem('token');
     if (!resumeData.id) return;
-    const r = await fetch(`${API_BASE}/resumes/${resumeData.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+    const r = await apiRequest(`/resumes/${resumeData.id}/image`, { method: 'POST', auth: true });
     if (!r.ok) {
       let txt = '';
       try { txt = await r.text(); } catch {}

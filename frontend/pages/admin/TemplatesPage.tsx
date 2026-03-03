@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { API_BASE } from '../../config';
 import {
   AdminContentPreset,
   AdminJobRole,
@@ -25,6 +24,7 @@ import { applyTemplateDefaultsToResumeData } from '../../utils/template-defaults
 import { AlertCircle, AlignLeft, Check, CheckCircle2, Copy, FileJson, FileText, LayoutGrid, Minimize2, Search, Trash2 } from 'lucide-react';
 import { AppRoute } from '../../types';
 import { motion } from 'framer-motion';
+import { apiJson } from '../../services/apiClient';
 
 type Row = {
   id: string;
@@ -216,8 +216,7 @@ export const TemplatesPage: React.FC = () => {
 
   const load = async () => {
     try {
-      const res = await fetch(`${API_BASE}/templates`);
-      const data = await res.json();
+      const data = await apiJson<any>('/templates');
       const mapped = (data.items || []).map((t: any) => {
         const names = (t.Names || t.names || {}) as Record<string, string>;
         const id = t.ExternalID || t.id;

@@ -1,6 +1,4 @@
-import { API_BASE } from '../config';
-
-const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('token') || ''}` });
+import { apiJson, apiVoid } from './apiClient';
 
 export interface PageResp<T> {
   items: T[];
@@ -19,9 +17,7 @@ export interface AdminStats {
 }
 
 export const getAdminStats = async (days = 14): Promise<AdminStats> => {
-  const res = await fetch(`${API_BASE}/admin/stats?days=${days}`, { headers: authHeader() });
-  if (!res.ok) throw new Error('Failed to fetch stats');
-  return res.json();
+  return apiJson<AdminStats>(`/admin/stats?days=${days}`, { auth: true });
 };
 
 export interface AdminJobCategory {
@@ -77,68 +73,83 @@ export interface AdminCreateContentPresetReq {
 
 export const adminListJobCategories = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/taxonomy/categories?${q}`, { headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-  return res.json() as Promise<PageResp<AdminJobCategory>>;
+  return apiJson<PageResp<AdminJobCategory>>(`/admin/taxonomy/categories?${q}`, { auth: true });
 };
 
 export const adminCreateJobCategory = async (body: AdminCreateJobCategoryReq) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/categories`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid('/admin/taxonomy/categories', {
+    method: 'POST',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 };
 
 export const adminPatchJobCategory = async (id: number, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/categories/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/taxonomy/categories/${id}`, {
+    method: 'PATCH',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 };
 
 export const adminDeleteJobCategory = async (id: number) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/categories/${id}`, { method: 'DELETE', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/taxonomy/categories/${id}`, { method: 'DELETE', auth: true });
 };
 
 export const adminListJobRoles = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/taxonomy/roles?${q}`, { headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-  return res.json() as Promise<PageResp<AdminJobRole>>;
+  return apiJson<PageResp<AdminJobRole>>(`/admin/taxonomy/roles?${q}`, { auth: true });
 };
 
 export const adminCreateJobRole = async (body: AdminCreateJobRoleReq) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/roles`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid('/admin/taxonomy/roles', {
+    method: 'POST',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 };
 
 export const adminPatchJobRole = async (id: number, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/roles/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/taxonomy/roles/${id}`, {
+    method: 'PATCH',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 };
 
 export const adminDeleteJobRole = async (id: number) => {
-  const res = await fetch(`${API_BASE}/admin/taxonomy/roles/${id}`, { method: 'DELETE', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/taxonomy/roles/${id}`, { method: 'DELETE', auth: true });
 };
 
 export const adminListContentPresets = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/presets?${q}`, { headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-  return res.json() as Promise<PageResp<AdminContentPreset>>;
+  return apiJson<PageResp<AdminContentPreset>>(`/admin/presets?${q}`, { auth: true });
 };
 
 export const adminCreateContentPreset = async (body: AdminCreateContentPresetReq) => {
-  const res = await fetch(`${API_BASE}/admin/presets`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(await res.text());
+  await apiVoid('/admin/presets', {
+    method: 'POST',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 };
 
 export const adminPatchContentPreset = async (id: number, body: any) => {
-  const res = await fetch(`${API_BASE}/admin/presets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(await res.text());
+  await apiVoid(`/admin/presets/${id}`, {
+    method: 'PATCH',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 };
 
 export const adminDeleteContentPreset = async (id: number) => {
-  const res = await fetch(`${API_BASE}/admin/presets/${id}`, { method: 'DELETE', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/presets/${id}`, { method: 'DELETE', auth: true });
 };
 
 // Users
@@ -157,34 +168,36 @@ export interface AdminUser {
 
 export const listUsers = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/users?${q}`, { headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-  return res.json() as Promise<PageResp<AdminUser>>;
+  return apiJson<PageResp<AdminUser>>(`/admin/users?${q}`, { auth: true });
 };
 
 export const getUser = async (id: number) => {
-  const res = await fetch(`${API_BASE}/admin/users/${id}`, { headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-  return res.json() as Promise<AdminUser>;
+  return apiJson<AdminUser>(`/admin/users/${id}`, { auth: true });
 };
 
 export const updateUser = async (id: number, body: Partial<AdminUser>) => {
-  const res = await fetch(`${API_BASE}/admin/users/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/users/${id}`, {
+    method: 'PATCH',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 };
 
 export const resetPassword = async (id: number, newPassword: string) => {
-  const res = await fetch(`${API_BASE}/admin/users/${id}/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify({ newPassword }) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/users/${id}/reset-password`, {
+    method: 'POST',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ newPassword })
+  });
 };
 
 export const banUser = async (id: number) => {
-  const res = await fetch(`${API_BASE}/admin/users/${id}/ban`, { method: 'POST', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/users/${id}/ban`, { method: 'POST', auth: true });
 };
 export const unbanUser = async (id: number) => {
-  const res = await fetch(`${API_BASE}/admin/users/${id}/unban`, { method: 'POST', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/users/${id}/unban`, { method: 'POST', auth: true });
 };
 
 // Resumes
@@ -201,9 +214,7 @@ export interface AdminResume {
 
 export const listResumes = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/resumes?${q}`, { headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-  const data = await res.json();
+  const data = await apiJson<any>(`/admin/resumes?${q}`, { auth: true });
   const items: AdminResume[] = (data.items || []).map((it: any) => {
     const r = it.resume || {};
     return {
@@ -221,13 +232,16 @@ export const listResumes = async (params: Record<string, string>) => {
 };
 
 export const deleteResume = async (id: number) => {
-  const res = await fetch(`${API_BASE}/admin/resumes/${id}`, { method: 'DELETE', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/resumes/${id}`, { method: 'DELETE', auth: true });
 };
 
 export const setResumeVisibility = async (id: number, isPublic: boolean) => {
-  const res = await fetch(`${API_BASE}/admin/resumes/${id}/visibility`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify({ isPublic }) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/resumes/${id}/visibility`, {
+    method: 'PATCH',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isPublic })
+  });
 };
 
 // Templates
@@ -237,16 +251,23 @@ export interface AdminTemplateReq {
   names?: Record<string, string>;
 }
 export const createTemplate = async (body: AdminTemplateReq) => {
-  const res = await fetch(`${API_BASE}/admin/templates`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid('/admin/templates', {
+    method: 'POST',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 };
 export const updateTemplate = async (id: string, body: Partial<AdminTemplateReq>) => {
-  const res = await fetch(`${API_BASE}/admin/templates/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/templates/${id}`, {
+    method: 'PATCH',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 };
 export const deleteTemplate = async (id: string) => {
-  const res = await fetch(`${API_BASE}/admin/templates/${id}`, { method: 'DELETE', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/templates/${id}`, { method: 'DELETE', auth: true });
 };
 
 // Shares
@@ -261,15 +282,16 @@ export interface AdminShare {
 }
 export const listShares = async (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
-  const res = await fetch(`${API_BASE}/admin/share-links?${q}`, { headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
-  return res.json() as Promise<PageResp<AdminShare>>;
+  return apiJson<PageResp<AdminShare>>(`/admin/share-links?${q}`, { auth: true });
 };
 export const updateShare = async (slug: string, isPublic: boolean) => {
-  const res = await fetch(`${API_BASE}/admin/share-links/${slug}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...authHeader() }, body: JSON.stringify({ isPublic }) });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/share-links/${slug}`, {
+    method: 'PATCH',
+    auth: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isPublic })
+  });
 };
 export const deleteShare = async (slug: string) => {
-  const res = await fetch(`${API_BASE}/admin/share-links/${slug}`, { method: 'DELETE', headers: authHeader() });
-  if (!res.ok) throw new Error('failed');
+  await apiVoid(`/admin/share-links/${slug}`, { method: 'DELETE', auth: true });
 };

@@ -6,7 +6,7 @@ import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { loginUser, registerUser, sendVerificationCode, verifyCode } from '../../services/authService';
+import { loginUser, registerUser, sendVerificationCode } from '../../services/authService';
 import { getAuthConfig } from '../../services/configService';
 import { consumeOtt, createWeChatMPScene, getWeChatMPSceneStatus } from '../../services/wechatMpAuthService';
 import { AppRoute, AuthConfig } from '../../types';
@@ -245,20 +245,16 @@ export const AuthModal: React.FC = () => {
     }
     setRegisterLoading(true);
     try {
-      if (emailVerificationEnabled) {
-        const isValid = await verifyCode(registerForm.email, registerForm.code);
-        if (!isValid) {
-          setRegisterError(t('auth.error.invalidCode'));
-          setRegisterLoading(false);
-          return;
-        }
-      }
       const res = await registerUser(registerForm.email, registerForm.code, registerForm.password);
       if (res.success) {
         await login(registerForm.email);
         await finishAuth();
       } else {
-        setRegisterError(t('auth.error.registrationFailed'));
+        if (res.error === 'invalid_code' && emailVerificationEnabled) {
+          setRegisterError(t('auth.error.invalidCode'));
+        } else {
+          setRegisterError(t('auth.error.registrationFailed'));
+        }
       }
     } catch {
       setRegisterError(t('auth.error.registrationFailed'));

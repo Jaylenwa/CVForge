@@ -5,12 +5,12 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-ki
 import { ResumeData, ResumeSection, ResumeItem, ResumeSectionType } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { polishText } from '../../services/geminiService';
-import { API_BASE } from '../../config';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { SortableSection } from './SortableSection';
 import { RichTextEditor } from '../../components/ui/RichTextEditor';
 import { AnimatePresence, motion } from 'framer-motion';
+import { apiRequest } from '../../services/apiClient';
 
 interface EditorFormProps {
   data: ResumeData;
@@ -95,10 +95,9 @@ export const EditorForm: React.FC<EditorFormProps> = ({ data, onChange }) => {
     const form = new FormData();
     form.append('file', file);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/upload/avatar`, {
+      const res = await apiRequest('/upload/avatar', {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        auth: true,
         body: form
       });
       if (res.status === 401) {

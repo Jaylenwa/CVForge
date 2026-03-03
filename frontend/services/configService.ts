@@ -1,13 +1,10 @@
-import { API_BASE } from '../config';
 import { AuthConfig, SystemConfig } from '../types';
+import { apiJson, apiVoid } from './apiClient';
 
 export const getAuthConfig = async (): Promise<AuthConfig> => {
   try {
-    const res = await fetch(`${API_BASE}/auth/config`);
-    if (!res.ok) throw new Error('Network response was not ok');
-    return await res.json();
-  } catch (error) {
-    console.error('Failed to fetch auth config:', error);
+    return await apiJson<AuthConfig>('/auth/config');
+  } catch {
     return {
       enableEmailVerification: false,
       enableWeChatMPLogin: false,
@@ -19,23 +16,16 @@ export const getAuthConfig = async (): Promise<AuthConfig> => {
 };
 
 export const getSystemConfigs = async (): Promise<SystemConfig[]> => {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`${API_BASE}/admin/configs`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  if (!res.ok) throw new Error('Failed to fetch configs');
-  return res.json();
+  return apiJson<SystemConfig[]>('/admin/configs', { auth: true });
 };
 
 export const updateSystemConfigs = async (configs: SystemConfig[]): Promise<void> => {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`${API_BASE}/admin/configs`, {
+  await apiVoid('/admin/configs', {
     method: 'PUT',
-    headers: { 
+    auth: true,
+    headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
     },
     body: JSON.stringify({ configs })
   });
-  if (!res.ok) throw new Error('Failed to update configs');
 };

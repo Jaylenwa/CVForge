@@ -675,7 +675,7 @@ const translations: Translations = {
     'auth.terms': '点击注册即表示您同意我们的服务条款和隐私政策。',
     'auth.error.invalidEmail': '请输入有效的电子邮箱地址。',
     'auth.error.passwordMismatch': '两次输入的密码不一致。',
-    'auth.error.invalidCode': '验证码错误（测试码：123456）。',
+    'auth.error.invalidCode': '验证码错误。',
     'auth.success.codeSent': '验证码已发送至您的邮箱。',
     'auth.quote': '成功不是终点，失败也非末日：关键在于继续前行的勇气。',
     'auth.quoteAuthor': '温斯顿·丘吉尔',

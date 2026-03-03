@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ResumeData } from '../../types';
-import { API_BASE } from '../../config';
 import { ResumePreview } from '../editor/ResumePreview';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { fetchContentPresetData } from '../../services/catalogService';
 import { applyTemplateDefaultsToResumeData } from '../../utils/template-defaults';
+import { apiJson } from '../../services/apiClient';
 
 export const PrintResume: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -87,11 +87,9 @@ export const PrintResume: React.FC = () => {
     }
     if (!id) return;
     const token = localStorage.getItem('token');
-    fetch(`${API_BASE}/resumes/${id}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    })
-      .then(r => r.json())
-      .then((res: any) => {
+    (async () => {
+      try {
+        const res = await apiJson<any>(`/resumes/${id}`, token ? { auth: true } : undefined);
         const mapped: ResumeData = {
           id: res.ID || Number(id),
           title: res.Title,
@@ -122,7 +120,8 @@ export const PrintResume: React.FC = () => {
         };
         setData(mapped);
         setLanguage(mapped.language);
-      });
+      } catch {}
+    })();
   }, [searchParams]);
 
   return (

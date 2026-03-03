@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AppRoute, ResumeData } from '../../types';
-import { API_BASE } from '../../config';
 import { ResumePreview } from '../editor/ResumePreview';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Button } from '../../components/ui/Button';
 import { Lock, Globe } from 'lucide-react';
+import { apiRequest } from '../../services/apiClient';
 
 export const PublicResume: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -31,7 +31,7 @@ export const PublicResume: React.FC = () => {
     };
     try {
       const token = sessionStorage.getItem(`share_token:${slug}`) || '';
-      const r = await fetch(`${API_BASE}/public/resumes/${slug}`, {
+      const r = await apiRequest(`/public/resumes/${slug}`, {
         headers: token ? { 'X-Share-Token': token } : undefined
       });
       if (!r.ok) {
@@ -179,7 +179,7 @@ export const PublicResume: React.FC = () => {
               (async () => {
                 if (!slug) return;
                 setPasswordError(null);
-                const r = await fetch(`${API_BASE}/public/resumes/${slug}/auth`, {
+                const r = await apiRequest(`/public/resumes/${slug}/auth`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ password })
@@ -209,7 +209,7 @@ export const PublicResume: React.FC = () => {
                 onClick={async () => {
                   if (!slug) return;
                   setPasswordError(null);
-                  const r = await fetch(`${API_BASE}/public/resumes/${slug}/auth`, {
+                  const r = await apiRequest(`/public/resumes/${slug}/auth`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password })

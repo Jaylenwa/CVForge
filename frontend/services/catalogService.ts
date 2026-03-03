@@ -1,4 +1,4 @@
-import { API_BASE } from '../config';
+import { apiJson, apiJsonOrNull } from './apiClient';
 
 export type JobCategory = {
   id: number;
@@ -31,24 +31,18 @@ export type ContentPreset = {
   dataJson?: string;
 };
 
-const fetchJson = async <T>(url: string, init?: RequestInit): Promise<T> => {
-  const res = await fetch(url, init);
-  if (!res.ok) throw new Error(`request failed: ${res.status}`);
-  return res.json();
-};
-
 export const fetchTemplateCatalog = async (params?: { language?: string; sort?: 'hot' | 'new' | 'name' }) => {
   const taxonomyQs = new URLSearchParams();
   if (params?.language) taxonomyQs.set('language', String(params.language));
   const taxonomySuffix = taxonomyQs.toString() ? `?${taxonomyQs.toString()}` : '';
   const [catsJson, rolesJson, templatesJson] = await Promise.all([
-    fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/categories${taxonomySuffix}`),
-    fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/roles${taxonomySuffix}`),
+    apiJson<{ items: any[] }>(`/taxonomy/categories${taxonomySuffix}`),
+    apiJson<{ items: any[] }>(`/taxonomy/roles${taxonomySuffix}`),
     (() => {
       const qs = new URLSearchParams();
       if (params?.language) qs.set('language', String(params.language));
       if (params?.sort) qs.set('sort', String(params.sort));
-      return fetchJson<{ items: any[] }>(`${API_BASE}/library/templates?${qs.toString()}`);
+      return apiJson<{ items: any[] }>(`/library/templates?${qs.toString()}`);
     })()
   ]);
 
@@ -83,7 +77,7 @@ export const listJobRoles = async (params?: { categoryId?: number; q?: string; l
   if (params?.categoryId) qs.set('categoryId', String(params.categoryId));
   if (params?.q) qs.set('q', params.q);
   if (params?.language) qs.set('language', params.language);
-  const json = await fetchJson<{ items: any[] }>(`${API_BASE}/taxonomy/roles?${qs.toString()}`);
+  const json = await apiJson<{ items: any[] }>(`/taxonomy/roles?${qs.toString()}`);
   const jobRoles: JobRole[] = (json.items || []).map((r: any) => ({
     id: r.id,
     categoryId: r.categoryId,
@@ -98,7 +92,7 @@ export const listTemplateLibraryItems = async (params?: { roleId?: number; langu
   if (params?.roleId) qs.set('roleId', String(params.roleId));
   if (params?.language) qs.set('language', String(params.language));
   if (params?.sort) qs.set('sort', String(params.sort));
-  const json = await fetchJson<{ items: any[] }>(`${API_BASE}/library/templates?${qs.toString()}`);
+  const json = await apiJson<{ items: any[] }>(`/library/templates?${qs.toString()}`);
   const templates: TemplateLibraryItem[] = (json.items || []).map((t: any) => ({
     templateExternalId: t.templateExternalId,
     name: t.name,
@@ -114,10 +108,9 @@ export const fetchContentPresetData = async (presetId: number, signal?: AbortSig
   if (!presetId) return null;
   const qs = new URLSearchParams();
   if (language) qs.set('language', String(language));
-  const url = `${API_BASE}/presets/${encodeURIComponent(presetId)}${qs.toString() ? `?${qs.toString()}` : ''}`;
-  const res = await fetch(url, { signal });
-  if (!res.ok) return null;
-  const p: any = await res.json();
+  const url = `/presets/${encodeURIComponent(presetId)}${qs.toString() ? `?${qs.toString()}` : ''}`;
+  const p = await apiJsonOrNull<any>(url, { signal });
+  if (!p) return null;
   const dataJson = p?.dataJson;
   if (typeof dataJson !== 'string' || !dataJson.trim()) return null;
   try {

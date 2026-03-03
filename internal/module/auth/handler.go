@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -172,11 +173,19 @@ func (h *Handler) Register(c *gin.Context) {
 	access, refresh, err := h.svc.Register(req.Email, req.Code, req.Password, req.Name)
 	if err != nil {
 		logger.WithCtx(c).Error("auth.register failed", zap.Error(err))
-		if err == gorm.ErrDuplicatedKey {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			c.JSON(http.StatusConflict, gin.H{"error": "email exists"})
 			return
 		}
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid code"})
+		if errors.Is(err, ErrInvalidVerifyCode) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid code"})
+			return
+		}
+		if errors.Is(err, ErrInvalidEmail) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid email"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"accessToken": access, "refreshToken": refresh})

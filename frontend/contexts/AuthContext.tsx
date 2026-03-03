@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { API_BASE } from '../config';
+import { ApiError, apiJson, apiVoid } from '../services/apiClient';
 
 export interface User {
   email: string;
@@ -37,6 +38,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [authModalReturnTo, setAuthModalReturnTo] = useState('');
   const [authModalSource, setAuthModalSource] = useState<AuthContextType['authModalSource']>('');
 
+  const fetchMe = async () => {
+    const data = await apiJson<any>('/users/me', { auth: true });
+    setUser({ email: data.email, name: data.name || data.email.split('@')[0], avatarUrl: data.avatarUrl });
+    setIsAdmin(String(data.role || '').toLowerCase() === 'admin');
+  };
+
   const loadUser = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -45,32 +52,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
     try {
-      const res = await fetch(`${API_BASE}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) {
-        const data = await res.json();
-        setUser({ email: data.email, name: data.name || data.email.split('@')[0], avatarUrl: data.avatarUrl });
-        setIsAdmin(String(data.role || '').toLowerCase() === 'admin');
+      await fetchMe();
+    } catch (e) {
+      if (!(e instanceof ApiError) || e.status !== 401) {
+        setLoading(false);
+        return;
       }
-      if (res.status === 401) {
-        const ok = await refreshTokens();
-        if (ok) {
-          const res2 = await fetch(`${API_BASE}/users/me`, { headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` } });
-          if (res2.ok) {
-            const data2 = await res2.json();
-            setUser({ email: data2.email, name: data2.name || data2.email.split('@')[0], avatarUrl: data2.avatarUrl });
-            setIsAdmin(String(data2.role || '').toLowerCase() === 'admin');
-          }
-        } else {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          setUser(null);
-          setIsAdmin(false);
-          const hash = window.location.hash || '';
-          const returnTo = hash.startsWith('#') ? hash.slice(1) : hash;
-          openAuthModal({ mode: 'login', returnTo, source: 'user' });
-        }
+      const ok = await refreshTokens();
+      if (ok) {
+        try {
+          await fetchMe();
+        } catch {}
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        setUser(null);
+        setIsAdmin(false);
+        const hash = window.location.hash || '';
+        const returnTo = hash.startsWith('#') ? hash.slice(1) : hash;
+        openAuthModal({ mode: 'login', returnTo, source: 'user' });
       }
-    } catch {}
+    }
     setLoading(false);
   };
 
@@ -83,9 +85,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const refresh = localStorage.getItem('refreshToken') || '';
     if (token || refresh) {
       try {
-        fetch(`${API_BASE}/auth/logout`, {
+        apiVoid('/auth/logout', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          auth: true,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken: refresh })
         }).catch(() => {});
       } catch {}
@@ -138,9 +141,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const refresh = localStorage.getItem('refreshToken');
     if (!refresh) return false;
     try {
-      const res = await fetch(`${API_BASE}/auth/refresh`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refreshToken: refresh }) });
-      if (!res.ok) return false;
-      const data = await res.json();
+      const data = await apiJson<{ accessToken?: string; refreshToken?: string }>('/auth/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: refresh })
+      });
       const at = data.accessToken as string;
       const rt = data.refreshToken as string;
       if (!at || !rt) return false;

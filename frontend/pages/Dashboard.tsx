@@ -4,11 +4,11 @@ import { MoreVertical, Plus, Clock, Copy, Trash2, Edit2, Share2 } from 'lucide-r
 import { Button } from '../components/ui/Button';
 import { AppRoute, ResumeData } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
-import { API_BASE } from '../config';
 import { ResumeArtboard } from './editor/ResumePreview';
 import { LanguageProvider } from '../contexts/LanguageContext';
 import { Modal } from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
+import { apiJson, apiVoid } from '../services/apiClient';
  
 
 export const Dashboard: React.FC = () => {
@@ -68,8 +68,12 @@ export const Dashboard: React.FC = () => {
     (async () => {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch(`${API_BASE}/resumes`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      let data: any;
+      try {
+        data = await apiJson<any>('/resumes', { auth: true });
+      } catch {
+        return;
+      }
       const items = (data.items || []).map((r: any) => ({
         id: r.ID ?? r.id,
         title: r.Title ?? r.title,
@@ -111,13 +115,16 @@ export const Dashboard: React.FC = () => {
 
   const handleDelete = async (id: number | string, e: React.MouseEvent) => {
       e.stopPropagation();
-      const token = localStorage.getItem('token');
-      fetch(`${API_BASE}/resumes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
-        .then(() => setResumes(prev => prev.filter(r => r.id !== id)));
+      try {
+        await apiVoid(`/resumes/${id}`, { method: 'DELETE', auth: true });
+      } catch {
+        return;
+      }
+      setResumes(prev => prev.filter(r => r.id !== id));
       setActiveMenu(null);
   };
 
-  const handleDuplicate = (resume: ResumeData, e: React.MouseEvent) => {
+  const handleDuplicate = async (resume: ResumeData, e: React.MouseEvent) => {
       e.stopPropagation();
       const token = localStorage.getItem('token');
       const cloneTitle = `${resume.title}${t('dashboard.copySuffix')}`;
@@ -143,9 +150,18 @@ export const Dashboard: React.FC = () => {
           })),
         })),
       };
-      fetch(`${API_BASE}/resumes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
-        .then(r => r.json())
-        .then(({ id }) => setResumes(prev => [{ ...resume, id, title: cloneTitle, lastModified: Date.now() }, ...prev]));
+      try {
+        const data = await apiJson<any>('/resumes', {
+          method: 'POST',
+          auth: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const id = data?.id;
+        setResumes(prev => [{ ...resume, id, title: cloneTitle, lastModified: Date.now() }, ...prev]);
+      } catch {
+        return;
+      }
       setActiveMenu(null);
   };
 
@@ -209,23 +225,16 @@ export const Dashboard: React.FC = () => {
           setShareSettingsOpen(!!openSettings);
         };
 
-        const rs = await fetch(`${API_BASE}/resumes/${resumeId}/share`, { headers: { Authorization: `Bearer ${token}` } });
-        if (rs.ok) {
-          const sdata = await rs.json();
+        try {
+          const sdata = await apiJson<any>(`/resumes/${resumeId}/share`, { auth: true });
           const slug = String(sdata?.slug || '').trim();
           if (slug) {
             openWithShareData(slug, sdata);
             return;
           }
-        }
+        } catch {}
 
-        const r = await fetch(`${API_BASE}/resumes/${resumeId}/publish`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-        if (!r.ok) {
-          let txt = '';
-          try { txt = await r.text(); } catch {}
-          throw new Error(`HTTP ${r.status} ${r.statusText}${txt ? ' - ' + txt : ''}`);
-        }
-        const data = await r.json();
+        const data = await apiJson<any>(`/resumes/${resumeId}/publish`, { method: 'POST', auth: true });
         openWithShareData(String(data?.slug || ''), data);
       } catch (err) {
         showToast(t('editor.share.failed'), 'error');
@@ -240,9 +249,7 @@ export const Dashboard: React.FC = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
       try {
-        const r = await fetch(`${API_BASE}/resumes/${shareModal.resumeId}/share`, { headers: { Authorization: `Bearer ${token}` } });
-        if (!r.ok) return;
-        const data = await r.json();
+        const data = await apiJson<any>(`/resumes/${shareModal.resumeId}/share`, { auth: true });
         const expiresAt = data?.expiresAt ? String(data.expiresAt) : '';
         const password = typeof data?.password === 'string' ? data.password : '';
         setCachedPublicSettings({
@@ -303,39 +310,36 @@ export const Dashboard: React.FC = () => {
         }
       }
 
-      const r = await fetch(`${API_BASE}/resumes/${nextState.resumeId}/share`, {
+      await apiVoid(`/resumes/${nextState.resumeId}/share`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        auth: true,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
-      if (!r.ok) throw new Error('save failed');
       if (!options?.silent) showToast(t('share.settings.saved'), 'success');
 
-      const rr = await fetch(`${API_BASE}/resumes/${nextState.resumeId}/share`, { headers: { Authorization: `Bearer ${token}` } });
-      if (rr.ok) {
-        const data = await rr.json();
-        const expiresAt = data?.expiresAt ? String(data.expiresAt) : '';
-        const password = typeof data?.password === 'string' ? data.password : '';
-        setCachedPublicSettings({
-          passwordEnabled: !!data?.hasPassword,
-          passwordEditable: !data?.hasPassword,
-          password: data?.hasPassword ? password : '',
-          expiryEnabled: !!expiresAt,
-          expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
-        });
-        setShareModal(prev => ({
-          ...prev,
-          isPublic: !!data?.isPublic,
-          hasPassword: !!data?.hasPassword,
-          passwordEnabled: !!data?.isPublic && !!data?.hasPassword,
-          passwordEditable: !data?.hasPassword,
-          password: data?.hasPassword ? password : '',
-          expiryEnabled: !!data?.isPublic && !!expiresAt,
-          expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
-          views: Number.isFinite(data?.views) ? Number(data.views) : prev.views,
-          lastAccessAt: data?.lastAccessAt ? new Date(String(data.lastAccessAt)).toLocaleString() : prev.lastAccessAt
-        }));
-      }
+      const data = await apiJson<any>(`/resumes/${nextState.resumeId}/share`, { auth: true });
+      const expiresAt = data?.expiresAt ? String(data.expiresAt) : '';
+      const password = typeof data?.password === 'string' ? data.password : '';
+      setCachedPublicSettings({
+        passwordEnabled: !!data?.hasPassword,
+        passwordEditable: !data?.hasPassword,
+        password: data?.hasPassword ? password : '',
+        expiryEnabled: !!expiresAt,
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
+      });
+      setShareModal(prev => ({
+        ...prev,
+        isPublic: !!data?.isPublic,
+        hasPassword: !!data?.hasPassword,
+        passwordEnabled: !!data?.isPublic && !!data?.hasPassword,
+        passwordEditable: !data?.hasPassword,
+        password: data?.hasPassword ? password : '',
+        expiryEnabled: !!data?.isPublic && !!expiresAt,
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString().slice(0, 16) : '',
+        views: Number.isFinite(data?.views) ? Number(data.views) : prev.views,
+        lastAccessAt: data?.lastAccessAt ? new Date(String(data.lastAccessAt)).toLocaleString() : prev.lastAccessAt
+      }));
     } catch {
       showToast(t('share.settings.saveFailed'), 'error');
     } finally {
