@@ -175,13 +175,13 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
                 {personal?.Job ? (
                   <div className="flex gap-2 min-w-0">
                     <span className="text-slate-600 whitespace-nowrap">{t('editor.fields.jobApplication')}：</span>
-                    <span className="text-slate-900 min-w-0 break-words">{String(personal.Job).trim()}</span>
+                    <span className="text-slate-900 min-w-0 wrap-break-word">{String(personal.Job).trim()}</span>
                   </div>
                 ) : null}
                 {personal?.JoinTime ? (
                   <div className="flex gap-2 min-w-0">
                     <span className="text-slate-600 whitespace-nowrap">{t('editor.fields.joinTime')}：</span>
-                    <span className="text-slate-900 min-w-0 break-words">{String(personal.JoinTime).trim()}</span>
+                    <span className="text-slate-900 min-w-0 wrap-break-word">{String(personal.JoinTime).trim()}</span>
                   </div>
                 ) : null}
               </div>
@@ -192,14 +192,14 @@ export const TemplateBlueResumeHeader: React.FC<{ data: ResumeData; styles: any;
                 {basicInfoPairs.map((p, idx) => (
                   <div key={`${p.label}-${idx}`} className="flex gap-2 min-w-0">
                     {p.label ? <span className="text-slate-600 whitespace-nowrap">{p.label}：</span> : null}
-                    <span className="text-slate-900 min-w-0 break-words">{p.value}</span>
+                    <span className="text-slate-900 min-w-0 wrap-break-word">{p.value}</span>
                   </div>
                 ))}
               </div>
             ) : null}
           </div>
 
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="bg-white p-1">
               {personal?.AvatarURL ? (
                 <img

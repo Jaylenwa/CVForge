@@ -156,7 +156,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
       <div className="w-full border-b" style={{ backgroundColor: headerBg, borderColor: headerDivider }}>
         <div className="px-10 pt-10 pb-8">
           <div className="flex items-start gap-8">
-            <div className="flex-shrink-0 mt-1">
+            <div className="shrink-0 mt-1">
               {personal?.AvatarURL ? (
                 <img
                   src={personal.AvatarURL}
@@ -170,7 +170,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
             </div>
 
             <div className="min-w-0 flex-1">
-              <h1 className="text-3xl font-bold text-white break-words">{personal?.FullName}</h1>
+              <h1 className="text-3xl font-bold text-white wrap-break-word">{personal?.FullName}</h1>
 
               {(infoPairs.base.length > 0 || infoPairs.extra.length > 0 || customPairs.length > 0) ? (
                 <div className={headerInfoMarginTopClassName}>
@@ -178,7 +178,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
                     {[...infoPairs.base, ...infoPairs.extra].map((p, idx) => (
                       <div key={`${p.label}-${idx}`} className="flex gap-2 min-w-0">
                         <div className="text-white/65 whitespace-nowrap">{p.label}:</div>
-                        <div className="min-w-0 break-words">{p.value}</div>
+                        <div className="min-w-0 wrap-break-word">{p.value}</div>
                       </div>
                     ))}
                     {customPairs.map((ci, idx) => {
@@ -186,7 +186,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
                       const value = String(ci.value || '').trim();
                       if (!label) {
                         return (
-                          <div key={`ci-${idx}`} className="col-span-2 min-w-0 break-words">
+                          <div key={`ci-${idx}`} className="col-span-2 min-w-0 wrap-break-word">
                             {value}
                           </div>
                         );
@@ -194,7 +194,7 @@ export const TemplateDarkHeaderIcons: React.FC<{ data: ResumeData; styles: any; 
                       return (
                         <div key={`ci-${idx}`} className="flex gap-2 min-w-0">
                           <div className="text-white/65 whitespace-nowrap">{label}:</div>
-                          <div className="min-w-0 break-words">{value}</div>
+                          <div className="min-w-0 wrap-break-word">{value}</div>
                         </div>
                       );
                     })}
