@@ -57,8 +57,8 @@ export const Navbar: React.FC = () => {
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10">
         <div className="flex justify-between h-16">
           <div className="flex">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">{t('app.name')}</span>
+            <Link to="/" className="shrink-0 flex items-center">
+              <span className="text-2xl font-bold bg-linear-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">{t('app.name')}</span>
             </Link>
             <div className="hidden sm:ml-8 sm:flex sm:space-x-8">
               {navItems.map((item) => (
@@ -330,7 +330,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode; hideFooter?: bool
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <main className="flex-grow">
+      <main className="grow">
         {children}
       </main>
       {!hideFooter && <Footer />}
