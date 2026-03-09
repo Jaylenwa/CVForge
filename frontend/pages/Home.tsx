@@ -142,7 +142,7 @@ export const Home: React.FC = () => {
     const previewData = applyTemplateDefaultsToResumeData(rawPreviewData);
     return (
       <div className="group relative border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-lg">
-        <div ref={containerRef} className="aspect-[210/297] bg-gray-100 overflow-hidden relative">
+        <div ref={containerRef} className="aspect-210/297 bg-gray-100 overflow-hidden relative">
           <div className="absolute inset-0 flex items-center justify-center">
             {ready && scale !== null ? (
               <div
