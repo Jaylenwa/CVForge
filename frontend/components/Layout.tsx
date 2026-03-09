@@ -50,8 +50,6 @@ export const Navbar: React.FC = () => {
     ...(showPricing ? [{ label: t('nav.pricing'), href: AppRoute.Pricing, icon: <Star size={18} /> }] : []),
   ];
 
-  // Dashboard 入口仅保留在头像下拉菜单，不在顶部主导航显示
-
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-10">
