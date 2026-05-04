@@ -9,3 +9,4 @@ cvforge.db
 __debug_*
 uploads
 makefile
+.vscode/
